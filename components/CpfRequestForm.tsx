@@ -1,0 +1,166 @@
+"use client";
+
+import { zodResolver } from "@hookform/resolvers/zod";
+import { FileCheck2, Send } from "lucide-react";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+
+const formationOptions = [
+  { label: "Permis B manuel", value: "formation-permis-b-manuel" },
+  { label: "Permis B automatique", value: "formation-permis-b-automatique" },
+  { label: "Permis accéléré", value: "formation-permis-accelere" },
+  { label: "Annulation permis", value: "formation-annulation-permis" }
+];
+
+const schema = z.object({
+  fullName: z.string().trim().min(2, "Indique ton nom complet"),
+  email: z.string().trim().email("Email invalide"),
+  phone: z.string().trim().min(8, "Téléphone invalide"),
+  formationId: z.string().min(1, "Choisis une formation"),
+  requestedAmount: z
+    .string()
+    .trim()
+    .optional()
+    .refine((value) => !value || Number(value) >= 0, "Montant invalide"),
+  note: z.string().trim().max(400, "Message trop long").optional()
+});
+
+type CpfFormValues = z.infer<typeof schema>;
+
+export function CpfRequestForm() {
+  const [sent, setSent] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    reset
+  } = useForm<CpfFormValues>({
+    resolver: zodResolver(schema),
+    defaultValues: {
+      formationId: formationOptions[0].value
+    }
+  });
+
+  const onSubmit = async (values: CpfFormValues) => {
+    setSent(false);
+    setSubmitError(null);
+
+    const requestedAmountCents = values.requestedAmount
+      ? Math.round(Number(values.requestedAmount) * 100)
+      : undefined;
+
+    const response = await fetch("/api/cpf/requests", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        fullName: values.fullName,
+        email: values.email,
+        phone: values.phone,
+        formationId: values.formationId,
+        requestedAmountCents,
+        internalNotes: values.note || undefined
+      })
+    });
+
+    if (!response.ok) {
+      setSubmitError("La demande CPF n'a pas pu être envoyée. Réessaie dans quelques instants.");
+      return;
+    }
+
+    setSent(true);
+    reset({ formationId: formationOptions[0].value });
+  };
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)} className="rounded-3xl border border-slate-200 bg-white p-6 shadow-premium" noValidate>
+      <div className="flex items-start gap-3 border-b border-slate-200 pb-5">
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-loden-50 text-loden-700">
+          <FileCheck2 className="h-5 w-5" />
+        </span>
+        <div>
+          <h2 className="text-2xl font-semibold text-loden-ink">Vérifier mon financement</h2>
+          <p className="mt-2 text-sm leading-6 text-loden-muted">
+            Un conseiller analyse ton solde CPF et prépare le meilleur parcours possible.
+          </p>
+        </div>
+      </div>
+
+      <div className="mt-5 grid gap-4 sm:grid-cols-2">
+        <Field label="Nom complet" error={errors.fullName?.message}>
+          <input {...register("fullName")} className="field-input" placeholder="Prénom Nom" autoComplete="name" />
+        </Field>
+        <Field label="Email" error={errors.email?.message}>
+          <input {...register("email")} className="field-input" placeholder="prenom@email.fr" autoComplete="email" />
+        </Field>
+        <Field label="Téléphone" error={errors.phone?.message}>
+          <input {...register("phone")} className="field-input" placeholder="06 12 34 56 78" autoComplete="tel" />
+        </Field>
+        <Field label="Formation" error={errors.formationId?.message}>
+          <select {...register("formationId")} className="field-input">
+            {formationOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </Field>
+      </div>
+
+      <Field label="Montant CPF estimé en euros" error={errors.requestedAmount?.message} className="mt-4">
+        <input {...register("requestedAmount")} className="field-input" inputMode="numeric" placeholder="Ex. 1200" />
+      </Field>
+
+      <Field label="Précisions" error={errors.note?.message} className="mt-4">
+        <textarea
+          {...register("note")}
+          className="field-input min-h-28 resize-y"
+          placeholder="Disponibilités, date souhaitée, situation administrative..."
+        />
+      </Field>
+
+      <button
+        type="submit"
+        disabled={isSubmitting}
+        className="focus-ring mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full bg-loden-700 px-6 py-4 font-semibold text-white transition hover:bg-loden-800 disabled:cursor-not-allowed disabled:opacity-70"
+      >
+        <Send className="h-5 w-5" />
+        {isSubmitting ? "Analyse en cours..." : "Envoyer ma demande CPF"}
+      </button>
+
+      {sent ? (
+        <p className="mt-4 rounded-2xl bg-loden-50 p-4 text-sm font-medium text-loden-800">
+          Demande CPF envoyée. LODEN revient vers toi avec une estimation claire.
+        </p>
+      ) : null}
+      {submitError ? (
+        <p className="mt-4 rounded-2xl bg-red-50 p-4 text-sm font-medium text-red-700">
+          {submitError}
+        </p>
+      ) : null}
+    </form>
+  );
+}
+
+function Field({
+  label,
+  error,
+  children,
+  className = ""
+}: {
+  label: string;
+  error?: string;
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <label className={`grid gap-2 ${className}`}>
+      <span className="text-sm font-semibold text-loden-ink">{label}</span>
+      {children}
+      {error ? <span className="text-sm font-medium text-red-600">{error}</span> : null}
+    </label>
+  );
+}

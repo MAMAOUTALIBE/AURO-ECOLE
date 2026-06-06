@@ -1,0 +1,110 @@
+"use client";
+
+import Link from "next/link";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { LogIn } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+
+const schema = z.object({
+  email: z.string().trim().email("Email invalide"),
+  password: z.string().min(1, "Mot de passe requis")
+});
+
+type LoginValues = z.infer<typeof schema>;
+
+export function LoginForm() {
+  const router = useRouter();
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting }
+  } = useForm<LoginValues>({
+    resolver: zodResolver(schema)
+  });
+
+  const onSubmit = async (values: LoginValues) => {
+    setSubmitError(null);
+
+    const response = await fetch("/api/auth/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(values)
+    });
+
+    const payload = await response.json().catch(() => null) as { error?: { message?: string }; token?: string } | null;
+
+    if (!response.ok || !payload?.token) {
+      setSubmitError(payload?.error?.message ?? "Connexion impossible. Vérifie tes identifiants.");
+      return;
+    }
+
+    window.localStorage.setItem("loden_student_token", payload.token);
+    router.push("/espace-eleve");
+  };
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)} className="rounded-3xl border border-slate-200 bg-white p-6 shadow-premium" noValidate>
+      <div className="border-b border-slate-200 pb-5">
+        <h2 className="text-2xl font-semibold text-loden-ink">Connexion élève</h2>
+        <p className="mt-2 text-sm leading-6 text-loden-muted">
+          Accède à ton profil, ta formation et ton futur planning LODEN.
+        </p>
+      </div>
+
+      <Field label="Email" error={errors.email?.message} className="mt-5">
+        <input {...register("email")} className="field-input" placeholder="prenom@email.fr" autoComplete="email" />
+      </Field>
+      <Field label="Mot de passe" error={errors.password?.message} className="mt-4">
+        <input {...register("password")} className="field-input" type="password" autoComplete="current-password" />
+      </Field>
+
+      <button
+        type="submit"
+        disabled={isSubmitting}
+        className="focus-ring mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full bg-loden-700 px-6 py-4 font-semibold text-white transition hover:bg-loden-800 disabled:cursor-not-allowed disabled:opacity-70"
+      >
+        <LogIn className="h-5 w-5" />
+        {isSubmitting ? "Connexion..." : "Accéder à mon espace"}
+      </button>
+
+      {submitError ? (
+        <p className="mt-4 rounded-2xl bg-red-50 p-4 text-sm font-medium text-red-700">
+          {submitError}
+        </p>
+      ) : null}
+
+      <p className="mt-5 text-center text-sm text-loden-muted">
+        Pas encore de compte ?{" "}
+        <Link className="font-semibold text-loden-700 hover:text-loden-800" href="/inscription">
+          Créer mon compte élève
+        </Link>
+      </p>
+    </form>
+  );
+}
+
+function Field({
+  label,
+  error,
+  children,
+  className = ""
+}: {
+  label: string;
+  error?: string;
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <label className={`grid gap-2 ${className}`}>
+      <span className="text-sm font-semibold text-loden-ink">{label}</span>
+      {children}
+      {error ? <span className="text-sm font-medium text-red-600">{error}</span> : null}
+    </label>
+  );
+}

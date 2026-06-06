@@ -1,0 +1,390 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  SUPER_ADMIN
+  ADMIN
+  MONITEUR
+  ELEVE
+  VISITEUR
+}
+
+enum UserStatus {
+  PENDING_EMAIL
+  ACTIVE
+  SUSPENDED
+  ARCHIVED
+}
+
+enum StudentFileStatus {
+  NOUVEAU
+  INCOMPLET
+  EN_COURS
+  PRET_EXAMEN
+  EXAMEN_PLANIFIE
+  TERMINE
+  ARCHIVE
+}
+
+enum FormationMode {
+  MANUEL
+  AUTOMATIQUE
+  MIXTE
+  CODE
+}
+
+enum BookingStatus {
+  EN_ATTENTE
+  CONFIRMEE
+  ANNULEE
+  TERMINEE
+  ABSENT
+}
+
+enum PaymentStatus {
+  EN_ATTENTE
+  PAYE
+  ECHOUE
+  REMBOURSE
+  PARTIEL
+}
+
+enum PaymentKind {
+  FORMATION
+  ACOMPTE
+  ECHEANCE
+  REMBOURSEMENT
+}
+
+enum CpfRequestStatus {
+  NOUVELLE_DEMANDE
+  EN_COURS
+  DOCUMENTS_MANQUANTS
+  VALIDEE
+  REFUSEE
+}
+
+enum ContactRequestStatus {
+  NOUVELLE
+  EN_COURS
+  TRAITEE
+  ARCHIVEE
+}
+
+enum ContactRequestType {
+  INFORMATION
+  RAPPEL
+  INSCRIPTION
+  CPF
+  AUTRE
+}
+
+enum ReviewStatus {
+  EN_ATTENTE
+  PUBLIE
+  REJETE
+}
+
+enum LeadStatus {
+  PROSPECT
+  CONTACTE
+  RELANCE
+  DEVIS_ENVOYE
+  INSCRIT
+  PERDU
+}
+
+model User {
+  id                 String     @id @default(cuid())
+  firstName          String
+  lastName           String
+  email              String     @unique
+  phone              String?
+  address            String?
+  role               UserRole   @default(ELEVE)
+  status             UserStatus @default(PENDING_EMAIL)
+  passwordHash       String?
+  preferences        Json?
+  emailVerifiedAt    DateTime?
+  lastLoginAt        DateTime?
+  resetTokenHash     String?
+  resetTokenExpiresAt DateTime?
+  createdAt          DateTime   @default(now())
+  updatedAt          DateTime   @updatedAt
+
+  student            Student?
+  instructor         Instructor?
+  contactRequests    ContactRequest[]
+  payments           Payment[]
+  reviews            Review[]
+  auditLogs          AuditLog[]
+}
+
+model Student {
+  id                 String            @id @default(cuid())
+  userId             String            @unique
+  formationId        String?
+  progressPercent    Int               @default(0)
+  purchasedHours     Int               @default(0)
+  consumedHours      Int               @default(0)
+  examDate           DateTime?
+  fileStatus         StudentFileStatus @default(NOUVEAU)
+  internalNotes      String?
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+
+  user               User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  formation          Formation?        @relation(fields: [formationId], references: [id])
+  documents          StudentDocument[]
+  bookings           Booking[]
+  cpfRequests        CpfRequest[]
+}
+
+model StudentDocument {
+  id          String   @id @default(cuid())
+  studentId   String
+  type        String
+  url         String
+  verifiedAt  DateTime?
+  createdAt   DateTime @default(now())
+
+  student     Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+}
+
+model Instructor {
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  photoUrl       String?
+  bio            String?
+  specialties    String[]
+  interventionZones String[]
+  ratingAverage  Float    @default(0)
+  ratingCount    Int      @default(0)
+  active         Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  vehicles       Vehicle[]
+  availabilities Availability[]
+  bookings       Booking[]
+  reviews        Review[]
+}
+
+model Vehicle {
+  id            String     @id @default(cuid())
+  instructorId  String?
+  label         String
+  transmission  FormationMode
+  registration  String?
+  active        Boolean    @default(true)
+
+  instructor    Instructor? @relation(fields: [instructorId], references: [id], onDelete: SetNull)
+}
+
+model Formation {
+  id              String        @id @default(cuid())
+  title           String
+  slug            String        @unique
+  description     String
+  mode            FormationMode
+  priceCents      Int
+  durationLabel   String
+  defaultHours    Int?
+  imageUrl        String?
+  options         Json?
+  cpfEligible     Boolean       @default(false)
+  active          Boolean       @default(true)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  students        Student[]
+  pricingPlans    PricingPlan[]
+  bookings        Booking[]
+  cpfRequests     CpfRequest[]
+}
+
+model PricingPlan {
+  id                    String   @id @default(cuid())
+  formationId            String?
+  title                 String
+  slug                  String   @unique
+  description           String?
+  priceCents            Int
+  features              String[]
+  allowOneShotPayment   Boolean  @default(true)
+  allowThreeTimes       Boolean  @default(false)
+  allowFourTimes        Boolean  @default(false)
+  discountCents         Int      @default(0)
+  promotionalLabel      String?
+  active                Boolean  @default(true)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  formation             Formation? @relation(fields: [formationId], references: [id], onDelete: SetNull)
+  payments              Payment[]
+}
+
+model MeetingPoint {
+  id          String   @id @default(cuid())
+  name        String
+  address     String
+  latitude    Float?
+  longitude   Float?
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  bookings    Booking[]
+}
+
+model Availability {
+  id            String     @id @default(cuid())
+  instructorId  String
+  startsAt      DateTime
+  endsAt        DateTime
+  isAvailable   Boolean    @default(true)
+  reason        String?
+  createdAt     DateTime   @default(now())
+
+  instructor    Instructor @relation(fields: [instructorId], references: [id], onDelete: Cascade)
+
+  @@index([instructorId, startsAt, endsAt])
+}
+
+model Booking {
+  id              String        @id @default(cuid())
+  studentId       String
+  instructorId    String
+  formationId     String
+  meetingPointId  String?
+  startsAt        DateTime
+  endsAt          DateTime
+  status          BookingStatus @default(EN_ATTENTE)
+  cancellationReason String?
+  notificationSentAt DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  student         Student       @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  instructor      Instructor    @relation(fields: [instructorId], references: [id], onDelete: Restrict)
+  formation       Formation     @relation(fields: [formationId], references: [id], onDelete: Restrict)
+  meetingPoint    MeetingPoint? @relation(fields: [meetingPointId], references: [id], onDelete: SetNull)
+
+  @@index([instructorId, startsAt, endsAt])
+  @@index([studentId, startsAt])
+}
+
+model Payment {
+  id              String        @id @default(cuid())
+  userId          String
+  pricingPlanId   String?
+  kind            PaymentKind
+  status          PaymentStatus @default(EN_ATTENTE)
+  amountCents     Int
+  currency        String        @default("EUR")
+  stripePaymentIntentId String?
+  stripeCustomerId String?
+  invoiceUrl      String?
+  metadata        Json?
+  paidAt          DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  pricingPlan     PricingPlan?  @relation(fields: [pricingPlanId], references: [id], onDelete: SetNull)
+}
+
+model CpfRequest {
+  id              String           @id @default(cuid())
+  studentId       String?
+  formationId     String?
+  fullName        String
+  email           String
+  phone           String?
+  status          CpfRequestStatus @default(NOUVELLE_DEMANDE)
+  requestedAmountCents Int?
+  missingDocuments String[]
+  internalNotes    String?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  student         Student?         @relation(fields: [studentId], references: [id], onDelete: SetNull)
+  formation       Formation?       @relation(fields: [formationId], references: [id], onDelete: SetNull)
+}
+
+model ContactRequest {
+  id          String               @id @default(cuid())
+  userId      String?
+  fullName    String
+  email       String
+  phone       String?
+  type        ContactRequestType   @default(INFORMATION)
+  source      String?
+  message     String
+  status      ContactRequestStatus @default(NOUVELLE)
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+
+  user        User?                @relation(fields: [userId], references: [id], onDelete: SetNull)
+}
+
+model Lead {
+  id                  String     @id @default(cuid())
+  fullName            String
+  email               String
+  phone               String?
+  status              LeadStatus @default(PROSPECT)
+  source              String?
+  interest            String?
+  notes               String?
+  estimatedValueCents Int?
+  nextFollowUpAt      DateTime?
+  createdAt           DateTime   @default(now())
+  updatedAt           DateTime   @updatedAt
+
+  @@index([status, createdAt])
+  @@index([email])
+}
+
+model Review {
+  id            String       @id @default(cuid())
+  userId        String?
+  instructorId  String?
+  rating        Int
+  comment       String
+  status        ReviewStatus @default(EN_ATTENTE)
+  publishedAt   DateTime?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  user          User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
+  instructor    Instructor?  @relation(fields: [instructorId], references: [id], onDelete: SetNull)
+}
+
+model FaqEntry {
+  id          String   @id @default(cuid())
+  question    String
+  answer      String
+  category    String?
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  userId      String?
+  action      String
+  entityType  String
+  entityId    String?
+  metadata    Json?
+  createdAt   DateTime @default(now())
+
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+}

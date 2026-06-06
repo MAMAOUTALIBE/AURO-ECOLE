@@ -1,0 +1,86 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+  --background: #fbfdfc;
+  --foreground: #142126;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+::selection {
+  background: rgba(8, 174, 184, 0.18);
+}
+
+.focus-ring {
+  @apply focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-loden-500;
+}
+
+.container-pad {
+  @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
+}
+
+.premium-panel {
+  @apply border border-slate-200/80 bg-white/90 shadow-soft backdrop-blur;
+}
+
+.field-input {
+  @apply focus-ring w-full rounded-2xl border border-slate-200 bg-loden-fog px-4 py-3 text-loden-ink outline-none transition placeholder:text-loden-muted hover:border-loden-200 focus:bg-white;
+}
+
+.motion-reveal {
+  animation: reveal-up 0.5s ease-out both;
+  animation-delay: var(--reveal-delay, 0s);
+}
+
+@keyframes reveal-up {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .motion-reveal {
+    animation: none;
+  }
+}
+
+.soft-grid {
+  background-image:
+    linear-gradient(rgba(8, 174, 184, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(8, 174, 184, 0.08) 1px, transparent 1px);
+  background-size: 42px 42px;
+}
