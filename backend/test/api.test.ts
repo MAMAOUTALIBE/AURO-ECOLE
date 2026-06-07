@@ -1,10 +1,13 @@
 import request from "supertest";
 import { describe, expect, it } from "vitest";
 import { createApp } from "../src/app";
+import type { AiProvider } from "../src/ai/types";
+import { qualifyLead } from "../src/ai/qualify";
+import { crmTools } from "../src/ai/tools";
 import { loadConfig } from "../src/config/env";
 import { MemoryLodenRepository } from "../src/repositories/memory-loden-repository";
 
-function testApp() {
+function testApp(aiProvider?: AiProvider) {
   const config = loadConfig({
     NODE_ENV: "test",
     JWT_SECRET: "test-secret-with-enough-length",
@@ -13,10 +16,61 @@ function testApp() {
     API_USE_MEMORY: "true"
   });
   const repository = new MemoryLodenRepository();
-  return { app: createApp(repository, config), repository };
+  return { app: createApp(repository, config, aiProvider ? { aiProvider } : undefined), repository };
 }
 
+const stubAi: AiProvider = {
+  name: "stub",
+  available: true,
+  async chat() { return { content: "Réponse de test.", toolCalls: [] }; },
+  async complete() { return "Réponse de test."; }
+};
+const disabledAi: AiProvider = {
+  name: "disabled",
+  available: false,
+  async chat() { throw new Error("off"); },
+  async complete() { throw new Error("off"); }
+};
+// Provider qui déclenche un outil (create_lead) au 1er tour, puis répond.
+const toolAi: AiProvider = {
+  name: "tool-stub",
+  available: true,
+  async chat(request) {
+    const usedTool = request.messages.some((m) => m.role === "tool");
+    if (!usedTool) {
+      return {
+        content: null,
+        toolCalls: [{ id: "call_1", name: "create_lead", arguments: JSON.stringify({ fullName: "Bot Prospect", email: "bot.prospect@example.com", interest: "Permis B" }) }]
+      };
+    }
+    return { content: "Merci, votre demande est bien enregistrée. Un conseiller vous recontactera.", toolCalls: [] };
+  },
+  async complete() { return "ok"; }
+};
+
 describe("LODEN API", () => {
+  it("rejects unsafe production configuration", () => {
+    expect(() =>
+      loadConfig({
+        NODE_ENV: "production",
+        JWT_SECRET: "change-me-in-production",
+        CORS_ORIGIN: "https://loden-autoecole.fr",
+        API_USE_MEMORY: "false",
+        DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/loden"
+      })
+    ).toThrow(/JWT_SECRET/);
+
+    expect(() =>
+      loadConfig({
+        NODE_ENV: "production",
+        JWT_SECRET: "production-secret-with-enough-entropy-123",
+        CORS_ORIGIN: "https://loden-autoecole.fr",
+        API_USE_MEMORY: "true",
+        DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/loden"
+      })
+    ).toThrow(/PostgreSQL/);
+  });
+
   it("exposes health and public catalog endpoints", async () => {
     const { app } = testApp();
 
@@ -335,6 +389,403 @@ describe("LODEN API", () => {
       .expect(({ body }) => {
         expect(body.data).toHaveLength(1);
         expect(body.data[0].fullName).toBe("Lead Manuel");
+      });
+  });
+
+  it("lets staff read and update a student file, but blocks students", async () => {
+    const { app } = testApp();
+
+    const registration = await request(app)
+      .post("/api/auth/register")
+      .send({
+        firstName: "Tom",
+        lastName: "Dossier",
+        email: "tom.dossier@example.com",
+        password: "super-password",
+        formationId: "formation-permis-b-manuel"
+      })
+      .expect(201);
+
+    const adminLogin = await request(app)
+      .post("/api/auth/login")
+      .send({ email: "admin@loden-autoecole.fr", password: "admin-password" })
+      .expect(200);
+
+    const list = await request(app)
+      .get("/api/students")
+      .set("Authorization", `Bearer ${adminLogin.body.token}`)
+      .expect(200);
+
+    const studentId = list.body.data[0].id as string;
+
+    await request(app)
+      .patch(`/api/students/${studentId}`)
+      .set("Authorization", `Bearer ${adminLogin.body.token}`)
+      .send({ fileStatus: "EN_COURS", internalNotes: "Bon démarrage", progressPercent: 40, agencyId: "agency-republique" })
+      .expect(200)
+      .expect(({ body }) => {
+        expect(body.data.fileStatus).toBe("EN_COURS");
+        expect(body.data.internalNotes).toBe("Bon démarrage");
+        expect(body.data.progressPercent).toBe(40);
+        expect(body.data.agencyId).toBe("agency-republique");
+      });
+
+    // Un élève ne peut pas modifier un dossier.
+    await request(app)
+      .patch(`/api/students/${studentId}`)
+      .set("Authorization", `Bearer ${registration.body.token}`)
+      .send({ fileStatus: "TERMINE" })
+      .expect(403);
+
+    // Filtrage par agence (inclut les non-rattachés).
+    await request(app)
+      .get("/api/students")
+      .query({ agencyId: "agency-republique" })
+      .set("Authorization", `Bearer ${adminLogin.body.token}`)
+      .expect(200)
+      .expect(({ body }) => {
+        expect(body.data.some((student: { id: string }) => student.id === studentId)).toBe(true);
+      });
+  });
+
+  it("serves the AI chatbot publicly and protects admin AI tools", async () => {
+    const { app } = testApp(stubAi);
+
+    await request(app)
+      .post("/api/ai/chat")
+      .send({ messages: [{ role: "user", content: "Quel permis pour débuter ?" }] })
+      .expect(200)
+      .expect(({ body }) => expect(body.data.reply).toBe("Réponse de test."));
+
+    // Validation des entrées.
+    await request(app).post("/api/ai/chat").send({ messages: [] }).expect(400);
+
+    // Outils CRM protégés.
+    await request(app).post("/api/ai/summarize").send({ text: "Je veux le permis B." }).expect(401);
+
+    const admin = await request(app)
+      .post("/api/auth/login")
+      .send({ email: "admin@loden-autoecole.fr", password: "admin-password" })
+      .expect(200);
+
+    await request(app)
+      .post("/api/ai/summarize")
+      .set("Authorization", `Bearer ${admin.body.token}`)
+      .send({ text: "Bonjour, je souhaite passer mon permis B rapidement, possible en CPF ?" })
+      .expect(200)
+      .expect(({ body }) => expect(body.data.summary).toBe("Réponse de test."));
+  });
+
+  it("returns a clear message when the AI provider is not configured", async () => {
+    const { app } = testApp(disabledAi);
+
+    await request(app)
+      .post("/api/ai/chat")
+      .send({ messages: [{ role: "user", content: "Bonjour" }] })
+      .expect(503)
+      .expect(({ body }) => expect(body.error.code).toBe("AI_UNAVAILABLE"));
+  });
+
+  it("CRM agent endpoint requires authentication", async () => {
+    const { app } = testApp(stubAi);
+    await request(app).post("/api/ai/agent").send({ messages: [{ role: "user", content: "Bonjour" }] }).expect(401);
+  });
+
+  it("book_appointment tool creates a real booking and is gated by permission", async () => {
+    const bookTool = crmTools.find((t) => t.def.function.name === "book_appointment");
+    const findTool = crmTools.find((t) => t.def.function.name === "find_student");
+    expect(bookTool?.permission).toBe("bookings.manage");
+    expect(findTool?.permission).toBe("students.read");
+
+    const config = loadConfig({
+      NODE_ENV: "test",
+      JWT_SECRET: "test-secret-with-enough-length",
+      CORS_ORIGIN: "http://localhost:3000",
+      API_USE_MEMORY: "true"
+    });
+    const repository = new MemoryLodenRepository();
+    const user = await repository.createUser({ firstName: "Rdv", lastName: "Eleve", email: "rdv.eleve@example.com", role: "ELEVE" });
+    const student = await repository.createStudent({ userId: user.id, formationId: "formation-permis-b-manuel" });
+
+    const result = (await bookTool!.handler(
+      { studentId: student.id, instructorId: "instructor-sarah", startsAt: "2026-06-15T09:00:00.000Z", endsAt: "2026-06-15T10:00:00.000Z" },
+      { repository, config, scope: "crm", actorUserId: "admin-test" }
+    )) as { ok: boolean; bookingId?: string };
+
+    expect(result.ok).toBe(true);
+    const bookings = await repository.listBookings();
+    expect(bookings.some((b) => b.id === result.bookingId && b.status === "CONFIRMEE")).toBe(true);
+  });
+
+  it("auto-qualifies a lead temperature via the AI", async () => {
+    const repository = new MemoryLodenRepository();
+    const lead = await repository.createLead({ fullName: "Hot Lead", email: "hot@example.com", interest: "Permis accéléré, urgent", status: "PROSPECT" });
+
+    const jsonAi: AiProvider = {
+      name: "json",
+      available: true,
+      async chat() { return { content: '{"temperature":"chaud","score":85}', toolCalls: [] }; },
+      async complete() { return '{"temperature":"chaud","score":85,"raison":"intention forte","prochaineAction":"appeler"}'; }
+    };
+
+    await qualifyLead(jsonAi, repository, lead);
+    const updated = (await repository.listLeads()).find((l) => l.id === lead.id);
+    expect(updated?.temperature).toBe("chaud");
+    expect(updated?.score).toBe(85);
+  });
+
+  it("runs the agent tool loop and creates a lead via the create_lead tool", async () => {
+    const { app } = testApp(toolAi);
+
+    await request(app)
+      .post("/api/ai/chat")
+      .send({ messages: [{ role: "user", content: "Je veux des infos et m'inscrire au permis B." }] })
+      .expect(200)
+      .expect(({ body }) => expect(body.data.reply).toContain("enregistrée"));
+
+    // L'outil create_lead doit avoir créé un prospect dans le CRM.
+    const adminLogin = await request(app)
+      .post("/api/auth/login")
+      .send({ email: "admin@loden-autoecole.fr", password: "admin-password" })
+      .expect(200);
+
+    await request(app)
+      .get("/api/leads")
+      .set("Authorization", `Bearer ${adminLogin.body.token}`)
+      .expect(200)
+      .expect(({ body }) => {
+        expect(body.data.some((lead: { fullName: string; source?: string }) => lead.fullName === "Bot Prospect" && lead.source === "assistant-ia")).toBe(true);
+      });
+  });
+
+  it("manages FAQ content (public read, admin CRUD)", async () => {
+    const { app } = testApp();
+
+    // Public : FAQ active.
+    await request(app).get("/api/faq").expect(200).expect(({ body }) => {
+      expect(Array.isArray(body.data)).toBe(true);
+    });
+
+    const adminLogin = await request(app)
+      .post("/api/auth/login")
+      .send({ email: "admin@loden-autoecole.fr", password: "admin-password" })
+      .expect(200);
+    const adminToken = adminLogin.body.token as string;
+
+    // Création réservée au staff (content.manage).
+    await request(app).post("/api/faq").send({ question: "Question test ?", answer: "Réponse test." }).expect(401);
+
+    const created = await request(app)
+      .post("/api/faq")
+      .set("Authorization", `Bearer ${adminToken}`)
+      .send({ question: "Puis-je payer en plusieurs fois ?", answer: "Oui, en 3× ou 4× sans frais.", category: "Financement" })
+      .expect(201);
+    const faqId = created.body.data.id as string;
+
+    // Masquer (active:false) -> disparaît du public, reste en gestion.
+    await request(app)
+      .patch(`/api/faq/${faqId}`)
+      .set("Authorization", `Bearer ${adminToken}`)
+      .send({ active: false })
+      .expect(200)
+      .expect(({ body }) => expect(body.data.active).toBe(false));
+
+    const publicList = await request(app).get("/api/faq").expect(200);
+    expect(publicList.body.data.some((e: { id: string }) => e.id === faqId)).toBe(false);
+
+    const manageList = await request(app).get("/api/faq/manage").set("Authorization", `Bearer ${adminToken}`).expect(200);
+    expect(manageList.body.data.some((e: { id: string }) => e.id === faqId)).toBe(true);
+  });
+
+  it("generates a 3x installment plan splitting the total", async () => {
+    const { app } = testApp();
+
+    await request(app)
+      .post("/api/auth/register")
+      .send({ firstName: "Aya", lastName: "Echeance", email: "aya.echeance@example.com", password: "super-password", formationId: "formation-permis-b-manuel" })
+      .expect(201);
+
+    const adminLogin = await request(app)
+      .post("/api/auth/login")
+      .send({ email: "admin@loden-autoecole.fr", password: "admin-password" })
+      .expect(200);
+    const adminToken = adminLogin.body.token as string;
+
+    const list = await request(app).get("/api/students").set("Authorization", `Bearer ${adminToken}`).expect(200);
+    const studentId = list.body.data[0].id as string;
+
+    const plan = await request(app)
+      .post("/api/installments/plan")
+      .set("Authorization", `Bearer ${adminToken}`)
+      .send({ studentId, totalCents: 100000, count: 3, startDate: "2026-07-01" })
+      .expect(201)
+      .expect(({ body }) => {
+        expect(body.data).toHaveLength(3);
+        const total = body.data.reduce((sum: number, i: { amountCents: number }) => sum + i.amountCents, 0);
+        expect(total).toBe(100000); // 33334 + 33333 + 33333
+      });
+
+    await request(app)
+      .patch(`/api/installments/${plan.body.data[0].id}`)
+      .set("Authorization", `Bearer ${adminToken}`)
+      .send({ status: "PAYE" })
+      .expect(200)
+      .expect(({ body }) => expect(body.data.status).toBe("PAYE"));
+
+    await request(app)
+      .get("/api/installments")
+      .query({ studentId })
+      .set("Authorization", `Bearer ${adminToken}`)
+      .expect(200)
+      .expect(({ body }) => expect(body.data).toHaveLength(3));
+  });
+
+  it("records payments and refunds with finance permissions", async () => {
+    const { app } = testApp();
+
+    const registration = await request(app)
+      .post("/api/auth/register")
+      .send({ firstName: "Paul", lastName: "Finance", email: "paul.finance@example.com", password: "super-password", formationId: "formation-permis-b-manuel" })
+      .expect(201);
+    const studentUserId = registration.body.user.id as string;
+
+    const adminLogin = await request(app)
+      .post("/api/auth/login")
+      .send({ email: "admin@loden-autoecole.fr", password: "admin-password" })
+      .expect(200);
+    const adminToken = adminLogin.body.token as string;
+
+    // Un élève ne peut pas enregistrer un paiement.
+    await request(app)
+      .post("/api/payments")
+      .set("Authorization", `Bearer ${registration.body.token}`)
+      .send({ userId: studentUserId, amountCents: 90000, kind: "FORMATION" })
+      .expect(403);
+
+    const payment = await request(app)
+      .post("/api/payments")
+      .set("Authorization", `Bearer ${adminToken}`)
+      .send({ userId: studentUserId, amountCents: 90000, kind: "FORMATION", status: "PAYE" })
+      .expect(201)
+      .expect(({ body }) => expect(body.data.status).toBe("PAYE"));
+
+    // La liste staff renvoie le paiement enrichi du nom du payeur.
+    await request(app)
+      .get("/api/payments")
+      .set("Authorization", `Bearer ${adminToken}`)
+      .expect(200)
+      .expect(({ body }) => {
+        expect(body.data).toHaveLength(1);
+        expect(body.data[0].user.firstName).toBe("Paul");
+      });
+
+    // Remboursement.
+    await request(app)
+      .patch(`/api/payments/${payment.body.data.id}`)
+      .set("Authorization", `Bearer ${adminToken}`)
+      .send({ status: "REMBOURSE" })
+      .expect(200)
+      .expect(({ body }) => expect(body.data.status).toBe("REMBOURSE"));
+  });
+
+  it("tracks student skills against the REMC référentiel", async () => {
+    const { app } = testApp();
+
+    const registration = await request(app)
+      .post("/api/auth/register")
+      .send({ firstName: "Rita", lastName: "Skill", email: "rita.skill@example.com", password: "super-password", formationId: "formation-permis-b-manuel" })
+      .expect(201);
+
+    const adminLogin = await request(app)
+      .post("/api/auth/login")
+      .send({ email: "admin@loden-autoecole.fr", password: "admin-password" })
+      .expect(200);
+    const adminToken = adminLogin.body.token as string;
+
+    const list = await request(app).get("/api/students").set("Authorization", `Bearer ${adminToken}`).expect(200);
+    const studentId = list.body.data[0].id as string;
+
+    // Le référentiel est renvoyé avec niveaux à 0 par défaut.
+    await request(app)
+      .get(`/api/students/${studentId}/skills`)
+      .set("Authorization", `Bearer ${adminToken}`)
+      .expect(200)
+      .expect(({ body }) => {
+        expect(body.data).toHaveLength(4);
+        expect(body.data.every((skill: { level: number }) => skill.level === 0)).toBe(true);
+      });
+
+    // Un élève ne peut pas modifier ses compétences.
+    await request(app)
+      .patch(`/api/students/${studentId}/skills`)
+      .set("Authorization", `Bearer ${registration.body.token}`)
+      .send({ skillCode: "C1", level: 3 })
+      .expect(403);
+
+    await request(app)
+      .patch(`/api/students/${studentId}/skills`)
+      .set("Authorization", `Bearer ${adminToken}`)
+      .send({ skillCode: "C1", level: 3 })
+      .expect(200)
+      .expect(({ body }) => expect(body.data.level).toBe(3));
+
+    await request(app)
+      .get(`/api/students/${studentId}/skills`)
+      .set("Authorization", `Bearer ${adminToken}`)
+      .expect(200)
+      .expect(({ body }) => {
+        expect(body.data.find((skill: { code: string }) => skill.code === "C1").level).toBe(3);
+      });
+  });
+
+  it("manages exams and computes the pass rate", async () => {
+    const { app } = testApp();
+
+    const registration = await request(app)
+      .post("/api/auth/register")
+      .send({ firstName: "Inès", lastName: "Examen", email: "ines.examen@example.com", password: "super-password", formationId: "formation-permis-b-manuel" })
+      .expect(201);
+
+    const adminLogin = await request(app)
+      .post("/api/auth/login")
+      .send({ email: "admin@loden-autoecole.fr", password: "admin-password" })
+      .expect(200);
+    const adminToken = adminLogin.body.token as string;
+
+    const list = await request(app).get("/api/students").set("Authorization", `Bearer ${adminToken}`).expect(200);
+    const studentId = list.body.data[0].id as string;
+
+    // Un élève ne peut pas créer d'examen.
+    await request(app)
+      .post("/api/exams")
+      .set("Authorization", `Bearer ${registration.body.token}`)
+      .send({ studentId, type: "CONDUITE", scheduledAt: "2026-07-01T09:00:00.000Z" })
+      .expect(403);
+
+    const exam = await request(app)
+      .post("/api/exams")
+      .set("Authorization", `Bearer ${adminToken}`)
+      .send({ studentId, type: "CONDUITE", scheduledAt: "2026-07-01T09:00:00.000Z" })
+      .expect(201)
+      .expect(({ body }) => {
+        expect(body.data.result).toBe("EN_ATTENTE");
+        expect(body.data.attempt).toBe(1);
+      });
+
+    await request(app)
+      .patch(`/api/exams/${exam.body.data.id}`)
+      .set("Authorization", `Bearer ${adminToken}`)
+      .send({ result: "REUSSI", score: 32 })
+      .expect(200)
+      .expect(({ body }) => expect(body.data.result).toBe("REUSSI"));
+
+    await request(app)
+      .get("/api/admin/stats")
+      .set("Authorization", `Bearer ${adminToken}`)
+      .expect(200)
+      .expect(({ body }) => {
+        expect(body.data.exams.total).toBe(1);
+        expect(body.data.exams.passRate).toBe(100);
       });
   });
 

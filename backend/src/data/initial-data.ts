@@ -1,4 +1,6 @@
 import type {
+  AgencyMembershipRecord,
+  AgencyRecord,
   AvailabilityRecord,
   FaqEntryRecord,
   FormationRecord,
@@ -10,6 +12,39 @@ import type {
 } from "../domain/types";
 
 const now = new Date("2026-06-06T00:00:00.000Z");
+
+export const initialAgencies: AgencyRecord[] = [
+  {
+    id: "agency-republique",
+    name: "LODEN République",
+    slug: "republique",
+    address: "24 avenue de la République, 75011 Paris",
+    latitude: 48.865,
+    longitude: 2.37,
+    phone: "01 84 80 12 45",
+    email: "republique@loden-autoecole.fr",
+    active: true
+  },
+  {
+    id: "agency-nation",
+    name: "LODEN Nation",
+    slug: "nation",
+    address: "Place de la Nation, 75012 Paris",
+    latitude: 48.848,
+    longitude: 2.395,
+    phone: "01 84 80 12 46",
+    email: "nation@loden-autoecole.fr",
+    active: true
+  }
+];
+
+export const initialAgencyMemberships: AgencyMembershipRecord[] = [
+  { id: "membership-admin-republique", userId: "user-admin", agencyId: "agency-republique", role: "SUPER_ADMIN", isPrimary: true },
+  { id: "membership-admin-nation", userId: "user-admin", agencyId: "agency-nation", role: "SUPER_ADMIN", isPrimary: false },
+  { id: "membership-sarah-republique", userId: "user-sarah", agencyId: "agency-republique", role: "MONITEUR", isPrimary: true },
+  { id: "membership-mathieu-nation", userId: "user-mathieu", agencyId: "agency-nation", role: "MONITEUR", isPrimary: true },
+  { id: "membership-nadia-republique", userId: "user-nadia", agencyId: "agency-republique", role: "MONITEUR", isPrimary: true }
+];
 
 export const initialFormations: FormationRecord[] = [
   {
@@ -265,6 +300,7 @@ export const initialInstructors: InstructorRecord[] = [
   {
     id: "instructor-sarah",
     userId: "user-sarah",
+    agencyId: "agency-republique",
     name: "Sarah Benali",
     bio: "Référente conduite urbaine.",
     specialties: ["Conduite urbaine", "Permis B manuel"],
@@ -276,6 +312,7 @@ export const initialInstructors: InstructorRecord[] = [
   {
     id: "instructor-mathieu",
     userId: "user-mathieu",
+    agencyId: "agency-nation",
     name: "Mathieu Lefèvre",
     bio: "Spécialiste permis accéléré.",
     specialties: ["Permis accéléré", "Boîte automatique"],
@@ -287,6 +324,7 @@ export const initialInstructors: InstructorRecord[] = [
   {
     id: "instructor-nadia",
     userId: "user-nadia",
+    agencyId: "agency-republique",
     name: "Nadia Diallo",
     bio: "Coach confiance au volant.",
     specialties: ["Remise à niveau", "Conduite accompagnée"],
@@ -304,6 +342,7 @@ export const initialMeetingPoints: MeetingPointRecord[] = [
     address: "24 avenue de la République, 75011 Paris",
     latitude: 48.865,
     longitude: 2.37,
+    agencyId: "agency-republique",
     active: true
   },
   {
@@ -312,6 +351,7 @@ export const initialMeetingPoints: MeetingPointRecord[] = [
     address: "Place de la Nation, 75012 Paris",
     latitude: 48.848,
     longitude: 2.395,
+    agencyId: "agency-nation",
     active: true
   }
 ];

@@ -1,5 +1,7 @@
 import { randomUUID } from "node:crypto";
 import {
+  initialAgencies,
+  initialAgencyMemberships,
   initialAvailabilities,
   initialFaqEntries,
   initialFormations,
@@ -10,10 +12,15 @@ import {
   initialUsers
 } from "../data/initial-data";
 import type {
+  AgencyMembershipRecord,
+  AgencyRecord,
+  AuditLogRecord,
   AvailabilityRecord,
   BookingRecord,
   ContactRequestRecord,
   CpfRequestRecord,
+  ExamRecord,
+  InstallmentRecord,
   FaqEntryRecord,
   FormationRecord,
   InstructorRecord,
@@ -24,6 +31,7 @@ import type {
   ReviewRecord,
   SearchResult,
   StudentRecord,
+  StudentSkillRecord,
   UserRecord
 } from "../domain/types";
 import { notFound } from "../shared/http-error";
@@ -42,6 +50,8 @@ import type {
 } from "./loden-repository";
 
 type MutableStore = {
+  agencies: AgencyRecord[];
+  agencyMemberships: AgencyMembershipRecord[];
   users: UserRecord[];
   students: StudentRecord[];
   instructors: InstructorRecord[];
@@ -56,6 +66,10 @@ type MutableStore = {
   contactRequests: ContactRequestRecord[];
   reviews: ReviewRecord[];
   leads: LeadRecord[];
+  exams: ExamRecord[];
+  installments: InstallmentRecord[];
+  studentSkills: StudentSkillRecord[];
+  auditLogs: AuditLogRecord[];
 };
 
 export class MemoryLodenRepository implements LodenRepository {
@@ -63,6 +77,8 @@ export class MemoryLodenRepository implements LodenRepository {
 
   constructor(seed?: Partial<MutableStore>) {
     this.store = {
+      agencies: [...initialAgencies],
+      agencyMemberships: [...initialAgencyMemberships],
       users: [...initialUsers],
       students: [],
       instructors: [...initialInstructors],
@@ -77,8 +93,24 @@ export class MemoryLodenRepository implements LodenRepository {
       contactRequests: [],
       reviews: [...initialReviews],
       leads: [],
+      exams: [],
+      installments: [],
+      studentSkills: [],
+      auditLogs: [],
       ...seed
     };
+  }
+
+  async listAgencies() {
+    return this.store.agencies.filter((agency) => agency.active);
+  }
+
+  async findAgencyById(id: string) {
+    return this.store.agencies.find((agency) => agency.id === id) ?? null;
+  }
+
+  async listAgencyMembershipsByUser(userId: string) {
+    return this.store.agencyMemberships.filter((membership) => membership.userId === userId);
   }
 
   async listUsers(filters?: ListUsersFilters) {
@@ -113,8 +145,15 @@ export class MemoryLodenRepository implements LodenRepository {
     return user;
   }
 
-  async listStudents() {
-    return this.store.students;
+  async listStudents(filters?: { agencyId?: string }) {
+    return this.store.students.filter(
+      (student) =>
+        !filters?.agencyId || student.agencyId === filters.agencyId || student.agencyId == null
+    );
+  }
+
+  async findStudentById(id: string) {
+    return this.store.students.find((student) => student.id === id) ?? null;
   }
 
   async findStudentByUserId(userId: string) {
@@ -136,6 +175,37 @@ export class MemoryLodenRepository implements LodenRepository {
     };
     this.store.students.push(student);
     return student;
+  }
+
+  async updateStudent(id: string, input: Partial<StudentRecord>) {
+    const student = await this.findStudentById(id);
+    if (!student) throw notFound("Élève introuvable");
+    Object.assign(student, input, { updatedAt: new Date() });
+    return student;
+  }
+
+  async listStudentSkills(studentId: string) {
+    return this.store.studentSkills.filter((skill) => skill.studentId === studentId);
+  }
+
+  async setStudentSkill(studentId: string, skillCode: string, level: number) {
+    const existing = this.store.studentSkills.find(
+      (skill) => skill.studentId === studentId && skill.skillCode === skillCode
+    );
+    if (existing) {
+      existing.level = level;
+      existing.updatedAt = new Date();
+      return existing;
+    }
+    const skill: StudentSkillRecord = {
+      id: randomUUID(),
+      studentId,
+      skillCode,
+      level,
+      updatedAt: new Date()
+    };
+    this.store.studentSkills.push(skill);
+    return skill;
   }
 
   async listInstructors() {
@@ -183,8 +253,25 @@ export class MemoryLodenRepository implements LodenRepository {
     return this.store.meetingPoints.filter((point) => point.active);
   }
 
-  async listFaqEntries() {
-    return this.store.faqEntries.filter((entry) => entry.active);
+  async listFaqEntries(includeInactive = false) {
+    return this.store.faqEntries.filter((entry) => includeInactive || entry.active);
+  }
+
+  async createFaqEntry(input: Omit<FaqEntryRecord, "id">) {
+    const entry: FaqEntryRecord = { ...input, id: randomUUID() };
+    this.store.faqEntries.push(entry);
+    return entry;
+  }
+
+  async updateFaqEntry(id: string, input: Partial<FaqEntryRecord>) {
+    const entry = this.store.faqEntries.find((item) => item.id === id);
+    if (!entry) throw notFound("Question introuvable");
+    Object.assign(entry, input);
+    return entry;
+  }
+
+  async deleteFaqEntry(id: string) {
+    this.store.faqEntries = this.store.faqEntries.filter((item) => item.id !== id);
   }
 
   async listAvailabilities(instructorId?: string) {
@@ -193,12 +280,13 @@ export class MemoryLodenRepository implements LodenRepository {
     );
   }
 
-  async listBookings(filters?: { studentId?: string; instructorId?: string; status?: BookingRecord["status"] }) {
+  async listBookings(filters?: { studentId?: string; instructorId?: string; status?: BookingRecord["status"]; agencyId?: string }) {
     return this.store.bookings.filter(
       (booking) =>
         (!filters?.studentId || booking.studentId === filters.studentId) &&
         (!filters?.instructorId || booking.instructorId === filters.instructorId) &&
-        (!filters?.status || booking.status === filters.status)
+        (!filters?.status || booking.status === filters.status) &&
+        (!filters?.agencyId || booking.agencyId === filters.agencyId || booking.agencyId == null)
     );
   }
 
@@ -237,8 +325,16 @@ export class MemoryLodenRepository implements LodenRepository {
     );
   }
 
-  async listPayments(filters?: { userId?: string }) {
-    return this.store.payments.filter((payment) => !filters?.userId || payment.userId === filters.userId);
+  async listPayments(filters?: { userId?: string; status?: PaymentRecord["status"]; agencyId?: string }) {
+    return this.store.payments
+      .filter(
+        (payment) =>
+          (!filters?.userId || payment.userId === filters.userId) &&
+          (!filters?.status || payment.status === filters.status) &&
+          (!filters?.agencyId || payment.agencyId === filters.agencyId || payment.agencyId == null)
+      )
+      .slice()
+      .sort((left, right) => right.createdAt.getTime() - left.createdAt.getTime());
   }
 
   async createPayment(input: CreatePaymentInput) {
@@ -251,6 +347,14 @@ export class MemoryLodenRepository implements LodenRepository {
       updatedAt: now
     };
     this.store.payments.push(payment);
+    return payment;
+  }
+
+  async updatePayment(id: string, input: Partial<PaymentRecord>) {
+    const payment = this.store.payments.find((item) => item.id === id);
+    if (!payment) throw notFound("Paiement introuvable");
+    Object.assign(payment, input, { updatedAt: new Date() });
+    if (input.status === "PAYE" && !payment.paidAt) payment.paidAt = new Date();
     return payment;
   }
 
@@ -328,9 +432,14 @@ export class MemoryLodenRepository implements LodenRepository {
     return review;
   }
 
-  async listLeads(filters?: { status?: LeadRecord["status"] }) {
+  async listLeads(filters?: { status?: LeadRecord["status"]; agencyId?: string }) {
     return this.store.leads
-      .filter((lead) => !filters?.status || lead.status === filters.status)
+      .filter(
+        (lead) =>
+          (!filters?.status || lead.status === filters.status) &&
+          // Inclut les leads non encore rattachés à une agence (transition).
+          (!filters?.agencyId || lead.agencyId === filters.agencyId || lead.agencyId == null)
+      )
       .slice()
       .sort((left, right) => right.createdAt.getTime() - left.createdAt.getTime());
   }
@@ -353,6 +462,70 @@ export class MemoryLodenRepository implements LodenRepository {
     if (!lead) throw notFound("Lead introuvable");
     Object.assign(lead, input, { updatedAt: new Date() });
     return lead;
+  }
+
+  async listExams(filters?: { agencyId?: string; studentId?: string }) {
+    return this.store.exams
+      .filter(
+        (exam) =>
+          (!filters?.studentId || exam.studentId === filters.studentId) &&
+          (!filters?.agencyId || exam.agencyId === filters.agencyId || exam.agencyId == null)
+      )
+      .slice()
+      .sort((left, right) => right.scheduledAt.getTime() - left.scheduledAt.getTime());
+  }
+
+  async createExam(input: Parameters<LodenRepository["createExam"]>[0]) {
+    const now = new Date();
+    const exam: ExamRecord = {
+      ...input,
+      id: randomUUID(),
+      result: input.result ?? "EN_ATTENTE",
+      attempt: input.attempt ?? 1,
+      createdAt: now,
+      updatedAt: now
+    };
+    this.store.exams.push(exam);
+    return exam;
+  }
+
+  async updateExam(id: string, input: Partial<ExamRecord>) {
+    const exam = this.store.exams.find((item) => item.id === id);
+    if (!exam) throw notFound("Examen introuvable");
+    Object.assign(exam, input, { updatedAt: new Date() });
+    return exam;
+  }
+
+  async listInstallments(filters?: { agencyId?: string; studentId?: string }) {
+    return this.store.installments
+      .filter(
+        (installment) =>
+          (!filters?.studentId || installment.studentId === filters.studentId) &&
+          (!filters?.agencyId || installment.agencyId === filters.agencyId || installment.agencyId == null)
+      )
+      .slice()
+      .sort((left, right) => left.dueDate.getTime() - right.dueDate.getTime());
+  }
+
+  async createInstallment(input: Parameters<LodenRepository["createInstallment"]>[0]) {
+    const now = new Date();
+    const installment: InstallmentRecord = {
+      ...input,
+      id: randomUUID(),
+      status: input.status ?? "EN_ATTENTE",
+      createdAt: now,
+      updatedAt: now
+    };
+    this.store.installments.push(installment);
+    return installment;
+  }
+
+  async updateInstallment(id: string, input: Partial<InstallmentRecord>) {
+    const installment = this.store.installments.find((item) => item.id === id);
+    if (!installment) throw notFound("Échéance introuvable");
+    Object.assign(installment, input, { updatedAt: new Date() });
+    if (input.status === "PAYE" && !installment.paidAt) installment.paidAt = new Date();
+    return installment;
   }
 
   async search(query: string): Promise<SearchResult[]> {
@@ -406,5 +579,18 @@ export class MemoryLodenRepository implements LodenRepository {
     }
 
     return results.sort((a, b) => b.score - a.score).slice(0, 10);
+  }
+
+  async createAuditLog(input: Omit<AuditLogRecord, "id" | "createdAt">) {
+    const entry: AuditLogRecord = { ...input, id: randomUUID(), createdAt: new Date() };
+    this.store.auditLogs.push(entry);
+    return entry;
+  }
+
+  async listAuditLogs(limit = 100) {
+    return this.store.auditLogs
+      .slice()
+      .sort((left, right) => right.createdAt.getTime() - left.createdAt.getTime())
+      .slice(0, limit);
   }
 }

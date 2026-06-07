@@ -1,16 +1,21 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Send } from "lucide-react";
+import { ClipboardCheck, Send } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { phoneInputProps, phoneSchema } from "@/lib/validation";
 
 const schema = z.object({
   name: z.string().min(2, "Indique ton nom"),
   email: z.string().email("Email invalide"),
-  phone: z.string().min(10, "Téléphone invalide"),
+  phone: phoneSchema,
   need: z.string().min(1, "Choisis un besoin"),
+  financing: z.string().min(1, "Choisis une option"),
+  availability: z.string().min(1, "Indique tes disponibilités"),
+  urgency: z.string().min(1, "Choisis un délai"),
+  preferredContact: z.string().min(1, "Choisis un canal"),
   message: z.string().min(10, "Ajoute quelques précisions")
 });
 
@@ -27,13 +32,27 @@ export function ContactForm() {
   } = useForm<ContactFormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
-      need: "Permis B manuel"
+      need: "Permis B manuel",
+      financing: "À définir",
+      availability: "Soirs en semaine",
+      urgency: "Ce mois-ci",
+      preferredContact: "Téléphone"
     }
   });
 
   const onSubmit = async (values: ContactFormValues) => {
     setSent(false);
     setSubmitError(null);
+
+    const structuredMessage = [
+      `Besoin: ${values.need}`,
+      `Financement: ${values.financing}`,
+      `Disponibilités: ${values.availability}`,
+      `Délai souhaité: ${values.urgency}`,
+      `Contact préféré: ${values.preferredContact}`,
+      `Message: ${values.message}`
+    ].join("\n");
+    const isCpfRequest = values.need.includes("CPF") || values.financing.includes("CPF");
 
     const response = await fetch("/api/contact-requests", {
       method: "POST",
@@ -44,9 +63,9 @@ export function ContactForm() {
         fullName: values.name,
         email: values.email,
         phone: values.phone,
-        type: values.need.includes("CPF") ? "CPF" : "INSCRIPTION",
-        source: "frontend-contact-form",
-        message: `${values.need} - ${values.message}`
+        type: isCpfRequest ? "CPF" : "INSCRIPTION",
+        source: "frontend-diagnostic-form",
+        message: structuredMessage
       })
     });
 
@@ -61,7 +80,19 @@ export function ContactForm() {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-premium" noValidate>
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="flex items-start gap-3 border-b border-slate-200 pb-5">
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-loden-50 text-loden-700">
+          <ClipboardCheck className="h-5 w-5" />
+        </span>
+        <div>
+          <h2 className="text-2xl font-semibold text-loden-ink">Diagnostic & devis</h2>
+          <p className="mt-2 text-sm leading-6 text-loden-muted">
+            Les réponses permettent à LODEN de te rappeler avec le bon parcours, le bon financement et un planning réaliste.
+          </p>
+        </div>
+      </div>
+
+      <div className="mt-5 grid gap-4 sm:grid-cols-2">
         <Field label="Nom" error={errors.name?.message}>
           <input {...register("name")} className="field-input" placeholder="Ton nom" autoComplete="name" />
         </Field>
@@ -69,7 +100,7 @@ export function ContactForm() {
           <input {...register("email")} className="field-input" placeholder="prenom@email.fr" autoComplete="email" />
         </Field>
         <Field label="Téléphone" error={errors.phone?.message}>
-          <input {...register("phone")} className="field-input" placeholder="06 12 34 56 78" autoComplete="tel" />
+          <input {...register("phone")} {...phoneInputProps} className="field-input" />
         </Field>
         <Field label="Besoin" error={errors.need?.message}>
           <select {...register("need")} className="field-input">
@@ -81,8 +112,45 @@ export function ContactForm() {
           </select>
         </Field>
       </div>
+
+      <div className="mt-4 grid gap-4 sm:grid-cols-2">
+        <Field label="Financement" error={errors.financing?.message}>
+          <select {...register("financing")} className="field-input">
+            <option>À définir</option>
+            <option>CPF</option>
+            <option>Paiement comptant</option>
+            <option>Paiement 3x / 4x</option>
+            <option>Aide régionale</option>
+          </select>
+        </Field>
+        <Field label="Délai souhaité" error={errors.urgency?.message}>
+          <select {...register("urgency")} className="field-input">
+            <option>Ce mois-ci</option>
+            <option>Dans 2 à 3 mois</option>
+            <option>Permis accéléré</option>
+            <option>Je compare les options</option>
+          </select>
+        </Field>
+        <Field label="Disponibilités" error={errors.availability?.message}>
+          <select {...register("availability")} className="field-input">
+            <option>Soirs en semaine</option>
+            <option>Matins en semaine</option>
+            <option>Mercredi / samedi</option>
+            <option>Planning flexible</option>
+            <option>À préciser au téléphone</option>
+          </select>
+        </Field>
+        <Field label="Contact préféré" error={errors.preferredContact?.message}>
+          <select {...register("preferredContact")} className="field-input">
+            <option>Téléphone</option>
+            <option>WhatsApp</option>
+            <option>Email</option>
+          </select>
+        </Field>
+      </div>
+
       <Field label="Message" error={errors.message?.message} className="mt-4">
-        <textarea {...register("message")} className="field-input min-h-32 resize-y" placeholder="Explique ton objectif, tes disponibilités ou ton financement." />
+        <textarea {...register("message")} className="field-input min-h-32 resize-y" placeholder="Objectif, contraintes, date d'examen visée, solde CPF approximatif..." />
       </Field>
       <button
         type="submit"
@@ -94,7 +162,7 @@ export function ContactForm() {
       </button>
       {sent ? (
         <p className="mt-4 rounded-2xl bg-loden-50 p-4 text-sm font-medium text-loden-800">
-          Demande envoyée. Un conseiller LODEN te répondra rapidement.
+          Diagnostic envoyé. Un conseiller LODEN te répondra avec un parcours et un devis adaptés.
         </p>
       ) : null}
       {submitError ? (

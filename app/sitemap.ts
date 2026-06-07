@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { formations } from "@/data/site";
 
 const routes = [
   "",
@@ -7,17 +8,24 @@ const routes = [
   "/cpf",
   "/a-propos",
   "/avis",
+  "/blog",
   "/contact",
   "/inscription",
   "/connexion",
   "/paiement",
-  "/espace-eleve"
+  "/espace-eleve",
+  "/permis-b-paris-11",
+  "/auto-ecole-cpf-paris",
+  "/mentions-legales",
+  "/confidentialite",
+  "/cookies"
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = "https://loden-autoecole.fr";
+  const formationRoutes = formations.map((formation) => `/formations/${formation.slug}`);
 
-  return routes.map((route) => ({
+  return [...routes, ...formationRoutes].map((route) => ({
     url: `${baseUrl}${route}`,
     lastModified: new Date("2026-06-06"),
     changeFrequency: route === "" ? "weekly" : "monthly",

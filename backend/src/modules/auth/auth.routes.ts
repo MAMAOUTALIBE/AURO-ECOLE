@@ -1,4 +1,5 @@
 import { Router } from "express";
+import rateLimit from "express-rate-limit";
 import bcrypt from "bcryptjs";
 import jwt, { type SignOptions } from "jsonwebtoken";
 import { z } from "zod";
@@ -43,8 +44,19 @@ function signToken(config: ApiConfig, user: { id: string; role: string }) {
 export function createAuthRouter(repository: LodenRepository, config: ApiConfig) {
   const router = Router();
 
+  // Limiteur strict dédié aux routes sensibles (anti-bourrage d'identifiants),
+  // en plus du rate-limit global. Désactivé de fait en test (seuil très haut).
+  const sensitiveLimiter = rateLimit({
+    windowMs: 60_000,
+    max: config.NODE_ENV === "test" ? 10_000 : 10,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: { code: "RATE_LIMITED", message: "Trop de tentatives. Réessayez dans une minute." } }
+  });
+
   router.post(
     "/register",
+    sensitiveLimiter,
     asyncHandler(async (req, res) => {
       const body = validateBody(registerSchema, req);
       const existingUser = await repository.findUserByEmail(body.email);
@@ -69,6 +81,7 @@ export function createAuthRouter(repository: LodenRepository, config: ApiConfig)
 
   router.post(
     "/login",
+    sensitiveLimiter,
     asyncHandler(async (req, res) => {
       const body = validateBody(loginSchema, req);
       const user = await repository.findUserByEmail(body.email);
@@ -91,6 +104,7 @@ export function createAuthRouter(repository: LodenRepository, config: ApiConfig)
 
   router.post(
     "/forgot-password",
+    sensitiveLimiter,
     asyncHandler(async (req, res) => {
       validateBody(forgotPasswordSchema, req);
       // Deliberately do not disclose whether the email exists.
@@ -100,6 +114,7 @@ export function createAuthRouter(repository: LodenRepository, config: ApiConfig)
 
   router.post(
     "/reset-password",
+    sensitiveLimiter,
     asyncHandler(async (req, res) => {
       validateBody(resetPasswordSchema, req);
       res.status(202).json({ ok: true, message: "Flux reset prêt pour intégration email sécurisée." });

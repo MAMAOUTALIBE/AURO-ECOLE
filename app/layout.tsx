@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
+import { AiChatWidget } from "@/components/AiChatWidget";
 import { Footer } from "@/components/Footer";
 import { HeaderMain } from "@/components/HeaderMain";
 import { HeaderTop } from "@/components/HeaderTop";
 import { FloatingWhatsappButton } from "@/components/FloatingWhatsappButton";
+import { contactInfo } from "@/data/site";
+import { safeJsonLd } from "@/lib/json-ld";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -46,14 +49,44 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  const organizationSchema = {
+    "@context": "https://schema.org",
+    "@type": ["LocalBusiness", "DrivingSchool"],
+    name: "LODEN Auto-École",
+    url: "https://loden-autoecole.fr",
+    image: "https://loden-autoecole.fr/loden-hero.jpg",
+    telephone: contactInfo.phone,
+    email: contactInfo.email,
+    address: {
+      "@type": "PostalAddress",
+      streetAddress: "24 avenue de la République",
+      postalCode: "75011",
+      addressLocality: "Paris",
+      addressCountry: "FR"
+    },
+    areaServed: ["Paris 11", "Paris", "Est parisien", "Montreuil", "Vincennes"],
+    openingHours: "Mo-Sa 08:00-20:00",
+    priceRange: "€€",
+    sameAs: [
+      "https://www.instagram.com/loden.autoecole",
+      "https://www.facebook.com/loden.autoecole"
+    ]
+  };
+
   return (
     <html lang="fr" data-scroll-behavior="smooth">
       <body>
+        <script
+          type="application/ld+json"
+          suppressHydrationWarning
+          dangerouslySetInnerHTML={{ __html: safeJsonLd(organizationSchema) }}
+        />
         <HeaderTop />
         <HeaderMain />
         {children}
         <Footer />
         <FloatingWhatsappButton />
+        <AiChatWidget />
       </body>
     </html>
   );

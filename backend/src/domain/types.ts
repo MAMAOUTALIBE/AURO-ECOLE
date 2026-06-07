@@ -1,4 +1,34 @@
-export type UserRole = "SUPER_ADMIN" | "ADMIN" | "MONITEUR" | "ELEVE" | "VISITEUR";
+export type UserRole =
+  | "SUPER_ADMIN"
+  | "DIRECTEUR"
+  | "RESPONSABLE_AGENCE"
+  | "RESPONSABLE_PEDAGOGIQUE"
+  | "ADMIN"
+  | "SECRETAIRE"
+  | "COMPTABLE"
+  | "MONITEUR"
+  | "ELEVE"
+  | "VISITEUR";
+
+export type AgencyRecord = {
+  id: string;
+  name: string;
+  slug: string;
+  address?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  phone?: string | null;
+  email?: string | null;
+  active: boolean;
+};
+
+export type AgencyMembershipRecord = {
+  id: string;
+  userId: string;
+  agencyId: string;
+  role: UserRole;
+  isPrimary: boolean;
+};
 export type UserStatus = "PENDING_EMAIL" | "ACTIVE" | "SUSPENDED" | "ARCHIVED";
 export type BookingStatus = "EN_ATTENTE" | "CONFIRMEE" | "ANNULEE" | "TERMINEE" | "ABSENT";
 export type PaymentStatus = "EN_ATTENTE" | "PAYE" | "ECHOUE" | "REMBOURSE" | "PARTIEL";
@@ -11,6 +41,45 @@ export type CpfRequestStatus =
 export type ContactRequestStatus = "NOUVELLE" | "EN_COURS" | "TRAITEE" | "ARCHIVEE";
 export type ReviewStatus = "EN_ATTENTE" | "PUBLIE" | "REJETE";
 export type LeadStatus = "PROSPECT" | "CONTACTE" | "RELANCE" | "DEVIS_ENVOYE" | "INSCRIT" | "PERDU";
+export type StudentSkillRecord = {
+  id: string;
+  studentId: string;
+  skillCode: string;
+  level: number;
+  updatedAt: Date;
+};
+
+export type InstallmentStatus = "EN_ATTENTE" | "PAYE" | "EN_RETARD";
+
+export type InstallmentRecord = {
+  id: string;
+  studentId: string;
+  agencyId?: string | null;
+  label?: string | null;
+  dueDate: Date;
+  amountCents: number;
+  status: InstallmentStatus;
+  paidAt?: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export type ExamType = "CODE" | "CONDUITE";
+export type ExamResult = "EN_ATTENTE" | "REUSSI" | "ECHOUE" | "ABSENT";
+
+export type ExamRecord = {
+  id: string;
+  studentId: string;
+  agencyId?: string | null;
+  type: ExamType;
+  scheduledAt: Date;
+  center?: string | null;
+  result: ExamResult;
+  score?: number | null;
+  attempt: number;
+  createdAt: Date;
+  updatedAt: Date;
+};
 
 export type UserRecord = {
   id: string;
@@ -34,12 +103,14 @@ export type UserRecord = {
 export type StudentRecord = {
   id: string;
   userId: string;
+  agencyId?: string | null;
   formationId?: string | null;
   progressPercent: number;
   purchasedHours: number;
   consumedHours: number;
   examDate?: Date | null;
   fileStatus: string;
+  internalNotes?: string | null;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -47,6 +118,7 @@ export type StudentRecord = {
 export type InstructorRecord = {
   id: string;
   userId: string;
+  agencyId?: string | null;
   name: string;
   photoUrl?: string | null;
   bio?: string | null;
@@ -94,12 +166,14 @@ export type MeetingPointRecord = {
   address: string;
   latitude?: number | null;
   longitude?: number | null;
+  agencyId?: string | null;
   active: boolean;
 };
 
 export type AvailabilityRecord = {
   id: string;
   instructorId: string;
+  agencyId?: string | null;
   startsAt: Date;
   endsAt: Date;
   isAvailable: boolean;
@@ -111,6 +185,7 @@ export type BookingRecord = {
   studentId: string;
   instructorId: string;
   formationId: string;
+  agencyId?: string | null;
   meetingPointId?: string | null;
   startsAt: Date;
   endsAt: Date;
@@ -123,6 +198,7 @@ export type BookingRecord = {
 export type PaymentRecord = {
   id: string;
   userId: string;
+  agencyId?: string | null;
   pricingPlanId?: string | null;
   kind: "FORMATION" | "ACOMPTE" | "ECHEANCE" | "REMBOURSEMENT";
   status: PaymentStatus;
@@ -130,6 +206,7 @@ export type PaymentRecord = {
   currency: string;
   stripePaymentIntentId?: string | null;
   invoiceUrl?: string | null;
+  paidAt?: Date | null;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -138,6 +215,7 @@ export type CpfRequestRecord = {
   id: string;
   studentId?: string | null;
   formationId?: string | null;
+  agencyId?: string | null;
   fullName: string;
   email: string;
   phone?: string | null;
@@ -152,6 +230,7 @@ export type CpfRequestRecord = {
 export type ContactRequestRecord = {
   id: string;
   userId?: string | null;
+  agencyId?: string | null;
   fullName: string;
   email: string;
   phone?: string | null;
@@ -167,6 +246,7 @@ export type ReviewRecord = {
   id: string;
   userId?: string | null;
   instructorId?: string | null;
+  agencyId?: string | null;
   rating: number;
   comment: string;
   status: ReviewStatus;
@@ -177,6 +257,7 @@ export type ReviewRecord = {
 
 export type LeadRecord = {
   id: string;
+  agencyId?: string | null;
   fullName: string;
   email: string;
   phone?: string | null;
@@ -186,6 +267,8 @@ export type LeadRecord = {
   notes?: string | null;
   estimatedValueCents?: number | null;
   nextFollowUpAt?: Date | null;
+  temperature?: string | null;
+  score?: number | null;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -196,6 +279,16 @@ export type FaqEntryRecord = {
   answer: string;
   category?: string | null;
   active: boolean;
+};
+
+export type AuditLogRecord = {
+  id: string;
+  userId?: string | null;
+  action: string;
+  entityType: string;
+  entityId?: string | null;
+  metadata?: unknown;
+  createdAt: Date;
 };
 
 export type SearchResult = {

@@ -1,4 +1,6 @@
+import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import { SESSION_COOKIE } from "@/lib/auth-session";
 
 const DEFAULT_BACKEND_URL = "http://127.0.0.1:4000";
 
@@ -17,13 +19,21 @@ export async function proxyBackendJson(path: string, options: ProxyOptions = {})
     url.searchParams.set(key, value);
   });
 
+  const headers = new Headers(options.headers);
+  if (options.body && !headers.has("content-type")) {
+    headers.set("Content-Type", "application/json");
+  }
+
+  // Repli sur la session cookie httpOnly si aucun header Authorization fourni.
+  if (!headers.has("authorization")) {
+    const sessionToken = (await cookies()).get(SESSION_COOKIE)?.value;
+    if (sessionToken) headers.set("Authorization", `Bearer ${sessionToken}`);
+  }
+
   try {
     const response = await fetch(url, {
       method: options.method ?? "GET",
-      headers: {
-        ...(options.body ? { "Content-Type": "application/json" } : {}),
-        ...options.headers
-      },
+      headers,
       body: options.body ? JSON.stringify(options.body) : undefined,
       cache: "no-store"
     });

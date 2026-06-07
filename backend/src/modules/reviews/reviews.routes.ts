@@ -2,7 +2,7 @@ import { Router } from "express";
 import { z } from "zod";
 import type { ApiConfig } from "../../config/env";
 import type { AuthenticatedRequest } from "../../http/request-context";
-import { authenticate, requireRoles } from "../../middleware/auth";
+import { authenticate, requirePermission } from "../../middleware/auth";
 import type { LodenRepository } from "../../repositories/loden-repository";
 import { asyncHandler } from "../../shared/async-handler";
 import { forbidden } from "../../shared/http-error";
@@ -64,7 +64,7 @@ export function createReviewsRouter(repository: LodenRepository, config: ApiConf
   router.patch(
     "/:id/status",
     authenticate(repository, config.JWT_SECRET),
-    requireRoles("SUPER_ADMIN", "ADMIN"),
+    requirePermission("reviews.moderate"),
     asyncHandler(async (req, res) => {
       const body = validateBody(statusSchema, req);
       const review = await repository.updateReview(String(req.params.id), body);

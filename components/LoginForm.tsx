@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { decodeJwtRole, isAdminRole } from "@/lib/auth-session";
 
 const schema = z.object({
   email: z.string().trim().email("Email invalide"),
@@ -44,8 +45,11 @@ export function LoginForm() {
       return;
     }
 
-    window.localStorage.setItem("loden_student_token", payload.token);
-    router.push("/espace-eleve");
+    // La session est dans le cookie httpOnly (posé par /api/auth/login).
+    // On lit le rôle du token en mémoire uniquement pour choisir la redirection.
+    const role = decodeJwtRole(payload.token);
+    router.push(isAdminRole(role) ? "/admin" : "/espace-eleve");
+    router.refresh();
   };
 
   return (

@@ -2,7 +2,7 @@ import { Router } from "express";
 import { z } from "zod";
 import type { ApiConfig } from "../../config/env";
 import type { AuthenticatedRequest } from "../../http/request-context";
-import { authenticate, requireRoles } from "../../middleware/auth";
+import { authenticate, requirePermission } from "../../middleware/auth";
 import type { LodenRepository } from "../../repositories/loden-repository";
 import { asyncHandler } from "../../shared/async-handler";
 import { conflict, forbidden, notFound } from "../../shared/http-error";
@@ -89,7 +89,7 @@ export function createBookingsRouter(repository: LodenRepository, config: ApiCon
 
   router.patch(
     "/:id/status",
-    requireRoles("SUPER_ADMIN", "ADMIN", "MONITEUR"),
+    requirePermission("bookings.manage"),
     asyncHandler(async (req, res) => {
       const body = validateBody(bookingStatusSchema, req);
       const booking = await repository.updateBooking(String(req.params.id), body);

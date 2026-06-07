@@ -1,7 +1,12 @@
 import type {
+  AgencyMembershipRecord,
+  AgencyRecord,
+  AuditLogRecord,
   AvailabilityRecord,
   BookingRecord,
   BookingStatus,
+  ExamRecord,
+  InstallmentRecord,
   ContactRequestRecord,
   ContactRequestStatus,
   CpfRequestRecord,
@@ -13,11 +18,13 @@ import type {
   LeadStatus,
   MeetingPointRecord,
   PaymentRecord,
+  PaymentStatus,
   PricingPlanRecord,
   ReviewRecord,
   ReviewStatus,
   SearchResult,
   StudentRecord,
+  StudentSkillRecord,
   UserRecord,
   UserRole
 } from "../domain/types";
@@ -59,20 +66,37 @@ export type CreateLeadInput = Omit<LeadRecord, "id" | "status" | "createdAt" | "
   status?: LeadStatus;
 };
 
+export type CreateExamInput = Omit<ExamRecord, "id" | "result" | "attempt" | "createdAt" | "updatedAt"> & {
+  result?: ExamRecord["result"];
+  attempt?: number;
+};
+
+export type CreateInstallmentInput = Omit<InstallmentRecord, "id" | "status" | "paidAt" | "createdAt" | "updatedAt"> & {
+  status?: InstallmentRecord["status"];
+};
+
 export type ListUsersFilters = {
   role?: UserRole;
 };
 
 export interface LodenRepository {
+  listAgencies(): Promise<AgencyRecord[]>;
+  findAgencyById(id: string): Promise<AgencyRecord | null>;
+  listAgencyMembershipsByUser(userId: string): Promise<AgencyMembershipRecord[]>;
+
   listUsers(filters?: ListUsersFilters): Promise<UserRecord[]>;
   findUserById(id: string): Promise<UserRecord | null>;
   findUserByEmail(email: string): Promise<UserRecord | null>;
   createUser(input: CreateUserInput): Promise<UserRecord>;
   updateUser(id: string, input: Partial<UserRecord>): Promise<UserRecord>;
 
-  listStudents(): Promise<StudentRecord[]>;
+  listStudents(filters?: { agencyId?: string }): Promise<StudentRecord[]>;
+  findStudentById(id: string): Promise<StudentRecord | null>;
   findStudentByUserId(userId: string): Promise<StudentRecord | null>;
   createStudent(input: CreateStudentInput): Promise<StudentRecord>;
+  updateStudent(id: string, input: Partial<StudentRecord>): Promise<StudentRecord>;
+  listStudentSkills(studentId: string): Promise<StudentSkillRecord[]>;
+  setStudentSkill(studentId: string, skillCode: string, level: number): Promise<StudentSkillRecord>;
 
   listInstructors(): Promise<InstructorRecord[]>;
   findInstructorById(id: string): Promise<InstructorRecord | null>;
@@ -87,17 +111,21 @@ export interface LodenRepository {
   findPricingPlanById(id: string): Promise<PricingPlanRecord | null>;
 
   listMeetingPoints(): Promise<MeetingPointRecord[]>;
-  listFaqEntries(): Promise<FaqEntryRecord[]>;
+  listFaqEntries(includeInactive?: boolean): Promise<FaqEntryRecord[]>;
+  createFaqEntry(input: Omit<FaqEntryRecord, "id">): Promise<FaqEntryRecord>;
+  updateFaqEntry(id: string, input: Partial<FaqEntryRecord>): Promise<FaqEntryRecord>;
+  deleteFaqEntry(id: string): Promise<void>;
   listAvailabilities(instructorId?: string): Promise<AvailabilityRecord[]>;
 
-  listBookings(filters?: { studentId?: string; instructorId?: string; status?: BookingStatus }): Promise<BookingRecord[]>;
+  listBookings(filters?: { studentId?: string; instructorId?: string; status?: BookingStatus; agencyId?: string }): Promise<BookingRecord[]>;
   findBookingById(id: string): Promise<BookingRecord | null>;
   createBooking(input: CreateBookingInput): Promise<BookingRecord>;
   updateBooking(id: string, input: Partial<BookingRecord>): Promise<BookingRecord>;
   hasInstructorConflict(instructorId: string, startsAt: Date, endsAt: Date, ignoreBookingId?: string): Promise<boolean>;
 
-  listPayments(filters?: { userId?: string }): Promise<PaymentRecord[]>;
+  listPayments(filters?: { userId?: string; status?: PaymentStatus; agencyId?: string }): Promise<PaymentRecord[]>;
   createPayment(input: CreatePaymentInput): Promise<PaymentRecord>;
+  updatePayment(id: string, input: Partial<PaymentRecord>): Promise<PaymentRecord>;
 
   listCpfRequests(): Promise<CpfRequestRecord[]>;
   createCpfRequest(input: CreateCpfRequestInput): Promise<CpfRequestRecord>;
@@ -111,9 +139,20 @@ export interface LodenRepository {
   createReview(input: CreateReviewInput): Promise<ReviewRecord>;
   updateReview(id: string, input: Partial<ReviewRecord>): Promise<ReviewRecord>;
 
-  listLeads(filters?: { status?: LeadStatus }): Promise<LeadRecord[]>;
+  listLeads(filters?: { status?: LeadStatus; agencyId?: string }): Promise<LeadRecord[]>;
   createLead(input: CreateLeadInput): Promise<LeadRecord>;
   updateLead(id: string, input: Partial<LeadRecord>): Promise<LeadRecord>;
 
+  listExams(filters?: { agencyId?: string; studentId?: string }): Promise<ExamRecord[]>;
+  createExam(input: CreateExamInput): Promise<ExamRecord>;
+  updateExam(id: string, input: Partial<ExamRecord>): Promise<ExamRecord>;
+
+  listInstallments(filters?: { agencyId?: string; studentId?: string }): Promise<InstallmentRecord[]>;
+  createInstallment(input: CreateInstallmentInput): Promise<InstallmentRecord>;
+  updateInstallment(id: string, input: Partial<InstallmentRecord>): Promise<InstallmentRecord>;
+
   search(query: string): Promise<SearchResult[]>;
+
+  createAuditLog(input: Omit<AuditLogRecord, "id" | "createdAt">): Promise<AuditLogRecord>;
+  listAuditLogs(limit?: number): Promise<AuditLogRecord[]>;
 }

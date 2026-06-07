@@ -57,17 +57,17 @@ export function PaymentIntentForm() {
   const [state, setState] = useState<FormState>({ status: "loading" });
 
   useEffect(() => {
-    const token = window.localStorage.getItem("loden_student_token");
-
-    if (!token) {
-      setState({ status: "anonymous" });
-      return;
-    }
-
     const controller = new AbortController();
 
     async function loadPlans() {
       try {
+        // Auth via cookie httpOnly : on sonde la session (jamais de token en JS).
+        const meResponse = await fetch("/api/auth/me", { signal: controller.signal });
+        if (!meResponse.ok) {
+          setState({ status: "anonymous" });
+          return;
+        }
+
         const response = await fetch("/api/tarifs", { signal: controller.signal });
         if (response.ok) {
           const payload = (await response.json()) as {
@@ -114,12 +114,6 @@ export function PaymentIntentForm() {
   );
 
   async function createPaymentIntent() {
-    const token = window.localStorage.getItem("loden_student_token");
-    if (!token) {
-      setState({ status: "anonymous" });
-      return;
-    }
-
     if (!selectedPlan) {
       setState({ status: "error", message: "Aucun pack payant disponible pour le moment." });
       return;
@@ -130,10 +124,7 @@ export function PaymentIntentForm() {
     try {
       const response = await fetch("/api/payments/payment-intents", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           pricingPlanId: selectedPlan.id,
           kind: "FORMATION",
@@ -143,7 +134,6 @@ export function PaymentIntentForm() {
       });
 
       if (response.status === 401) {
-        window.localStorage.removeItem("loden_student_token");
         setState({ status: "anonymous" });
         return;
       }
@@ -220,7 +210,7 @@ export function PaymentIntentForm() {
           type="button"
           onClick={createPaymentIntent}
           disabled={state.status === "submitting" || !selectedPlan}
-          className="focus-ring mt-7 inline-flex w-full items-center justify-center gap-2 rounded-full bg-loden-700 px-6 py-4 font-semibold text-white shadow-soft transition hover:bg-loden-800 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+          className="focus-ring mt-7 inline-flex w-full items-center justify-center gap-2 rounded-full bg-loden-700 px-6 py-4 font-semibold text-white shadow-soft transition hover:bg-loden-800 disabled:cursor-not-allowed disabled:opacity-70 sm:w-auto"
         >
           {state.status === "submitting" ? <Loader2 className="h-5 w-5 animate-spin" /> : <CreditCard className="h-5 w-5" />}
           Préparer le paiement sécurisé
@@ -252,7 +242,6 @@ export function PaymentIntentForm() {
             <p className="mt-2 text-sm text-loden-muted">
               Statut : {formatPaymentStatus(state.payment.status)} · Référence : {state.payment.stripePaymentIntentId}
             </p>
-            <p className="mt-2 break-all text-xs text-loden-muted">Client secret mock : {state.clientSecret}</p>
             <Link className="focus-ring mt-4 inline-flex rounded-full bg-white px-4 py-2 text-sm font-semibold text-loden-700 shadow-soft" href="/espace-eleve">
               Voir mon espace élève
             </Link>

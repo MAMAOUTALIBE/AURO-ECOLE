@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { AppSection } from "@/components/AppSection";
 import { BookingCalendar } from "@/components/BookingCalendar";
+import { DiagnosticCtaSection } from "@/components/DiagnosticCtaSection";
 import { FeatureBar } from "@/components/FeatureBar";
 import { FormationCard } from "@/components/FormationCard";
 import { HeroSection } from "@/components/HeroSection";
@@ -11,6 +12,7 @@ import { PricingCard } from "@/components/PricingCard";
 import { SectionHeader } from "@/components/SectionHeader";
 import { SimulatorCard } from "@/components/SimulatorCard";
 import { TestimonialCard } from "@/components/TestimonialCard";
+import { TrustProofSection } from "@/components/TrustProofSection";
 import { formations, instructors, pricingPlans, testimonials } from "@/data/site";
 
 export default function HomePage() {
@@ -18,6 +20,7 @@ export default function HomePage() {
     <main>
       <HeroSection />
       <FeatureBar />
+      <TrustProofSection />
 
       <section className="bg-loden-pearl py-16 sm:py-20">
         <div className="container-pad">
@@ -32,9 +35,9 @@ export default function HomePage() {
               <ArrowRight className="h-5 w-5" />
             </Link>
           </div>
-          <div className="mt-9 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+          <div className="mt-9 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
             {formations.slice(0, 4).map((formation, index) => (
-              <MotionReveal key={formation.slug} delay={index * 0.04}>
+              <MotionReveal key={formation.slug} delay={index * 0.06}>
                 <FormationCard formation={formation} />
               </MotionReveal>
             ))}
@@ -42,7 +45,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="bg-white py-16 sm:py-20">
+      <section id="reservation" className="bg-white py-16 sm:py-20">
         <div className="container-pad grid gap-8 lg:grid-cols-2">
           <MotionReveal>
             <SimulatorCard />
@@ -61,10 +64,10 @@ export default function HomePage() {
             text="Chaque pack est lisible, modulable et pensé pour limiter les frictions à l'inscription."
             align="center"
           />
-          <div className="mt-9 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+          <div className="mt-9 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
             {pricingPlans.map((plan, index) => (
-              <MotionReveal key={plan.title} delay={index * 0.04}>
-                <PricingCard plan={plan} featured={index === 1} />
+              <MotionReveal key={plan.title} delay={index * 0.06}>
+                <PricingCard plan={plan} featured={index === 0} />
               </MotionReveal>
             ))}
           </div>
@@ -78,9 +81,9 @@ export default function HomePage() {
             title="Des coachs exigeants et bienveillants"
             text="Chaque élève est suivi par une équipe qui combine pédagogie, ponctualité et exigence d'examen."
           />
-          <div className="mt-9 grid gap-5 md:grid-cols-3">
+          <div className="mt-9 grid gap-6 md:grid-cols-3">
             {instructors.map((instructor, index) => (
-              <MotionReveal key={instructor.name} delay={index * 0.04}>
+              <MotionReveal key={instructor.name} delay={index * 0.06}>
                 <InstructorCard instructor={instructor} />
               </MotionReveal>
             ))}
@@ -105,6 +108,8 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      <DiagnosticCtaSection />
 
       <AppSection />
 

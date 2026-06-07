@@ -9,3 +9,6 @@ coverage
 *.tsbuildinfo
 .env
 .env.local
+.env.production
+
+.backup-assets

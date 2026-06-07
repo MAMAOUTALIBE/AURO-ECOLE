@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { CalendarCheck } from "lucide-react";
-import { slots } from "@/data/site";
+import { CalendarCheck, MapPin } from "lucide-react";
+import { meetingPoints, slots } from "@/data/site";
 
 type SlotOption = {
   label: string;
@@ -95,6 +95,7 @@ function buildCalendarDays(availabilities: Availability[]): CalendarDay[] {
 export function BookingCalendar() {
   const [selectedDay, setSelectedDay] = useState(0);
   const [selectedSlot, setSelectedSlot] = useState(fallbackDays[0].slots[0].label);
+  const [selectedMeetingPoint, setSelectedMeetingPoint] = useState(meetingPoints[0].id);
   const [remoteDays, setRemoteDays] = useState<CalendarDay[] | null>(null);
   const [bookingMessage, setBookingMessage] = useState<{ tone: "success" | "error"; text: string } | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -133,12 +134,6 @@ export function BookingCalendar() {
   const createBooking = async () => {
     setBookingMessage(null);
 
-    const token = window.localStorage.getItem("loden_student_token");
-    if (!token) {
-      setBookingMessage({ tone: "error", text: "Connecte-toi à ton espace élève pour réserver ce créneau." });
-      return;
-    }
-
     if (!slot?.instructorId || !slot.startsAt || !slot.endsAt) {
       setBookingMessage({ tone: "error", text: "Les créneaux API sont momentanément indisponibles." });
       return;
@@ -147,32 +142,41 @@ export function BookingCalendar() {
     setSubmitting(true);
 
     try {
-      const headers = { Authorization: `Bearer ${token}` };
-      const studentResponse = await fetch("/api/students/me", { headers });
+      // Auth via le cookie httpOnly (envoyé automatiquement en same-origin).
+      const studentResponse = await fetch("/api/students/me");
+      if (studentResponse.status === 401) {
+        setBookingMessage({ tone: "error", text: "Connecte-toi à ton espace élève pour réserver ce créneau." });
+        return;
+      }
       if (!studentResponse.ok) throw new Error("Student profile unavailable");
       const studentPayload = await studentResponse.json() as { data?: { formationId?: string | null } | null };
 
       const response = await fetch("/api/bookings", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           instructorId: slot.instructorId,
           formationId: studentPayload.data?.formationId ?? "formation-permis-b-manuel",
-          meetingPointId: "meeting-republique",
+          meetingPointId: selectedMeetingPoint,
           startsAt: slot.startsAt,
           endsAt: slot.endsAt
         })
       });
 
+      if (response.status === 401) {
+        setBookingMessage({ tone: "error", text: "Connecte-toi à ton espace élève pour réserver ce créneau." });
+        return;
+      }
       const payload = await response.json().catch(() => null) as { error?: { message?: string } } | null;
       if (!response.ok) {
         throw new Error(payload?.error?.message ?? "Réservation impossible pour ce créneau.");
       }
 
-      setBookingMessage({ tone: "success", text: `Créneau ${day.day} ${day.date} à ${slot.label} réservé. Statut : en attente de confirmation.` });
+      const pointName = meetingPoints.find((point) => point.id === selectedMeetingPoint)?.name ?? "";
+      setBookingMessage({
+        tone: "success",
+        text: `Créneau ${day.day} ${day.date} à ${slot.label} réservé${pointName ? ` · RDV ${pointName}` : ""}. Statut : en attente de confirmation.`
+      });
     } catch (error) {
       setBookingMessage({
         tone: "error",
@@ -226,10 +230,38 @@ export function BookingCalendar() {
           </button>
         ))}
       </div>
+      <div className="mt-6">
+        <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-loden-muted">
+          <MapPin className="h-4 w-4 text-loden-600" aria-hidden="true" />
+          Point de rendez-vous
+        </p>
+        <div className="mt-2 grid gap-2 sm:grid-cols-2" role="radiogroup" aria-label="Point de rendez-vous">
+          {meetingPoints.map((point) => {
+            const active = selectedMeetingPoint === point.id;
+
+            return (
+              <button
+                type="button"
+                key={point.id}
+                role="radio"
+                aria-checked={active}
+                onClick={() => {
+                  setSelectedMeetingPoint(point.id);
+                  setBookingMessage(null);
+                }}
+                className={`focus-ring rounded-2xl border px-4 py-3 text-left transition ${active ? "border-loden-700 bg-loden-50" : "border-slate-200 hover:border-loden-200"}`}
+              >
+                <span className="block text-sm font-semibold text-loden-ink">{point.name}</span>
+                <span className="mt-0.5 block text-xs text-loden-muted">{point.address}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
       <button
         type="button"
         onClick={createBooking}
-        disabled={submitting}
+        disabled={submitting || bookingMessage?.tone === "success"}
         className="focus-ring mt-6 w-full rounded-full bg-loden-700 px-5 py-4 font-semibold text-white transition hover:bg-loden-800 disabled:cursor-not-allowed disabled:opacity-70"
       >
         {submitting ? "Réservation..." : `Réserver ${day.day} ${day.date} à ${selectedSlot}`}

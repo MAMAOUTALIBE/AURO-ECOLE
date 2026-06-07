@@ -1,6 +1,7 @@
 import type { NextFunction, Response } from "express";
 import jwt from "jsonwebtoken";
 import type { UserRole } from "../domain/types";
+import { hasPermission, type Permission } from "../domain/permissions";
 import type { LodenRepository } from "../repositories/loden-repository";
 import { forbidden, unauthorized } from "../shared/http-error";
 import type { AuthenticatedRequest } from "../http/request-context";
@@ -33,6 +34,19 @@ export function requireRoles(...roles: UserRole[]) {
   return (req: AuthenticatedRequest, _res: Response, next: NextFunction) => {
     if (!req.user) return next(unauthorized());
     if (!roles.includes(req.user.role)) return next(forbidden());
+    next();
+  };
+}
+
+/**
+ * Garde par permission fine. L'utilisateur passe s'il détient AU MOINS une des
+ * permissions listées (sémantique OR). Le scope par agence viendra au Sprint 0.D.
+ */
+export function requirePermission(...permissions: Permission[]) {
+  return (req: AuthenticatedRequest, _res: Response, next: NextFunction) => {
+    if (!req.user) return next(unauthorized());
+    const granted = permissions.some((permission) => hasPermission(req.user!.role, permission));
+    if (!granted) return next(forbidden());
     next();
   };
 }

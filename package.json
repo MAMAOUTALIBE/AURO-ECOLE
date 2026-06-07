@@ -2,16 +2,24 @@
   "name": "loden-auto-ecole-frontend",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=22 <25",
+    "npm": ">=10"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "api:dev": "tsx watch backend/src/main.ts",
+    "api:dev": "tsx watch --env-file-if-exists=.env backend/src/main.ts",
     "api:start": "node dist/backend/main.js",
     "api:build": "tsc -p backend/tsconfig.json",
     "api:test": "vitest run --config backend/vitest.config.ts",
     "api:typecheck": "tsc -p backend/tsconfig.json --noEmit",
     "prisma:generate": "prisma generate",
+    "db:migrate:deploy": "prisma migrate deploy",
+    "db:seed": "tsx prisma/seed.ts",
+    "deploy:build": "npm run prisma:generate && npm run api:build && npm run build",
+    "deploy:check": "npm run lint && npm run typecheck && npm run api:typecheck && npm run api:test && npm run api:build && npm run prisma:generate && npm run build",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit"
   },

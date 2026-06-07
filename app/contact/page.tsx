@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Clock3, Mail, MapPin, MessageCircle, Phone } from "lucide-react";
 import { ContactForm } from "@/components/ContactForm";
+import { LocalMapPanel } from "@/components/LocalMapPanel";
 import { PageHero } from "@/components/PageHero";
 import { contactInfo } from "@/data/site";
 
@@ -17,8 +18,9 @@ export default function ContactPage() {
         title="Parle à un conseiller LODEN"
         text="Formulaire, téléphone, WhatsApp et point de rendez-vous : tout est prévu pour démarrer simplement."
         cta="Envoyer une demande"
+        ctaHref="#demande"
       />
-      <section className="bg-white py-14 sm:py-20">
+      <section id="demande" className="bg-white py-14 sm:py-20">
         <div className="container-pad grid gap-8 lg:grid-cols-[0.9fr_1.1fr]">
           <div className="grid gap-4">
             {[
@@ -48,11 +50,7 @@ export default function ContactPage() {
                 <div key={item.label}>{content}</div>
               );
             })}
-            <div className="overflow-hidden rounded-3xl border border-slate-200 bg-loden-pearl p-4 shadow-soft">
-              <div className="flex aspect-[16/9] items-center justify-center rounded-2xl bg-white text-center text-sm font-semibold text-loden-muted">
-                Google Maps · Point de rendez-vous République
-              </div>
-            </div>
+            <LocalMapPanel />
           </div>
           <ContactForm />
         </div>

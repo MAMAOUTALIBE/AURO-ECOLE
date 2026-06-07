@@ -5,6 +5,7 @@ import { FileCheck2, Send } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { phoneInputProps, phoneSchema } from "@/lib/validation";
 
 const formationOptions = [
   { label: "Permis B manuel", value: "formation-permis-b-manuel" },
@@ -16,7 +17,7 @@ const formationOptions = [
 const schema = z.object({
   fullName: z.string().trim().min(2, "Indique ton nom complet"),
   email: z.string().trim().email("Email invalide"),
-  phone: z.string().trim().min(8, "Téléphone invalide"),
+  phone: phoneSchema,
   formationId: z.string().min(1, "Choisis une formation"),
   requestedAmount: z
     .string()
@@ -97,7 +98,7 @@ export function CpfRequestForm() {
           <input {...register("email")} className="field-input" placeholder="prenom@email.fr" autoComplete="email" />
         </Field>
         <Field label="Téléphone" error={errors.phone?.message}>
-          <input {...register("phone")} className="field-input" placeholder="06 12 34 56 78" autoComplete="tel" />
+          <input {...register("phone")} {...phoneInputProps} className="field-input" />
         </Field>
         <Field label="Formation" error={errors.formationId?.message}>
           <select {...register("formationId")} className="field-input">

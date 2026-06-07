@@ -5,6 +5,7 @@ import { BadgeCheck, LockKeyhole, Send } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { phoneInputProps, phoneSchema } from "@/lib/validation";
 
 const formationOptions = [
   { label: "Permis B manuel", value: "formation-permis-b-manuel" },
@@ -22,7 +23,7 @@ const schema = z
     firstName: z.string().trim().min(2, "Indique ton prénom"),
     lastName: z.string().trim().min(2, "Indique ton nom"),
     email: z.string().trim().email("Email invalide"),
-    phone: z.string().trim().min(8, "Téléphone invalide"),
+    phone: phoneSchema,
     formationId: z.string().min(1, "Choisis une formation"),
     password: z.string().min(10, "10 caractères minimum"),
     confirmPassword: z.string().min(10, "Confirme ton mot de passe")
@@ -87,10 +88,7 @@ export function StudentRegistrationForm() {
       return;
     }
 
-    if (payload?.token) {
-      window.localStorage.setItem("loden_student_token", payload.token);
-    }
-
+    // La session est désormais dans le cookie httpOnly posé par /api/auth/register.
     setSuccess({ firstName: values.firstName, formation: selectedFormationLabel });
     reset({ formationId: formationOptions[0].value });
   };
@@ -120,7 +118,7 @@ export function StudentRegistrationForm() {
           <input {...register("email")} className="field-input" placeholder="prenom@email.fr" autoComplete="email" />
         </Field>
         <Field label="Téléphone" error={errors.phone?.message}>
-          <input {...register("phone")} className="field-input" placeholder="06 12 34 56 78" autoComplete="tel" />
+          <input {...register("phone")} {...phoneInputProps} className="field-input" />
         </Field>
       </div>
 

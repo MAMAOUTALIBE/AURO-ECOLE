@@ -3,12 +3,15 @@ import {
   BadgeCheck,
   CalendarCheck,
   Car,
+  ClipboardCheck,
   Clock3,
   CreditCard,
   FileCheck2,
   GraduationCap,
   HeartHandshake,
   MapPin,
+  MessageCircle,
+  Route,
   ShieldCheck,
   Smartphone,
   Sparkles,
@@ -28,13 +31,40 @@ export const navItems = [
   { href: "/contact", label: "Contact" }
 ];
 
+export const legalLinks = [
+  { href: "/mentions-legales", label: "Mentions légales" },
+  { href: "/confidentialite", label: "Confidentialité" },
+  { href: "/cookies", label: "Cookies" }
+];
+
+export const localSeoPages = [
+  {
+    href: "/permis-b-paris-11",
+    label: "Permis B Paris 11",
+    title: "Permis B à Paris 11",
+    description: "Formation permis B manuel ou automatique près de République, avec planning flexible, CPF et suivi élève."
+  },
+  {
+    href: "/auto-ecole-cpf-paris",
+    label: "Auto-école CPF Paris",
+    title: "Auto-école CPF à Paris",
+    description: "Accompagnement CPF pour financer le permis à Paris, avec diagnostic, devis et suivi administratif."
+  }
+];
+
 export const contactInfo = {
   phone: "01 84 80 12 45",
   whatsapp: "33618451245",
   address: "24 avenue de la République, 75011 Paris",
+  mapQuery: "24 avenue de la République, 75011 Paris",
   hours: "Lun-Sam 8h-20h",
   email: "contact@loden-autoecole.fr"
 };
+
+export const socialLinks = [
+  { label: "Instagram LODEN", href: "https://www.instagram.com/loden.autoecole" },
+  { label: "Facebook LODEN", href: "https://www.facebook.com/loden.autoecole" }
+];
 
 export const heroStats = [
   { label: "de réussite", value: "98 %" },
@@ -63,6 +93,55 @@ export const benefits = [
     icon: Target,
     title: "Suivi personnalisé",
     text: "Objectifs, progression, points faibles et planning centralisés."
+  }
+];
+
+export const trustProofs = [
+  {
+    icon: ShieldCheck,
+    title: "Dossier conforme",
+    text: "Contrat, pièces élève et suivi administratif cadrés avant le démarrage."
+  },
+  {
+    icon: BadgeCheck,
+    title: "Qualiopi & CPF",
+    text: "Parcours compatibles CPF avec accompagnement sur le reste à charge."
+  },
+  {
+    icon: Route,
+    title: "Paris 11 & Est parisien",
+    text: "Points de rendez-vous pratiques et conduite urbaine orientée examen."
+  },
+  {
+    icon: Star,
+    title: "Avis vérifiables",
+    text: "Avis élèves modérés dans le CRM et prêts pour synchronisation Google."
+  }
+];
+
+export const credibilityBadges = [
+  "Auto-école déclarée",
+  "CPF accompagné",
+  "Paiement 3x / 4x",
+  "Moniteurs diplômés",
+  "Suivi élève digital"
+];
+
+export const diagnosticSteps = [
+  {
+    icon: ClipboardCheck,
+    title: "Diagnostic permis",
+    text: "Formation, niveau, budget, financement et disponibilités clarifiés en quelques minutes."
+  },
+  {
+    icon: CalendarCheck,
+    title: "Planning réaliste",
+    text: "Un conseiller propose un rythme compatible avec tes contraintes et l'examen visé."
+  },
+  {
+    icon: MessageCircle,
+    title: "Réponse rapide",
+    text: "Rappel, WhatsApp ou email pour obtenir un devis clair avant inscription."
   }
 ];
 
@@ -302,11 +381,56 @@ export const values = [
   { icon: Car, title: "Mobilité", text: "Une formation utile pour conduire partout, sereinement." }
 ];
 
+export type FaqEntry = {
+  question: string;
+  answer: string;
+  category: "CPF" | "Tarifs" | "Inscription" | "Formation" | "Examen";
+};
+
+export const faqEntries: FaqEntry[] = [
+  {
+    question: "Le permis peut-il être financé avec le CPF ?",
+    answer:
+      "Oui, plusieurs formations LODEN sont compatibles CPF. Un conseiller vérifie ton besoin, ton solde disponible, le reste à charge éventuel et les pièces nécessaires avant validation du dossier.",
+    category: "CPF"
+  },
+  {
+    question: "Combien coûte le permis B chez LODEN ?",
+    answer:
+      "Le pack permis B démarre à 1 190 euros avec 20 heures de conduite, code inclus, planning flexible et suivi élève. Un devis personnalisé confirme le tarif selon ton niveau et ton objectif.",
+    category: "Tarifs"
+  },
+  {
+    question: "Peut-on payer en plusieurs fois ?",
+    answer:
+      "Oui, LODEN propose des solutions de paiement fractionné selon le dossier, en complément du paiement comptant, du CPF ou d'un reste à charge estimé.",
+    category: "Tarifs"
+  },
+  {
+    question: "Comment se déroule l'inscription ?",
+    answer:
+      "Tu peux envoyer une demande de diagnostic en ligne. L'équipe te rappelle, vérifie ton objectif, prépare le dossier administratif puis ouvre ton planning et ton espace élève.",
+    category: "Inscription"
+  },
+  {
+    question: "Puis-je suivre une formation accélérée ?",
+    answer:
+      "Oui, le parcours accéléré concentre les heures sur deux à quatre semaines avec des créneaux prioritaires, sous réserve de disponibilités et de validation du niveau de départ.",
+    category: "Formation"
+  },
+  {
+    question: "Où se passent les leçons de conduite ?",
+    answer:
+      "LODEN organise les rendez-vous autour de Paris 11 et de l'Est parisien, avec des parcours urbains utiles pour progresser en circulation dense et préparer l'examen.",
+    category: "Formation"
+  }
+];
+
 export const searchItems = [
   ...formations.map((formation) => ({
     title: formation.title,
     category: "Formation",
-    href: "/formations",
+    href: `/formations/${formation.slug}`,
     description: formation.description
   })),
   ...pricingPlans.map((plan) => ({
@@ -332,7 +456,32 @@ export const searchItems = [
     category: "FAQ",
     href: "/contact",
     description: contactInfo.hours
-  }
+  },
+  ...faqEntries.map((entry) => ({
+    title: entry.question,
+    category: "FAQ",
+    href: "/cpf",
+    description: entry.answer
+  })),
+  ...localSeoPages.map((page) => ({
+    title: page.title,
+    category: "Guide local",
+    href: page.href,
+    description: page.description
+  })),
+  ...legalLinks.map((page) => ({
+    title: page.label,
+    category: "Page",
+    href: page.href,
+    description: "Informations légales et réglementaires LODEN Auto-École."
+  }))
+];
+
+// Points de rendez-vous — les `id` doivent correspondre à ceux du backend
+// (backend/src/data/initial-data.ts → initialMeetingPoints).
+export const meetingPoints = [
+  { id: "meeting-republique", name: "République", address: "24 avenue de la République, 75011 Paris" },
+  { id: "meeting-nation", name: "Nation", address: "Place de la Nation, 75012 Paris" }
 ];
 
 export const quickFacts = [

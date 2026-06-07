@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { z } from "zod";
 import type { ApiConfig } from "../../config/env";
-import { authenticate, requireRoles } from "../../middleware/auth";
+import { authenticate, requirePermission } from "../../middleware/auth";
 import type { LodenRepository } from "../../repositories/loden-repository";
 import { asyncHandler } from "../../shared/async-handler";
 import { validateBody, validateQuery } from "../../shared/validation";
@@ -31,7 +31,7 @@ const formationSchema = z.object({
 
 export function createCatalogRouter(repository: LodenRepository, config: ApiConfig) {
   const router = Router();
-  const adminOnly = [authenticate(repository, config.JWT_SECRET), requireRoles("SUPER_ADMIN", "ADMIN")];
+  const adminOnly = [authenticate(repository, config.JWT_SECRET), requirePermission("catalog.manage")];
 
   router.get(
     "/formations",

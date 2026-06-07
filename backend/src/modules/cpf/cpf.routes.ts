@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { z } from "zod";
 import type { ApiConfig } from "../../config/env";
-import { authenticate, requireRoles } from "../../middleware/auth";
+import { authenticate, requirePermission } from "../../middleware/auth";
 import type { LodenRepository } from "../../repositories/loden-repository";
 import { asyncHandler } from "../../shared/async-handler";
 import { emailSchema, phoneSchema, validateBody } from "../../shared/validation";
@@ -37,7 +37,7 @@ export function createCpfRouter(repository: LodenRepository, config: ApiConfig) 
   router.get(
     "/requests",
     authenticate(repository, config.JWT_SECRET),
-    requireRoles("SUPER_ADMIN", "ADMIN"),
+    requirePermission("cpf.read"),
     asyncHandler(async (_req, res) => {
       res.json({ data: await repository.listCpfRequests() });
     })
@@ -46,7 +46,7 @@ export function createCpfRouter(repository: LodenRepository, config: ApiConfig) 
   router.patch(
     "/requests/:id/status",
     authenticate(repository, config.JWT_SECRET),
-    requireRoles("SUPER_ADMIN", "ADMIN"),
+    requirePermission("cpf.manage"),
     asyncHandler(async (req, res) => {
       const body = validateBody(statusSchema, req);
       const cpfRequest = await repository.updateCpfRequest(String(req.params.id), body);

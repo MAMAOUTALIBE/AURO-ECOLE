@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { z } from "zod";
 import type { ApiConfig } from "../../config/env";
-import { authenticate, requireRoles } from "../../middleware/auth";
+import { authenticate, requirePermission } from "../../middleware/auth";
 import type { LodenRepository } from "../../repositories/loden-repository";
 import { asyncHandler } from "../../shared/async-handler";
 import { validateQuery } from "../../shared/validation";
@@ -13,7 +13,7 @@ const userQuerySchema = z.object({
 
 export function createUsersRouter(repository: LodenRepository, config: ApiConfig) {
   const router = Router();
-  router.use(authenticate(repository, config.JWT_SECRET), requireRoles("SUPER_ADMIN", "ADMIN"));
+  router.use(authenticate(repository, config.JWT_SECRET), requirePermission("users.read"));
 
   router.get(
     "/",

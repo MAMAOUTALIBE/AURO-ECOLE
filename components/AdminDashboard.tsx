@@ -155,6 +155,15 @@ const schema = z.object({
 
 type LoginValues = z.infer<typeof schema>;
 
+const leadStatusOptions: Array<{ value: Lead["status"]; label: string }> = [
+  { value: "PROSPECT", label: "Prospect" },
+  { value: "CONTACTE", label: "Contacté" },
+  { value: "RELANCE", label: "Relance" },
+  { value: "DEVIS_ENVOYE", label: "Devis envoyé" },
+  { value: "INSCRIT", label: "Inscrit" },
+  { value: "PERDU", label: "Perdu" }
+];
+
 const iconMap: Record<string, LucideIcon> = {
   BadgeCheck,
   CalendarDays,
@@ -179,15 +188,12 @@ export function AdminDashboard() {
   const [state, setState] = useState<DashboardState>({ status: "loading" });
   const [activeModule, setActiveModule] = useState<CrmModuleId>("overview");
   const [query, setQuery] = useState("");
+  const [crmMessage, setCrmMessage] = useState<{ tone: "success" | "error"; text: string } | null>(null);
 
   useEffect(() => {
-    const token = window.localStorage.getItem("loden_admin_token");
-    if (!token) {
-      setState({ status: "login" });
-      return;
-    }
-
-    loadDashboard(token, setState);
+    // Auth via cookie httpOnly : loadDashboard sonde la session et bascule en
+    // écran de connexion si l'API répond 401 (aucun token lu en JS).
+    loadDashboard(setState);
   }, []);
 
   if (state.status === "loading") {
@@ -195,7 +201,7 @@ export function AdminDashboard() {
   }
 
   if (state.status === "login") {
-    return <AdminLogin onReady={(token) => loadDashboard(token, setState)} />;
+    return <AdminLogin onReady={() => loadDashboard(setState)} />;
   }
 
   if (state.status === "error") {
@@ -203,8 +209,8 @@ export function AdminDashboard() {
       <AdminPanel title="Accès administrateur indisponible" text={state.message}>
         <button
           type="button"
-          onClick={() => {
-            window.localStorage.removeItem("loden_admin_token");
+          onClick={async () => {
+            await fetch("/api/auth/logout", { method: "POST" });
             setState({ status: "login" });
           }}
           className="focus-ring mt-5 rounded-full bg-loden-700 px-5 py-3 font-semibold text-white"
@@ -217,6 +223,49 @@ export function AdminDashboard() {
 
   const searchResults = buildSearchResults(state.data, query);
   const activeDefinition = crmModules.find((module) => module.id === activeModule) ?? crmModules[0];
+
+  const handleLeadStatusChange = async (lead: Lead, status: Lead["status"]) => {
+    if (lead.status === status) return;
+    setCrmMessage(null);
+
+    try {
+      const response = await fetch(`/api/leads/${encodeURIComponent(lead.id)}/status`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          status,
+          notes: `Statut mis à jour depuis le CRM LODEN: ${formatStatus(lead.status)} -> ${formatStatus(status)}`
+        })
+      });
+
+      if (response.status === 401) {
+        setState({ status: "login" });
+        return;
+      }
+      const payload = (await response.json().catch(() => null)) as { data?: Lead; error?: { message?: string } } | null;
+
+      if (!response.ok || !payload?.data) {
+        throw new Error(payload?.error?.message ?? "Mise à jour du lead impossible.");
+      }
+
+      setState((current) => {
+        if (current.status !== "ready") return current;
+        return {
+          ...current,
+          data: {
+            ...current.data,
+            leads: current.data.leads.map((item) => (item.id === payload.data?.id ? payload.data : item))
+          }
+        };
+      });
+      setCrmMessage({ tone: "success", text: `${lead.fullName} déplacé vers ${formatStatus(status)}.` });
+    } catch (error) {
+      setCrmMessage({
+        tone: "error",
+        text: error instanceof Error ? error.message : "Mise à jour du lead impossible."
+      });
+    }
+  };
 
   return (
     <div className="grid gap-6">
@@ -247,8 +296,8 @@ export function AdminDashboard() {
             </label>
             <button
               type="button"
-              onClick={() => {
-                window.localStorage.removeItem("loden_admin_token");
+              onClick={async () => {
+                await fetch("/api/auth/logout", { method: "POST" });
                 setState({ status: "login" });
               }}
               className="focus-ring inline-flex items-center justify-center gap-2 rounded-full border border-slate-200 px-5 py-3 text-sm font-semibold text-loden-ink hover:bg-loden-50"
@@ -259,6 +308,12 @@ export function AdminDashboard() {
           </div>
         </div>
       </section>
+
+      {crmMessage ? (
+        <div className={`rounded-3xl p-4 text-sm font-semibold ${crmMessage.tone === "success" ? "bg-loden-50 text-loden-800" : "bg-red-50 text-red-700"}`}>
+          {crmMessage.text}
+        </div>
+      ) : null}
 
       {query.trim() ? <SearchResults results={searchResults} query={query} /> : null}
 
@@ -290,16 +345,24 @@ export function AdminDashboard() {
 
         <div className="grid gap-5">
           <ModuleHeader module={activeDefinition} />
-          <ModuleWorkspace activeModule={activeModule} data={state.data} />
+          <ModuleWorkspace activeModule={activeModule} data={state.data} onLeadStatusChange={handleLeadStatusChange} />
         </div>
       </section>
     </div>
   );
 }
 
-function ModuleWorkspace({ activeModule, data }: { activeModule: CrmModuleId; data: CrmData }) {
+function ModuleWorkspace({
+  activeModule,
+  data,
+  onLeadStatusChange
+}: {
+  activeModule: CrmModuleId;
+  data: CrmData;
+  onLeadStatusChange: (lead: Lead, status: Lead["status"]) => void;
+}) {
   if (activeModule === "overview") return <OverviewView data={data} />;
-  if (activeModule === "sales") return <SalesView data={data} />;
+  if (activeModule === "sales") return <SalesView data={data} onLeadStatusChange={onLeadStatusChange} />;
   if (activeModule === "students") return <StudentsView data={data} />;
   if (activeModule === "instructors") return <InstructorsView data={data} />;
   if (activeModule === "bookings") return <BookingsView data={data} />;
@@ -359,7 +422,13 @@ function OverviewView({ data }: { data: CrmData }) {
   );
 }
 
-function SalesView({ data }: { data: CrmData }) {
+function SalesView({
+  data,
+  onLeadStatusChange
+}: {
+  data: CrmData;
+  onLeadStatusChange: (lead: Lead, status: Lead["status"]) => void;
+}) {
   const leadsByStage = {
     prospect: data.leads.filter((lead) => lead.status === "PROSPECT"),
     contacted: data.leads.filter((lead) => lead.status === "CONTACTE"),
@@ -390,8 +459,25 @@ function SalesView({ data }: { data: CrmData }) {
                     {lead.estimatedValueCents ? `${formatCurrency(lead.estimatedValueCents / 100)} · ` : ""}
                     {lead.interest ?? lead.source ?? lead.email}
                   </p>
+                  <label className="mt-3 grid gap-1">
+                    <span className="text-xs font-semibold uppercase tracking-[0.1em] text-loden-muted">Action</span>
+                    <select
+                      value={lead.status}
+                      onChange={(event) => onLeadStatusChange(lead, event.target.value as Lead["status"])}
+                      className="focus-ring w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-loden-ink"
+                    >
+                      {leadStatusOptions.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
                 </div>
               ))}
+              {items.length > 3 ? (
+                <p className="text-xs font-semibold text-loden-muted">+{items.length - 3} autre(s) lead(s)</p>
+              ) : null}
             </div>
           </article>
         );
@@ -617,7 +703,7 @@ function ModuleHeader({ module }: { module: CrmModuleDefinition }) {
   );
 }
 
-function AdminLogin({ onReady }: { onReady: (token: string) => void }) {
+function AdminLogin({ onReady }: { onReady: () => void }) {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const {
     register,
@@ -651,8 +737,8 @@ function AdminLogin({ onReady }: { onReady: (token: string) => void }) {
       return;
     }
 
-    window.localStorage.setItem("loden_admin_token", payload.token);
-    onReady(payload.token);
+    // La session est dans le cookie httpOnly posé par /api/auth/login.
+    onReady();
   };
 
   return (
@@ -689,9 +775,9 @@ function AdminLogin({ onReady }: { onReady: (token: string) => void }) {
   );
 }
 
-async function loadDashboard(token: string, setState: (state: DashboardState) => void) {
+async function loadDashboard(setState: (state: DashboardState) => void) {
   try {
-    const headers = { Authorization: `Bearer ${token}` };
+    // Auth via cookie httpOnly (envoyé automatiquement en same-origin).
     const [
       meResponse,
       contactsResponse,
@@ -705,16 +791,16 @@ async function loadDashboard(token: string, setState: (state: DashboardState) =>
       leadsResponse
     ] =
       await Promise.all([
-        fetch("/api/auth/me", { headers }),
-        fetch("/api/contact-requests", { headers }),
-        fetch("/api/cpf/requests", { headers }),
-        fetch("/api/bookings", { headers }),
-        fetch("/api/payments", { headers }),
-        fetch("/api/reviews?includeUnpublished=true", { headers }),
-        fetch("/api/users", { headers }),
-        fetch("/api/students", { headers }),
+        fetch("/api/auth/me"),
+        fetch("/api/contact-requests"),
+        fetch("/api/cpf/requests"),
+        fetch("/api/bookings"),
+        fetch("/api/payments"),
+        fetch("/api/reviews?includeUnpublished=true"),
+        fetch("/api/users"),
+        fetch("/api/students"),
         fetch("/api/instructors"),
-        fetch("/api/leads", { headers })
+        fetch("/api/leads")
       ]);
 
     const protectedResponses = [
@@ -729,7 +815,6 @@ async function loadDashboard(token: string, setState: (state: DashboardState) =>
       leadsResponse
     ];
     if (protectedResponses.some((response) => response.status === 401)) {
-      window.localStorage.removeItem("loden_admin_token");
       setState({ status: "login" });
       return;
     }

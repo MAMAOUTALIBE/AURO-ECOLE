@@ -84,3 +84,37 @@ textarea {
     linear-gradient(90deg, rgba(8, 174, 184, 0.08) 1px, transparent 1px);
   background-size: 42px 42px;
 }
+
+/* Bandeau d'information défilant (marquee) */
+.marquee {
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.marquee-track {
+  display: inline-flex;
+  width: max-content;
+  align-items: center;
+  animation: marquee 32s linear infinite;
+  will-change: transform;
+}
+
+.marquee:hover .marquee-track {
+  animation-play-state: paused;
+}
+
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track {
+    animation: none;
+  }
+}

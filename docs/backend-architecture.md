@@ -25,6 +25,16 @@ Compte administrateur mémoire local :
 - email : `admin@loden-autoecole.fr`
 - mot de passe : `admin-password`
 
+## Exigences production
+
+En `NODE_ENV=production`, l'API refuse de démarrer si :
+
+- `JWT_SECRET` utilise une valeur de développement ou fait moins de 32 caractères ;
+- `DATABASE_URL` est absent ;
+- `API_USE_MEMORY=true`.
+
+La production doit donc utiliser PostgreSQL, un secret JWT généré par le gestionnaire de secrets de l'hébergeur, et des origines CORS limitées au domaine public et aux outils internes autorisés.
+
 ## Scripts
 
 ```bash

@@ -1,15 +1,18 @@
 import type { Metadata } from "next";
 import { cpfSteps } from "@/data/site";
 import { CpfRequestForm } from "@/components/CpfRequestForm";
+import { FaqSection } from "@/components/FaqSection";
 import { PageHero } from "@/components/PageHero";
 import { SectionHeader } from "@/components/SectionHeader";
+import { getFaqEntries } from "@/lib/faq";
 
 export const metadata: Metadata = {
   title: "CPF et financement",
   description: "Financer son permis avec le CPF, paiement en plusieurs fois, aides régionales et accompagnement administratif LODEN."
 };
 
-export default function CpfPage() {
+export default async function CpfPage() {
+  const faqItems = await getFaqEntries();
   return (
     <main>
       <PageHero
@@ -43,6 +46,7 @@ export default function CpfPage() {
           </div>
         </div>
       </section>
+      <FaqSection items={faqItems} />
       <section id="demande-cpf" className="bg-loden-pearl py-14 sm:py-20">
         <div className="container-pad grid items-start gap-8 lg:grid-cols-[0.9fr_1.1fr]">
           <div>
@@ -62,7 +66,7 @@ export default function CpfPage() {
           <CpfRequestForm />
         </div>
       </section>
-      <section className="bg-loden-pearl py-14 sm:py-20">
+      <section id="aides" className="scroll-mt-28 bg-loden-pearl py-14 sm:py-20">
         <div className="container-pad grid gap-5 md:grid-cols-3">
           {["CPF", "Paiement 3x / 4x", "Aides régionales"].map((item) => (
             <div key={item} className="rounded-3xl bg-white p-6 shadow-soft">

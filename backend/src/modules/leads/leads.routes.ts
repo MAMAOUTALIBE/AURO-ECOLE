@@ -1,15 +1,19 @@
 import { Router } from "express";
 import { z } from "zod";
 import type { ApiConfig } from "../../config/env";
-import { authenticate, requireRoles } from "../../middleware/auth";
+import type { AiProvider } from "../../ai/types";
+import { qualifyLead } from "../../ai/qualify";
+import { authenticate, requirePermission } from "../../middleware/auth";
 import type { LodenRepository } from "../../repositories/loden-repository";
 import { asyncHandler } from "../../shared/async-handler";
+import { notifyNewLead } from "../../shared/mailer";
 import { emailSchema, phoneSchema, validateBody, validateQuery } from "../../shared/validation";
 
 const leadStatusSchema = z.enum(["PROSPECT", "CONTACTE", "RELANCE", "DEVIS_ENVOYE", "INSCRIT", "PERDU"]);
 
 const leadQuerySchema = z.object({
-  status: leadStatusSchema.optional()
+  status: leadStatusSchema.optional(),
+  agencyId: z.string().trim().optional()
 });
 
 const leadCreateSchema = z.object({
@@ -30,10 +34,10 @@ const leadStatusUpdateSchema = z.object({
   nextFollowUpAt: z.coerce.date().optional()
 });
 
-export function createLeadsRouter(repository: LodenRepository, config: ApiConfig) {
+export function createLeadsRouter(repository: LodenRepository, config: ApiConfig, aiProvider?: AiProvider) {
   const router = Router();
 
-  router.use(authenticate(repository, config.JWT_SECRET), requireRoles("SUPER_ADMIN", "ADMIN"));
+  router.use(authenticate(repository, config.JWT_SECRET), requirePermission("leads.read"));
 
   router.get(
     "/",
@@ -45,15 +49,19 @@ export function createLeadsRouter(repository: LodenRepository, config: ApiConfig
 
   router.post(
     "/",
+    requirePermission("leads.manage"),
     asyncHandler(async (req, res) => {
       const body = validateBody(leadCreateSchema, req);
       const lead = await repository.createLead(body);
+      void notifyNewLead(config, lead);
+      void qualifyLead(aiProvider, repository, lead);
       res.status(201).json({ data: lead });
     })
   );
 
   router.patch(
     "/:id/status",
+    requirePermission("leads.manage"),
     asyncHandler(async (req, res) => {
       const body = validateBody(leadStatusUpdateSchema, req);
       const lead = await repository.updateLead(String(req.params.id), body);
