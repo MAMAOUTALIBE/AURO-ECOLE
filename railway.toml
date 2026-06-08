@@ -1,0 +1,11 @@
+# Déploiement Railway — 1 service exécutant les 2 process LODEN.
+# Web (Next) en façade sur $PORT (public) ; API (Express) interne sur :4000,
+# jointe par le proxy Next via http://127.0.0.1:4000. Build = prisma+api+next.
+[build]
+builder = "nixpacks"
+buildCommand = "npm run deploy:build"
+
+[deploy]
+startCommand = "sh railway-start.sh"
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 3
