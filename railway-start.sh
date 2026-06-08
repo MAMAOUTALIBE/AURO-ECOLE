@@ -5,6 +5,10 @@ set -e
 echo "[loden] prisma migrate deploy..."
 npx --yes prisma migrate deploy
 
+# Seed idempotent (upserts) : crée/maj admin, formations, moniteurs. Non bloquant.
+echo "[loden] seed (idempotent)..."
+npx --yes tsx prisma/seed.ts || echo "[loden] seed ignoré (non bloquant)"
+
 echo "[loden] démarrage API (interne :4000)..."
 PORT=4000 node dist/backend/main.js &
 
