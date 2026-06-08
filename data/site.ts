@@ -66,11 +66,25 @@ export const socialLinks = [
   { label: "Facebook LODEN", href: "https://www.facebook.com/loden.autoecole" }
 ];
 
+// Source unique des preuves chiffrées (affichage). Toutes les sections — hero,
+// page Avis, JSON-LD — lisent ces valeurs pour garantir des chiffres cohérents
+// d'une page à l'autre. À mettre à jour avec les chiffres réels validés.
+export const proofStats = {
+  ratingDisplay: "4,9/5",
+  ratingValueSchema: "4.9", // schema.org attend un point décimal
+  bestRating: "5",
+  passRate: "98 %",
+  studentsAccompanied: "+800",
+  recommendRate: "92 %",
+  cpfAccepted: "100 %",
+  availability: "7j/7"
+};
+
 export const heroStats = [
-  { label: "de réussite", value: "98 %" },
-  { label: "élèves accompagnés", value: "+800" },
-  { label: "CPF accepté", value: "100 %" },
-  { label: "réservation", value: "7j/7" }
+  { label: "de réussite", value: proofStats.passRate },
+  { label: "élèves accompagnés", value: proofStats.studentsAccompanied },
+  { label: "CPF accepté", value: proofStats.cpfAccepted },
+  { label: "réservation", value: proofStats.availability }
 ];
 
 export const benefits = [
@@ -145,15 +159,27 @@ export const diagnosticSteps = [
   }
 ];
 
+// Pôle métier d'une formation. Par défaut AUTO_ECOLE (permis) ; VTC et CACES
+// couvrent les centres de formation professionnelle.
+export type ProductLine = "AUTO_ECOLE" | "VTC" | "CACES";
+
 export type Formation = {
   title: string;
   slug: string;
   mode: "Manuel" | "Automatique" | "Mixte" | "Code";
+  productLine?: ProductLine;
   duration: string;
   price: number;
   cpf: boolean;
   tags: string[];
   description: string;
+};
+
+// Libellés d'affichage des pôles (menu, filtres, fil d'ariane).
+export const productLineLabels: Record<ProductLine, string> = {
+  AUTO_ECOLE: "Auto-école",
+  VTC: "VTC",
+  CACES: "CACES"
 };
 
 export const formations: Formation[] = [
@@ -236,8 +262,109 @@ export const formations: Formation[] = [
     cpf: false,
     tags: ["Remise à niveau", "Confiance", "À la carte"],
     description: "Des séances pour reprendre confiance, conduire en ville ou préparer un trajet spécifique."
+  },
+  // ——— Pôle VTC ———
+  {
+    title: "Formation VTC — Carte professionnelle",
+    slug: "formation-vtc",
+    mode: "Mixte",
+    productLine: "VTC",
+    duration: "Préparation examen + théorie",
+    price: 1490,
+    cpf: true,
+    tags: ["VTC", "CPF", "Reconversion", "Carte pro"],
+    description:
+      "Préparation complète à l'examen VTC : réglementation T3P, sécurité routière, gestion, anglais et développement commercial pour obtenir ta carte professionnelle de chauffeur."
+  },
+  {
+    title: "VTC — Formation continue (recyclage)",
+    slug: "vtc-formation-continue",
+    mode: "Mixte",
+    productLine: "VTC",
+    duration: "14 h sur 2 jours",
+    price: 590,
+    cpf: false,
+    tags: ["VTC", "Recyclage", "Obligatoire 5 ans"],
+    description:
+      "Stage de formation continue obligatoire tous les 5 ans pour renouveler ta carte VTC : mises à jour réglementaires, sécurité et relation client."
+  },
+  // ——— Pôle CACES ———
+  {
+    title: "CACES R489 — Chariots élévateurs",
+    slug: "caces-r489-chariots",
+    mode: "Mixte",
+    productLine: "CACES",
+    duration: "3 à 5 jours",
+    price: 750,
+    cpf: true,
+    tags: ["CACES", "R489", "CPF", "Logistique"],
+    description:
+      "Certificat d'aptitude à la conduite en sécurité des chariots élévateurs (catégories 1 à 5) : théorie, pratique et passage du test CACES R489."
+  },
+  {
+    title: "CACES R486 — Nacelles élévatrices (PEMP)",
+    slug: "caces-r486-nacelles",
+    mode: "Mixte",
+    productLine: "CACES",
+    duration: "2 à 4 jours",
+    price: 690,
+    cpf: true,
+    tags: ["CACES", "R486", "CPF", "Nacelle"],
+    description:
+      "Formation à la conduite des plateformes élévatrices mobiles de personnes (catégories A et B) avec passage du test CACES R486."
+  },
+  {
+    title: "CACES R482 — Engins de chantier",
+    slug: "caces-r482-engins-chantier",
+    mode: "Mixte",
+    productLine: "CACES",
+    duration: "3 à 5 jours",
+    price: 890,
+    cpf: true,
+    tags: ["CACES", "R482", "CPF", "BTP"],
+    description:
+      "Formation à la conduite en sécurité des engins de chantier (pelles, chargeuses, mini-pelles…) avec passage du test CACES R482."
   }
 ];
+
+// Contenu éditorial des pages d'atterrissage des pôles professionnels (SEO + conversion).
+export const poleLandings: Record<
+  "VTC" | "CACES",
+  {
+    eyebrow: string;
+    title: string;
+    text: string;
+    intro: string;
+    benefits: { title: string; text: string }[];
+  }
+> = {
+  VTC: {
+    eyebrow: "Centre de formation VTC",
+    title: "Deviens chauffeur VTC avec une formation reconnue",
+    text: "Préparation à l'examen, carte professionnelle et financement CPF : un parcours clair pour te lancer dans le transport de personnes.",
+    intro:
+      "Le métier de chauffeur VTC attire de nombreuses reconversions. LODEN te prépare à l'examen T3P et t'accompagne jusqu'à l'obtention de ta carte professionnelle, avec un financement CPF possible.",
+    benefits: [
+      { title: "Examen T3P préparé", text: "Réglementation, sécurité routière, gestion, anglais et relation client : tous les modules de l'examen VTC sont couverts." },
+      { title: "Financement CPF & reconversion", text: "Formation éligible au CPF et pensée pour les projets de reconversion professionnelle." },
+      { title: "Carte professionnelle", text: "Accompagnement administratif jusqu'à l'obtention de la carte VTC et l'immatriculation." },
+      { title: "Formation continue", text: "Le stage de recyclage obligatoire tous les 5 ans est assuré dans nos locaux." }
+    ]
+  },
+  CACES: {
+    eyebrow: "Centre de formation CACES",
+    title: "Obtiens ton CACES et conduis en sécurité",
+    text: "Chariots, nacelles, engins de chantier : des formations certifiantes finançables par le CPF ou par ton entreprise.",
+    intro:
+      "Le CACES atteste de ta capacité à conduire un engin en sécurité. LODEN propose des formations conformes aux recommandations de la CNAM, avec théorie, pratique et passage du test par un testeur certifié.",
+    benefits: [
+      { title: "Recommandations CNAM", text: "Formations conformes aux recommandations R489 (chariots), R486 (nacelles) et R482 (engins de chantier)." },
+      { title: "Théorie + pratique", text: "Sessions en petit groupe avec passage du test CACES par un testeur certifié indépendant." },
+      { title: "Financement entreprise / OPCO", text: "Prise en charge possible par le CPF, l'employeur ou l'OPCO selon ta situation." },
+      { title: "Sécurité au travail", text: "Réduction des risques et mise en conformité réglementaire pour les employeurs." }
+    ]
+  }
+};
 
 export const pricingPlans = [
   {

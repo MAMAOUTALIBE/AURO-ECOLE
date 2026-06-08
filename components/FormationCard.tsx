@@ -4,8 +4,12 @@ import {
   BadgeCheck,
   BookOpenCheck,
   Car,
+  CarTaxiFront,
   Clock3,
+  Construction,
+  Forklift,
   Gauge,
+  HardHat,
   MonitorPlay,
   RotateCcw,
   ShieldCheck,
@@ -14,13 +18,13 @@ import {
   Zap,
   type LucideIcon
 } from "lucide-react";
-import type { Formation } from "@/data/site";
+import { productLineLabels, type Formation } from "@/data/site";
 import { formatCurrency } from "@/lib/utils";
 
 type Visual = { icon: LucideIcon; gradient: string };
 
 // Identité visuelle dédiée par formation (couleur + icône) — reconnaissable au premier regard,
-// tout en restant cohérent avec la charte LODENE (turquoise dominant + accents maîtrisés).
+// tout en restant cohérent avec la charte LODEN (turquoise dominant + accents maîtrisés).
 const BY_SLUG: Record<string, Visual> = {
   "permis-b-manuel": { icon: Car, gradient: "linear-gradient(135deg,#0e7490,#08AEB8 55%,#22d3ee)" },
   "permis-b-automatique": { icon: Gauge, gradient: "linear-gradient(135deg,#0891a0,#22d3ee 55%,#38bdf8)" },
@@ -29,7 +33,13 @@ const BY_SLUG: Record<string, Visual> = {
   "code-en-ligne": { icon: MonitorPlay, gradient: "linear-gradient(135deg,#3730a3,#4f46e5 55%,#6366f1)" },
   "stage-code": { icon: BookOpenCheck, gradient: "linear-gradient(135deg,#6d28d9,#8b5cf6 55%,#a78bfa)" },
   "annulation-permis": { icon: RotateCcw, gradient: "linear-gradient(135deg,#9f1239,#e11d48 55%,#fb7185)" },
-  perfectionnement: { icon: TrendingUp, gradient: "linear-gradient(135deg,#155e75,#0e7490 55%,#14b8a6)" }
+  perfectionnement: { icon: TrendingUp, gradient: "linear-gradient(135deg,#155e75,#0e7490 55%,#14b8a6)" },
+  // Pôle VTC (indigo) & CACES (ambre/BTP) — visuellement distincts du permis.
+  "formation-vtc": { icon: CarTaxiFront, gradient: "linear-gradient(135deg,#3730a3,#4f46e5 55%,#818cf8)" },
+  "vtc-formation-continue": { icon: Car, gradient: "linear-gradient(135deg,#1e3a8a,#2563eb 55%,#60a5fa)" },
+  "caces-r489-chariots": { icon: Forklift, gradient: "linear-gradient(135deg,#b45309,#f59e0b 55%,#fbbf24)" },
+  "caces-r486-nacelles": { icon: Construction, gradient: "linear-gradient(135deg,#92400e,#d97706 55%,#fbbf24)" },
+  "caces-r482-engins-chantier": { icon: HardHat, gradient: "linear-gradient(135deg,#78350f,#b45309 55%,#f59e0b)" }
 };
 
 const BY_MODE: Record<Formation["mode"], Visual> = {
@@ -42,6 +52,11 @@ const BY_MODE: Record<Formation["mode"], Visual> = {
 export function FormationCard({ formation }: { formation: Formation }) {
   const visual = BY_SLUG[formation.slug] ?? BY_MODE[formation.mode];
   const Icon = visual.icon;
+  // Badge = pôle métier pour VTC/CACES, sinon le mode (Manuel/Auto/…).
+  const badgeLabel =
+    formation.productLine && formation.productLine !== "AUTO_ECOLE"
+      ? productLineLabels[formation.productLine]
+      : formation.mode;
 
   return (
     <Link
@@ -63,7 +78,7 @@ export function FormationCard({ formation }: { formation: Formation }) {
           />
           <div className="absolute left-4 top-4 flex flex-wrap gap-2">
             <span className="rounded-full bg-white/20 px-3 py-1 text-xs font-semibold text-white ring-1 ring-white/40 backdrop-blur">
-              {formation.mode}
+              {badgeLabel}
             </span>
             {formation.cpf ? (
               <span className="rounded-full bg-white px-3 py-1 text-xs font-bold text-loden-700 shadow-soft">CPF</span>

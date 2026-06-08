@@ -2,15 +2,23 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Search } from "lucide-react";
-import { formations, type Formation } from "@/data/site";
+import { formations, productLineLabels, type Formation, type ProductLine } from "@/data/site";
 import { FormationCard } from "@/components/FormationCard";
 import { mapApiFormation } from "@/lib/catalog-mappers";
 
 const filters = ["Manuel", "Automatique", "Accéléré", "CPF", "Débutant", "Remise à niveau"];
 
+const poles: { key: "ALL" | ProductLine; label: string }[] = [
+  { key: "ALL", label: "Tous les pôles" },
+  { key: "AUTO_ECOLE", label: productLineLabels.AUTO_ECOLE },
+  { key: "VTC", label: productLineLabels.VTC },
+  { key: "CACES", label: productLineLabels.CACES }
+];
+
 export function FormationExplorer() {
   const [query, setQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState("Toutes");
+  const [activePole, setActivePole] = useState<"ALL" | ProductLine>("ALL");
   const [remoteFormations, setRemoteFormations] = useState<Formation[] | null>(null);
 
   useEffect(() => {
@@ -39,6 +47,7 @@ export function FormationExplorer() {
   const visibleFormations = useMemo(() => {
     const normalized = query.trim().toLowerCase();
     return sourceFormations.filter((formation) => {
+      const matchesPole = activePole === "ALL" || (formation.productLine ?? "AUTO_ECOLE") === activePole;
       const matchesQuery =
         !normalized ||
         `${formation.title} ${formation.description} ${formation.tags.join(" ")}`.toLowerCase().includes(normalized);
@@ -47,9 +56,9 @@ export function FormationExplorer() {
         formation.tags.includes(activeFilter) ||
         formation.mode === activeFilter ||
         (activeFilter === "CPF" && formation.cpf);
-      return matchesQuery && matchesFilter;
+      return matchesPole && matchesQuery && matchesFilter;
     });
-  }, [activeFilter, query, sourceFormations]);
+  }, [activeFilter, activePole, query, sourceFormations]);
 
   return (
     <section className="bg-white py-14 sm:py-20">
@@ -65,12 +74,26 @@ export function FormationExplorer() {
               aria-label="Recherche avancée des formations"
             />
           </div>
-          <div className="mt-4 flex flex-wrap gap-2">
+          <div className="mt-4 flex flex-wrap gap-2" role="group" aria-label="Filtrer par pôle">
+            {poles.map((pole) => (
+              <button
+                key={pole.key}
+                type="button"
+                onClick={() => setActivePole(pole.key)}
+                aria-pressed={activePole === pole.key}
+                className={`focus-ring rounded-full border px-4 py-2 text-sm font-semibold transition ${activePole === pole.key ? "border-loden-900 bg-loden-900 text-white" : "border-slate-200 bg-white text-loden-ink hover:border-loden-300"}`}
+              >
+                {pole.label}
+              </button>
+            ))}
+          </div>
+          <div className="mt-3 flex flex-wrap gap-2" role="group" aria-label="Filtrer par type">
             {["Toutes", ...filters].map((filter) => (
               <button
                 key={filter}
                 type="button"
                 onClick={() => setActiveFilter(filter)}
+                aria-pressed={activeFilter === filter}
                 className={`focus-ring rounded-full border px-4 py-2 text-sm font-semibold transition ${activeFilter === filter ? "border-loden-700 bg-loden-700 text-white" : "border-slate-200 bg-white text-loden-muted hover:border-loden-200"}`}
               >
                 {filter}
@@ -78,11 +101,17 @@ export function FormationExplorer() {
             ))}
           </div>
         </div>
-        <div className="mt-8 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-          {visibleFormations.map((formation) => (
-            <FormationCard key={formation.slug} formation={formation} />
-          ))}
-        </div>
+        {visibleFormations.length > 0 ? (
+          <div className="mt-8 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+            {visibleFormations.map((formation) => (
+              <FormationCard key={formation.slug} formation={formation} />
+            ))}
+          </div>
+        ) : (
+          <p className="mt-8 rounded-3xl border border-slate-200 bg-loden-pearl p-6 text-center text-sm font-medium text-loden-muted">
+            Aucune formation ne correspond à ces filtres. Essaie un autre pôle ou réinitialise la recherche.
+          </p>
+        )}
       </div>
     </section>
   );

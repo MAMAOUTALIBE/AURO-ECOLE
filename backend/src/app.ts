@@ -17,7 +17,8 @@ import { createExamsRouter } from "./modules/exams/exams.routes";
 import { createInstallmentsRouter } from "./modules/installments/installments.routes";
 import { createInstructorsRouter } from "./modules/instructors/instructors.routes";
 import { createLeadsRouter } from "./modules/leads/leads.routes";
-import { createPaymentsRouter } from "./modules/payments/payments.routes";
+import { createPaymentsRouter, createStripeWebhookHandler } from "./modules/payments/payments.routes";
+import { createStripeProvider } from "./payments/stripe-provider";
 import { createReviewsRouter } from "./modules/reviews/reviews.routes";
 import { createSearchRouter } from "./modules/search/search.routes";
 import { createStatsRouter } from "./modules/stats/stats.routes";
@@ -30,6 +31,7 @@ import { notFoundHandler } from "./middleware/not-found";
 export function createApp(repository: LodenRepository, config: ApiConfig, deps: { aiProvider?: AiProvider } = {}) {
   const app = express();
   const aiProvider = deps.aiProvider ?? createAiProvider(config);
+  const stripeProvider = createStripeProvider(config);
 
   // Derrière le reverse-proxy nginx (1 saut) : indispensable pour que le
   // rate-limit et l'IP réelle soient corrects (sinon tout est vu comme 127.0.0.1).
@@ -46,6 +48,14 @@ export function createApp(repository: LodenRepository, config: ApiConfig, deps: 
       credentials: true
     })
   );
+  // Webhook Stripe : AVANT express.json() (corps brut requis pour vérifier la
+  // signature) et hors de tout middleware d'authentification (Stripe n'a pas de JWT).
+  app.post(
+    "/api/payments/stripe/webhook",
+    express.raw({ type: () => true }),
+    createStripeWebhookHandler(repository, config, stripeProvider)
+  );
+
   app.use(express.json({ limit: "1mb" }));
   app.use(
     rateLimit({
@@ -73,7 +83,7 @@ export function createApp(repository: LodenRepository, config: ApiConfig, deps: 
   app.use("/api/users", createUsersRouter(repository, config));
   app.use("/api/students", createStudentsRouter(repository, config));
   app.use("/api/bookings", createBookingsRouter(repository, config));
-  app.use("/api/payments", createPaymentsRouter(repository, config));
+  app.use("/api/payments", createPaymentsRouter(repository, config, stripeProvider));
   app.use("/api/installments", createInstallmentsRouter(repository, config));
   app.use("/api/cpf", createCpfRouter(repository, config));
   app.use("/api/exams", createExamsRouter(repository, config));

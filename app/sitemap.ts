@@ -4,6 +4,8 @@ import { formations } from "@/data/site";
 const routes = [
   "",
   "/formations",
+  "/vtc",
+  "/caces",
   "/tarifs",
   "/cpf",
   "/a-propos",

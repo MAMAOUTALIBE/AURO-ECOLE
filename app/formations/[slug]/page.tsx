@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowRight, BadgeCheck, CalendarCheck, CheckCircle2, Clock3, ShieldCheck } from "lucide-react";
-import { formations } from "@/data/site";
+import { formations, productLineLabels } from "@/data/site";
 import { formatCurrency } from "@/lib/utils";
 import { safeJsonLd } from "@/lib/json-ld";
 
@@ -36,6 +36,10 @@ export default async function FormationDetailPage({ params }: PageProps) {
 
   if (!formation) notFound();
 
+  const productLine = formation.productLine ?? "AUTO_ECOLE";
+  const isPro = productLine !== "AUTO_ECOLE";
+  const eyebrow = isPro ? `Formation ${productLineLabels[productLine]}` : `Formation ${formation.mode}`;
+
   const courseSchema = {
     "@context": "https://schema.org",
     "@type": "Course",
@@ -64,7 +68,7 @@ export default async function FormationDetailPage({ params }: PageProps) {
 
   const guarantees = [
     formation.cpf ? "Parcours compatible CPF selon le dossier" : "Conseil financement selon la situation",
-    "Planning visible et suivi élève digital",
+    isPro ? "Financement entreprise / OPCO possible" : "Planning visible et suivi élève digital",
     "Devis clair avant engagement",
     "Accompagnement administratif jusqu'au démarrage"
   ];
@@ -80,7 +84,7 @@ export default async function FormationDetailPage({ params }: PageProps) {
         <div className="container-pad grid gap-8 lg:grid-cols-[1fr_0.75fr] lg:items-start">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.14em] text-loden-700">
-              Formation {formation.mode}
+              {eyebrow}
             </p>
             <h1 className="mt-4 text-4xl font-semibold leading-tight text-loden-ink sm:text-6xl">
               {formation.title}
@@ -95,14 +99,14 @@ export default async function FormationDetailPage({ params }: PageProps) {
             </div>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Link
-                href="/contact#demande"
+                href={`/contact?formation=${formation.slug}#demande`}
                 className="focus-ring inline-flex items-center justify-center gap-2 rounded-full bg-loden-700 px-6 py-4 font-semibold text-white shadow-soft transition hover:bg-loden-800"
               >
                 Demander un devis
                 <ArrowRight className="h-5 w-5" />
               </Link>
               <Link
-                href="/inscription"
+                href={`/inscription?formation=${formation.slug}`}
                 className="focus-ring inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-6 py-4 font-semibold text-loden-ink transition hover:border-loden-300 hover:bg-loden-50"
               >
                 Pré-inscription
@@ -173,9 +177,16 @@ export default async function FormationDetailPage({ params }: PageProps) {
             <div className="mt-6 rounded-3xl bg-loden-800 p-6 text-white">
               <CalendarCheck className="h-7 w-7" />
               <h3 className="mt-4 text-2xl font-semibold">Besoin d&apos;un planning précis ?</h3>
-              <p className="mt-3 text-sm leading-6 text-white/80">
+              <p className="mt-3 text-sm leading-6 text-white/85">
                 Envoie tes disponibilités et ton objectif. LODEN te propose un rythme réaliste avant l&apos;engagement.
               </p>
+              <Link
+                href={`/contact?formation=${formation.slug}#demande`}
+                className="focus-ring mt-5 inline-flex items-center justify-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-semibold text-loden-800 transition hover:bg-loden-pearl"
+              >
+                Demander mon planning
+                <ArrowRight className="h-4 w-4" />
+              </Link>
             </div>
           </div>
         </div>

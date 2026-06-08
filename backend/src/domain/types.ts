@@ -129,12 +129,15 @@ export type InstructorRecord = {
   active: boolean;
 };
 
+export type ProductLine = "AUTO_ECOLE" | "VTC" | "CACES";
+
 export type FormationRecord = {
   id: string;
   title: string;
   slug: string;
   description: string;
   mode: "MANUEL" | "AUTOMATIQUE" | "MIXTE" | "CODE";
+  productLine?: ProductLine;
   priceCents: number;
   durationLabel: string;
   defaultHours?: number | null;

@@ -1,12 +1,13 @@
 import { CalendarClock } from "lucide-react";
 import { socialChannels } from "@/components/SocialIcons";
+import { proofStats } from "@/data/site";
 
 const tickerItems = [
   { highlight: true, label: "Prochaine leçon disponible — aujourd'hui à 17h30" },
   { highlight: false, label: "Réservation en ligne 7j/7" },
   { highlight: false, label: "CPF accepté — financement jusqu'à 100 %" },
   { highlight: false, label: "Paiement en 4× sans frais" },
-  { highlight: false, label: "98 % de réussite — +2000 élèves formés" }
+  { highlight: false, label: `${proofStats.passRate} de réussite — ${proofStats.studentsAccompanied} élèves accompagnés` }
 ];
 
 function TickerGroup({ hidden }: { hidden?: boolean }) {

@@ -1,6 +1,6 @@
 import { ShieldCheck, Star } from "lucide-react";
 
-// Palette cohérente LODENE — chaque moniteur garde une teinte stable (dérivée de ses initiales).
+// Palette cohérente LODEN — chaque moniteur garde une teinte stable (dérivée de ses initiales).
 const PALETTE = [
   "linear-gradient(135deg,#0e7490,#08AEB8 55%,#22d3ee)",
   "linear-gradient(135deg,#b45309,#f59e0b 55%,#fbbf24)",

@@ -23,7 +23,9 @@ module.exports = {
       max_memory_restart: "500M",
       env_production: {
         NODE_ENV: "production",
-        LODEN_API_URL: "http://127.0.0.1:4000"
+        LODEN_API_URL: "http://127.0.0.1:4000",
+        // Même secret que l'API : le middleware /admin vérifie la signature du JWT.
+        JWT_SECRET: process.env.JWT_SECRET
       }
     }
   ]

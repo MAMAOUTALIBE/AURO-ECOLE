@@ -7,7 +7,7 @@ type Message = { role: "user" | "assistant"; content: string };
 
 const GREETING: Message = {
   role: "assistant",
-  content: "Bonjour 👋 Je suis l'assistant LODENE. Je peux vous aider à choisir une formation, comprendre le CPF, les tarifs ou l'inscription. Que puis-je faire pour vous ?"
+  content: "Bonjour 👋 Je suis l'assistant LODEN. Je peux vous aider à choisir une formation, comprendre le CPF, les tarifs ou l'inscription. Que puis-je faire pour vous ?"
 };
 
 export function AiChatWidget() {
@@ -59,7 +59,7 @@ export function AiChatWidget() {
             <div className="flex items-center gap-2">
               <Sparkles className="h-5 w-5" aria-hidden="true" />
               <div>
-                <p className="text-sm font-semibold leading-tight">Assistant LODENE</p>
+                <p className="text-sm font-semibold leading-tight">Assistant LODEN</p>
                 <p className="text-[11px] text-white/80">Réponses indicatives — un conseiller peut vous rappeler</p>
               </div>
             </div>

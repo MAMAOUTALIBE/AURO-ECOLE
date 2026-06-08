@@ -1,3 +1,4 @@
+import type { Request, Response } from "express";
 import { Router } from "express";
 import { z } from "zod";
 import type { ApiConfig } from "../../config/env";
@@ -9,12 +10,14 @@ import { hasPermission } from "../../domain/permissions";
 import { publicUser } from "../../http/request-context";
 import { forbidden } from "../../shared/http-error";
 import { validateBody, validateQuery } from "../../shared/validation";
+import { createStripeProvider, type StripeProvider } from "../../payments/stripe-provider";
 
+// Le montant N'EST PAS accepté du client : il est dérivé du PricingPlan côté serveur.
+// Le client n'envoie que le pack choisi (et le type d'opération).
 const paymentSchema = z.object({
   userId: z.string().optional(),
-  pricingPlanId: z.string().optional(),
+  pricingPlanId: z.string().trim().min(1, "pricingPlanId requis"),
   kind: z.enum(["FORMATION", "ACOMPTE", "ECHEANCE", "REMBOURSEMENT"]).default("FORMATION"),
-  amountCents: z.number().int().positive(),
   currency: z.string().length(3).default("EUR")
 });
 
@@ -40,8 +43,9 @@ const updateSchema = z.object({
   invoiceUrl: z.string().trim().optional()
 });
 
-export function createPaymentsRouter(repository: LodenRepository, config: ApiConfig) {
+export function createPaymentsRouter(repository: LodenRepository, config: ApiConfig, stripe?: StripeProvider) {
   const router = Router();
+  const stripeProvider = stripe ?? createStripeProvider(config);
   router.use(authenticate(repository, config.JWT_SECRET));
 
   router.get(
@@ -108,32 +112,84 @@ export function createPaymentsRouter(repository: LodenRepository, config: ApiCon
         res.status(400).json({ error: { code: "USER_REQUIRED", message: "userId requis" } });
         return;
       }
+
+      // Montant autoritatif : on relit le prix du pack en base, on ignore tout
+      // montant fourni par le client (anti-fraude tarifaire).
+      const plan = await repository.findPricingPlanById(body.pricingPlanId);
+      if (!plan || !plan.active) {
+        res.status(404).json({ error: { code: "PLAN_NOT_FOUND", message: "Pack introuvable ou inactif" } });
+        return;
+      }
+      const amountCents = plan.priceCents;
+      if (amountCents <= 0) {
+        res.status(409).json({ error: { code: "PLAN_NOT_PAYABLE", message: "Ce pack n'est pas payable en ligne" } });
+        return;
+      }
+
+      const intent = await stripeProvider.createPaymentIntent({
+        amountCents,
+        currency: body.currency,
+        userId,
+        pricingPlanId: plan.id,
+        kind: body.kind
+      });
+
       const payment = await repository.createPayment({
         userId,
-        pricingPlanId: body.pricingPlanId,
+        pricingPlanId: plan.id,
         kind: body.kind,
         status: "EN_ATTENTE",
-        amountCents: body.amountCents,
+        amountCents,
         currency: body.currency,
-        stripePaymentIntentId: `pi_mock_${Date.now()}`
+        stripePaymentIntentId: intent.id
       });
+
       res.status(201).json({
         data: payment,
-        stripe: {
-          mode: "mock",
-          clientSecret: `${payment.stripePaymentIntentId}_secret_mock`
-        }
+        stripe: { mode: intent.mode, clientSecret: intent.clientSecret }
       });
-    })
-  );
-
-  router.post(
-    "/stripe/webhook",
-    requirePermission("payments.manage"),
-    asyncHandler(async (_req, res) => {
-      res.status(202).json({ ok: true, message: "Webhook Stripe prêt pour vérification signature." });
     })
   );
 
   return router;
+}
+
+/**
+ * Handler du webhook Stripe. Monté HORS du routeur authentifié et AVANT le parseur
+ * JSON (corps brut requis pour vérifier la signature HMAC). Un paiement ne passe à
+ * "PAYE" que sur un événement Stripe signé valide.
+ */
+export function createStripeWebhookHandler(
+  repository: LodenRepository,
+  config: ApiConfig,
+  stripe?: StripeProvider
+) {
+  const stripeProvider = stripe ?? createStripeProvider(config);
+
+  return asyncHandler(async (req: Request, res: Response) => {
+    const signature = req.header("stripe-signature");
+    const rawBody = Buffer.isBuffer(req.body) ? req.body : Buffer.from(typeof req.body === "string" ? req.body : "");
+    const verification = stripeProvider.verifyWebhook(rawBody, signature ?? undefined);
+
+    if (!verification.ok) {
+      res.status(400).json({ error: { code: "INVALID_SIGNATURE", message: verification.reason } });
+      return;
+    }
+
+    const event = verification.event;
+    const intentId = (event.data?.object as { id?: string } | undefined)?.id;
+
+    if (intentId) {
+      const payment = await repository.findPaymentByStripePaymentIntentId(intentId);
+      if (payment) {
+        if (event.type === "payment_intent.succeeded") {
+          await repository.updatePayment(payment.id, { status: "PAYE" });
+        } else if (event.type === "payment_intent.payment_failed") {
+          await repository.updatePayment(payment.id, { status: "ECHOUE" });
+        }
+      }
+    }
+
+    res.json({ received: true });
+  });
 }

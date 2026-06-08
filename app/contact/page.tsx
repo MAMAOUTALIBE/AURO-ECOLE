@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { Clock3, Mail, MapPin, MessageCircle, Phone } from "lucide-react";
 import { ContactForm } from "@/components/ContactForm";
 import { LocalMapPanel } from "@/components/LocalMapPanel";
@@ -52,7 +53,9 @@ export default function ContactPage() {
             })}
             <LocalMapPanel />
           </div>
-          <ContactForm />
+          <Suspense fallback={<div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-premium">Chargement du formulaire...</div>}>
+            <ContactForm />
+          </Suspense>
         </div>
       </section>
     </main>

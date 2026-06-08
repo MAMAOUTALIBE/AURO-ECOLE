@@ -5,7 +5,8 @@ import { testimonials, type Testimonial } from "@/data/site";
 import { mapApiReview } from "@/lib/social-mappers";
 import { TestimonialCard } from "@/components/TestimonialCard";
 
-const fallbackTestimonials = testimonials.concat(testimonials);
+// Avis réels uniquement (plus de duplication artificielle de la liste).
+const fallbackTestimonials = testimonials;
 
 export function ReviewsGrid() {
   const [remoteReviews, setRemoteReviews] = useState<Testimonial[] | null>(null);

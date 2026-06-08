@@ -22,7 +22,12 @@ const envSchema = z.object({
   GROQ_API_KEY: z.string().optional(),
   // SMS (optionnel). Sans SMS_API_KEY, les SMS passent en log.
   SMS_API_KEY: z.string().optional(),
-  SMS_SENDER: z.string().optional()
+  SMS_SENDER: z.string().optional(),
+  // Paiement (optionnel). Sans STRIPE_SECRET_KEY, le paiement tourne en mode mock
+  // (aucun débit). En live, STRIPE_WEBHOOK_SECRET est obligatoire pour authentifier
+  // les événements de paiement (cf. garde-fou production ci-dessous).
+  STRIPE_SECRET_KEY: z.string().optional(),
+  STRIPE_WEBHOOK_SECRET: z.string().optional()
 });
 
 export type ApiConfig = ReturnType<typeof loadConfig>;
@@ -48,6 +53,11 @@ export function loadConfig(env = process.env) {
 
     if (parsed.API_USE_MEMORY || !parsed.DATABASE_URL) {
       throw new Error("Production API must use PostgreSQL through DATABASE_URL");
+    }
+
+    // Paiement live sans vérification de signature = porte ouverte aux faux "payé".
+    if (parsed.STRIPE_SECRET_KEY && !parsed.STRIPE_WEBHOOK_SECRET) {
+      throw new Error("STRIPE_WEBHOOK_SECRET is required in production when STRIPE_SECRET_KEY is set");
     }
   }
 

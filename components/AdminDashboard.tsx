@@ -394,8 +394,8 @@ function OverviewView({ data }: { data: CrmData }) {
         <Metric icon={CalendarDays} label="Réservations du jour" value={`${todayBookings}`} detail={`${data.bookings.length} réservations totales`} />
         <Metric icon={CreditCard} label="Chiffre d'affaires" value={formatCurrency(revenueCents / 100)} detail={`${pendingPayments.length} paiements en attente`} />
         <Metric icon={FileText} label="Dossiers CPF" value={`${pendingCpf}`} detail={`${data.cpfRequests.length} dossiers suivis`} />
-        <Metric icon={BadgeCheck} label="Examens programmés" value="0" detail="Module planifié phase 2" />
-        <Metric icon={Star} label="Taux de réussite" value="86%" detail="Indicateur cible à brancher examens" />
+        <Metric icon={BadgeCheck} label="Moniteurs actifs" value={`${data.instructors.length}`} detail="Équipe pédagogique" />
+        <Metric icon={TrendingUp} label="Pipeline actif" value={`${data.leads.filter((lead) => ["PROSPECT", "CONTACTE", "RELANCE", "DEVIS_ENVOYE"].includes(lead.status)).length}`} detail={`${data.leads.length} leads au total`} />
         <Metric icon={Inbox} label="Avis récents" value={`${recentReviews.length}`} detail={`${data.reviews.filter((review) => review.status === "EN_ATTENTE").length} à modérer`} />
       </section>
 
@@ -725,9 +725,9 @@ function AdminLogin({ onReady }: { onReady: () => void }) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(values)
     });
-    const payload = (await response.json().catch(() => null)) as { token?: string; user?: AdminUser; error?: { message?: string } } | null;
+    const payload = (await response.json().catch(() => null)) as { user?: AdminUser; error?: { message?: string } } | null;
 
-    if (!response.ok || !payload?.token || !payload.user) {
+    if (!response.ok || !payload?.user) {
       setSubmitError(payload?.error?.message ?? "Connexion admin impossible.");
       return;
     }

@@ -124,6 +124,7 @@ export interface LodenRepository {
   hasInstructorConflict(instructorId: string, startsAt: Date, endsAt: Date, ignoreBookingId?: string): Promise<boolean>;
 
   listPayments(filters?: { userId?: string; status?: PaymentStatus; agencyId?: string }): Promise<PaymentRecord[]>;
+  findPaymentByStripePaymentIntentId(stripePaymentIntentId: string): Promise<PaymentRecord | null>;
   createPayment(input: CreatePaymentInput): Promise<PaymentRecord>;
   updatePayment(id: string, input: Partial<PaymentRecord>): Promise<PaymentRecord>;
 

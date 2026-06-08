@@ -4,6 +4,7 @@ type ApiFormation = {
   title: string;
   slug: string;
   mode: "MANUEL" | "AUTOMATIQUE" | "MIXTE" | "CODE";
+  productLine?: "AUTO_ECOLE" | "VTC" | "CACES";
   durationLabel: string;
   priceCents: number;
   cpfEligible: boolean;
@@ -39,6 +40,7 @@ export function mapApiFormation(formation: ApiFormation): Formation {
     title: formation.title,
     slug: formation.slug,
     mode: modeLabels[formation.mode],
+    productLine: formation.productLine ?? "AUTO_ECOLE",
     duration: formation.durationLabel,
     price: formation.priceCents / 100,
     cpf: formation.cpfEligible,

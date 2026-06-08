@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { decodeJwtRole, isAdminRole } from "@/lib/auth-session";
+import { isAdminRole } from "@/lib/auth-session";
 
 const schema = z.object({
   email: z.string().trim().email("Email invalide"),
@@ -38,17 +38,18 @@ export function LoginForm() {
       body: JSON.stringify(values)
     });
 
-    const payload = await response.json().catch(() => null) as { error?: { message?: string }; token?: string } | null;
+    const payload = await response.json().catch(() => null) as { error?: { message?: string }; user?: { role?: string } } | null;
 
-    if (!response.ok || !payload?.token) {
+    if (!response.ok || !payload?.user) {
       setSubmitError(payload?.error?.message ?? "Connexion impossible. Vérifie tes identifiants.");
       return;
     }
 
     // La session est dans le cookie httpOnly (posé par /api/auth/login).
-    // On lit le rôle du token en mémoire uniquement pour choisir la redirection.
-    const role = decodeJwtRole(payload.token);
-    router.push(isAdminRole(role) ? "/admin" : "/espace-eleve");
+    // Le rôle vient de la réponse `user` (le token n'est plus exposé au navigateur).
+    const role = payload.user.role;
+    const destination = role === "MONITEUR" ? "/espace-formateur" : isAdminRole(role) ? "/admin" : "/espace-eleve";
+    router.push(destination);
     router.refresh();
   };
 

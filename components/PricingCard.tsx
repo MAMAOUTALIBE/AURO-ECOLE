@@ -5,7 +5,7 @@ import type { PricingPlan } from "@/data/site";
 
 type Visual = { icon: LucideIcon; gradient: string };
 
-// Identité visuelle par pack — alignée sur les dégradés des formations (cohérence LODENE).
+// Identité visuelle par pack — alignée sur les dégradés des formations (cohérence LODEN).
 const VISUALS: Record<string, Visual> = {
   "permis-b": { icon: Car, gradient: "linear-gradient(135deg,#0e7490,#08AEB8 55%,#22d3ee)" },
   "permis-accelere": { icon: Zap, gradient: "linear-gradient(135deg,#b45309,#f59e0b 55%,#fbbf24)" },

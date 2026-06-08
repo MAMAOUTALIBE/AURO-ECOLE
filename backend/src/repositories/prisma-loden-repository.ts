@@ -301,6 +301,12 @@ export class PrismaLodenRepository implements LodenRepository {
     return rows.map((row) => ({ ...row, pricingPlanId: row.pricingPlanId ?? undefined, stripePaymentIntentId: row.stripePaymentIntentId ?? undefined, invoiceUrl: row.invoiceUrl ?? undefined }));
   }
 
+  async findPaymentByStripePaymentIntentId(stripePaymentIntentId: string) {
+    const row = await this.prisma.payment.findFirst({ where: { stripePaymentIntentId } });
+    if (!row) return null;
+    return { ...row, pricingPlanId: row.pricingPlanId ?? undefined, stripePaymentIntentId: row.stripePaymentIntentId ?? undefined, invoiceUrl: row.invoiceUrl ?? undefined };
+  }
+
   async createPayment(input: CreatePaymentInput) {
     const row = await this.prisma.payment.create({ data: { ...input, status: input.status ?? "EN_ATTENTE" } });
     return { ...row, pricingPlanId: row.pricingPlanId ?? undefined, stripePaymentIntentId: row.stripePaymentIntentId ?? undefined, invoiceUrl: row.invoiceUrl ?? undefined };

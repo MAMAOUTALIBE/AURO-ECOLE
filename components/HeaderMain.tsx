@@ -7,10 +7,12 @@ import {
   BookOpenCheck,
   Building2,
   Car,
+  CarTaxiFront,
   ChevronDown,
   CircleHelp,
   CreditCard,
   GraduationCap,
+  HardHat,
   Info,
   Menu,
   MessageCircle,
@@ -46,7 +48,9 @@ const dropdowns: HeaderDropdown[] = [
       { href: "/formations/conduite-accompagnee", label: "Conduite accompagnée", icon: ShieldCheck },
       { href: "/formations/perfectionnement", label: "Conduite supervisée", icon: UserRound },
       { href: "/formations/permis-accelere", label: "Stage accéléré", icon: Sparkles },
-      { href: "/formations/code-en-ligne", label: "Code de la route", icon: BookOpenCheck }
+      { href: "/formations/code-en-ligne", label: "Code de la route", icon: BookOpenCheck },
+      { href: "/vtc", label: "Formation VTC", icon: CarTaxiFront },
+      { href: "/caces", label: "Formation CACES", icon: HardHat }
     ]
   },
   {
@@ -94,7 +98,7 @@ function Logo() {
       </span>
       <span className="shrink-0">
         <span className="block whitespace-nowrap text-lg font-extrabold tracking-[0.08em] text-white drop-shadow-sm sm:text-xl">
-          LODENE
+          LODEN
         </span>
       </span>
     </Link>

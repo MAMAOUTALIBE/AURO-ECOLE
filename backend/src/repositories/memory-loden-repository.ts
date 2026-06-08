@@ -337,6 +337,10 @@ export class MemoryLodenRepository implements LodenRepository {
       .sort((left, right) => right.createdAt.getTime() - left.createdAt.getTime());
   }
 
+  async findPaymentByStripePaymentIntentId(stripePaymentIntentId: string) {
+    return this.store.payments.find((payment) => payment.stripePaymentIntentId === stripePaymentIntentId) ?? null;
+  }
+
   async createPayment(input: CreatePaymentInput) {
     const now = new Date();
     const payment: PaymentRecord = {
@@ -544,7 +548,14 @@ export class MemoryLodenRepository implements LodenRepository {
 
     for (const formation of await this.listFormations()) {
       const value = score(`${formation.title} ${formation.description} ${formation.slug}`);
-      if (value) results.push({ category: "formation", title: formation.title, description: formation.description, href: "/formations", score: value });
+      if (value)
+        results.push({
+          category: "formation",
+          title: formation.title,
+          description: formation.description,
+          href: `/formations/${formation.slug}`,
+          score: value
+        });
     }
 
     for (const plan of await this.listPricingPlans()) {

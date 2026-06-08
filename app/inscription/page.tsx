@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { CheckCircle2 } from "lucide-react";
 import { PageHero } from "@/components/PageHero";
 import { SectionHeader } from "@/components/SectionHeader";
@@ -36,7 +37,9 @@ export default function InscriptionPage() {
               ))}
             </div>
           </div>
-          <StudentRegistrationForm />
+          <Suspense fallback={<div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-premium">Chargement du formulaire...</div>}>
+            <StudentRegistrationForm />
+          </Suspense>
         </div>
       </section>
     </main>

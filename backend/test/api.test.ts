@@ -79,8 +79,11 @@ describe("LODEN API", () => {
     });
 
     await request(app).get("/api/formations").expect(200).expect(({ body }) => {
-      expect(body.data).toHaveLength(8);
+      expect(body.data.length).toBeGreaterThanOrEqual(13);
       expect(body.data[0]).toHaveProperty("slug");
+      // Les pôles professionnels VTC et CACES sont bien servis par le catalogue.
+      expect(body.data.some((f: { productLine?: string }) => f.productLine === "VTC")).toBe(true);
+      expect(body.data.some((f: { productLine?: string }) => f.productLine === "CACES")).toBe(true);
     });
 
     await request(app).get("/api/pricing-plans").expect(200).expect(({ body }) => {
@@ -110,6 +113,12 @@ describe("LODEN API", () => {
 
     await request(app).get("/api/search").query({ q: "cpf" }).expect(200).expect(({ body }) => {
       expect(body.data.some((item: { title: string }) => item.title.toLowerCase().includes("cpf"))).toBe(true);
+    });
+
+    // Les résultats "formation" pointent vers la page détail (deep-link), pas la liste générique.
+    await request(app).get("/api/search").query({ q: "permis" }).expect(200).expect(({ body }) => {
+      const formation = body.data.find((item: { category: string; href: string }) => item.category === "formation");
+      expect(formation?.href).toMatch(/^\/formations\/.+/);
     });
   });
 
@@ -223,6 +232,79 @@ describe("LODEN API", () => {
         expect(body.data).toHaveLength(1);
         expect(body.data[0].amountCents).toBe(119000);
       });
+  });
+
+  it("derives the payment amount from the plan and ignores a tampered client amount", async () => {
+    const { app } = testApp();
+
+    const registration = await request(app)
+      .post("/api/auth/register")
+      .send({
+        firstName: "Fraude",
+        lastName: "Test",
+        email: "fraude@example.com",
+        password: "super-password",
+        formationId: "formation-permis-b-manuel"
+      })
+      .expect(201);
+
+    // Tentative de fraude : 1 centime envoyé par le client pour un pack à 1190 €.
+    await request(app)
+      .post("/api/payments/payment-intents")
+      .set("Authorization", `Bearer ${registration.body.token}`)
+      .send({ pricingPlanId: "plan-permis-b", kind: "FORMATION", amountCents: 1, currency: "EUR" })
+      .expect(201)
+      .expect(({ body }) => {
+        // Le serveur impose le prix réel du pack, pas le montant client.
+        expect(body.data.amountCents).toBe(119000);
+      });
+  });
+
+  it("rejects a payment intent for an unknown plan", async () => {
+    const { app } = testApp();
+
+    const registration = await request(app)
+      .post("/api/auth/register")
+      .send({
+        firstName: "Plan",
+        lastName: "Inconnu",
+        email: "plan-inconnu@example.com",
+        password: "super-password",
+        formationId: "formation-permis-b-manuel"
+      })
+      .expect(201);
+
+    await request(app)
+      .post("/api/payments/payment-intents")
+      .set("Authorization", `Bearer ${registration.body.token}`)
+      .send({ pricingPlanId: "plan-inexistant", kind: "FORMATION", currency: "EUR" })
+      .expect(404);
+  });
+
+  it("rejects an unsigned Stripe webhook (mock mode: no event is trusted)", async () => {
+    const { app } = testApp();
+
+    await request(app)
+      .post("/api/payments/stripe/webhook")
+      .set("Content-Type", "application/json")
+      .send({ type: "payment_intent.succeeded", data: { object: { id: "pi_mock_x" } } })
+      .expect(400);
+  });
+
+  it("lets a MONITEUR read its instructor scope (bookings, exams) but not admin-only data", async () => {
+    const { app } = testApp();
+
+    const login = await request(app)
+      .post("/api/auth/login")
+      .send({ email: "sarah.benali@loden-autoecole.fr", password: "moniteur-password" })
+      .expect(200);
+    expect(login.body.user.role).toBe("MONITEUR");
+    const token = login.body.token as string;
+
+    await request(app).get("/api/bookings").set("Authorization", `Bearer ${token}`).expect(200);
+    await request(app).get("/api/exams").set("Authorization", `Bearer ${token}`).expect(200);
+    // Pas d'accès à la gestion des comptes utilisateurs.
+    await request(app).get("/api/users").set("Authorization", `Bearer ${token}`).expect(403);
   });
 
   it("protects CRM data behind admin roles", async () => {

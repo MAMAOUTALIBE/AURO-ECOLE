@@ -8,7 +8,11 @@ export async function POST(request: Request) {
   const data = await result.clone().json().catch(() => null);
 
   if (result.ok && data?.token) {
-    const response = NextResponse.json(data, { status: result.status });
+    // Le JWT n'est JAMAIS renvoyé au navigateur : il vit uniquement dans le cookie
+    // httpOnly. Le client n'a besoin que de `user` (rôle pour la redirection).
+    const { token, ...safe } = data;
+    void token;
+    const response = NextResponse.json(safe, { status: result.status });
     response.cookies.set(SESSION_COOKIE, data.token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",

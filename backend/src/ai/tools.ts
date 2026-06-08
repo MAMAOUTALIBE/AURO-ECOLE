@@ -52,7 +52,7 @@ export const publicTools: ToolEntry[] = [
       type: "function",
       function: {
         name: "get_formations",
-        description: "Liste les formations au permis proposées par LODENE (titre, type de boîte, durée, prix indicatif, éligibilité CPF).",
+        description: "Liste les formations au permis proposées par LODEN (titre, type de boîte, durée, prix indicatif, éligibilité CPF).",
         parameters: { type: "object", properties: {}, additionalProperties: false }
       }
     },
@@ -66,7 +66,7 @@ export const publicTools: ToolEntry[] = [
       type: "function",
       function: {
         name: "get_prices",
-        description: "Liste les packs et tarifs publics validés de LODENE.",
+        description: "Liste les packs et tarifs publics validés de LODEN.",
         parameters: { type: "object", properties: {}, additionalProperties: false }
       }
     },
@@ -80,7 +80,7 @@ export const publicTools: ToolEntry[] = [
       type: "function",
       function: {
         name: "get_agencies",
-        description: "Liste les agences LODENE (nom et adresse publique).",
+        description: "Liste les agences LODEN (nom et adresse publique).",
         parameters: { type: "object", properties: {}, additionalProperties: false }
       }
     },

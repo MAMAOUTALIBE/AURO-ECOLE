@@ -2,15 +2,29 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ClipboardCheck, Send } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { formations } from "@/data/site";
 import { phoneInputProps, phoneSchema } from "@/lib/validation";
+
+// Rapproche un slug de formation du libellé "Besoin" du diagnostic.
+const NEED_BY_FORMATION_SLUG: Record<string, string> = {
+  "permis-b-manuel": "Permis B manuel",
+  "permis-b-automatique": "Boîte automatique",
+  "boite-automatique": "Boîte automatique",
+  "permis-accelere": "Permis accéléré",
+  "pack-cpf": "CPF / financement",
+  perfectionnement: "Remise à niveau",
+  "annulation-permis": "Remise à niveau"
+};
 
 const schema = z.object({
   name: z.string().min(2, "Indique ton nom"),
   email: z.string().email("Email invalide"),
   phone: phoneSchema,
+  company: z.string().optional(),
   need: z.string().min(1, "Choisis un besoin"),
   financing: z.string().min(1, "Choisis une option"),
   availability: z.string().min(1, "Indique tes disponibilités"),
@@ -19,9 +33,26 @@ const schema = z.object({
   message: z.string().min(10, "Ajoute quelques précisions")
 });
 
+const POLE_NEED: Record<string, string> = { VTC: "Formation VTC", CACES: "Formation CACES" };
+
 type ContactFormValues = z.infer<typeof schema>;
 
 export function ContactForm() {
+  const searchParams = useSearchParams();
+  // Contexte transmis par les pages de formation (?formation=<slug>) ou les pôles pro
+  // (?pole=VTC|CACES) : on pré-remplit le besoin et un message pour qualifier la demande.
+  const formationSlug = searchParams.get("formation");
+  const pole = searchParams.get("pole");
+  const formationTitle = formations.find((formation) => formation.slug === formationSlug)?.title;
+  const isPro = pole === "VTC" || pole === "CACES";
+  const defaultNeed =
+    (pole && POLE_NEED[pole]) || (formationSlug && NEED_BY_FORMATION_SLUG[formationSlug]) || "Permis B manuel";
+  const defaultMessage = isPro
+    ? `Demande de devis — formation ${pole}${formationTitle ? ` (${formationTitle})` : ""}. Merci de me recontacter avec les modalités et le financement.`
+    : formationTitle
+      ? `Je souhaite un devis pour la formation : ${formationTitle}.`
+      : "";
+
   const [sent, setSent] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const {
@@ -32,11 +63,12 @@ export function ContactForm() {
   } = useForm<ContactFormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
-      need: "Permis B manuel",
+      need: defaultNeed,
       financing: "À définir",
       availability: "Soirs en semaine",
       urgency: "Ce mois-ci",
-      preferredContact: "Téléphone"
+      preferredContact: "Téléphone",
+      message: defaultMessage
     }
   });
 
@@ -46,13 +78,18 @@ export function ContactForm() {
 
     const structuredMessage = [
       `Besoin: ${values.need}`,
+      values.company ? `Entreprise/financeur: ${values.company}` : null,
       `Financement: ${values.financing}`,
       `Disponibilités: ${values.availability}`,
       `Délai souhaité: ${values.urgency}`,
       `Contact préféré: ${values.preferredContact}`,
       `Message: ${values.message}`
-    ].join("\n");
+    ]
+      .filter(Boolean)
+      .join("\n");
     const isCpfRequest = values.need.includes("CPF") || values.financing.includes("CPF");
+    // Devis pro (VTC/CACES, ou entreprise renseignée) -> type AUTRE pour le tri CRM.
+    const type = isPro || values.company ? "AUTRE" : isCpfRequest ? "CPF" : "INSCRIPTION";
 
     const response = await fetch("/api/contact-requests", {
       method: "POST",
@@ -63,8 +100,8 @@ export function ContactForm() {
         fullName: values.name,
         email: values.email,
         phone: values.phone,
-        type: isCpfRequest ? "CPF" : "INSCRIPTION",
-        source: "frontend-diagnostic-form",
+        type,
+        source: isPro ? `devis-pro-${pole?.toLowerCase()}` : "frontend-diagnostic-form",
         message: structuredMessage
       })
     });
@@ -102,11 +139,16 @@ export function ContactForm() {
         <Field label="Téléphone" error={errors.phone?.message}>
           <input {...register("phone")} {...phoneInputProps} className="field-input" />
         </Field>
+        <Field label="Entreprise / financeur (optionnel)" error={errors.company?.message}>
+          <input {...register("company")} className="field-input" placeholder="Société, OPCO, Pôle emploi…" autoComplete="organization" />
+        </Field>
         <Field label="Besoin" error={errors.need?.message}>
           <select {...register("need")} className="field-input">
             <option>Permis B manuel</option>
             <option>Boîte automatique</option>
             <option>Permis accéléré</option>
+            <option>Formation VTC</option>
+            <option>Formation CACES</option>
             <option>CPF / financement</option>
             <option>Remise à niveau</option>
           </select>

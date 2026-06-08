@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Allura, Great_Vibes, Permanent_Marker } from "next/font/google";
 import { ArrowRight, CreditCard, PlayCircle, Star, UsersRound, WalletCards } from "lucide-react";
 import { MotionReveal } from "@/components/MotionReveal";
+import { proofStats } from "@/data/site";
 
 const greatVibes = Great_Vibes({
   subsets: ["latin"],
@@ -23,8 +24,8 @@ const permanentMarker = Permanent_Marker({
 });
 
 const badges = [
-  { icon: Star, title: "4.9/5", detail: "+500 avis" },
-  { icon: UsersRound, title: "+2000", detail: "élèves formés" },
+  { icon: Star, title: proofStats.ratingDisplay, detail: "avis élèves" },
+  { icon: UsersRound, title: proofStats.studentsAccompanied, detail: "élèves accompagnés" },
   { icon: WalletCards, title: "CPF", detail: "disponible" },
   { icon: CreditCard, title: "Paiement", detail: "en 4x sans frais" }
 ];
@@ -55,7 +56,7 @@ export function HeroSection() {
           <MotionReveal>
             <div className="max-w-[520px]">
               <h1
-                aria-label="Passe ton permis avec LODENE"
+                aria-label="Passe ton permis avec LODEN"
                 className="leading-none"
               >
                 <span className={`${greatVibes.className} block text-[3.6rem] font-normal leading-[0.9] text-[#087f92] sm:text-[4.5rem] lg:text-[5.25rem]`}>
@@ -65,7 +66,7 @@ export function HeroSection() {
                   avec
                 </span>
                 <span className={`${permanentMarker.className} block text-[3.4rem] font-normal leading-[0.95] tracking-[-0.04em] text-loden-ink sm:text-[4.25rem] lg:text-[4.75rem]`}>
-                  LODENE
+                  LODEN
                 </span>
               </h1>
 
@@ -110,7 +111,7 @@ export function HeroSection() {
             <div className="relative mt-10 min-h-[360px] lg:hidden">
               <Image
                 src="/loden-hero.jpg"
-                alt="Voiture école moderne LODENE avec élève et moniteur"
+                alt="Voiture école moderne LODEN avec élève et moniteur"
                 fill
                 priority
                 sizes="100vw"

@@ -4,7 +4,7 @@ import { ArrowRight, MessageSquareText, ShieldCheck, Star, TrendingUp } from "lu
 import { PageHero } from "@/components/PageHero";
 import { ReviewsGrid } from "@/components/ReviewsGrid";
 import { SectionHeader } from "@/components/SectionHeader";
-import { testimonials } from "@/data/site";
+import { proofStats, testimonials } from "@/data/site";
 import { safeJsonLd } from "@/lib/json-ld";
 
 export const metadata: Metadata = {
@@ -20,9 +20,10 @@ export default function AvisPage() {
     url: "https://loden-autoecole.fr/avis",
     aggregateRating: {
       "@type": "AggregateRating",
-      ratingValue: "4.9",
-      bestRating: "5",
-      reviewCount: "128"
+      ratingValue: proofStats.ratingValueSchema,
+      bestRating: proofStats.bestRating,
+      // Aligné sur le nombre réel d'avis publiés (anti-survente / pénalité Google).
+      reviewCount: String(testimonials.length)
     },
     review: testimonials.map((testimonial) => ({
       "@type": "Review",
@@ -73,9 +74,9 @@ export default function AvisPage() {
         <div className="container-pad">
           <div className="grid gap-5 md:grid-cols-3">
             {[
-              ["4,9/5", "Note Google moyenne"],
-              ["98 %", "Réussite sur parcours complet"],
-              ["92 %", "Élèves recommandent LODEN"]
+              [proofStats.ratingDisplay, "Note Google moyenne"],
+              [proofStats.passRate, "Réussite sur parcours complet"],
+              [proofStats.recommendRate, "Élèves recommandent LODEN"]
             ].map(([value, label]) => (
               <div key={label} className="rounded-3xl border border-slate-200 bg-loden-pearl p-6 text-center shadow-soft">
                 <div className="mx-auto flex w-max gap-1 text-loden-500">

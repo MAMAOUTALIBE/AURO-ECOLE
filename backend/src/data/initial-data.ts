@@ -154,6 +154,81 @@ export const initialFormations: FormationRecord[] = [
     options: { tags: ["Remise à niveau", "Confiance", "À la carte"] },
     cpfEligible: false,
     active: true
+  },
+  {
+    id: "formation-vtc",
+    title: "Formation VTC — Carte professionnelle",
+    slug: "formation-vtc",
+    description:
+      "Préparation complète à l'examen VTC : réglementation T3P, sécurité routière, gestion, anglais et développement commercial pour obtenir la carte professionnelle de chauffeur.",
+    mode: "MIXTE",
+    productLine: "VTC",
+    priceCents: 149000,
+    durationLabel: "Préparation examen + théorie",
+    imageUrl: "/loden-hero.jpg",
+    options: { tags: ["VTC", "CPF", "Reconversion", "Carte pro"] },
+    cpfEligible: true,
+    active: true
+  },
+  {
+    id: "formation-vtc-continue",
+    title: "VTC — Formation continue (recyclage)",
+    slug: "vtc-formation-continue",
+    description:
+      "Stage de formation continue obligatoire tous les 5 ans pour renouveler la carte VTC : mises à jour réglementaires, sécurité et relation client.",
+    mode: "MIXTE",
+    productLine: "VTC",
+    priceCents: 59000,
+    durationLabel: "14 h sur 2 jours",
+    imageUrl: "/loden-hero.jpg",
+    options: { tags: ["VTC", "Recyclage", "Obligatoire 5 ans"] },
+    cpfEligible: false,
+    active: true
+  },
+  {
+    id: "formation-caces-r489",
+    title: "CACES R489 — Chariots élévateurs",
+    slug: "caces-r489-chariots",
+    description:
+      "Certificat d'aptitude à la conduite en sécurité des chariots élévateurs (catégories 1 à 5) : théorie, pratique et passage du test CACES R489.",
+    mode: "MIXTE",
+    productLine: "CACES",
+    priceCents: 75000,
+    durationLabel: "3 à 5 jours",
+    imageUrl: "/loden-hero.jpg",
+    options: { tags: ["CACES", "R489", "CPF", "Logistique"] },
+    cpfEligible: true,
+    active: true
+  },
+  {
+    id: "formation-caces-r486",
+    title: "CACES R486 — Nacelles élévatrices (PEMP)",
+    slug: "caces-r486-nacelles",
+    description:
+      "Formation à la conduite des plateformes élévatrices mobiles de personnes (catégories A et B) avec passage du test CACES R486.",
+    mode: "MIXTE",
+    productLine: "CACES",
+    priceCents: 69000,
+    durationLabel: "2 à 4 jours",
+    imageUrl: "/loden-hero.jpg",
+    options: { tags: ["CACES", "R486", "CPF", "Nacelle"] },
+    cpfEligible: true,
+    active: true
+  },
+  {
+    id: "formation-caces-r482",
+    title: "CACES R482 — Engins de chantier",
+    slug: "caces-r482-engins-chantier",
+    description:
+      "Formation à la conduite en sécurité des engins de chantier (pelles, chargeuses, mini-pelles…) avec passage du test CACES R482.",
+    mode: "MIXTE",
+    productLine: "CACES",
+    priceCents: 89000,
+    durationLabel: "3 à 5 jours",
+    imageUrl: "/loden-hero.jpg",
+    options: { tags: ["CACES", "R482", "CPF", "BTP"] },
+    cpfEligible: true,
+    active: true
   }
 ];
 
@@ -269,6 +344,7 @@ export const initialUsers: UserRecord[] = [
     phone: "0600000001",
     role: "MONITEUR",
     status: "ACTIVE",
+    passwordHash: "$2b$12$VIx2vVB4pKggoYxz0uh.n.sIFBfoDTJ3MZUz.y2dS7MLoNk0V6nPe",
     createdAt: now,
     updatedAt: now
   },
@@ -280,6 +356,7 @@ export const initialUsers: UserRecord[] = [
     phone: "0600000002",
     role: "MONITEUR",
     status: "ACTIVE",
+    passwordHash: "$2b$12$VIx2vVB4pKggoYxz0uh.n.sIFBfoDTJ3MZUz.y2dS7MLoNk0V6nPe",
     createdAt: now,
     updatedAt: now
   },
@@ -291,6 +368,7 @@ export const initialUsers: UserRecord[] = [
     phone: "0600000003",
     role: "MONITEUR",
     status: "ACTIVE",
+    passwordHash: "$2b$12$VIx2vVB4pKggoYxz0uh.n.sIFBfoDTJ3MZUz.y2dS7MLoNk0V6nPe",
     createdAt: now,
     updatedAt: now
   }

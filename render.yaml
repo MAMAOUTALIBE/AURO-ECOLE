@@ -1,0 +1,60 @@
+# Render Blueprint — déploiement LODEN (frontend Next.js + API Express + PostgreSQL).
+# Mise en ligne en 1 clic : Render Dashboard → New + → Blueprint → connecter ce repo.
+#
+# Après le 1er déploiement (les URLs publiques sont alors connues), renseigner :
+#   - groupe "loden-secrets" : LODEN_ADMIN_EMAIL + LODEN_ADMIN_PASSWORD (>=14 caractères)
+#   - service loden-api  : CORS_ORIGIN   = URL publique de loden-web  (ex: https://loden-web.onrender.com)
+#   - service loden-web  : LODEN_API_URL = URL publique de loden-api  (ex: https://loden-api.onrender.com)
+# puis "Manual Deploy" pour réappliquer. JWT_SECRET est généré et partagé automatiquement.
+
+databases:
+  - name: loden-db
+    databaseName: loden
+    plan: free
+    postgresMajorVersion: "16"
+
+envVarGroups:
+  - name: loden-secrets
+    envVars:
+      # Signé côté API, vérifié côté web (middleware /admin) — doit être identique : un groupe partagé garantit l'égalité.
+      - key: JWT_SECRET
+        generateValue: true
+      - key: LODEN_ADMIN_EMAIL
+        sync: false
+      - key: LODEN_ADMIN_PASSWORD
+        sync: false
+
+services:
+  - type: web
+    name: loden-api
+    runtime: node
+    plan: free
+    region: frankfurt
+    healthCheckPath: /api/health
+    buildCommand: npm ci && npm run prisma:generate && npm run api:build
+    # migrate au démarrage (idempotent) puis lancement de l'API compilée.
+    startCommand: npm run db:migrate:deploy && node dist/backend/main.js
+    envVars:
+      - fromGroup: loden-secrets
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: loden-db
+          property: connectionString
+      - key: CORS_ORIGIN
+        sync: false
+
+  - type: web
+    name: loden-web
+    runtime: node
+    plan: free
+    region: frankfurt
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    envVars:
+      - fromGroup: loden-secrets
+      - key: NODE_ENV
+        value: production
+      - key: LODEN_API_URL
+        sync: false

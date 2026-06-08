@@ -159,7 +159,32 @@ export function PaymentIntentForm() {
 
   if (state.status === "anonymous") {
     return (
-      <PaymentPanel title="Compte élève requis" text="Connecte-toi ou crée ton compte avant de préparer un paiement.">
+      <PaymentPanel
+        title="Ton pack sélectionné"
+        text="Voici le détail de ta formation. Connecte-toi ou crée ton compte élève pour finaliser le paiement en toute sécurité."
+      >
+        {selectedPlan ? (
+          <div className="mt-6 rounded-2xl border border-slate-200 bg-loden-pearl p-5">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <span className="text-lg font-semibold text-loden-ink">{selectedPlan.title}</span>
+              <span className="rounded-full bg-white px-3 py-1 text-sm font-semibold text-loden-700 shadow-soft">
+                {formatCurrency(selectedPlan.priceCents / 100)}
+              </span>
+            </div>
+            {selectedPlan.badge ? <p className="mt-1 text-sm text-loden-muted">{selectedPlan.badge}</p> : null}
+            {selectedPlan.features.length > 0 ? (
+              <ul className="mt-4 grid gap-2 text-sm text-loden-muted">
+                {selectedPlan.features.map((feature) => (
+                  <li key={feature} className="flex gap-2">
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-loden-600" />
+                    <span>{feature}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+          </div>
+        ) : null}
+
         <div className="mt-6 flex flex-col gap-3 sm:flex-row">
           <Link className="focus-ring rounded-full bg-loden-700 px-5 py-3 text-center font-semibold text-white" href="/connexion">
             Me connecter
@@ -168,6 +193,7 @@ export function PaymentIntentForm() {
             Créer un compte
           </Link>
         </div>
+        <p className="mt-4 text-xs text-loden-muted">Aucun débit à cette étape — la préparation du paiement se fait une fois connecté.</p>
       </PaymentPanel>
     );
   }

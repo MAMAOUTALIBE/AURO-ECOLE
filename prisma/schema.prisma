@@ -44,6 +44,12 @@ enum FormationMode {
   CODE
 }
 
+enum ProductLine {
+  AUTO_ECOLE
+  VTC
+  CACES
+}
+
 enum BookingStatus {
   EN_ATTENTE
   CONFIRMEE
@@ -275,6 +281,7 @@ model Formation {
   slug            String        @unique
   description     String
   mode            FormationMode
+  productLine     ProductLine   @default(AUTO_ECOLE)
   priceCents      Int
   durationLabel   String
   defaultHours    Int?

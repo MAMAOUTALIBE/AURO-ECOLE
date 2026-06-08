@@ -2,6 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { BadgeCheck, LockKeyhole, Send } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -41,18 +42,26 @@ type RegistrationSuccess = {
 };
 
 export function StudentRegistrationForm() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  // Pré-sélection de la formation depuis le contexte (?formation=<slug>) propagé
+  // par les pages de formation. On retombe sur la 1re option si le slug est inconnu.
+  const requestedFormationId = `formation-${searchParams.get("formation") ?? ""}`;
+  const initialFormationId = formationOptions.some((option) => option.value === requestedFormationId)
+    ? requestedFormationId
+    : formationOptions[0].value;
+
   const [success, setSuccess] = useState<RegistrationSuccess | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const {
     register,
     handleSubmit,
     watch,
-    formState: { errors, isSubmitting },
-    reset
+    formState: { errors, isSubmitting }
   } = useForm<RegistrationValues>({
     resolver: zodResolver(schema),
     defaultValues: {
-      formationId: formationOptions[0].value
+      formationId: initialFormationId
     }
   });
 
@@ -81,7 +90,7 @@ export function StudentRegistrationForm() {
       })
     });
 
-    const payload = await response.json().catch(() => null) as { error?: { message?: string }; token?: string } | null;
+    const payload = await response.json().catch(() => null) as { error?: { message?: string } } | null;
 
     if (!response.ok) {
       setSubmitError(payload?.error?.message ?? "L'inscription n'a pas pu être créée. Réessaie dans quelques instants.");
@@ -89,8 +98,10 @@ export function StudentRegistrationForm() {
     }
 
     // La session est désormais dans le cookie httpOnly posé par /api/auth/register.
+    // On confirme puis on redirige vers l'espace élève (le tunnel ne s'arrête plus net).
     setSuccess({ firstName: values.firstName, formation: selectedFormationLabel });
-    reset({ formationId: formationOptions[0].value });
+    router.push("/espace-eleve");
+    router.refresh();
   };
 
   return (

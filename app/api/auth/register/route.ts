@@ -7,9 +7,12 @@ export async function POST(request: Request) {
   const result = await proxyBackendJson("/api/auth/register", { method: "POST", body });
   const data = await result.clone().json().catch(() => null);
 
-  // Comme le login : on dépose le JWT dans un cookie httpOnly (jamais lisible par JS).
+  // Comme le login : on dépose le JWT dans un cookie httpOnly (jamais lisible par JS)
+  // et on le retire de la réponse renvoyée au navigateur.
   if (result.ok && data?.token) {
-    const response = NextResponse.json(data, { status: result.status });
+    const { token, ...safe } = data;
+    void token;
+    const response = NextResponse.json(safe, { status: result.status });
     response.cookies.set(SESSION_COOKIE, data.token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
