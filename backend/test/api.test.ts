@@ -307,6 +307,125 @@ describe("LODEN API", () => {
     await request(app).get("/api/users").set("Authorization", `Bearer ${token}`).expect(403);
   });
 
+  it("creates a student (user + profile) from the CRM with RBAC", async () => {
+    const { app } = testApp();
+    const admin = await request(app)
+      .post("/api/auth/login")
+      .send({ email: "admin@loden-autoecole.fr", password: "admin-password" })
+      .expect(200);
+    const token = admin.body.token as string;
+
+    const created = await request(app)
+      .post("/api/students")
+      .set("Authorization", `Bearer ${token}`)
+      .send({ firstName: "Nouvel", lastName: "Eleve", email: "nouvel.eleve@example.com", formationId: "formation-permis-b-manuel" })
+      .expect(201);
+    expect(created.body.data.user.email).toBe("nouvel.eleve@example.com");
+    expect(created.body.data.user.role).toBe("ELEVE");
+    expect(created.body.data.user.passwordHash).toBeUndefined();
+
+    // Email déjà utilisé -> conflit.
+    await request(app)
+      .post("/api/students")
+      .set("Authorization", `Bearer ${token}`)
+      .send({ firstName: "Doublon", lastName: "Eleve", email: "nouvel.eleve@example.com" })
+      .expect(409);
+
+    // Un élève (non-staff) ne peut pas créer d'élève.
+    const reg = await request(app)
+      .post("/api/auth/register")
+      .send({ firstName: "Eleve", lastName: "Simple", email: "eleve.simple@example.com", password: "super-password" })
+      .expect(201);
+    await request(app)
+      .post("/api/students")
+      .set("Authorization", `Bearer ${reg.body.token}`)
+      .send({ firstName: "X", lastName: "Y", email: "x.y@example.com" })
+      .expect(403);
+  });
+
+  it("manages instructors (create MONITEUR + update) with RBAC", async () => {
+    const { app } = testApp();
+    const admin = await request(app)
+      .post("/api/auth/login")
+      .send({ email: "admin@loden-autoecole.fr", password: "admin-password" })
+      .expect(200);
+    const token = admin.body.token as string;
+
+    const created = await request(app)
+      .post("/api/instructors")
+      .set("Authorization", `Bearer ${token}`)
+      .send({ firstName: "Nouveau", lastName: "Moniteur", email: "moniteur.new@example.com", specialties: ["Boîte manuelle"] })
+      .expect(201);
+    expect(created.body.data.user.role).toBe("MONITEUR");
+    expect(created.body.data.name).toBe("Nouveau Moniteur");
+
+    await request(app)
+      .patch(`/api/instructors/${created.body.data.id}`)
+      .set("Authorization", `Bearer ${token}`)
+      .send({ active: false })
+      .expect(200)
+      .expect(({ body }) => expect(body.data.active).toBe(false));
+
+    // Un moniteur ne peut pas créer un moniteur.
+    const mon = await request(app)
+      .post("/api/auth/login")
+      .send({ email: "sarah.benali@loden-autoecole.fr", password: "moniteur-password" })
+      .expect(200);
+    await request(app)
+      .post("/api/instructors")
+      .set("Authorization", `Bearer ${mon.body.token}`)
+      .send({ firstName: "A", lastName: "B", email: "a.b@example.com" })
+      .expect(403);
+  });
+
+  it("manages a student dossier documents (add, verify, delete)", async () => {
+    const { app } = testApp();
+    const admin = await request(app)
+      .post("/api/auth/login")
+      .send({ email: "admin@loden-autoecole.fr", password: "admin-password" })
+      .expect(200);
+    const token = admin.body.token as string;
+
+    const created = await request(app)
+      .post("/api/students")
+      .set("Authorization", `Bearer ${token}`)
+      .send({ firstName: "Doc", lastName: "Eleve", email: "doc.eleve@example.com" })
+      .expect(201);
+    const studentId = created.body.data.id as string;
+
+    const doc = await request(app)
+      .post(`/api/students/${studentId}/documents`)
+      .set("Authorization", `Bearer ${token}`)
+      .send({ type: "CNI", url: "https://drive.example/cni.pdf" })
+      .expect(201);
+    expect(doc.body.data.verifiedAt).toBeNull();
+    const documentId = doc.body.data.id as string;
+
+    await request(app)
+      .get(`/api/students/${studentId}/documents`)
+      .set("Authorization", `Bearer ${token}`)
+      .expect(200)
+      .expect(({ body }) => expect(body.data).toHaveLength(1));
+
+    await request(app)
+      .patch(`/api/students/${studentId}/documents/${documentId}`)
+      .set("Authorization", `Bearer ${token}`)
+      .send({ verified: true })
+      .expect(200)
+      .expect(({ body }) => expect(body.data.verifiedAt).not.toBeNull());
+
+    await request(app)
+      .delete(`/api/students/${studentId}/documents/${documentId}`)
+      .set("Authorization", `Bearer ${token}`)
+      .expect(200);
+
+    await request(app)
+      .get(`/api/students/${studentId}/documents`)
+      .set("Authorization", `Bearer ${token}`)
+      .expect(200)
+      .expect(({ body }) => expect(body.data).toHaveLength(0));
+  });
+
   it("protects CRM data behind admin roles", async () => {
     const { app } = testApp();
 

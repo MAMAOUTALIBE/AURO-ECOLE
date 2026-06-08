@@ -9,6 +9,8 @@ export type Permission =
   | "catalog.manage"
   | "students.read"
   | "students.manage"
+  | "instructors.read"
+  | "instructors.manage"
   | "bookings.read"
   | "bookings.manage"
   | "payments.read"
@@ -37,6 +39,8 @@ const OPERATIONS: Permission[] = [
   "catalog.manage",
   "students.read",
   "students.manage",
+  "instructors.read",
+  "instructors.manage",
   "bookings.read",
   "bookings.manage",
   "payments.read",
@@ -67,6 +71,8 @@ export const ROLE_PERMISSIONS: Partial<Record<UserRole, Permission[]>> = {
     "dashboard.read",
     "students.read",
     "students.manage",
+    "instructors.read",
+    "instructors.manage",
     "bookings.read",
     "bookings.manage",
     "cpf.read",

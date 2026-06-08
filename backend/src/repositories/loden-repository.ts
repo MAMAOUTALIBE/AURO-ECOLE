@@ -25,6 +25,7 @@ import type {
   SearchResult,
   StudentRecord,
   StudentSkillRecord,
+  StudentDocumentRecord,
   UserRecord,
   UserRole
 } from "../domain/types";
@@ -37,6 +38,15 @@ export type CreateStudentInput = {
   userId: string;
   formationId?: string | null;
   purchasedHours?: number;
+};
+
+export type CreateInstructorInput = {
+  userId: string;
+  agencyId?: string | null;
+  photoUrl?: string | null;
+  bio?: string | null;
+  specialties?: string[];
+  interventionZones?: string[];
 };
 
 export type CreateBookingInput = Omit<BookingRecord, "id" | "status" | "createdAt" | "updatedAt"> & {
@@ -97,9 +107,15 @@ export interface LodenRepository {
   updateStudent(id: string, input: Partial<StudentRecord>): Promise<StudentRecord>;
   listStudentSkills(studentId: string): Promise<StudentSkillRecord[]>;
   setStudentSkill(studentId: string, skillCode: string, level: number): Promise<StudentSkillRecord>;
+  listStudentDocuments(studentId: string): Promise<StudentDocumentRecord[]>;
+  createStudentDocument(input: { studentId: string; type: string; url: string }): Promise<StudentDocumentRecord>;
+  setStudentDocumentVerified(id: string, verified: boolean): Promise<StudentDocumentRecord>;
+  deleteStudentDocument(id: string): Promise<void>;
 
   listInstructors(): Promise<InstructorRecord[]>;
   findInstructorById(id: string): Promise<InstructorRecord | null>;
+  createInstructor(input: CreateInstructorInput): Promise<InstructorRecord>;
+  updateInstructor(id: string, input: Partial<InstructorRecord>): Promise<InstructorRecord>;
 
   listFormations(includeInactive?: boolean): Promise<FormationRecord[]>;
   findFormationById(id: string): Promise<FormationRecord | null>;

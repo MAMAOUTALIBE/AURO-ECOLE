@@ -20,6 +20,17 @@ type StudentDetail = {
 
 type Option = { id: string; label: string };
 type Skill = { code: string; label: string; level: number };
+type StudentDocument = { id: string; type: string; url: string; verifiedAt?: string | null; createdAt: string };
+
+const DOCUMENT_TYPES = [
+  "Pièce d'identité (CNI)",
+  "Justificatif de domicile",
+  "Photo d'identité",
+  "Attestation ASSR / ASR",
+  "Attestation JDC / recensement",
+  "Photo-signature numérique",
+  "Autre"
+];
 
 function toDateInput(value?: string | null) {
   if (!value) return "";
@@ -31,6 +42,8 @@ export function StudentFile({ studentId }: { studentId: string }) {
   const [agencies, setAgencies] = useState<Option[]>([]);
   const [formations, setFormations] = useState<Option[]>([]);
   const [skills, setSkills] = useState<Skill[]>([]);
+  const [documents, setDocuments] = useState<StudentDocument[]>([]);
+  const [docForm, setDocForm] = useState({ type: DOCUMENT_TYPES[0], url: "" });
   const [status, setStatus] = useState<{ tone: "success" | "error"; text: string } | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -40,9 +53,10 @@ export function StudentFile({ studentId }: { studentId: string }) {
       fetch(`/api/students/${studentId}`).then((r) => r.json()).catch(() => null),
       fetch("/api/agencies").then((r) => (r.ok ? r.json() : null)).catch(() => null),
       fetch("/api/formations").then((r) => (r.ok ? r.json() : null)).catch(() => null),
-      fetch(`/api/students/${studentId}/skills`).then((r) => (r.ok ? r.json() : null)).catch(() => null)
+      fetch(`/api/students/${studentId}/skills`).then((r) => (r.ok ? r.json() : null)).catch(() => null),
+      fetch(`/api/students/${studentId}/documents`).then((r) => (r.ok ? r.json() : null)).catch(() => null)
     ])
-      .then(([studentPayload, agencyPayload, formationPayload, skillPayload]) => {
+      .then(([studentPayload, agencyPayload, formationPayload, skillPayload, documentPayload]) => {
         if (studentPayload?.data) setStudent(studentPayload.data as StudentDetail);
         else setStatus({ tone: "error", text: studentPayload?.error?.message ?? "Élève introuvable." });
         if (Array.isArray(agencyPayload?.data)) {
@@ -52,9 +66,49 @@ export function StudentFile({ studentId }: { studentId: string }) {
           setFormations(formationPayload.data.map((f: { id: string; title: string }) => ({ id: f.id, label: f.title })));
         }
         if (Array.isArray(skillPayload?.data)) setSkills(skillPayload.data as Skill[]);
+        if (Array.isArray(documentPayload?.data)) setDocuments(documentPayload.data as StudentDocument[]);
       })
       .finally(() => setLoading(false));
   }, [studentId]);
+
+  const addDocument = async () => {
+    if (!docForm.type || !docForm.url.trim()) {
+      setStatus({ tone: "error", text: "Renseigne un type et un lien/référence de document." });
+      return;
+    }
+    try {
+      const response = await fetch(`/api/students/${studentId}/documents`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: docForm.type, url: docForm.url.trim() })
+      });
+      const payload = await response.json().catch(() => null);
+      if (!response.ok) throw new Error(payload?.error?.message ?? "Ajout impossible.");
+      setDocuments((current) => [payload.data as StudentDocument, ...current]);
+      setDocForm({ type: DOCUMENT_TYPES[0], url: "" });
+    } catch (error) {
+      setStatus({ tone: "error", text: error instanceof Error ? error.message : "Ajout impossible." });
+    }
+  };
+
+  const toggleVerify = async (document: StudentDocument) => {
+    const response = await fetch(`/api/students/${studentId}/documents/${document.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ verified: !document.verifiedAt })
+    });
+    if (response.ok) {
+      const payload = await response.json();
+      setDocuments((current) =>
+        current.map((item) => (item.id === document.id ? { ...item, verifiedAt: payload.data.verifiedAt } : item))
+      );
+    }
+  };
+
+  const removeDocument = async (document: StudentDocument) => {
+    const response = await fetch(`/api/students/${studentId}/documents/${document.id}`, { method: "DELETE" });
+    if (response.ok) setDocuments((current) => current.filter((item) => item.id !== document.id));
+  };
 
   const update = (patch: Partial<StudentDetail>) => setStudent((current) => (current ? { ...current, ...patch } : current));
 
@@ -227,6 +281,85 @@ export function StudentFile({ studentId }: { studentId: string }) {
             </div>
           ))}
           {skills.length === 0 ? <p className="text-sm text-loden-muted">Référentiel indisponible.</p> : null}
+        </div>
+      </section>
+
+      <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-soft">
+        <h3 className="text-lg font-semibold text-loden-ink">Documents du dossier</h3>
+        <p className="mt-1 text-sm text-loden-muted">
+          Pièces justificatives (lien vers le fichier ou référence interne). Marque chaque pièce « vérifiée » une fois contrôlée.
+        </p>
+
+        <div className="mt-5 grid gap-3 sm:grid-cols-[1fr_1.4fr_auto] sm:items-end">
+          <Field label="Type de document">
+            <select className="field-input" value={docForm.type} onChange={(e) => setDocForm((f) => ({ ...f, type: e.target.value }))}>
+              {DOCUMENT_TYPES.map((type) => (
+                <option key={type} value={type}>
+                  {type}
+                </option>
+              ))}
+            </select>
+          </Field>
+          <Field label="Lien / référence">
+            <input
+              className="field-input"
+              placeholder="https://… ou référence interne"
+              value={docForm.url}
+              onChange={(e) => setDocForm((f) => ({ ...f, url: e.target.value }))}
+            />
+          </Field>
+          <button
+            type="button"
+            onClick={addDocument}
+            className="focus-ring inline-flex h-11 items-center justify-center rounded-full bg-loden-700 px-5 text-sm font-semibold text-white transition hover:bg-loden-800"
+          >
+            Ajouter
+          </button>
+        </div>
+
+        <div className="mt-5 grid gap-3">
+          {documents.map((document) => (
+            <div
+              key={document.id}
+              className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-100 bg-loden-pearl/50 p-3"
+            >
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-loden-ink">{document.type}</p>
+                <a
+                  href={document.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="break-all text-xs text-loden-700 underline-offset-2 hover:underline"
+                >
+                  {document.url}
+                </a>
+              </div>
+              <div className="flex items-center gap-2">
+                <span
+                  className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                    document.verifiedAt ? "bg-loden-50 text-loden-700" : "bg-amber-50 text-amber-700"
+                  }`}
+                >
+                  {document.verifiedAt ? "Vérifié" : "À vérifier"}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => toggleVerify(document)}
+                  className="focus-ring rounded-full border border-slate-200 px-3 py-1.5 text-xs font-semibold text-loden-ink hover:bg-loden-50"
+                >
+                  {document.verifiedAt ? "Annuler" : "Vérifier"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => removeDocument(document)}
+                  className="focus-ring rounded-full border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-50"
+                >
+                  Supprimer
+                </button>
+              </div>
+            </div>
+          ))}
+          {documents.length === 0 ? <p className="text-sm text-loden-muted">Aucun document pour le moment.</p> : null}
         </div>
       </section>
     </div>

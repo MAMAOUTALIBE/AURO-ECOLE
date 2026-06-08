@@ -49,6 +49,15 @@ export type StudentSkillRecord = {
   updatedAt: Date;
 };
 
+export type StudentDocumentRecord = {
+  id: string;
+  studentId: string;
+  type: string;
+  url: string;
+  verifiedAt?: Date | null;
+  createdAt: Date;
+};
+
 export type InstallmentStatus = "EN_ATTENTE" | "PAYE" | "EN_RETARD";
 
 export type InstallmentRecord = {

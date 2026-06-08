@@ -107,6 +107,7 @@ type Instructor = {
   interventionZones: string[];
   ratingAverage: number;
   ratingCount: number;
+  active?: boolean;
 };
 
 type Lead = {
@@ -515,31 +516,170 @@ function StudentsView({ data }: { data: CrmData }) {
   );
 }
 
+const EMPTY_INSTRUCTOR_FORM = { firstName: "", lastName: "", email: "", specialties: "", interventionZones: "" };
+
 function InstructorsView({ data }: { data: CrmData }) {
+  const [list, setList] = useState<Instructor[]>(data.instructors);
+  const [showForm, setShowForm] = useState(false);
+  const [form, setForm] = useState(EMPTY_INSTRUCTOR_FORM);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setList(data.instructors);
+  }, [data.instructors]);
+
+  const toList = (value: string) =>
+    value
+      .split(",")
+      .map((item) => item.trim())
+      .filter(Boolean);
+
+  async function createInstructor(event: React.FormEvent) {
+    event.preventDefault();
+    setSubmitting(true);
+    setError(null);
+    try {
+      const response = await fetch("/api/instructors", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          firstName: form.firstName,
+          lastName: form.lastName,
+          email: form.email,
+          specialties: form.specialties ? toList(form.specialties) : undefined,
+          interventionZones: form.interventionZones ? toList(form.interventionZones) : undefined
+        })
+      });
+      const payload = await response.json().catch(() => null);
+      if (!response.ok) {
+        setError(payload?.error?.message ?? "Création impossible. Vérifie les champs.");
+        return;
+      }
+      setList((current) => [...current, payload.data as Instructor]);
+      setForm(EMPTY_INSTRUCTOR_FORM);
+      setShowForm(false);
+    } catch {
+      setError("Erreur réseau. Réessaie dans quelques instants.");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  async function toggleActive(instructor: Instructor) {
+    const response = await fetch(`/api/instructors/${instructor.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ active: instructor.active === false })
+    });
+    if (response.ok) {
+      const payload = await response.json();
+      setList((current) => current.map((item) => (item.id === instructor.id ? { ...item, active: payload.data.active } : item)));
+    }
+  }
+
   return (
-    <section className="grid gap-5 lg:grid-cols-3">
-      {data.instructors.map((instructor) => (
-        <article key={instructor.id} className="rounded-3xl border border-slate-200 bg-white p-5 shadow-soft">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <h3 className="text-lg font-semibold text-loden-ink">{instructor.name}</h3>
-              <p className="mt-2 text-sm text-loden-muted">{instructor.interventionZones.join(", ")}</p>
-            </div>
-            <span className="rounded-full bg-loden-50 px-3 py-1 text-sm font-semibold text-loden-700">
-              {instructor.ratingAverage}/5
-            </span>
+    <div className="grid gap-5">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="text-sm font-semibold uppercase tracking-[0.12em] text-loden-700">{list.length} moniteur(s)</p>
+        <button
+          type="button"
+          onClick={() => {
+            setShowForm((value) => !value);
+            setError(null);
+          }}
+          className="focus-ring inline-flex items-center gap-2 rounded-full bg-loden-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-loden-800"
+        >
+          {showForm ? "Fermer" : "Nouveau moniteur"}
+        </button>
+      </div>
+
+      {showForm ? (
+        <form onSubmit={createInstructor} className="grid gap-3 rounded-3xl border border-slate-200 bg-loden-pearl p-5" noValidate>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <InstructorField label="Prénom" value={form.firstName} onChange={(v) => setForm((f) => ({ ...f, firstName: v }))} required />
+            <InstructorField label="Nom" value={form.lastName} onChange={(v) => setForm((f) => ({ ...f, lastName: v }))} required />
+            <InstructorField label="Email" type="email" value={form.email} onChange={(v) => setForm((f) => ({ ...f, email: v }))} required />
+            <InstructorField label="Spécialités (séparées par ,)" value={form.specialties} onChange={(v) => setForm((f) => ({ ...f, specialties: v }))} />
           </div>
-          <div className="mt-5 flex flex-wrap gap-2">
-            {instructor.specialties.map((specialty) => (
-              <span key={specialty} className="rounded-full bg-loden-pearl px-3 py-1 text-xs font-semibold text-loden-muted">
-                {specialty}
-              </span>
-            ))}
-          </div>
-          <p className="mt-5 text-sm text-loden-muted">{instructor.ratingCount} avis · planning à enrichir avec les disponibilités.</p>
-        </article>
-      ))}
-    </section>
+          <InstructorField label="Zones d'intervention (séparées par ,)" value={form.interventionZones} onChange={(v) => setForm((f) => ({ ...f, interventionZones: v }))} />
+          {error ? <p className="rounded-2xl bg-red-50 p-3 text-sm font-medium text-red-700">{error}</p> : null}
+          <button
+            type="submit"
+            disabled={submitting}
+            className="focus-ring mt-1 inline-flex items-center justify-center rounded-full bg-loden-700 px-5 py-3 text-sm font-semibold text-white transition hover:bg-loden-800 disabled:opacity-70"
+          >
+            {submitting ? "Création…" : "Créer le moniteur"}
+          </button>
+        </form>
+      ) : null}
+
+      <section className="grid gap-5 lg:grid-cols-3">
+        {list.map((instructor) => {
+          const inactive = instructor.active === false;
+          return (
+            <article
+              key={instructor.id}
+              className={`rounded-3xl border bg-white p-5 shadow-soft ${inactive ? "border-slate-200 opacity-60" : "border-slate-200"}`}
+            >
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <h3 className="text-lg font-semibold text-loden-ink">{instructor.name}</h3>
+                  <p className="mt-2 text-sm text-loden-muted">{instructor.interventionZones.join(", ")}</p>
+                </div>
+                <span className="rounded-full bg-loden-50 px-3 py-1 text-sm font-semibold text-loden-700">{instructor.ratingAverage}/5</span>
+              </div>
+              <div className="mt-5 flex flex-wrap gap-2">
+                {instructor.specialties.map((specialty) => (
+                  <span key={specialty} className="rounded-full bg-loden-pearl px-3 py-1 text-xs font-semibold text-loden-muted">
+                    {specialty}
+                  </span>
+                ))}
+              </div>
+              <div className="mt-5 flex items-center justify-between">
+                <span className={`text-xs font-semibold ${inactive ? "text-red-600" : "text-loden-600"}`}>
+                  {inactive ? "Inactif" : "Actif"} · {instructor.ratingCount} avis
+                </span>
+                <button
+                  type="button"
+                  onClick={() => toggleActive(instructor)}
+                  className="focus-ring rounded-full border border-slate-200 px-3 py-1.5 text-xs font-semibold text-loden-ink hover:bg-loden-50"
+                >
+                  {inactive ? "Activer" : "Désactiver"}
+                </button>
+              </div>
+            </article>
+          );
+        })}
+      </section>
+    </div>
+  );
+}
+
+function InstructorField({
+  label,
+  value,
+  onChange,
+  type = "text",
+  required = false
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  type?: string;
+  required?: boolean;
+}) {
+  return (
+    <label className="grid gap-2">
+      <span className="text-sm font-semibold text-loden-ink">{label}</span>
+      <input
+        type={type}
+        value={value}
+        required={required}
+        onChange={(event) => onChange(event.target.value)}
+        className="field-input"
+      />
+    </label>
   );
 }
 

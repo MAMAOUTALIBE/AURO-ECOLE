@@ -78,7 +78,7 @@ export function createApp(repository: LodenRepository, config: ApiConfig, deps: 
   app.use("/api/agencies", createAgenciesRouter(repository, config));
   app.use("/api/admin", createStatsRouter(repository, config));
   app.use("/api", createCatalogRouter(repository, config));
-  app.use("/api/instructors", createInstructorsRouter(repository));
+  app.use("/api/instructors", createInstructorsRouter(repository, config));
   app.use("/api/leads", createLeadsRouter(repository, config, aiProvider));
   app.use("/api/users", createUsersRouter(repository, config));
   app.use("/api/students", createStudentsRouter(repository, config));

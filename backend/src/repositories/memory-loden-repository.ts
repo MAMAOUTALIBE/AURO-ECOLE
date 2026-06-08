@@ -32,6 +32,7 @@ import type {
   SearchResult,
   StudentRecord,
   StudentSkillRecord,
+  StudentDocumentRecord,
   UserRecord
 } from "../domain/types";
 import { notFound } from "../shared/http-error";
@@ -43,6 +44,7 @@ import type {
   CreateLeadInput,
   CreatePaymentInput,
   CreateReviewInput,
+  CreateInstructorInput,
   CreateStudentInput,
   CreateUserInput,
   ListUsersFilters,
@@ -69,6 +71,7 @@ type MutableStore = {
   exams: ExamRecord[];
   installments: InstallmentRecord[];
   studentSkills: StudentSkillRecord[];
+  studentDocuments: StudentDocumentRecord[];
   auditLogs: AuditLogRecord[];
 };
 
@@ -96,6 +99,7 @@ export class MemoryLodenRepository implements LodenRepository {
       exams: [],
       installments: [],
       studentSkills: [],
+      studentDocuments: [],
       auditLogs: [],
       ...seed
     };
@@ -208,12 +212,69 @@ export class MemoryLodenRepository implements LodenRepository {
     return skill;
   }
 
+  async listStudentDocuments(studentId: string) {
+    return this.store.studentDocuments
+      .filter((document) => document.studentId === studentId)
+      .slice()
+      .sort((left, right) => right.createdAt.getTime() - left.createdAt.getTime());
+  }
+
+  async createStudentDocument(input: { studentId: string; type: string; url: string }) {
+    const document: StudentDocumentRecord = {
+      id: randomUUID(),
+      studentId: input.studentId,
+      type: input.type,
+      url: input.url,
+      verifiedAt: null,
+      createdAt: new Date()
+    };
+    this.store.studentDocuments.push(document);
+    return document;
+  }
+
+  async setStudentDocumentVerified(id: string, verified: boolean) {
+    const document = this.store.studentDocuments.find((item) => item.id === id);
+    if (!document) throw notFound("Document introuvable");
+    document.verifiedAt = verified ? new Date() : null;
+    return document;
+  }
+
+  async deleteStudentDocument(id: string) {
+    this.store.studentDocuments = this.store.studentDocuments.filter((item) => item.id !== id);
+  }
+
   async listInstructors() {
     return this.store.instructors.filter((instructor) => instructor.active);
   }
 
   async findInstructorById(id: string) {
     return this.store.instructors.find((instructor) => instructor.id === id) ?? null;
+  }
+
+  async createInstructor(input: CreateInstructorInput) {
+    const user = await this.findUserById(input.userId);
+    const instructor: InstructorRecord = {
+      id: randomUUID(),
+      userId: input.userId,
+      agencyId: input.agencyId ?? undefined,
+      name: user ? `${user.firstName} ${user.lastName}` : "",
+      photoUrl: input.photoUrl ?? undefined,
+      bio: input.bio ?? undefined,
+      specialties: input.specialties ?? [],
+      interventionZones: input.interventionZones ?? [],
+      ratingAverage: 0,
+      ratingCount: 0,
+      active: true
+    };
+    this.store.instructors.push(instructor);
+    return instructor;
+  }
+
+  async updateInstructor(id: string, input: Partial<InstructorRecord>) {
+    const instructor = this.store.instructors.find((item) => item.id === id);
+    if (!instructor) throw notFound("Moniteur introuvable");
+    Object.assign(instructor, input);
+    return instructor;
   }
 
   async listFormations(includeInactive = false) {

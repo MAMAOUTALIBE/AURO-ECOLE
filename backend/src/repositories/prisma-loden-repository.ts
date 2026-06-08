@@ -9,6 +9,7 @@ import type {
   CreateLeadInput,
   CreatePaymentInput,
   CreateReviewInput,
+  CreateInstructorInput,
   CreateStudentInput,
   CreateUserInput,
   ListUsersFilters,
@@ -129,6 +130,28 @@ export class PrismaLodenRepository implements LodenRepository {
     });
   }
 
+  async listStudentDocuments(studentId: string) {
+    const rows = await this.prisma.studentDocument.findMany({ where: { studentId }, orderBy: { createdAt: "desc" } });
+    return rows.map((row) => ({ ...row, verifiedAt: row.verifiedAt ?? null }));
+  }
+
+  async createStudentDocument(input: { studentId: string; type: string; url: string }) {
+    const row = await this.prisma.studentDocument.create({ data: input });
+    return { ...row, verifiedAt: row.verifiedAt ?? null };
+  }
+
+  async setStudentDocumentVerified(id: string, verified: boolean) {
+    const row = await this.prisma.studentDocument.update({
+      where: { id },
+      data: { verifiedAt: verified ? new Date() : null }
+    });
+    return { ...row, verifiedAt: row.verifiedAt ?? null };
+  }
+
+  async deleteStudentDocument(id: string) {
+    await this.prisma.studentDocument.delete({ where: { id } });
+  }
+
   async createStudent(input: CreateStudentInput) {
     return this.prisma.student.create({
       data: {
@@ -163,6 +186,62 @@ export class PrismaLodenRepository implements LodenRepository {
   async findInstructorById(id: string) {
     const instructor = await this.prisma.instructor.findUnique({ where: { id }, include: { user: true } });
     if (!instructor) return null;
+    return {
+      id: instructor.id,
+      userId: instructor.userId,
+      agencyId: instructor.agencyId ?? undefined,
+      name: `${instructor.user.firstName} ${instructor.user.lastName}`,
+      photoUrl: instructor.photoUrl ?? undefined,
+      bio: instructor.bio ?? undefined,
+      specialties: instructor.specialties,
+      interventionZones: instructor.interventionZones,
+      ratingAverage: instructor.ratingAverage,
+      ratingCount: instructor.ratingCount,
+      active: instructor.active
+    };
+  }
+
+  async createInstructor(input: CreateInstructorInput) {
+    const row = await this.prisma.instructor.create({
+      data: {
+        userId: input.userId,
+        agencyId: input.agencyId ?? null,
+        photoUrl: input.photoUrl ?? null,
+        bio: input.bio ?? null,
+        specialties: input.specialties ?? [],
+        interventionZones: input.interventionZones ?? []
+      },
+      include: { user: true }
+    });
+    return this.mapInstructorRow(row);
+  }
+
+  async updateInstructor(id: string, input: Partial<import("../domain/types").InstructorRecord>) {
+    const { name: _name, id: _id, userId: _userId, ...data } = input;
+    void _name;
+    void _id;
+    void _userId;
+    const row = await this.prisma.instructor.update({
+      where: { id },
+      data: data as never,
+      include: { user: true }
+    });
+    return this.mapInstructorRow(row);
+  }
+
+  private mapInstructorRow(instructor: {
+    id: string;
+    userId: string;
+    agencyId: string | null;
+    photoUrl: string | null;
+    bio: string | null;
+    specialties: string[];
+    interventionZones: string[];
+    ratingAverage: number;
+    ratingCount: number;
+    active: boolean;
+    user: { firstName: string; lastName: string };
+  }) {
     return {
       id: instructor.id,
       userId: instructor.userId,
