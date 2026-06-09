@@ -259,6 +259,130 @@ export type PaymentRecord = {
   updatedAt: Date;
 };
 
+export type InvoiceStatus = "BROUILLON" | "EMISE" | "PAYEE" | "ANNULEE";
+
+// Ligne de facture. Montant unitaire HT en centimes ; TVA en points de % (0, 5.5, 10, 20).
+export type InvoiceLineItem = {
+  label: string;
+  quantity: number;
+  unitAmountCents: number;
+  vatRate: number;
+};
+
+// Copie figée de l'émetteur (depuis CompanyInfoRecord) au moment de l'émission.
+// Champs non renseignés -> vides (jamais inventés).
+export type InvoiceIssuerSnapshot = {
+  legalName: string;
+  legalForm: string;
+  capital: string;
+  address: string;
+  postalCode: string;
+  city: string;
+  country: string;
+  siret: string;
+  approvalNumber: string;
+  phone: string;
+  email: string;
+};
+
+// Copie figée du client (particulier) au moment de l'émission.
+export type InvoiceClientSnapshot = {
+  name: string;
+  email: string;
+  address: string;
+};
+
+// Facture CRM. CE N'EST PAS un logiciel fiscal certifié (assumé dans l'UI).
+export type InvoiceRecord = {
+  id: string;
+  number: string | null; // null en BROUILLON ; FAC-AAAA-NNNNNN à l'émission, immuable
+  status: InvoiceStatus;
+  clientUserId: string;
+  studentId?: string | null;
+  agencyId?: string | null;
+  paymentId?: string | null;
+  lines: InvoiceLineItem[];
+  subtotalCents: number;
+  vatCents: number;
+  totalCents: number;
+  currency: string;
+  issuerSnapshot?: InvoiceIssuerSnapshot | null;
+  clientSnapshot?: InvoiceClientSnapshot | null;
+  issuedAt?: Date | null;
+  dueDate?: Date | null;
+  paidAt?: Date | null;
+  notes?: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export type QuoteStatus = "BROUILLON" | "ENVOYE" | "ACCEPTE" | "REFUSE" | "EXPIRE";
+
+// Devis. Réutilise les lignes et snapshots de la facture (mêmes formes).
+// Le numéro DEV-AAAA-NNNNNN est attribué à l'envoi (BROUILLON -> ENVOYE).
+export type QuoteRecord = {
+  id: string;
+  number: string | null;
+  status: QuoteStatus;
+  clientUserId: string;
+  studentId?: string | null;
+  agencyId?: string | null;
+  lines: InvoiceLineItem[];
+  subtotalCents: number;
+  vatCents: number;
+  totalCents: number;
+  currency: string;
+  issuerSnapshot?: InvoiceIssuerSnapshot | null;
+  clientSnapshot?: InvoiceClientSnapshot | null;
+  sentAt?: Date | null;
+  validUntil?: Date | null;
+  decidedAt?: Date | null;
+  notes?: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+// CMS — pages de contenu et articles de blog (même modèle, discriminé par `type`).
+export type ContentType = "PAGE" | "ARTICLE";
+export type ContentEntryRecord = {
+  id: string;
+  type: ContentType;
+  title: string;
+  slug: string;
+  excerpt?: string | null;
+  body: string;
+  published: boolean;
+  publishedAt?: Date | null;
+  agencyId?: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export type ContractStatus = "BROUILLON" | "ACTIF" | "RESILIE" | "TERMINE";
+
+// Contrat de formation. Document texte + prix, signable (numéro attribué à l'activation).
+export type ContractRecord = {
+  id: string;
+  number: string | null;
+  status: ContractStatus;
+  clientUserId: string;
+  studentId?: string | null;
+  formationId?: string | null;
+  agencyId?: string | null;
+  title: string;
+  body: string;
+  totalCents: number;
+  currency: string;
+  issuerSnapshot?: InvoiceIssuerSnapshot | null;
+  clientSnapshot?: InvoiceClientSnapshot | null;
+  signedAt?: Date | null;
+  startsAt?: Date | null;
+  endsAt?: Date | null;
+  notes?: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
 export type CpfRequestRecord = {
   id: string;
   studentId?: string | null;

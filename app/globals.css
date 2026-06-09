@@ -118,3 +118,23 @@ textarea {
     animation: none;
   }
 }
+
+/* Impression d'une facture : on masque tout sauf le document. */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .invoice-print,
+  .invoice-print * {
+    visibility: visible;
+  }
+  .invoice-print {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+  .print-hidden {
+    display: none !important;
+  }
+}

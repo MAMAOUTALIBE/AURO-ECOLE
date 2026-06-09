@@ -1,5 +1,20 @@
 import { PrismaClient } from "@prisma/client";
-import type { BookingRecord, CompanyInfoRecord, FormationRecord, PaymentRecord, SearchResult } from "../domain/types";
+import type {
+  BookingRecord,
+  CompanyInfoRecord,
+  FormationRecord,
+  InvoiceRecord,
+  InvoiceLineItem,
+  InvoiceClientSnapshot,
+  InvoiceIssuerSnapshot,
+  PaymentRecord,
+  QuoteRecord,
+  ContractRecord,
+  ContentEntryRecord,
+  SearchResult
+} from "../domain/types";
+import { computeInvoiceTotals } from "../domain/invoice-totals";
+import { conflict } from "../shared/http-error";
 import { initialCompanyInfo } from "../data/initial-data";
 import { MemoryLodenRepository } from "./memory-loden-repository";
 import type {
@@ -12,11 +27,19 @@ import type {
   CreateReviewInput,
   CreateAgencyInput,
   CreateInstructorInput,
+  CreateInvoiceInput,
+  CreateQuoteInput,
+  CreateContractInput,
+  CreateContentEntryInput,
   CreateStudentInput,
   CreateUserInput,
   CreateVehicleInput,
   ListUsersFilters,
-  LodenRepository
+  LodenRepository,
+  UpdateInvoiceInput,
+  UpdateQuoteInput,
+  UpdateContractInput,
+  UpdateContentEntryInput
 } from "./loden-repository";
 
 export class PrismaLodenRepository implements LodenRepository {
@@ -111,6 +134,398 @@ export class PrismaLodenRepository implements LodenRepository {
     return this.prisma.vehicle.update({ where: { id }, data: input as never }) as Promise<
       Awaited<ReturnType<LodenRepository["updateVehicle"]>>
     >;
+  }
+
+  private mapInvoice(row: {
+    id: string;
+    number: string | null;
+    status: string;
+    clientUserId: string;
+    studentId: string | null;
+    agencyId: string | null;
+    paymentId: string | null;
+    lines: unknown;
+    subtotalCents: number;
+    vatCents: number;
+    totalCents: number;
+    currency: string;
+    issuerSnapshot: unknown;
+    clientSnapshot: unknown;
+    issuedAt: Date | null;
+    dueDate: Date | null;
+    paidAt: Date | null;
+    notes: string | null;
+    createdAt: Date;
+    updatedAt: Date;
+  }): InvoiceRecord {
+    return {
+      id: row.id,
+      number: row.number,
+      status: row.status as InvoiceRecord["status"],
+      clientUserId: row.clientUserId,
+      studentId: row.studentId,
+      agencyId: row.agencyId,
+      paymentId: row.paymentId,
+      lines: (row.lines as InvoiceLineItem[]) ?? [],
+      subtotalCents: row.subtotalCents,
+      vatCents: row.vatCents,
+      totalCents: row.totalCents,
+      currency: row.currency,
+      issuerSnapshot: (row.issuerSnapshot as InvoiceIssuerSnapshot | null) ?? null,
+      clientSnapshot: (row.clientSnapshot as InvoiceClientSnapshot | null) ?? null,
+      issuedAt: row.issuedAt,
+      dueDate: row.dueDate,
+      paidAt: row.paidAt,
+      notes: row.notes,
+      createdAt: row.createdAt,
+      updatedAt: row.updatedAt
+    };
+  }
+
+  async listInvoices(filters?: { agencyId?: string; clientUserId?: string; studentId?: string; status?: InvoiceRecord["status"] }) {
+    const where = {
+      ...(filters?.clientUserId ? { clientUserId: filters.clientUserId } : {}),
+      ...(filters?.studentId ? { studentId: filters.studentId } : {}),
+      ...(filters?.status ? { status: filters.status } : {}),
+      ...(filters?.agencyId ? { OR: [{ agencyId: filters.agencyId }, { agencyId: null }] } : {})
+    };
+    const rows = await this.prisma.invoice.findMany({ where: where as never, orderBy: { createdAt: "desc" } });
+    return rows.map((row) => this.mapInvoice(row));
+  }
+
+  async findInvoiceById(id: string) {
+    const row = await this.prisma.invoice.findUnique({ where: { id } });
+    return row ? this.mapInvoice(row) : null;
+  }
+
+  async findInvoiceByPaymentId(paymentId: string) {
+    const row = await this.prisma.invoice.findUnique({ where: { paymentId } });
+    return row ? this.mapInvoice(row) : null;
+  }
+
+  async createInvoice(input: CreateInvoiceInput) {
+    if (input.paymentId) {
+      const existing = await this.prisma.invoice.findUnique({ where: { paymentId: input.paymentId } });
+      if (existing) throw conflict("Un paiement ne peut porter qu'une facture");
+    }
+    const lines = input.lines.map((line) => ({ ...line, vatRate: line.vatRate ?? 0 }));
+    const totals = computeInvoiceTotals(lines);
+    const row = await this.prisma.invoice.create({
+      data: {
+        status: "BROUILLON",
+        clientUserId: input.clientUserId,
+        studentId: input.studentId ?? null,
+        agencyId: input.agencyId ?? null,
+        paymentId: input.paymentId ?? null,
+        lines: lines as never,
+        ...totals,
+        currency: input.currency ?? "EUR",
+        dueDate: input.dueDate ?? null,
+        notes: input.notes ?? null
+      } as never
+    });
+    return this.mapInvoice(row);
+  }
+
+  async updateInvoice(id: string, input: UpdateInvoiceInput) {
+    const data: Record<string, unknown> = { ...input };
+    if (input.lines) {
+      const lines = input.lines.map((line) => ({ ...line, vatRate: line.vatRate ?? 0 }));
+      data.lines = lines;
+      Object.assign(data, computeInvoiceTotals(lines));
+    }
+    if (input.status === "PAYEE") data.paidAt = new Date();
+    const row = await this.prisma.invoice.update({ where: { id }, data: data as never });
+    return this.mapInvoice(row);
+  }
+
+  async issueInvoice(id: string, snapshots: { issuer: InvoiceIssuerSnapshot; client: InvoiceClientSnapshot }) {
+    const issuedAt = new Date();
+    const year = issuedAt.getFullYear();
+    const row = await this.prisma.$transaction(async (tx) => {
+      const counter = await tx.invoiceCounter.upsert({
+        where: { year },
+        create: { year, lastNumber: 1 },
+        update: { lastNumber: { increment: 1 } }
+      });
+      const number = `FAC-${year}-${String(counter.lastNumber).padStart(6, "0")}`;
+      return tx.invoice.update({
+        where: { id },
+        data: { number, status: "EMISE", issuedAt, issuerSnapshot: snapshots.issuer as never, clientSnapshot: snapshots.client as never }
+      });
+    });
+    return this.mapInvoice(row);
+  }
+
+  async deleteInvoice(id: string) {
+    await this.prisma.invoice.delete({ where: { id } });
+  }
+
+  private mapQuote(row: {
+    id: string;
+    number: string | null;
+    status: string;
+    clientUserId: string;
+    studentId: string | null;
+    agencyId: string | null;
+    lines: unknown;
+    subtotalCents: number;
+    vatCents: number;
+    totalCents: number;
+    currency: string;
+    issuerSnapshot: unknown;
+    clientSnapshot: unknown;
+    sentAt: Date | null;
+    validUntil: Date | null;
+    decidedAt: Date | null;
+    notes: string | null;
+    createdAt: Date;
+    updatedAt: Date;
+  }): QuoteRecord {
+    return {
+      id: row.id,
+      number: row.number,
+      status: row.status as QuoteRecord["status"],
+      clientUserId: row.clientUserId,
+      studentId: row.studentId,
+      agencyId: row.agencyId,
+      lines: (row.lines as InvoiceLineItem[]) ?? [],
+      subtotalCents: row.subtotalCents,
+      vatCents: row.vatCents,
+      totalCents: row.totalCents,
+      currency: row.currency,
+      issuerSnapshot: (row.issuerSnapshot as InvoiceIssuerSnapshot | null) ?? null,
+      clientSnapshot: (row.clientSnapshot as InvoiceClientSnapshot | null) ?? null,
+      sentAt: row.sentAt,
+      validUntil: row.validUntil,
+      decidedAt: row.decidedAt,
+      notes: row.notes,
+      createdAt: row.createdAt,
+      updatedAt: row.updatedAt
+    };
+  }
+
+  async listQuotes(filters?: { agencyId?: string; clientUserId?: string; studentId?: string; status?: QuoteRecord["status"] }) {
+    const where = {
+      ...(filters?.clientUserId ? { clientUserId: filters.clientUserId } : {}),
+      ...(filters?.studentId ? { studentId: filters.studentId } : {}),
+      ...(filters?.status ? { status: filters.status } : {}),
+      ...(filters?.agencyId ? { OR: [{ agencyId: filters.agencyId }, { agencyId: null }] } : {})
+    };
+    const rows = await this.prisma.quote.findMany({ where: where as never, orderBy: { createdAt: "desc" } });
+    return rows.map((row) => this.mapQuote(row));
+  }
+
+  async findQuoteById(id: string) {
+    const row = await this.prisma.quote.findUnique({ where: { id } });
+    return row ? this.mapQuote(row) : null;
+  }
+
+  async createQuote(input: CreateQuoteInput) {
+    const lines = input.lines.map((line) => ({ ...line, vatRate: line.vatRate ?? 0 }));
+    const totals = computeInvoiceTotals(lines);
+    const row = await this.prisma.quote.create({
+      data: {
+        status: "BROUILLON",
+        clientUserId: input.clientUserId,
+        studentId: input.studentId ?? null,
+        agencyId: input.agencyId ?? null,
+        lines: lines as never,
+        ...totals,
+        currency: "EUR",
+        validUntil: input.validUntil ?? null,
+        notes: input.notes ?? null
+      } as never
+    });
+    return this.mapQuote(row);
+  }
+
+  async updateQuote(id: string, input: UpdateQuoteInput) {
+    const data: Record<string, unknown> = { ...input };
+    if (input.lines) {
+      const lines = input.lines.map((line) => ({ ...line, vatRate: line.vatRate ?? 0 }));
+      data.lines = lines;
+      Object.assign(data, computeInvoiceTotals(lines));
+    }
+    if (input.status === "ACCEPTE" || input.status === "REFUSE") data.decidedAt = new Date();
+    const row = await this.prisma.quote.update({ where: { id }, data: data as never });
+    return this.mapQuote(row);
+  }
+
+  async sendQuote(id: string, snapshots: { issuer: InvoiceIssuerSnapshot; client: InvoiceClientSnapshot }) {
+    const sentAt = new Date();
+    const year = sentAt.getFullYear();
+    const row = await this.prisma.$transaction(async (tx) => {
+      const counter = await tx.quoteCounter.upsert({
+        where: { year },
+        create: { year, lastNumber: 1 },
+        update: { lastNumber: { increment: 1 } }
+      });
+      const number = `DEV-${year}-${String(counter.lastNumber).padStart(6, "0")}`;
+      return tx.quote.update({
+        where: { id },
+        data: { number, status: "ENVOYE", sentAt, issuerSnapshot: snapshots.issuer as never, clientSnapshot: snapshots.client as never }
+      });
+    });
+    return this.mapQuote(row);
+  }
+
+  async deleteQuote(id: string) {
+    await this.prisma.quote.delete({ where: { id } });
+  }
+
+  private mapContract(row: {
+    id: string;
+    number: string | null;
+    status: string;
+    clientUserId: string;
+    studentId: string | null;
+    formationId: string | null;
+    agencyId: string | null;
+    title: string;
+    body: string;
+    totalCents: number;
+    currency: string;
+    issuerSnapshot: unknown;
+    clientSnapshot: unknown;
+    signedAt: Date | null;
+    startsAt: Date | null;
+    endsAt: Date | null;
+    notes: string | null;
+    createdAt: Date;
+    updatedAt: Date;
+  }): ContractRecord {
+    return {
+      id: row.id,
+      number: row.number,
+      status: row.status as ContractRecord["status"],
+      clientUserId: row.clientUserId,
+      studentId: row.studentId,
+      formationId: row.formationId,
+      agencyId: row.agencyId,
+      title: row.title,
+      body: row.body,
+      totalCents: row.totalCents,
+      currency: row.currency,
+      issuerSnapshot: (row.issuerSnapshot as ContractRecord["issuerSnapshot"]) ?? null,
+      clientSnapshot: (row.clientSnapshot as ContractRecord["clientSnapshot"]) ?? null,
+      signedAt: row.signedAt,
+      startsAt: row.startsAt,
+      endsAt: row.endsAt,
+      notes: row.notes,
+      createdAt: row.createdAt,
+      updatedAt: row.updatedAt
+    };
+  }
+
+  async listContracts(filters?: { agencyId?: string; clientUserId?: string; studentId?: string; status?: ContractRecord["status"] }) {
+    const where = {
+      ...(filters?.clientUserId ? { clientUserId: filters.clientUserId } : {}),
+      ...(filters?.studentId ? { studentId: filters.studentId } : {}),
+      ...(filters?.status ? { status: filters.status } : {}),
+      ...(filters?.agencyId ? { OR: [{ agencyId: filters.agencyId }, { agencyId: null }] } : {})
+    };
+    const rows = await this.prisma.contract.findMany({ where: where as never, orderBy: { createdAt: "desc" } });
+    return rows.map((row) => this.mapContract(row));
+  }
+
+  async findContractById(id: string) {
+    const row = await this.prisma.contract.findUnique({ where: { id } });
+    return row ? this.mapContract(row) : null;
+  }
+
+  async createContract(input: CreateContractInput) {
+    const row = await this.prisma.contract.create({
+      data: {
+        status: "BROUILLON",
+        clientUserId: input.clientUserId,
+        studentId: input.studentId ?? null,
+        formationId: input.formationId ?? null,
+        agencyId: input.agencyId ?? null,
+        title: input.title,
+        body: input.body,
+        totalCents: input.totalCents ?? 0,
+        currency: "EUR",
+        startsAt: input.startsAt ?? null,
+        endsAt: input.endsAt ?? null,
+        notes: input.notes ?? null
+      } as never
+    });
+    return this.mapContract(row);
+  }
+
+  async updateContract(id: string, input: UpdateContractInput) {
+    const row = await this.prisma.contract.update({ where: { id }, data: { ...input } as never });
+    return this.mapContract(row);
+  }
+
+  async activateContract(id: string, snapshots: { issuer: ContractRecord["issuerSnapshot"]; client: ContractRecord["clientSnapshot"] }) {
+    const signedAt = new Date();
+    const year = signedAt.getFullYear();
+    const row = await this.prisma.$transaction(async (tx) => {
+      const counter = await tx.contractCounter.upsert({
+        where: { year },
+        create: { year, lastNumber: 1 },
+        update: { lastNumber: { increment: 1 } }
+      });
+      const number = `CTR-${year}-${String(counter.lastNumber).padStart(6, "0")}`;
+      return tx.contract.update({
+        where: { id },
+        data: { number, status: "ACTIF", signedAt, issuerSnapshot: snapshots.issuer as never, clientSnapshot: snapshots.client as never }
+      });
+    });
+    return this.mapContract(row);
+  }
+
+  async deleteContract(id: string) {
+    await this.prisma.contract.delete({ where: { id } });
+  }
+
+  async listContentEntries(filters?: { type?: ContentEntryRecord["type"]; published?: boolean }) {
+    const where = {
+      ...(filters?.type ? { type: filters.type } : {}),
+      ...(filters?.published === undefined ? {} : { published: filters.published })
+    };
+    return this.prisma.contentEntry.findMany({ where: where as never, orderBy: { updatedAt: "desc" } }) as Promise<
+      Awaited<ReturnType<LodenRepository["listContentEntries"]>>
+    >;
+  }
+
+  async findContentEntryById(id: string) {
+    return this.prisma.contentEntry.findUnique({ where: { id } }) as Promise<
+      Awaited<ReturnType<LodenRepository["findContentEntryById"]>>
+    >;
+  }
+
+  async createContentEntry(input: CreateContentEntryInput) {
+    const published = input.published ?? false;
+    return this.prisma.contentEntry.create({
+      data: {
+        type: input.type,
+        title: input.title,
+        slug: input.slug,
+        excerpt: input.excerpt ?? null,
+        body: input.body,
+        published,
+        publishedAt: published ? new Date() : null,
+        agencyId: input.agencyId ?? null
+      } as never
+    }) as Promise<Awaited<ReturnType<LodenRepository["createContentEntry"]>>>;
+  }
+
+  async updateContentEntry(id: string, input: UpdateContentEntryInput) {
+    const data: Record<string, unknown> = { ...input };
+    if (input.published === true) {
+      const existing = await this.prisma.contentEntry.findUnique({ where: { id } });
+      if (existing && !existing.publishedAt) data.publishedAt = new Date();
+    }
+    return this.prisma.contentEntry.update({ where: { id }, data: data as never }) as Promise<
+      Awaited<ReturnType<LodenRepository["updateContentEntry"]>>
+    >;
+  }
+
+  async deleteContentEntry(id: string) {
+    await this.prisma.contentEntry.delete({ where: { id } });
   }
 
   async listAgencyMembershipsByUser(userId: string) {

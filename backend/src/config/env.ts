@@ -12,6 +12,14 @@ const envSchema = z.object({
     .optional()
     .transform((value) => value === "true")
     .default("false"),
+  // Données de DÉMONSTRATION (toggle). À true, le repo mémoire est seedé avec un jeu
+  // de démo réaliste + clairement marqué (ids "demo-"). Désactivé = jeu réel vide.
+  // Refusé en production (cf. garde-fou plus bas) pour ne jamais polluer la vraie base.
+  API_DEMO_SEED: z
+    .string()
+    .optional()
+    .transform((value) => value === "true")
+    .default("false"),
   // Notifications email (optionnel). Sans RESEND_API_KEY/MAIL_FROM, l'envoi se fait en log.
   RESEND_API_KEY: z.string().optional(),
   MAIL_FROM: z.string().optional(),
@@ -53,6 +61,11 @@ export function loadConfig(env = process.env) {
 
     if (parsed.API_USE_MEMORY || !parsed.DATABASE_URL) {
       throw new Error("Production API must use PostgreSQL through DATABASE_URL");
+    }
+
+    // Jamais de données de démo en production.
+    if (parsed.API_DEMO_SEED) {
+      throw new Error("API_DEMO_SEED must be disabled in production");
     }
 
     // Paiement live sans vérification de signature = porte ouverte aux faux "payé".

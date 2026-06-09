@@ -16,6 +16,12 @@ export type Permission =
   | "payments.read"
   | "payments.manage"
   | "payments.refund"
+  | "invoices.read"
+  | "invoices.manage"
+  | "quotes.read"
+  | "quotes.manage"
+  | "contracts.read"
+  | "contracts.manage"
   | "cpf.read"
   | "cpf.manage"
   | "exams.read"
@@ -46,6 +52,12 @@ const OPERATIONS: Permission[] = [
   "payments.read",
   "payments.manage",
   "payments.refund",
+  "invoices.read",
+  "invoices.manage",
+  "quotes.read",
+  "quotes.manage",
+  "contracts.read",
+  "contracts.manage",
   "cpf.read",
   "cpf.manage",
   "exams.read",
@@ -99,13 +111,23 @@ export const ROLE_PERMISSIONS: Partial<Record<UserRole, Permission[]>> = {
     "leads.read",
     "leads.manage",
     "reviews.read",
-    "payments.read"
+    "payments.read",
+    "invoices.read",
+    "quotes.read",
+    "quotes.manage",
+    "contracts.read",
+    "contracts.manage"
   ],
   COMPTABLE: [
     "dashboard.read",
     "payments.read",
     "payments.manage",
     "payments.refund",
+    "invoices.read",
+    "invoices.manage",
+    "quotes.read",
+    "quotes.manage",
+    "contracts.read",
     "cpf.read",
     "cpf.manage",
     "students.read",
@@ -133,6 +155,12 @@ export const ALL_PERMISSIONS: Permission[] = [
   "payments.read",
   "payments.manage",
   "payments.refund",
+  "invoices.read",
+  "invoices.manage",
+  "quotes.read",
+  "quotes.manage",
+  "contracts.read",
+  "contracts.manage",
   "cpf.read",
   "cpf.manage",
   "exams.read",

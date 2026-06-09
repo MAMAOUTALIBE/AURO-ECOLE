@@ -129,6 +129,153 @@ enum InstallmentStatus {
   EN_RETARD
 }
 
+enum InvoiceStatus {
+  BROUILLON
+  EMISE
+  PAYEE
+  ANNULEE
+}
+
+model Invoice {
+  id             String        @id @default(cuid())
+  number         String?       @unique
+  status         InvoiceStatus @default(BROUILLON)
+  clientUserId   String
+  studentId      String?
+  agencyId       String?
+  paymentId      String?       @unique
+  lines          Json
+  subtotalCents  Int
+  vatCents       Int
+  totalCents     Int
+  currency       String        @default("EUR")
+  issuerSnapshot Json?
+  clientSnapshot Json?
+  issuedAt       DateTime?
+  dueDate        DateTime?
+  paidAt         DateTime?
+  notes          String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  client  User     @relation("InvoiceClient", fields: [clientUserId], references: [id], onDelete: Cascade)
+  student Student? @relation(fields: [studentId], references: [id], onDelete: SetNull)
+  agency  Agency?  @relation(fields: [agencyId], references: [id], onDelete: SetNull)
+  payment Payment? @relation(fields: [paymentId], references: [id], onDelete: SetNull)
+
+  @@index([agencyId, issuedAt])
+  @@index([clientUserId])
+}
+
+model InvoiceCounter {
+  year       Int @id
+  lastNumber Int @default(0)
+}
+
+enum QuoteStatus {
+  BROUILLON
+  ENVOYE
+  ACCEPTE
+  REFUSE
+  EXPIRE
+}
+
+model Quote {
+  id             String      @id @default(cuid())
+  number         String?     @unique
+  status         QuoteStatus @default(BROUILLON)
+  clientUserId   String
+  studentId      String?
+  agencyId       String?
+  lines          Json
+  subtotalCents  Int
+  vatCents       Int
+  totalCents     Int
+  currency       String      @default("EUR")
+  issuerSnapshot Json?
+  clientSnapshot Json?
+  sentAt         DateTime?
+  validUntil     DateTime?
+  decidedAt      DateTime?
+  notes          String?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  client  User     @relation("QuoteClient", fields: [clientUserId], references: [id], onDelete: Cascade)
+  student Student? @relation(fields: [studentId], references: [id], onDelete: SetNull)
+  agency  Agency?  @relation(fields: [agencyId], references: [id], onDelete: SetNull)
+
+  @@index([agencyId, sentAt])
+  @@index([clientUserId])
+}
+
+model QuoteCounter {
+  year       Int @id
+  lastNumber Int @default(0)
+}
+
+enum ContractStatus {
+  BROUILLON
+  ACTIF
+  RESILIE
+  TERMINE
+}
+
+model Contract {
+  id             String         @id @default(cuid())
+  number         String?        @unique
+  status         ContractStatus @default(BROUILLON)
+  clientUserId   String
+  studentId      String?
+  formationId    String?
+  agencyId       String?
+  title          String
+  body           String
+  totalCents     Int            @default(0)
+  currency       String         @default("EUR")
+  issuerSnapshot Json?
+  clientSnapshot Json?
+  signedAt       DateTime?
+  startsAt       DateTime?
+  endsAt         DateTime?
+  notes          String?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  client  User     @relation("ContractClient", fields: [clientUserId], references: [id], onDelete: Cascade)
+  student Student? @relation(fields: [studentId], references: [id], onDelete: SetNull)
+  agency  Agency?  @relation(fields: [agencyId], references: [id], onDelete: SetNull)
+
+  @@index([agencyId, signedAt])
+  @@index([clientUserId])
+}
+
+model ContractCounter {
+  year       Int @id
+  lastNumber Int @default(0)
+}
+
+enum ContentType {
+  PAGE
+  ARTICLE
+}
+
+model ContentEntry {
+  id          String      @id @default(cuid())
+  type        ContentType
+  title       String
+  slug        String
+  excerpt     String?
+  body        String
+  published   Boolean     @default(false)
+  publishedAt DateTime?
+  agencyId    String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@index([type, published])
+}
+
 model User {
   id                 String     @id @default(cuid())
   firstName          String
@@ -154,6 +301,9 @@ model User {
   reviews            Review[]
   auditLogs          AuditLog[]
   agencyMemberships  AgencyMembership[]
+  invoices           Invoice[]          @relation("InvoiceClient")
+  quotes             Quote[]            @relation("QuoteClient")
+  contracts          Contract[]         @relation("ContractClient")
 }
 
 model Agency {
@@ -185,6 +335,9 @@ model Agency {
   reviews         Review[]
   exams           Exam[]
   installments    Installment[]
+  invoices        Invoice[]
+  quotes          Quote[]
+  contracts       Contract[]
 }
 
 model AgencyMembership {
@@ -226,6 +379,9 @@ model Student {
   exams              Exam[]
   skills             StudentSkill[]
   installments       Installment[]
+  invoices           Invoice[]
+  quotes             Quote[]
+  contracts          Contract[]
 }
 
 model StudentDocument {
@@ -394,6 +550,7 @@ model Payment {
   user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   pricingPlan     PricingPlan?  @relation(fields: [pricingPlanId], references: [id], onDelete: SetNull)
   agency          Agency?       @relation(fields: [agencyId], references: [id], onDelete: SetNull)
+  invoice         Invoice?
 }
 
 model CpfRequest {

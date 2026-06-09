@@ -8,6 +8,16 @@ import type {
   CompanyInfoRecord,
   ExamRecord,
   InstallmentRecord,
+  InvoiceRecord,
+  InvoiceStatus,
+  InvoiceClientSnapshot,
+  InvoiceIssuerSnapshot,
+  QuoteRecord,
+  QuoteStatus,
+  ContractRecord,
+  ContractStatus,
+  ContentEntryRecord,
+  ContentType,
   ContactRequestRecord,
   ContactRequestStatus,
   CpfRequestRecord,
@@ -39,6 +49,87 @@ export type CreateUserInput = Omit<UserRecord, "id" | "createdAt" | "updatedAt" 
 export type CreateAgencyInput = Omit<AgencyRecord, "id" | "active"> & { active?: boolean };
 
 export type CreateVehicleInput = Omit<VehicleRecord, "id" | "active"> & { active?: boolean };
+
+export type CreateInvoiceInput = {
+  clientUserId: string;
+  studentId?: string | null;
+  agencyId?: string | null;
+  paymentId?: string | null;
+  lines: { label: string; quantity: number; unitAmountCents: number; vatRate?: number }[];
+  currency?: string;
+  dueDate?: Date | null;
+  notes?: string | null;
+};
+
+export type UpdateInvoiceInput = {
+  status?: InvoiceStatus;
+  notes?: string | null;
+  dueDate?: Date | null;
+  studentId?: string | null;
+  agencyId?: string | null;
+  lines?: { label: string; quantity: number; unitAmountCents: number; vatRate?: number }[];
+};
+
+export type CreateQuoteInput = {
+  clientUserId: string;
+  studentId?: string | null;
+  agencyId?: string | null;
+  lines: { label: string; quantity: number; unitAmountCents: number; vatRate?: number }[];
+  validUntil?: Date | null;
+  notes?: string | null;
+};
+
+export type UpdateQuoteInput = {
+  status?: QuoteStatus;
+  notes?: string | null;
+  validUntil?: Date | null;
+  studentId?: string | null;
+  agencyId?: string | null;
+  lines?: { label: string; quantity: number; unitAmountCents: number; vatRate?: number }[];
+};
+
+export type CreateContractInput = {
+  clientUserId: string;
+  studentId?: string | null;
+  formationId?: string | null;
+  agencyId?: string | null;
+  title: string;
+  body: string;
+  totalCents?: number;
+  startsAt?: Date | null;
+  endsAt?: Date | null;
+  notes?: string | null;
+};
+
+export type UpdateContractInput = {
+  status?: ContractStatus;
+  title?: string;
+  body?: string;
+  totalCents?: number;
+  startsAt?: Date | null;
+  endsAt?: Date | null;
+  notes?: string | null;
+  studentId?: string | null;
+  agencyId?: string | null;
+};
+
+export type CreateContentEntryInput = {
+  type: ContentType;
+  title: string;
+  slug: string;
+  excerpt?: string | null;
+  body: string;
+  published?: boolean;
+  agencyId?: string | null;
+};
+
+export type UpdateContentEntryInput = {
+  title?: string;
+  slug?: string;
+  excerpt?: string | null;
+  body?: string;
+  published?: boolean;
+};
 
 export type CreateStudentInput = {
   userId: string;
@@ -106,6 +197,34 @@ export interface LodenRepository {
   findVehicleById(id: string): Promise<VehicleRecord | null>;
   createVehicle(input: CreateVehicleInput): Promise<VehicleRecord>;
   updateVehicle(id: string, input: Partial<VehicleRecord>): Promise<VehicleRecord>;
+
+  listInvoices(filters?: { agencyId?: string; clientUserId?: string; studentId?: string; status?: InvoiceStatus }): Promise<InvoiceRecord[]>;
+  findInvoiceById(id: string): Promise<InvoiceRecord | null>;
+  findInvoiceByPaymentId(paymentId: string): Promise<InvoiceRecord | null>;
+  createInvoice(input: CreateInvoiceInput): Promise<InvoiceRecord>;
+  updateInvoice(id: string, input: UpdateInvoiceInput): Promise<InvoiceRecord>;
+  issueInvoice(id: string, snapshots: { issuer: InvoiceIssuerSnapshot; client: InvoiceClientSnapshot }): Promise<InvoiceRecord>;
+  deleteInvoice(id: string): Promise<void>;
+
+  listQuotes(filters?: { agencyId?: string; clientUserId?: string; studentId?: string; status?: QuoteStatus }): Promise<QuoteRecord[]>;
+  findQuoteById(id: string): Promise<QuoteRecord | null>;
+  createQuote(input: CreateQuoteInput): Promise<QuoteRecord>;
+  updateQuote(id: string, input: UpdateQuoteInput): Promise<QuoteRecord>;
+  sendQuote(id: string, snapshots: { issuer: InvoiceIssuerSnapshot; client: InvoiceClientSnapshot }): Promise<QuoteRecord>;
+  deleteQuote(id: string): Promise<void>;
+
+  listContracts(filters?: { agencyId?: string; clientUserId?: string; studentId?: string; status?: ContractStatus }): Promise<ContractRecord[]>;
+  findContractById(id: string): Promise<ContractRecord | null>;
+  createContract(input: CreateContractInput): Promise<ContractRecord>;
+  updateContract(id: string, input: UpdateContractInput): Promise<ContractRecord>;
+  activateContract(id: string, snapshots: { issuer: InvoiceIssuerSnapshot; client: InvoiceClientSnapshot }): Promise<ContractRecord>;
+  deleteContract(id: string): Promise<void>;
+
+  listContentEntries(filters?: { type?: ContentType; published?: boolean }): Promise<ContentEntryRecord[]>;
+  findContentEntryById(id: string): Promise<ContentEntryRecord | null>;
+  createContentEntry(input: CreateContentEntryInput): Promise<ContentEntryRecord>;
+  updateContentEntry(id: string, input: UpdateContentEntryInput): Promise<ContentEntryRecord>;
+  deleteContentEntry(id: string): Promise<void>;
 
   listUsers(filters?: ListUsersFilters): Promise<UserRecord[]>;
   findUserById(id: string): Promise<UserRecord | null>;

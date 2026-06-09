@@ -32,13 +32,20 @@ import type {
   PricingPlanRecord,
   ReviewRecord,
   SearchResult,
+  InvoiceRecord,
+  InvoiceClientSnapshot,
+  InvoiceIssuerSnapshot,
+  QuoteRecord,
+  ContractRecord,
+  ContentEntryRecord,
   StudentRecord,
   StudentSkillRecord,
   StudentDocumentRecord,
   UserRecord,
   VehicleRecord
 } from "../domain/types";
-import { notFound } from "../shared/http-error";
+import { computeInvoiceTotals, nextInvoiceNumber, nextSequentialNumber } from "../domain/invoice-totals";
+import { conflict, notFound } from "../shared/http-error";
 import type {
   CreateBookingInput,
   CreateContactRequestInput,
@@ -49,14 +56,22 @@ import type {
   CreateReviewInput,
   CreateAgencyInput,
   CreateInstructorInput,
+  CreateInvoiceInput,
+  CreateQuoteInput,
+  CreateContractInput,
+  CreateContentEntryInput,
   CreateStudentInput,
   CreateUserInput,
   CreateVehicleInput,
   ListUsersFilters,
-  LodenRepository
+  LodenRepository,
+  UpdateInvoiceInput,
+  UpdateQuoteInput,
+  UpdateContractInput,
+  UpdateContentEntryInput
 } from "./loden-repository";
 
-type MutableStore = {
+export type MutableStore = {
   agencies: AgencyRecord[];
   agencyMemberships: AgencyMembershipRecord[];
   users: UserRecord[];
@@ -79,6 +94,10 @@ type MutableStore = {
   studentDocuments: StudentDocumentRecord[];
   auditLogs: AuditLogRecord[];
   vehicles: VehicleRecord[];
+  invoices: InvoiceRecord[];
+  quotes: QuoteRecord[];
+  contracts: ContractRecord[];
+  contentEntries: ContentEntryRecord[];
   companyInfo: CompanyInfoRecord;
 };
 
@@ -109,6 +128,10 @@ export class MemoryLodenRepository implements LodenRepository {
       studentDocuments: [],
       auditLogs: [],
       vehicles: [],
+      invoices: [],
+      quotes: [],
+      contracts: [],
+      contentEntries: [],
       companyInfo: { ...initialCompanyInfo },
       ...seed
     };
@@ -169,6 +192,281 @@ export class MemoryLodenRepository implements LodenRepository {
     if (!vehicle) throw notFound("Véhicule introuvable");
     Object.assign(vehicle, input);
     return vehicle;
+  }
+
+  async listInvoices(filters?: { agencyId?: string; clientUserId?: string; studentId?: string; status?: InvoiceRecord["status"] }) {
+    return this.store.invoices
+      .filter(
+        (invoice) =>
+          (!filters?.clientUserId || invoice.clientUserId === filters.clientUserId) &&
+          (!filters?.studentId || invoice.studentId === filters.studentId) &&
+          (!filters?.status || invoice.status === filters.status) &&
+          (!filters?.agencyId || invoice.agencyId === filters.agencyId || invoice.agencyId == null)
+      )
+      .slice()
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  }
+
+  async findInvoiceById(id: string) {
+    return this.store.invoices.find((invoice) => invoice.id === id) ?? null;
+  }
+
+  async findInvoiceByPaymentId(paymentId: string) {
+    return this.store.invoices.find((invoice) => invoice.paymentId === paymentId) ?? null;
+  }
+
+  async createInvoice(input: CreateInvoiceInput) {
+    if (input.paymentId && this.store.invoices.some((invoice) => invoice.paymentId === input.paymentId)) {
+      throw conflict("Un paiement ne peut porter qu'une facture");
+    }
+    const now = new Date();
+    const lines = input.lines.map((line) => ({ ...line, vatRate: line.vatRate ?? 0 }));
+    const totals = computeInvoiceTotals(lines);
+    const invoice: InvoiceRecord = {
+      id: randomUUID(),
+      number: null,
+      status: "BROUILLON",
+      clientUserId: input.clientUserId,
+      studentId: input.studentId ?? null,
+      agencyId: input.agencyId ?? null,
+      paymentId: input.paymentId ?? null,
+      lines,
+      ...totals,
+      currency: input.currency ?? "EUR",
+      issuerSnapshot: null,
+      clientSnapshot: null,
+      issuedAt: null,
+      dueDate: input.dueDate ?? null,
+      paidAt: null,
+      notes: input.notes ?? null,
+      createdAt: now,
+      updatedAt: now
+    };
+    this.store.invoices.push(invoice);
+    return invoice;
+  }
+
+  async updateInvoice(id: string, input: UpdateInvoiceInput) {
+    const invoice = this.store.invoices.find((item) => item.id === id);
+    if (!invoice) throw notFound("Facture introuvable");
+    const { lines: inputLines, ...rest } = input;
+    const next: Partial<InvoiceRecord> = { ...rest };
+    if (inputLines) {
+      const lines = inputLines.map((line) => ({ ...line, vatRate: line.vatRate ?? 0 }));
+      next.lines = lines;
+      Object.assign(next, computeInvoiceTotals(lines));
+    }
+    if (input.status === "PAYEE" && !invoice.paidAt) next.paidAt = new Date();
+    Object.assign(invoice, next, { updatedAt: new Date() });
+    return invoice;
+  }
+
+  async issueInvoice(id: string, snapshots: { issuer: InvoiceIssuerSnapshot; client: InvoiceClientSnapshot }) {
+    const invoice = this.store.invoices.find((item) => item.id === id);
+    if (!invoice) throw notFound("Facture introuvable");
+    const issuedAt = new Date();
+    invoice.number = nextInvoiceNumber(this.store.invoices.map((item) => item.number), issuedAt.getFullYear());
+    invoice.status = "EMISE";
+    invoice.issuedAt = issuedAt;
+    invoice.issuerSnapshot = snapshots.issuer;
+    invoice.clientSnapshot = snapshots.client;
+    invoice.updatedAt = issuedAt;
+    return invoice;
+  }
+
+  async deleteInvoice(id: string) {
+    this.store.invoices = this.store.invoices.filter((invoice) => invoice.id !== id);
+  }
+
+  async listQuotes(filters?: { agencyId?: string; clientUserId?: string; studentId?: string; status?: QuoteRecord["status"] }) {
+    return this.store.quotes
+      .filter(
+        (quote) =>
+          (!filters?.clientUserId || quote.clientUserId === filters.clientUserId) &&
+          (!filters?.studentId || quote.studentId === filters.studentId) &&
+          (!filters?.status || quote.status === filters.status) &&
+          (!filters?.agencyId || quote.agencyId === filters.agencyId || quote.agencyId == null)
+      )
+      .slice()
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  }
+
+  async findQuoteById(id: string) {
+    return this.store.quotes.find((quote) => quote.id === id) ?? null;
+  }
+
+  async createQuote(input: CreateQuoteInput) {
+    const now = new Date();
+    const lines = input.lines.map((line) => ({ ...line, vatRate: line.vatRate ?? 0 }));
+    const totals = computeInvoiceTotals(lines);
+    const quote: QuoteRecord = {
+      id: randomUUID(),
+      number: null,
+      status: "BROUILLON",
+      clientUserId: input.clientUserId,
+      studentId: input.studentId ?? null,
+      agencyId: input.agencyId ?? null,
+      lines,
+      ...totals,
+      currency: "EUR",
+      issuerSnapshot: null,
+      clientSnapshot: null,
+      sentAt: null,
+      validUntil: input.validUntil ?? null,
+      decidedAt: null,
+      notes: input.notes ?? null,
+      createdAt: now,
+      updatedAt: now
+    };
+    this.store.quotes.push(quote);
+    return quote;
+  }
+
+  async updateQuote(id: string, input: UpdateQuoteInput) {
+    const quote = this.store.quotes.find((item) => item.id === id);
+    if (!quote) throw notFound("Devis introuvable");
+    const { lines: inputLines, ...rest } = input;
+    const next: Partial<QuoteRecord> = { ...rest };
+    if (inputLines) {
+      const lines = inputLines.map((line) => ({ ...line, vatRate: line.vatRate ?? 0 }));
+      next.lines = lines;
+      Object.assign(next, computeInvoiceTotals(lines));
+    }
+    if ((input.status === "ACCEPTE" || input.status === "REFUSE") && !quote.decidedAt) next.decidedAt = new Date();
+    Object.assign(quote, next, { updatedAt: new Date() });
+    return quote;
+  }
+
+  async sendQuote(id: string, snapshots: { issuer: InvoiceIssuerSnapshot; client: InvoiceClientSnapshot }) {
+    const quote = this.store.quotes.find((item) => item.id === id);
+    if (!quote) throw notFound("Devis introuvable");
+    const sentAt = new Date();
+    quote.number = nextSequentialNumber(this.store.quotes.map((item) => item.number), sentAt.getFullYear(), "DEV");
+    quote.status = "ENVOYE";
+    quote.sentAt = sentAt;
+    quote.issuerSnapshot = snapshots.issuer;
+    quote.clientSnapshot = snapshots.client;
+    quote.updatedAt = sentAt;
+    return quote;
+  }
+
+  async deleteQuote(id: string) {
+    this.store.quotes = this.store.quotes.filter((quote) => quote.id !== id);
+  }
+
+  async listContracts(filters?: { agencyId?: string; clientUserId?: string; studentId?: string; status?: ContractRecord["status"] }) {
+    return this.store.contracts
+      .filter(
+        (contract) =>
+          (!filters?.clientUserId || contract.clientUserId === filters.clientUserId) &&
+          (!filters?.studentId || contract.studentId === filters.studentId) &&
+          (!filters?.status || contract.status === filters.status) &&
+          (!filters?.agencyId || contract.agencyId === filters.agencyId || contract.agencyId == null)
+      )
+      .slice()
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  }
+
+  async findContractById(id: string) {
+    return this.store.contracts.find((contract) => contract.id === id) ?? null;
+  }
+
+  async createContract(input: CreateContractInput) {
+    const now = new Date();
+    const contract: ContractRecord = {
+      id: randomUUID(),
+      number: null,
+      status: "BROUILLON",
+      clientUserId: input.clientUserId,
+      studentId: input.studentId ?? null,
+      formationId: input.formationId ?? null,
+      agencyId: input.agencyId ?? null,
+      title: input.title,
+      body: input.body,
+      totalCents: input.totalCents ?? 0,
+      currency: "EUR",
+      issuerSnapshot: null,
+      clientSnapshot: null,
+      signedAt: null,
+      startsAt: input.startsAt ?? null,
+      endsAt: input.endsAt ?? null,
+      notes: input.notes ?? null,
+      createdAt: now,
+      updatedAt: now
+    };
+    this.store.contracts.push(contract);
+    return contract;
+  }
+
+  async updateContract(id: string, input: UpdateContractInput) {
+    const contract = this.store.contracts.find((item) => item.id === id);
+    if (!contract) throw notFound("Contrat introuvable");
+    Object.assign(contract, input, { updatedAt: new Date() });
+    return contract;
+  }
+
+  async activateContract(id: string, snapshots: { issuer: InvoiceIssuerSnapshot; client: InvoiceClientSnapshot }) {
+    const contract = this.store.contracts.find((item) => item.id === id);
+    if (!contract) throw notFound("Contrat introuvable");
+    const signedAt = new Date();
+    contract.number = nextSequentialNumber(this.store.contracts.map((item) => item.number), signedAt.getFullYear(), "CTR");
+    contract.status = "ACTIF";
+    contract.signedAt = signedAt;
+    contract.issuerSnapshot = snapshots.issuer;
+    contract.clientSnapshot = snapshots.client;
+    contract.updatedAt = signedAt;
+    return contract;
+  }
+
+  async deleteContract(id: string) {
+    this.store.contracts = this.store.contracts.filter((contract) => contract.id !== id);
+  }
+
+  async listContentEntries(filters?: { type?: ContentEntryRecord["type"]; published?: boolean }) {
+    return this.store.contentEntries
+      .filter(
+        (entry) =>
+          (!filters?.type || entry.type === filters.type) &&
+          (filters?.published === undefined || entry.published === filters.published)
+      )
+      .slice()
+      .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime());
+  }
+
+  async findContentEntryById(id: string) {
+    return this.store.contentEntries.find((entry) => entry.id === id) ?? null;
+  }
+
+  async createContentEntry(input: CreateContentEntryInput) {
+    const now = new Date();
+    const published = input.published ?? false;
+    const entry: ContentEntryRecord = {
+      id: randomUUID(),
+      type: input.type,
+      title: input.title,
+      slug: input.slug,
+      excerpt: input.excerpt ?? null,
+      body: input.body,
+      published,
+      publishedAt: published ? now : null,
+      agencyId: input.agencyId ?? null,
+      createdAt: now,
+      updatedAt: now
+    };
+    this.store.contentEntries.push(entry);
+    return entry;
+  }
+
+  async updateContentEntry(id: string, input: UpdateContentEntryInput) {
+    const entry = this.store.contentEntries.find((item) => item.id === id);
+    if (!entry) throw notFound("Contenu introuvable");
+    if (input.published === true && !entry.publishedAt) entry.publishedAt = new Date();
+    Object.assign(entry, input, { updatedAt: new Date() });
+    return entry;
+  }
+
+  async deleteContentEntry(id: string) {
+    this.store.contentEntries = this.store.contentEntries.filter((entry) => entry.id !== id);
   }
 
   async listAgencyMembershipsByUser(userId: string) {

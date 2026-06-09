@@ -1,4 +1,5 @@
 import {
+  BellRing,
   BookOpenCheck,
   Bot,
   Building2,
@@ -67,8 +68,8 @@ export const crmNav: NavSection[] = [
     items: [
       { label: "Leads", href: "/admin/pipeline", icon: FolderKanban, status: "live" },
       { label: "Prospects", href: "/admin/pipeline", icon: Target, status: "live" },
-      { label: "Devis", href: "/admin/bientot?m=Devis", icon: FileSpreadsheet, status: "soon" },
-      { label: "Contrats", href: "/admin/bientot?m=Contrats", icon: FileSignature, status: "soon" }
+      { label: "Devis", href: "/admin/devis", icon: FileSpreadsheet, status: "live" },
+      { label: "Contrats", href: "/admin/contrats", icon: FileSignature, status: "live" }
     ]
   },
   {
@@ -89,9 +90,9 @@ export const crmNav: NavSection[] = [
     icon: CreditCard,
     items: [
       { label: "Paiements", href: "/admin/finance", icon: CreditCard, status: "live" },
-      { label: "Factures", href: "/admin/bientot?m=Factures", icon: Receipt, status: "soon" },
+      { label: "Factures", href: "/admin/factures", icon: Receipt, status: "live" },
       { label: "CPF", href: "/admin/cpf", icon: PiggyBank, status: "live" },
-      { label: "Relances", href: "/admin/bientot?m=Relances", icon: Mail, status: "soon" }
+      { label: "Relances", href: "/admin/relances", icon: BellRing, status: "live" }
     ]
   },
   {
@@ -109,8 +110,8 @@ export const crmNav: NavSection[] = [
     items: [
       { label: "FAQ", href: "/admin/site/faq", icon: HelpCircle, status: "live" },
       { label: "Avis", href: "/admin/avis", icon: Star, status: "live" },
-      { label: "Pages", href: "/admin/bientot?m=Pages", icon: FileText, status: "soon" },
-      { label: "Blog", href: "/admin/bientot?m=Blog", icon: Newspaper, status: "soon" },
+      { label: "Pages", href: "/admin/pages", icon: FileText, status: "live" },
+      { label: "Blog", href: "/admin/blog", icon: Newspaper, status: "live" },
       { label: "Médias", href: "/admin/bientot?m=Médias", icon: ImageIcon, status: "soon" }
     ]
   },
@@ -119,7 +120,7 @@ export const crmNav: NavSection[] = [
     icon: FileSpreadsheet,
     items: [
       { label: "Statistiques", href: "/admin/reporting", icon: FileSpreadsheet, status: "live" },
-      { label: "Rapports", href: "/admin/bientot?m=Rapports", icon: ScrollText, status: "soon" }
+      { label: "Rapports", href: "/admin/rapports", icon: ScrollText, status: "live" }
     ]
   },
   {

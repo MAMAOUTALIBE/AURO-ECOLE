@@ -533,6 +533,204 @@ describe("LODENE API", () => {
       .expect(403);
   });
 
+  it("gère les factures : numérotation séquentielle, immutabilité, transitions, autorité des totaux, RBAC", async () => {
+    const { app } = testApp();
+    const admin = await request(app)
+      .post("/api/auth/login")
+      .send({ email: "admin@loden-autoecole.fr", password: "admin-password" })
+      .expect(200);
+    const token = admin.body.token as string;
+    const clientUserId = admin.body.user.id as string;
+    const bearer = `Bearer ${token}`;
+
+    // 1. Création brouillon : totaux dérivés serveur, pas de numéro. Le total envoyé est ignoré.
+    const draft = await request(app)
+      .post("/api/invoices")
+      .set("Authorization", bearer)
+      .send({ clientUserId, totalCents: 999999, lines: [{ label: "Forfait conduite", quantity: 2, unitAmountCents: 5000, vatRate: 20 }] })
+      .expect(201);
+    expect(draft.body.data.number).toBeNull();
+    expect(draft.body.data.status).toBe("BROUILLON");
+    expect(draft.body.data.subtotalCents).toBe(10000);
+    expect(draft.body.data.vatCents).toBe(2000);
+    expect(draft.body.data.totalCents).toBe(12000);
+    const id1 = draft.body.data.id as string;
+
+    // 2. Émission : numéro FAC-AAAA-NNNNNN + snapshot émetteur.
+    const issued = await request(app).post(`/api/invoices/${id1}/issue`).set("Authorization", bearer).expect(200);
+    expect(issued.body.data.number).toMatch(/^FAC-\d{4}-\d{6}$/);
+    expect(issued.body.data.status).toBe("EMISE");
+    expect(issued.body.data.issuedAt).toBeTruthy();
+    const n1 = Number(String(issued.body.data.number).slice(-6));
+
+    // 3. Séquence sans rupture.
+    const draft2 = await request(app)
+      .post("/api/invoices")
+      .set("Authorization", bearer)
+      .send({ clientUserId, lines: [{ label: "Code", quantity: 1, unitAmountCents: 3000 }] })
+      .expect(201);
+    const issued2 = await request(app).post(`/api/invoices/${draft2.body.data.id}/issue`).set("Authorization", bearer).expect(200);
+    expect(Number(String(issued2.body.data.number).slice(-6))).toBe(n1 + 1);
+
+    // 4. Immutabilité + paiement.
+    await request(app).patch(`/api/invoices/${id1}`).set("Authorization", bearer).send({ lines: [{ label: "X", quantity: 1, unitAmountCents: 1 }] }).expect(409);
+    const paid = await request(app).patch(`/api/invoices/${id1}`).set("Authorization", bearer).send({ status: "PAYEE" }).expect(200);
+    expect(paid.body.data.paidAt).toBeTruthy();
+
+    // 5. Transition invalide : PAYEE sur un brouillon.
+    const draft3 = await request(app)
+      .post("/api/invoices")
+      .set("Authorization", bearer)
+      .send({ clientUserId, lines: [{ label: "Acompte", quantity: 1, unitAmountCents: 4000 }] })
+      .expect(201);
+    await request(app).patch(`/api/invoices/${draft3.body.data.id}`).set("Authorization", bearer).send({ status: "PAYEE" }).expect(409);
+
+    // 6. Annulation conserve le numéro.
+    const cancelled = await request(app).patch(`/api/invoices/${id1}`).set("Authorization", bearer).send({ status: "ANNULEE" }).expect(200);
+    expect(cancelled.body.data.number).toBe(issued.body.data.number);
+
+    // 7. Suppression d'un brouillon OK ; suppression d'une émise refusée.
+    await request(app).delete(`/api/invoices/${draft3.body.data.id}`).set("Authorization", bearer).expect(204);
+    await request(app).delete(`/api/invoices/${id1}`).set("Authorization", bearer).expect(409);
+
+    // 8. RBAC : un moniteur (sans invoices.*) ne lit ni ne crée.
+    const mon = await request(app)
+      .post("/api/auth/login")
+      .send({ email: "moniteur.test@loden-autoecole.fr", password: "moniteur-password" })
+      .expect(200);
+    await request(app).get("/api/invoices").set("Authorization", `Bearer ${mon.body.token}`).expect(403);
+    await request(app)
+      .post("/api/invoices")
+      .set("Authorization", `Bearer ${mon.body.token}`)
+      .send({ clientUserId, lines: [{ label: "X", quantity: 1, unitAmountCents: 1 }] })
+      .expect(403);
+  });
+
+  it("gère les devis : numérotation, envoi (snapshot), transitions, RBAC", async () => {
+    const { app } = testApp();
+    const admin = await request(app)
+      .post("/api/auth/login")
+      .send({ email: "admin@loden-autoecole.fr", password: "admin-password" })
+      .expect(200);
+    const token = admin.body.token as string;
+    const clientUserId = admin.body.user.id as string;
+    const bearer = `Bearer ${token}`;
+
+    const draft = await request(app)
+      .post("/api/quotes")
+      .set("Authorization", bearer)
+      .send({ clientUserId, lines: [{ label: "Forfait Permis B", quantity: 1, unitAmountCents: 119000, vatRate: 0 }] })
+      .expect(201);
+    expect(draft.body.data.number).toBeNull();
+    expect(draft.body.data.status).toBe("BROUILLON");
+    expect(draft.body.data.totalCents).toBe(119000);
+    const qid = draft.body.data.id as string;
+
+    // Envoi : numéro DEV-AAAA-NNNNNN + snapshot.
+    const sent = await request(app).post(`/api/quotes/${qid}/send`).set("Authorization", bearer).expect(200);
+    expect(sent.body.data.number).toMatch(/^DEV-\d{4}-\d{6}$/);
+    expect(sent.body.data.status).toBe("ENVOYE");
+
+    // Transition invalide : accepter un brouillon.
+    const draft2 = await request(app)
+      .post("/api/quotes")
+      .set("Authorization", bearer)
+      .send({ clientUserId, lines: [{ label: "Code", quantity: 1, unitAmountCents: 3000 }] })
+      .expect(201);
+    await request(app).patch(`/api/quotes/${draft2.body.data.id}`).set("Authorization", bearer).send({ status: "ACCEPTE" }).expect(409);
+
+    // Devis envoyé : acceptation OK, lignes figées.
+    await request(app).patch(`/api/quotes/${qid}`).set("Authorization", bearer).send({ lines: [{ label: "X", quantity: 1, unitAmountCents: 1 }] }).expect(409);
+    const accepted = await request(app).patch(`/api/quotes/${qid}`).set("Authorization", bearer).send({ status: "ACCEPTE" }).expect(200);
+    expect(accepted.body.data.status).toBe("ACCEPTE");
+
+    // RBAC : un moniteur ne lit ni ne crée de devis.
+    const mon = await request(app)
+      .post("/api/auth/login")
+      .send({ email: "moniteur.test@loden-autoecole.fr", password: "moniteur-password" })
+      .expect(200);
+    await request(app).get("/api/quotes").set("Authorization", `Bearer ${mon.body.token}`).expect(403);
+  });
+
+  it("gère les contrats : numérotation à l'activation, transitions, RBAC", async () => {
+    const { app } = testApp();
+    const admin = await request(app)
+      .post("/api/auth/login")
+      .send({ email: "admin@loden-autoecole.fr", password: "admin-password" })
+      .expect(200);
+    const token = admin.body.token as string;
+    const clientUserId = admin.body.user.id as string;
+    const bearer = `Bearer ${token}`;
+
+    const draft = await request(app)
+      .post("/api/contracts")
+      .set("Authorization", bearer)
+      .send({ clientUserId, title: "Contrat permis B", body: "Conditions générales de la formation au permis B.", totalCents: 119000 })
+      .expect(201);
+    expect(draft.body.data.number).toBeNull();
+    expect(draft.body.data.status).toBe("BROUILLON");
+    const cid = draft.body.data.id as string;
+
+    const active = await request(app).post(`/api/contracts/${cid}/activate`).set("Authorization", bearer).expect(200);
+    expect(active.body.data.number).toMatch(/^CTR-\d{4}-\d{6}$/);
+    expect(active.body.data.status).toBe("ACTIF");
+    expect(active.body.data.signedAt).toBeTruthy();
+
+    // Contrat actif : corps figé, mais résiliation possible.
+    await request(app).patch(`/api/contracts/${cid}`).set("Authorization", bearer).send({ body: "Contenu modifié après activation du contrat." }).expect(409);
+    const cancelled = await request(app).patch(`/api/contracts/${cid}`).set("Authorization", bearer).send({ status: "RESILIE" }).expect(200);
+    expect(cancelled.body.data.number).toBe(active.body.data.number);
+
+    const mon = await request(app)
+      .post("/api/auth/login")
+      .send({ email: "moniteur.test@loden-autoecole.fr", password: "moniteur-password" })
+      .expect(200);
+    await request(app).get("/api/contracts").set("Authorization", `Bearer ${mon.body.token}`).expect(403);
+  });
+
+  it("gère le CMS (pages/articles) : CRUD, publication, filtre par type, RBAC", async () => {
+    const { app } = testApp();
+    const admin = await request(app)
+      .post("/api/auth/login")
+      .send({ email: "admin@loden-autoecole.fr", password: "admin-password" })
+      .expect(200);
+    const bearer = `Bearer ${admin.body.token}`;
+
+    const page = await request(app)
+      .post("/api/content-entries")
+      .set("Authorization", bearer)
+      .send({ type: "PAGE", title: "Mentions légales", slug: "mentions-legales", body: "Contenu des mentions légales de l'auto-école." })
+      .expect(201);
+    expect(page.body.data.type).toBe("PAGE");
+    expect(page.body.data.published).toBe(false);
+    const pid = page.body.data.id as string;
+
+    await request(app)
+      .post("/api/content-entries")
+      .set("Authorization", bearer)
+      .send({ type: "ARTICLE", title: "Bienvenue", slug: "bienvenue", excerpt: "Premier article", body: "Bienvenue sur le blog LODENE et merci de nous suivre." })
+      .expect(201);
+
+    // Filtre par type.
+    const pages = await request(app).get("/api/content-entries").query({ type: "PAGE" }).set("Authorization", bearer).expect(200);
+    expect(pages.body.data.every((e: { type: string }) => e.type === "PAGE")).toBe(true);
+
+    // Publication.
+    const published = await request(app).patch(`/api/content-entries/${pid}`).set("Authorization", bearer).send({ published: true }).expect(200);
+    expect(published.body.data.published).toBe(true);
+    expect(published.body.data.publishedAt).toBeTruthy();
+
+    // Suppression.
+    await request(app).delete(`/api/content-entries/${pid}`).set("Authorization", bearer).expect(204);
+
+    // RBAC : un moniteur (sans content.manage) ne gère pas le contenu.
+    const mon = await request(app)
+      .post("/api/auth/login")
+      .send({ email: "moniteur.test@loden-autoecole.fr", password: "moniteur-password" })
+      .expect(200);
+    await request(app).get("/api/content-entries").set("Authorization", `Bearer ${mon.body.token}`).expect(403);
+  });
+
   it("manages a student dossier documents (add, verify, delete)", async () => {
     const { app } = testApp();
     const admin = await request(app)
