@@ -106,9 +106,21 @@ export function StudentFile({ studentId }: { studentId: string }) {
   };
 
   const removeDocument = async (document: StudentDocument) => {
-    const response = await fetch(`/api/students/${studentId}/documents/${document.id}`, { method: "DELETE" });
-    if (response.ok) setDocuments((current) => current.filter((item) => item.id !== document.id));
+    if (!window.confirm(`Supprimer définitivement le document « ${document.type} » ?`)) return;
+    try {
+      const response = await fetch(`/api/students/${studentId}/documents/${document.id}`, { method: "DELETE" });
+      if (response.ok) {
+        setDocuments((current) => current.filter((item) => item.id !== document.id));
+      } else {
+        setStatus({ tone: "error", text: "Suppression du document impossible." });
+      }
+    } catch {
+      setStatus({ tone: "error", text: "Suppression du document impossible." });
+    }
   };
+
+  // N'autorise que http(s) ou un chemin relatif — bloque javascript:/data: (XSS stocké).
+  const safeHref = (url: string) => (/^(https?:\/\/|\/)/i.test(url.trim()) ? url : "#");
 
   const update = (patch: Partial<StudentDetail>) => setStudent((current) => (current ? { ...current, ...patch } : current));
 
@@ -326,7 +338,7 @@ export function StudentFile({ studentId }: { studentId: string }) {
               <div className="min-w-0">
                 <p className="text-sm font-semibold text-loden-ink">{document.type}</p>
                 <a
-                  href={document.url}
+                  href={safeHref(document.url)}
                   target="_blank"
                   rel="noreferrer"
                   className="break-all text-xs text-loden-700 underline-offset-2 hover:underline"

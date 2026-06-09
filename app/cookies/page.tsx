@@ -3,7 +3,7 @@ import { contactInfo } from "@/data/site";
 
 export const metadata: Metadata = {
   title: "Gestion des cookies",
-  description: "Informations sur les cookies et traceurs utilisés par LODEN Auto-École."
+  description: "Informations sur les cookies et traceurs utilisés par LODENE Auto-École."
 };
 
 const cookieSections = [
@@ -25,14 +25,16 @@ const cookieSections = [
     title: "Services externes",
     content: [
       "Les liens vers Google Maps, réseaux sociaux ou services de paiement peuvent ouvrir des services tiers disposant de leurs propres politiques de cookies.",
-      "LODEN ne dépose pas directement leurs cookies tant que ces services ne sont pas chargés dans la page."
+      "LODENE ne dépose pas directement leurs cookies tant que ces services ne sont pas chargés dans la page."
     ]
   },
   {
     title: "Gérer tes choix",
     content: [
       "Tu peux configurer ton navigateur pour bloquer, supprimer ou limiter les cookies.",
-      `Pour toute question, contacte LODEN à ${contactInfo.email}.`
+      contactInfo.email
+        ? `Pour toute question, contacte LODENE à ${contactInfo.email}.`
+        : "Pour toute question, contacte LODENE via le formulaire de la page Contact."
     ]
   }
 ];
@@ -47,7 +49,7 @@ export default function CookiesPage() {
             Gestion des cookies
           </h1>
           <p className="mt-5 text-lg leading-8 text-loden-muted">
-            Cette page précise les traceurs susceptibles d&apos;être utilisés sur le site LODEN Auto-École.
+            Cette page précise les traceurs susceptibles d&apos;être utilisés sur le site LODENE Auto-École.
           </p>
         </div>
         <div className="mt-10 grid gap-5">

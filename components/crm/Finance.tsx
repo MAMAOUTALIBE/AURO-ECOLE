@@ -1,8 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { CreditCard, Plus } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { CreditCard, Plus, Search } from "lucide-react";
 import { ACTIVE_AGENCY_KEY } from "@/components/AgencySwitcher";
+import { Pagination } from "@/components/crm/ui";
+
+const PAGE_SIZE = 10;
 
 type Payment = {
   id: string;
@@ -55,6 +58,9 @@ export function Finance() {
   const [installments, setInstallments] = useState<Installment[]>([]);
   const [plan, setPlan] = useState({ studentId: "", totalEuros: "", count: "3", startDate: "" });
   const [planBusy, setPlanBusy] = useState(false);
+  const [query, setQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("ALL");
+  const [page, setPage] = useState(1);
 
   useEffect(() => {
     const agency = window.localStorage.getItem(ACTIVE_AGENCY_KEY);
@@ -130,6 +136,19 @@ export function Finance() {
   };
 
   const payerName = (payment: Payment) => (payment.user ? `${payment.user.firstName} ${payment.user.lastName}` : "—");
+
+  const filteredPayments = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return payments.filter((payment) => {
+      const name = (payment.user ? `${payment.user.firstName} ${payment.user.lastName}` : "").toLowerCase();
+      return (!q || name.includes(q)) && (statusFilter === "ALL" || payment.status === statusFilter);
+    });
+  }, [payments, query, statusFilter]);
+  const pagedPayments = filteredPayments.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+  useEffect(() => {
+    setPage(1);
+  }, [query, statusFilter]);
 
   const record = async () => {
     const amount = Math.round(Number(form.amountEuros) * 100);
@@ -213,7 +232,25 @@ export function Finance() {
       </div>
 
       <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-soft">
-        <h2 className="text-lg font-semibold text-loden-ink">Paiements</h2>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-lg font-semibold text-loden-ink">Paiements</h2>
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="relative min-w-[180px]">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" aria-hidden="true" />
+              <input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Rechercher un élève…"
+                aria-label="Rechercher un paiement"
+                className="focus-ring w-full rounded-xl border border-slate-200 bg-slate-50/70 py-2 pl-9 pr-3 text-sm outline-none transition focus:border-loden-200 focus:bg-white"
+              />
+            </div>
+            <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} aria-label="Filtrer par statut" className="field-input sm:max-w-[180px]">
+              <option value="ALL">Tous les statuts</option>
+              {STATUSES.map((s) => <option key={s.key} value={s.key}>{s.label}</option>)}
+            </select>
+          </div>
+        </div>
         {loading ? <p className="mt-6 text-sm text-loden-muted">Chargement…</p> : null}
         {!loading ? (
           <div className="mt-6 overflow-x-auto">
@@ -228,7 +265,7 @@ export function Finance() {
                 </tr>
               </thead>
               <tbody>
-                {payments.map((payment) => (
+                {pagedPayments.map((payment) => (
                   <tr key={payment.id} className="border-b border-slate-100 last:border-0">
                     <td className="py-3 pr-4 font-semibold text-loden-ink">{payerName(payment)}</td>
                     <td className="py-3 pr-4 text-loden-muted">{KINDS.find((k) => k.key === payment.kind)?.label ?? payment.kind}</td>
@@ -251,11 +288,14 @@ export function Finance() {
                     </td>
                   </tr>
                 ))}
-                {payments.length === 0 ? (
-                  <tr><td colSpan={5} className="py-6 text-center text-sm text-loden-muted">Aucun paiement.</td></tr>
+                {filteredPayments.length === 0 ? (
+                  <tr><td colSpan={5} className="py-6 text-center text-sm text-loden-muted">
+                    {payments.length === 0 ? "Aucun paiement." : "Aucun paiement ne correspond."}
+                  </td></tr>
                 ) : null}
               </tbody>
             </table>
+            <Pagination page={page} pageSize={PAGE_SIZE} total={filteredPayments.length} onPage={setPage} />
           </div>
         ) : null}
       </div>

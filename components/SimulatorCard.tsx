@@ -1,20 +1,15 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { Calculator, Clock3 } from "lucide-react";
+import { useState } from "react";
+import Link from "next/link";
+import { Calculator, FileText } from "lucide-react";
 import { simulatorOptions } from "@/data/site";
-import { formatCurrency } from "@/lib/utils";
 
 export function SimulatorCard() {
+  // Aucun tarif officiel confirmé -> on ne calcule pas de montant : la demande débouche sur un devis.
   const [formation, setFormation] = useState(simulatorOptions.formations[0].value);
   const [hours, setHours] = useState(20);
   const [financing, setFinancing] = useState(simulatorOptions.financing[0].value);
-
-  const estimate = useMemo(() => {
-    const selectedFormation = simulatorOptions.formations.find((item) => item.value === formation) ?? simulatorOptions.formations[0];
-    const selectedFinancing = simulatorOptions.financing.find((item) => item.value === financing) ?? simulatorOptions.financing[0];
-    return Math.max(0, selectedFormation.base + selectedFormation.hourly * hours - selectedFinancing.discount);
-  }, [financing, formation, hours]);
 
   return (
     <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-premium">
@@ -23,8 +18,8 @@ export function SimulatorCard() {
           <Calculator className="h-6 w-6" />
         </span>
         <div>
-          <h3 className="text-xl font-semibold text-loden-ink">Simulateur de tarif</h3>
-          <p className="text-sm text-loden-muted">Estimation immédiate, ajustable avant devis.</p>
+          <h3 className="text-xl font-semibold text-loden-ink">Préparer ma demande de devis</h3>
+          <p className="text-sm text-loden-muted">Précise ton besoin : on te transmet un devis personnalisé.</p>
         </div>
       </div>
       <div className="mt-6 grid gap-5">
@@ -78,11 +73,19 @@ export function SimulatorCard() {
       </div>
       <div className="mt-6 rounded-3xl bg-loden-ink p-5 text-white">
         <p className="flex items-center gap-2 text-sm text-white/75">
-          <Clock3 className="h-4 w-4" />
-          Prix estimé
+          <FileText className="h-4 w-4" />
+          Tarif
         </p>
-        <p className="mt-2 text-4xl font-semibold">{formatCurrency(estimate)}</p>
-        <p className="mt-2 text-sm text-white/70">Le devis final dépend du diagnostic initial et du planning choisi.</p>
+        <p className="mt-2 text-4xl font-semibold">Sur devis</p>
+        <p className="mt-2 text-sm text-white/70">
+          Le tarif est établi sur devis personnalisé, selon le diagnostic initial et le planning choisi.
+        </p>
+        <Link
+          href="/contact#demande"
+          className="focus-ring mt-4 inline-flex items-center justify-center rounded-full bg-white px-5 py-3 text-sm font-semibold text-loden-ink transition hover:bg-loden-pearl"
+        >
+          Demander mon devis
+        </Link>
       </div>
     </div>
   );

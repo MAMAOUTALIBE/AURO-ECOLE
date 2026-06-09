@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 270" width="480" height="270" role="img" aria-label="Illustration CACES R489 : chariot élévateur">
+  <defs>
+    <linearGradient id="chBg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#b45309"/>
+      <stop offset="0.55" stop-color="#f59e0b"/>
+      <stop offset="1" stop-color="#fbbf24"/>
+    </linearGradient>
+  </defs>
+  <rect width="480" height="270" fill="url(#chBg)"/>
+  <circle cx="402" cy="64" r="50" fill="#ffffff" opacity="0.14"/>
+  <path d="M0 206 L480 206 L480 270 L0 270 Z" fill="#7c3a06"/>
+  <rect x="0" y="202" width="480" height="6" fill="#ffffff" opacity="0.25"/>
+  <!-- palette + caisses -->
+  <g transform="translate(60 120)">
+    <rect x="0" y="64" width="92" height="14" fill="#a16207"/>
+    <rect x="6" y="50" width="34" height="20" fill="#fde68a"/>
+    <rect x="48" y="44" width="38" height="26" fill="#fcd34d"/>
+  </g>
+  <!-- chariot élévateur -->
+  <g transform="translate(214 70)">
+    <ellipse cx="92" cy="138" rx="100" ry="13" fill="#5a2a04" opacity="0.4"/>
+    <!-- mât -->
+    <rect x="8" y="2" width="12" height="132" fill="#1f2937"/>
+    <rect x="26" y="2" width="8" height="132" fill="#374151"/>
+    <!-- fourches -->
+    <rect x="-44" y="120" width="58" height="9" fill="#111827"/>
+    <rect x="-44" y="112" width="10" height="17" fill="#111827"/>
+    <!-- corps -->
+    <path d="M40 60 L150 60 C160 60 168 68 168 78 L168 120 C168 126 164 130 158 130 L52 130 C46 130 42 126 42 120 Z" fill="#f97316"/>
+    <path d="M58 28 L120 28 C128 28 134 34 136 42 L142 60 L52 60 L52 40 C52 33 55 28 58 28 Z" fill="#1f2937"/>
+    <rect x="64" y="36" width="60" height="22" rx="3" fill="#bae6fd"/>
+    <!-- protection conducteur -->
+    <rect x="52" y="2" width="6" height="58" fill="#111827"/>
+    <rect x="130" y="2" width="6" height="30" fill="#111827"/>
+    <rect x="52" y="2" width="84" height="6" fill="#111827"/>
+    <circle cx="74" cy="132" r="22" fill="#111827"/><circle cx="74" cy="132" r="9" fill="#d1d5db"/>
+    <circle cx="146" cy="132" r="18" fill="#111827"/><circle cx="146" cy="132" r="7" fill="#d1d5db"/>
+  </g>
+</svg>

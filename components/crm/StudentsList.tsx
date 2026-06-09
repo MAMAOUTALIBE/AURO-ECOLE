@@ -1,9 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, Plus, Users, X } from "lucide-react";
+import { ArrowRight, Plus, Search, Users, X } from "lucide-react";
 import { ACTIVE_AGENCY_KEY } from "@/components/AgencySwitcher";
+import { Pagination } from "@/components/crm/ui";
+
+const PAGE_SIZE = 10;
 
 type Student = {
   id: string;
@@ -44,6 +47,29 @@ export function StudentsList() {
   const [formError, setFormError] = useState<string | null>(null);
   const [created, setCreated] = useState<string | null>(null);
 
+  const [query, setQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("ALL");
+  const [page, setPage] = useState(1);
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return students.filter((student) => {
+      const haystack = student.user
+        ? `${student.user.firstName} ${student.user.lastName} ${student.user.email}`.toLowerCase()
+        : "";
+      const matchesQuery = !q || haystack.includes(q);
+      const matchesStatus = statusFilter === "ALL" || student.fileStatus === statusFilter;
+      return matchesQuery && matchesStatus;
+    });
+  }, [students, query, statusFilter]);
+
+  const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+  // Revenir page 1 quand la recherche/le filtre change.
+  useEffect(() => {
+    setPage(1);
+  }, [query, statusFilter]);
+
   async function loadStudents() {
     setLoading(true);
     setError(null);
@@ -55,7 +81,7 @@ export function StudentsList() {
       if (Array.isArray(payload?.data)) setStudents(payload.data as Student[]);
       else setError(payload?.error?.message ?? "Impossible de charger les élèves.");
     } catch {
-      setError("Le service LODEN est momentanément indisponible.");
+      setError("Le service LODENE est momentanément indisponible.");
     } finally {
       setLoading(false);
     }
@@ -117,7 +143,7 @@ export function StudentsList() {
           </span>
           <div>
             <h2 className="text-xl font-semibold text-loden-ink">Élèves</h2>
-            <p className="text-sm text-loden-muted">{students.length} dossier(s)</p>
+            <p className="text-sm text-loden-muted">{filtered.length} dossier(s)</p>
           </div>
         </div>
         <button
@@ -131,6 +157,30 @@ export function StudentsList() {
           {showForm ? <X className="h-4 w-4" aria-hidden="true" /> : <Plus className="h-4 w-4" aria-hidden="true" />}
           {showForm ? "Fermer" : "Nouvel élève"}
         </button>
+      </div>
+
+      <div className="mt-4 flex flex-wrap items-center gap-3">
+        <div className="relative min-w-[200px] flex-1">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" aria-hidden="true" />
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Rechercher un élève (nom, email)…"
+            aria-label="Rechercher un élève"
+            className="focus-ring w-full rounded-xl border border-slate-200 bg-slate-50/70 py-2 pl-9 pr-3 text-sm outline-none transition focus:border-loden-200 focus:bg-white"
+          />
+        </div>
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          aria-label="Filtrer par statut"
+          className="field-input sm:max-w-[220px]"
+        >
+          <option value="ALL">Tous les statuts</option>
+          {Object.entries(FILE_STATUS_LABELS).map(([key, label]) => (
+            <option key={key} value={key}>{label}</option>
+          ))}
+        </select>
       </div>
 
       {created ? (
@@ -188,7 +238,7 @@ export function StudentsList() {
               </tr>
             </thead>
             <tbody>
-              {students.map((student) => (
+              {paged.map((student) => (
                 <tr key={student.id} className="border-b border-slate-100 last:border-0">
                   <td className="py-3 pr-4">
                     <p className="font-semibold text-loden-ink">
@@ -220,15 +270,16 @@ export function StudentsList() {
                   </td>
                 </tr>
               ))}
-              {students.length === 0 ? (
+              {filtered.length === 0 ? (
                 <tr>
                   <td colSpan={4} className="py-6 text-center text-sm text-loden-muted">
-                    Aucun élève pour cette sélection.
+                    {students.length === 0 ? "Aucun élève pour cette sélection." : "Aucun élève ne correspond à la recherche."}
                   </td>
                 </tr>
               ) : null}
             </tbody>
           </table>
+          <Pagination page={page} pageSize={PAGE_SIZE} total={filtered.length} onPage={setPage} />
         </div>
       ) : null}
     </div>

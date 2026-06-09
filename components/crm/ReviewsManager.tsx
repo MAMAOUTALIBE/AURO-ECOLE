@@ -1,0 +1,164 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+import { Check, Star, X } from "lucide-react";
+import { Badge, Card, EmptyState, SectionHeader, Skeleton, type BadgeVariant } from "@/components/crm/ui";
+
+type Review = {
+  id: string;
+  rating: number;
+  comment: string;
+  status: "EN_ATTENTE" | "PUBLIE" | "REJETE";
+  createdAt: string;
+};
+
+const FILTERS = [
+  { key: "EN_ATTENTE", label: "À modérer" },
+  { key: "PUBLIE", label: "Publiés" },
+  { key: "REJETE", label: "Rejetés" },
+  { key: "ALL", label: "Tous" }
+] as const;
+
+const STATUS_META: Record<Review["status"], { label: string; variant: BadgeVariant }> = {
+  EN_ATTENTE: { label: "À modérer", variant: "warning" },
+  PUBLIE: { label: "Publié", variant: "success" },
+  REJETE: { label: "Rejeté", variant: "danger" }
+};
+
+function Stars({ rating }: { rating: number }) {
+  return (
+    <span className="inline-flex" aria-label={`${rating} sur 5`}>
+      {[1, 2, 3, 4, 5].map((n) => (
+        <Star key={n} className={`h-4 w-4 ${n <= rating ? "fill-amber-400 text-amber-400" : "text-slate-200"}`} aria-hidden="true" />
+      ))}
+    </span>
+  );
+}
+
+export function ReviewsManager() {
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [filter, setFilter] = useState<(typeof FILTERS)[number]["key"]>("EN_ATTENTE");
+  const [busy, setBusy] = useState<string | null>(null);
+
+  const load = () => {
+    setLoading(true);
+    fetch("/api/reviews?includeUnpublished=true")
+      .then((r) => r.json())
+      .then((p) => {
+        if (Array.isArray(p?.data)) setReviews(p.data as Review[]);
+        else setError(p?.error?.message ?? "Chargement des avis impossible.");
+      })
+      .catch(() => setError("Chargement des avis impossible."))
+      .finally(() => setLoading(false));
+  };
+
+  useEffect(load, []);
+
+  const moderate = async (review: Review, status: Review["status"]) => {
+    setBusy(review.id);
+    setError(null);
+    try {
+      const response = await fetch(`/api/reviews/${review.id}/status`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status })
+      });
+      if (!response.ok) throw new Error();
+      setReviews((cur) => cur.map((r) => (r.id === review.id ? { ...r, status } : r)));
+    } catch {
+      setError("Action de modération impossible.");
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const counts = useMemo(() => {
+    const c: Record<string, number> = { EN_ATTENTE: 0, PUBLIE: 0, REJETE: 0, ALL: reviews.length };
+    reviews.forEach((r) => (c[r.status] = (c[r.status] ?? 0) + 1));
+    return c;
+  }, [reviews]);
+
+  const visible = filter === "ALL" ? reviews : reviews.filter((r) => r.status === filter);
+
+  return (
+    <div className="space-y-5">
+      <div className="inline-flex flex-wrap gap-1 rounded-xl border border-slate-200 bg-white p-1 shadow-soft">
+        {FILTERS.map((f) => (
+          <button
+            key={f.key}
+            type="button"
+            onClick={() => setFilter(f.key)}
+            className={`focus-ring rounded-lg px-3 py-1.5 text-sm font-semibold transition ${
+              filter === f.key ? "bg-loden-700 text-white shadow-soft" : "text-loden-muted hover:text-loden-ink"
+            }`}
+          >
+            {f.label} <span className="opacity-70">({counts[f.key] ?? 0})</span>
+          </button>
+        ))}
+      </div>
+
+      {error ? <p className="rounded-xl bg-rose-50 p-3 text-sm font-medium text-rose-700">{error}</p> : null}
+
+      <Card className="p-5">
+        <SectionHeader title="Modération des avis" subtitle="Publiez ou rejetez les avis clients avant affichage public." icon={Star} />
+        <div className="mt-4">
+          {loading ? (
+            <div className="space-y-3">
+              {[0, 1, 2].map((i) => (
+                <Skeleton key={i} className="h-20 w-full rounded-2xl" />
+              ))}
+            </div>
+          ) : visible.length === 0 ? (
+            <EmptyState icon={Star} title="Aucun avis" description="Les avis clients à modérer apparaîtront ici." compact />
+          ) : (
+            <ul className="space-y-3">
+              {visible.map((review) => {
+                const meta = STATUS_META[review.status];
+                return (
+                  <li key={review.id} className="rounded-2xl border border-slate-200/70 p-4">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <Stars rating={review.rating} />
+                      <div className="flex items-center gap-2">
+                        <Badge variant={meta.variant}>{meta.label}</Badge>
+                        <span className="text-xs text-loden-muted">
+                          {new Date(review.createdAt).toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "numeric" })}
+                        </span>
+                      </div>
+                    </div>
+                    <p className="mt-2 text-sm leading-6 text-loden-ink">{review.comment}</p>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {review.status !== "PUBLIE" ? (
+                          <button
+                            type="button"
+                            disabled={busy === review.id}
+                            onClick={() => moderate(review, "PUBLIE")}
+                            className="focus-ring inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-60"
+                          >
+                            <Check className="h-3.5 w-3.5" aria-hidden="true" />
+                            Publier
+                          </button>
+                        ) : null}
+                        {review.status !== "REJETE" ? (
+                          <button
+                            type="button"
+                            disabled={busy === review.id}
+                            onClick={() => moderate(review, "REJETE")}
+                            className="focus-ring inline-flex items-center gap-1.5 rounded-lg border border-rose-200 px-3 py-1.5 text-xs font-semibold text-rose-600 transition hover:bg-rose-50 disabled:opacity-60"
+                          >
+                            <X className="h-3.5 w-3.5" aria-hidden="true" />
+                            Rejeter
+                          </button>
+                        ) : null}
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
+      </Card>
+    </div>
+  );
+}

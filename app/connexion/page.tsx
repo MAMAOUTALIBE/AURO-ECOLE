@@ -5,7 +5,7 @@ import { SectionHeader } from "@/components/SectionHeader";
 
 export const metadata: Metadata = {
   title: "Connexion élève",
-  description: "Connexion à l'espace élève LODEN Auto-École."
+  description: "Connexion à l'espace élève LODENE Auto-École."
 };
 
 export default function ConnexionPage() {
@@ -13,7 +13,7 @@ export default function ConnexionPage() {
     <main>
       <PageHero
         eyebrow="Espace élève"
-        title="Connecte-toi à ton suivi LODEN"
+        title="Connecte-toi à ton suivi LODENE"
         text="Retrouve ton profil, ta formation et les prochaines briques de suivi élève."
         cta="Créer un compte"
         ctaHref="/inscription"
@@ -23,7 +23,7 @@ export default function ConnexionPage() {
           <SectionHeader
             eyebrow="Connexion"
             title="Un accès sécurisé pour centraliser ton parcours"
-            text="Cette base utilise le JWT du backend LODEN. Elle prépare les prochains modules : réservations authentifiées, documents, paiements et progression."
+            text="Cette base utilise le JWT du backend LODENE. Elle prépare les prochains modules : réservations authentifiées, documents, paiements et progression."
           />
           <LoginForm />
         </div>

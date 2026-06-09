@@ -12,19 +12,19 @@ export function LocalMapPanel() {
           <MapPin className="h-6 w-6" aria-hidden="true" />
         </span>
         <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.12em] text-loden-700">Point de rendez-vous</p>
-          <h2 className="mt-1 text-xl font-semibold text-loden-ink">République, Paris 11</h2>
+          <p className="text-sm font-semibold uppercase tracking-[0.12em] text-loden-700">Nous trouver</p>
+          <h2 className="mt-1 text-xl font-semibold text-loden-ink">Conflans-Sainte-Honorine</h2>
           <p className="mt-2 text-sm leading-6 text-loden-muted">{contactInfo.address}</p>
         </div>
       </div>
       <iframe
-        title="Carte du point de rendez-vous LODEN"
+        title="Carte du point de rendez-vous LODENE"
         src={mapSrc}
         loading="lazy"
         referrerPolicy="no-referrer-when-downgrade"
         className="block aspect-[16/10] w-full border-0"
       />
-      <div className="grid gap-3 border-t border-slate-200 bg-white p-4 sm:grid-cols-2">
+      <div className={`grid gap-3 border-t border-slate-200 bg-white p-4 ${contactInfo.phone ? "sm:grid-cols-2" : ""}`}>
         <a
           href={directionsHref}
           target="_blank"
@@ -34,13 +34,15 @@ export function LocalMapPanel() {
           <Navigation className="h-4 w-4" aria-hidden="true" />
           Itinéraire
         </a>
-        <a
-          href={`tel:${contactInfo.phone.replaceAll(" ", "")}`}
-          className="focus-ring inline-flex items-center justify-center gap-2 rounded-full border border-slate-200 px-4 py-3 text-sm font-semibold text-loden-ink hover:bg-loden-50"
-        >
-          <ExternalLink className="h-4 w-4" aria-hidden="true" />
-          Appeler l&apos;agence
-        </a>
+        {contactInfo.phone ? (
+          <a
+            href={`tel:${contactInfo.phone.replaceAll(" ", "")}`}
+            className="focus-ring inline-flex items-center justify-center gap-2 rounded-full border border-slate-200 px-4 py-3 text-sm font-semibold text-loden-ink hover:bg-loden-50"
+          >
+            <ExternalLink className="h-4 w-4" aria-hidden="true" />
+            Appeler
+          </a>
+        ) : null}
       </div>
     </div>
   );

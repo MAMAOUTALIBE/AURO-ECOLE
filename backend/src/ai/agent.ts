@@ -1,7 +1,7 @@
 import type { ToolContext, ToolEntry } from "./tools";
 import type { AiMessage, AiProvider } from "./types";
 
-const FALLBACK = "Je transmets votre demande à un conseiller LODEN qui vous répondra rapidement.";
+const FALLBACK = "Je transmets votre demande à un conseiller LODENE qui vous répondra rapidement.";
 
 /**
  * Boucle d'agent : envoie la conversation + les outils au provider, exécute les

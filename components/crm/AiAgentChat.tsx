@@ -8,7 +8,7 @@ type Message = { role: "user" | "assistant"; content: string };
 const GREETING: Message = {
   role: "assistant",
   content:
-    "Bonjour 👋 Je suis l'agent interne LODEN. Je peux rechercher un élève, consulter les créneaux et réserver une leçon dans le planning (selon vos droits). Ex : « Réserve une leçon à Karim avec Sarah demain 10h »."
+    "Bonjour 👋 Je suis l'agent interne LODENE. Je peux rechercher un élève, consulter les créneaux et réserver une leçon dans le planning (selon vos droits). Ex : « Réserve une leçon à Karim avec Sarah demain 10h »."
 };
 
 export function AiAgentChat() {

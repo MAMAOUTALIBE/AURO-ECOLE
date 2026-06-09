@@ -3,6 +3,7 @@ import { z } from "zod";
 import type { ApiConfig } from "../../config/env";
 import type { AuthenticatedRequest } from "../../http/request-context";
 import { authenticate, requirePermission } from "../../middleware/auth";
+import { hasPermission } from "../../domain/permissions";
 import type { LodenRepository } from "../../repositories/loden-repository";
 import { asyncHandler } from "../../shared/async-handler";
 import { forbidden } from "../../shared/http-error";
@@ -40,7 +41,9 @@ export function createReviewsRouter(repository: LodenRepository, config: ApiConf
     asyncHandler(async (req, res) => {
       const query = validateQuery(reviewQuery, req);
       const user = (req as AuthenticatedRequest).user;
-      if (query.includeUnpublished && user?.role !== "SUPER_ADMIN" && user?.role !== "ADMIN") {
+      // Voir les avis non publiés (file de modération) = permission reviews.read,
+      // détenue par tous les rôles habilités à modérer/consulter — pas seulement ADMIN.
+      if (query.includeUnpublished && !(user && hasPermission(user.role, "reviews.read"))) {
         throw forbidden();
       }
       res.json({ data: await repository.listReviews(query.includeUnpublished) });
@@ -68,6 +71,13 @@ export function createReviewsRouter(repository: LodenRepository, config: ApiConf
     asyncHandler(async (req, res) => {
       const body = validateBody(statusSchema, req);
       const review = await repository.updateReview(String(req.params.id), body);
+      void repository.createAuditLog({
+        userId: (req as AuthenticatedRequest).user?.id ?? null,
+        action: "review.moderate",
+        entityType: "Review",
+        entityId: review.id,
+        metadata: { status: body.status }
+      });
       res.json({ data: review });
     })
   );

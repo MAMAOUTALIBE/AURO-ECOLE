@@ -95,7 +95,7 @@ function buildCalendarDays(availabilities: Availability[]): CalendarDay[] {
 export function BookingCalendar() {
   const [selectedDay, setSelectedDay] = useState(0);
   const [selectedSlot, setSelectedSlot] = useState(fallbackDays[0].slots[0].label);
-  const [selectedMeetingPoint, setSelectedMeetingPoint] = useState(meetingPoints[0].id);
+  const [selectedMeetingPoint, setSelectedMeetingPoint] = useState(meetingPoints[0]?.id ?? "");
   const [remoteDays, setRemoteDays] = useState<CalendarDay[] | null>(null);
   const [bookingMessage, setBookingMessage] = useState<{ tone: "success" | "error"; text: string } | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -192,7 +192,7 @@ export function BookingCalendar() {
       <div className="flex items-center justify-between gap-4">
         <div>
           <h3 className="text-xl font-semibold text-loden-ink">Réserver une leçon</h3>
-          <p className="mt-1 text-sm text-loden-muted">Créneaux disponibles synchronisés avec le planning LODEN.</p>
+          <p className="mt-1 text-sm text-loden-muted">Créneaux disponibles synchronisés avec le planning LODENE.</p>
         </div>
         <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-loden-50 text-loden-700">
           <CalendarCheck className="h-6 w-6" />
@@ -230,7 +230,7 @@ export function BookingCalendar() {
           </button>
         ))}
       </div>
-      <div className="mt-6">
+      <div className="mt-6" hidden={meetingPoints.length === 0}>
         <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-loden-muted">
           <MapPin className="h-4 w-4 text-loden-600" aria-hidden="true" />
           Point de rendez-vous

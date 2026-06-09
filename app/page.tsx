@@ -74,40 +74,44 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="bg-white py-16 sm:py-20">
-        <div className="container-pad">
-          <SectionHeader
-            eyebrow="Moniteurs"
-            title="Des coachs exigeants et bienveillants"
-            text="Chaque élève est suivi par une équipe qui combine pédagogie, ponctualité et exigence d'examen."
-          />
-          <div className="mt-9 grid gap-6 md:grid-cols-3">
-            {instructors.map((instructor, index) => (
-              <MotionReveal key={instructor.name} delay={index * 0.06}>
-                <InstructorCard instructor={instructor} />
-              </MotionReveal>
-            ))}
+      {instructors.length > 0 ? (
+        <section className="bg-white py-16 sm:py-20">
+          <div className="container-pad">
+            <SectionHeader
+              eyebrow="Moniteurs"
+              title="Des coachs exigeants et bienveillants"
+              text="Chaque élève est suivi par une équipe qui combine pédagogie, ponctualité et exigence d'examen."
+            />
+            <div className="mt-9 grid gap-6 md:grid-cols-3">
+              {instructors.map((instructor, index) => (
+                <MotionReveal key={instructor.name} delay={index * 0.06}>
+                  <InstructorCard instructor={instructor} />
+                </MotionReveal>
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      ) : null}
 
-      <section className="bg-loden-pearl py-16 sm:py-20">
-        <div className="container-pad">
-          <SectionHeader
-            eyebrow="Avis clients"
-            title="Une expérience pensée pour rassurer"
-            text="Des retours élèves qui confirment la qualité du suivi, la disponibilité et la clarté du parcours."
-            align="center"
-          />
-          <div className="mt-9 grid gap-5 md:grid-cols-3">
-            {testimonials.map((testimonial, index) => (
-              <MotionReveal key={testimonial.name} delay={index * 0.04}>
-                <TestimonialCard testimonial={testimonial} />
-              </MotionReveal>
-            ))}
+      {testimonials.length > 0 ? (
+        <section className="bg-loden-pearl py-16 sm:py-20">
+          <div className="container-pad">
+            <SectionHeader
+              eyebrow="Avis clients"
+              title="Une expérience pensée pour rassurer"
+              text="Des retours élèves qui confirment la qualité du suivi, la disponibilité et la clarté du parcours."
+              align="center"
+            />
+            <div className="mt-9 grid gap-5 md:grid-cols-3">
+              {testimonials.map((testimonial, index) => (
+                <MotionReveal key={testimonial.name} delay={index * 0.04}>
+                  <TestimonialCard testimonial={testimonial} />
+                </MotionReveal>
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      ) : null}
 
       <DiagnosticCtaSection />
 

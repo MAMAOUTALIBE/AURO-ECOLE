@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
-import type { BookingRecord, FormationRecord, PaymentRecord, SearchResult } from "../domain/types";
+import type { BookingRecord, CompanyInfoRecord, FormationRecord, PaymentRecord, SearchResult } from "../domain/types";
+import { initialCompanyInfo } from "../data/initial-data";
 import { MemoryLodenRepository } from "./memory-loden-repository";
 import type {
   CreateBookingInput,
@@ -9,9 +10,11 @@ import type {
   CreateLeadInput,
   CreatePaymentInput,
   CreateReviewInput,
+  CreateAgencyInput,
   CreateInstructorInput,
   CreateStudentInput,
   CreateUserInput,
+  CreateVehicleInput,
   ListUsersFilters,
   LodenRepository
 } from "./loden-repository";
@@ -55,6 +58,59 @@ export class PrismaLodenRepository implements LodenRepository {
       email: row.email ?? undefined,
       active: row.active
     };
+  }
+
+  async createAgency(input: CreateAgencyInput) {
+    const row = await this.prisma.agency.create({ data: { ...input, active: input.active ?? true } as never });
+    return {
+      id: row.id,
+      name: row.name,
+      slug: row.slug,
+      address: row.address ?? undefined,
+      latitude: row.latitude ?? undefined,
+      longitude: row.longitude ?? undefined,
+      phone: row.phone ?? undefined,
+      email: row.email ?? undefined,
+      active: row.active
+    };
+  }
+
+  async updateAgency(id: string, input: Parameters<LodenRepository["updateAgency"]>[1]) {
+    const row = await this.prisma.agency.update({ where: { id }, data: input as never });
+    return {
+      id: row.id,
+      name: row.name,
+      slug: row.slug,
+      address: row.address ?? undefined,
+      latitude: row.latitude ?? undefined,
+      longitude: row.longitude ?? undefined,
+      phone: row.phone ?? undefined,
+      email: row.email ?? undefined,
+      active: row.active
+    };
+  }
+
+  async listVehicles(filters?: { agencyId?: string }) {
+    return this.prisma.vehicle.findMany({
+      where: filters?.agencyId ? { agencyId: filters.agencyId } : undefined,
+      orderBy: { label: "asc" }
+    }) as Promise<Awaited<ReturnType<LodenRepository["listVehicles"]>>>;
+  }
+
+  async findVehicleById(id: string) {
+    return this.prisma.vehicle.findUnique({ where: { id } }) as Promise<Awaited<ReturnType<LodenRepository["findVehicleById"]>>>;
+  }
+
+  async createVehicle(input: CreateVehicleInput) {
+    return this.prisma.vehicle.create({ data: { ...input, active: input.active ?? true } as never }) as Promise<
+      Awaited<ReturnType<LodenRepository["createVehicle"]>>
+    >;
+  }
+
+  async updateVehicle(id: string, input: Parameters<LodenRepository["updateVehicle"]>[1]) {
+    return this.prisma.vehicle.update({ where: { id }, data: input as never }) as Promise<
+      Awaited<ReturnType<LodenRepository["updateVehicle"]>>
+    >;
   }
 
   async listAgencyMembershipsByUser(userId: string) {
@@ -150,6 +206,29 @@ export class PrismaLodenRepository implements LodenRepository {
 
   async deleteStudentDocument(id: string) {
     await this.prisma.studentDocument.delete({ where: { id } });
+  }
+
+  async getCompanyInfo(): Promise<CompanyInfoRecord> {
+    const existing = await this.prisma.companyInfo.findUnique({ where: { id: "company" } });
+    if (existing) return existing;
+    const { id: _id, updatedAt: _updatedAt, ...defaults } = initialCompanyInfo;
+    void _id;
+    void _updatedAt;
+    return this.prisma.companyInfo.create({ data: { id: "company", ...defaults } });
+  }
+
+  async updateCompanyInfo(input: Partial<CompanyInfoRecord>): Promise<CompanyInfoRecord> {
+    const { id: _id, updatedAt: _updatedAt, ...data } = input;
+    void _id;
+    void _updatedAt;
+    const { id: _i2, updatedAt: _u2, ...defaults } = initialCompanyInfo;
+    void _i2;
+    void _u2;
+    return this.prisma.companyInfo.upsert({
+      where: { id: "company" },
+      update: data,
+      create: { id: "company", ...defaults, ...data }
+    });
   }
 
   async createStudent(input: CreateStudentInput) {

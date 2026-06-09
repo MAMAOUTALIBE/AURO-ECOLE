@@ -58,7 +58,7 @@ export function LoginForm() {
       <div className="border-b border-slate-200 pb-5">
         <h2 className="text-2xl font-semibold text-loden-ink">Connexion élève</h2>
         <p className="mt-2 text-sm leading-6 text-loden-muted">
-          Accède à ton profil, ta formation et ton futur planning LODEN.
+          Accède à ton profil, ta formation et ton futur planning LODENE.
         </p>
       </div>
 

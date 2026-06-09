@@ -4,7 +4,6 @@ import {
   CalendarCheck,
   Car,
   ClipboardCheck,
-  Clock3,
   CreditCard,
   FileCheck2,
   GraduationCap,
@@ -40,52 +39,75 @@ export const legalLinks = [
 export const localSeoPages = [
   {
     href: "/permis-b-paris-11",
-    label: "Permis B Paris 11",
-    title: "Permis B à Paris 11",
-    description: "Formation permis B manuel ou automatique près de République, avec planning flexible, CPF et suivi élève."
+    label: "Permis B Conflans-Sainte-Honorine",
+    title: "Permis B à Conflans-Sainte-Honorine",
+    description: "Formation permis B manuel ou automatique à Conflans-Sainte-Honorine (78), avec planning flexible, CPF et suivi élève."
   },
   {
     href: "/auto-ecole-cpf-paris",
-    label: "Auto-école CPF Paris",
-    title: "Auto-école CPF à Paris",
-    description: "Accompagnement CPF pour financer le permis à Paris, avec diagnostic, devis et suivi administratif."
+    label: "Auto-école CPF Conflans-Sainte-Honorine",
+    title: "Auto-école CPF à Conflans-Sainte-Honorine",
+    description: "Accompagnement CPF pour financer le permis à Conflans-Sainte-Honorine et dans les Yvelines, avec diagnostic, devis et suivi administratif."
   }
 ];
 
+// Coordonnées affichées. Source de repli ; éditable via le CMS (CompanyInfo).
+// RÈGLE : ne JAMAIS afficher une donnée non vérifiée — les champs non confirmés
+// (téléphone, WhatsApp, horaires, email) restent VIDES et l'UI masque les lignes vides.
 export const contactInfo = {
-  phone: "01 84 80 12 45",
-  whatsapp: "33618451245",
-  address: "24 avenue de la République, 75011 Paris",
-  mapQuery: "24 avenue de la République, 75011 Paris",
-  hours: "Lun-Sam 8h-20h",
-  email: "contact@loden-autoecole.fr"
+  phone: "",
+  whatsapp: "",
+  address: "30 rue Pierre Le Guen, 78700 Conflans-Sainte-Honorine, France",
+  mapQuery: "30 rue Pierre Le Guen, 78700 Conflans-Sainte-Honorine",
+  hours: "",
+  email: ""
 };
 
-export const socialLinks = [
-  { label: "Instagram LODEN", href: "https://www.instagram.com/loden.autoecole" },
-  { label: "Facebook LODEN", href: "https://www.facebook.com/loden.autoecole" }
-];
+// Données officielles vérifiées de l'entreprise (source de repli ; éditable via CMS CompanyInfo).
+// Seuls nom commercial, adresse, SIRET et agrément sont confirmés — le reste reste vide.
+export const companyInfo = {
+  brandName: "LODENE",
+  legalName: "",
+  address: "30 rue Pierre Le Guen",
+  postalCode: "78700",
+  city: "Conflans-Sainte-Honorine",
+  country: "France",
+  siret: "84282888100040",
+  approvalNumber: "E2507800260",
+  legalForm: "",
+  capital: "",
+  publicationDirector: "",
+  hostingProvider: ""
+};
+
+// Réseaux sociaux : aucun compte officiel confirmé -> liste vide (l'UI n'affiche rien).
+// À renseigner via le CMS dès que les comptes officiels sont confirmés.
+export const socialLinks: { label: string; href: string }[] = [];
 
 // Source unique des preuves chiffrées (affichage). Toutes les sections — hero,
 // page Avis, JSON-LD — lisent ces valeurs pour garantir des chiffres cohérents
 // d'une page à l'autre. À mettre à jour avec les chiffres réels validés.
+// Preuves chiffrées : AUCUNE statistique n'est officiellement confirmée (taux de réussite,
+// nombre d'élèves, note, recommandation). Champs VIDES tant que non vérifiés — l'UI masque
+// tout indicateur vide. À renseigner via le CMS avec des chiffres réels.
 export const proofStats = {
-  ratingDisplay: "4,9/5",
-  ratingValueSchema: "4.9", // schema.org attend un point décimal
-  bestRating: "5",
-  passRate: "98 %",
-  studentsAccompanied: "+800",
-  recommendRate: "92 %",
-  cpfAccepted: "100 %",
-  availability: "7j/7"
+  ratingDisplay: "",
+  ratingValueSchema: "",
+  bestRating: "",
+  passRate: "",
+  studentsAccompanied: "",
+  recommendRate: "",
+  cpfAccepted: "",
+  availability: ""
 };
 
+// Indicateurs hero : on n'affiche que ceux dont la valeur est renseignée (filtré à l'usage).
 export const heroStats = [
   { label: "de réussite", value: proofStats.passRate },
   { label: "élèves accompagnés", value: proofStats.studentsAccompanied },
   { label: "CPF accepté", value: proofStats.cpfAccepted },
   { label: "réservation", value: proofStats.availability }
-];
+].filter((stat) => stat.value);
 
 export const benefits = [
   {
@@ -123,13 +145,13 @@ export const trustProofs = [
   },
   {
     icon: Route,
-    title: "Paris 11 & Est parisien",
-    text: "Points de rendez-vous pratiques et conduite urbaine orientée examen."
+    title: "Conflans-Sainte-Honorine & Yvelines",
+    text: "Formation et points de rendez-vous dans le secteur de Conflans-Sainte-Honorine (78)."
   },
   {
     icon: Star,
-    title: "Avis vérifiables",
-    text: "Avis élèves modérés dans le CRM et prêts pour synchronisation Google."
+    title: "Suivi élève structuré",
+    text: "Dossier, progression et étapes centralisés dans l'espace élève."
   }
 ];
 
@@ -188,7 +210,7 @@ export const formations: Formation[] = [
     slug: "permis-b-manuel",
     mode: "Manuel",
     duration: "20 h minimum",
-    price: 1190,
+    price: 0,
     cpf: true,
     tags: ["Débutant", "CPF", "Manuel"],
     description: "La formation complète pour apprendre à conduire en boîte manuelle avec un suivi précis jusqu'à l'examen."
@@ -198,7 +220,7 @@ export const formations: Formation[] = [
     slug: "permis-b-automatique",
     mode: "Automatique",
     duration: "13 h minimum",
-    price: 890,
+    price: 0,
     cpf: true,
     tags: ["Automatique", "CPF", "Rapide"],
     description: "Un parcours plus court et confortable pour obtenir ton permis sur boîte automatique."
@@ -208,7 +230,7 @@ export const formations: Formation[] = [
     slug: "conduite-accompagnee",
     mode: "Manuel",
     duration: "Dès 15 ans",
-    price: 1290,
+    price: 0,
     cpf: false,
     tags: ["Jeune conducteur", "Famille", "Manuel"],
     description: "Un accompagnement complet pour gagner en expérience avant l'examen final."
@@ -218,7 +240,7 @@ export const formations: Formation[] = [
     slug: "permis-accelere",
     mode: "Mixte",
     duration: "2 à 4 semaines",
-    price: 1590,
+    price: 0,
     cpf: true,
     tags: ["Accéléré", "CPF", "Planning prioritaire"],
     description: "Un programme condensé avec créneaux prioritaires pour passer le permis rapidement."
@@ -228,7 +250,7 @@ export const formations: Formation[] = [
     slug: "code-en-ligne",
     mode: "Code",
     duration: "Accès illimité",
-    price: 39,
+    price: 0,
     cpf: false,
     tags: ["Code", "Mobile", "Révisions"],
     description: "Des séries de code, examens blancs et statistiques de progression accessibles depuis l'app."
@@ -238,7 +260,7 @@ export const formations: Formation[] = [
     slug: "stage-code",
     mode: "Code",
     duration: "3 jours",
-    price: 199,
+    price: 0,
     cpf: false,
     tags: ["Stage", "Code", "Intensif"],
     description: "Une préparation intensive en petit groupe pour sécuriser ton passage à l'examen du code."
@@ -248,7 +270,7 @@ export const formations: Formation[] = [
     slug: "annulation-permis",
     mode: "Mixte",
     duration: "Sur diagnostic",
-    price: 490,
+    price: 0,
     cpf: true,
     tags: ["Remise à niveau", "CPF", "Diagnostic"],
     description: "Un plan de reprise ciblé après invalidation, suspension ou annulation du permis."
@@ -258,7 +280,7 @@ export const formations: Formation[] = [
     slug: "perfectionnement",
     mode: "Mixte",
     duration: "À la carte",
-    price: 65,
+    price: 0,
     cpf: false,
     tags: ["Remise à niveau", "Confiance", "À la carte"],
     description: "Des séances pour reprendre confiance, conduire en ville ou préparer un trajet spécifique."
@@ -270,7 +292,7 @@ export const formations: Formation[] = [
     mode: "Mixte",
     productLine: "VTC",
     duration: "Préparation examen + théorie",
-    price: 1490,
+    price: 0,
     cpf: true,
     tags: ["VTC", "CPF", "Reconversion", "Carte pro"],
     description:
@@ -282,7 +304,7 @@ export const formations: Formation[] = [
     mode: "Mixte",
     productLine: "VTC",
     duration: "14 h sur 2 jours",
-    price: 590,
+    price: 0,
     cpf: false,
     tags: ["VTC", "Recyclage", "Obligatoire 5 ans"],
     description:
@@ -295,7 +317,7 @@ export const formations: Formation[] = [
     mode: "Mixte",
     productLine: "CACES",
     duration: "3 à 5 jours",
-    price: 750,
+    price: 0,
     cpf: true,
     tags: ["CACES", "R489", "CPF", "Logistique"],
     description:
@@ -307,7 +329,7 @@ export const formations: Formation[] = [
     mode: "Mixte",
     productLine: "CACES",
     duration: "2 à 4 jours",
-    price: 690,
+    price: 0,
     cpf: true,
     tags: ["CACES", "R486", "CPF", "Nacelle"],
     description:
@@ -319,7 +341,7 @@ export const formations: Formation[] = [
     mode: "Mixte",
     productLine: "CACES",
     duration: "3 à 5 jours",
-    price: 890,
+    price: 0,
     cpf: true,
     tags: ["CACES", "R482", "CPF", "BTP"],
     description:
@@ -343,7 +365,7 @@ export const poleLandings: Record<
     title: "Deviens chauffeur VTC avec une formation reconnue",
     text: "Préparation à l'examen, carte professionnelle et financement CPF : un parcours clair pour te lancer dans le transport de personnes.",
     intro:
-      "Le métier de chauffeur VTC attire de nombreuses reconversions. LODEN te prépare à l'examen T3P et t'accompagne jusqu'à l'obtention de ta carte professionnelle, avec un financement CPF possible.",
+      "Le métier de chauffeur VTC attire de nombreuses reconversions. LODENE te prépare à l'examen T3P et t'accompagne jusqu'à l'obtention de ta carte professionnelle, avec un financement CPF possible.",
     benefits: [
       { title: "Examen T3P préparé", text: "Réglementation, sécurité routière, gestion, anglais et relation client : tous les modules de l'examen VTC sont couverts." },
       { title: "Financement CPF & reconversion", text: "Formation éligible au CPF et pensée pour les projets de reconversion professionnelle." },
@@ -356,7 +378,7 @@ export const poleLandings: Record<
     title: "Obtiens ton CACES et conduis en sécurité",
     text: "Chariots, nacelles, engins de chantier : des formations certifiantes finançables par le CPF ou par ton entreprise.",
     intro:
-      "Le CACES atteste de ta capacité à conduire un engin en sécurité. LODEN propose des formations conformes aux recommandations de la CNAM, avec théorie, pratique et passage du test par un testeur certifié.",
+      "Le CACES atteste de ta capacité à conduire un engin en sécurité. LODENE propose des formations conformes aux recommandations de la CNAM, avec théorie, pratique et passage du test par un testeur certifié.",
     benefits: [
       { title: "Recommandations CNAM", text: "Formations conformes aux recommandations R489 (chariots), R486 (nacelles) et R482 (engins de chantier)." },
       { title: "Théorie + pratique", text: "Sessions en petit groupe avec passage du test CACES par un testeur certifié indépendant." },
@@ -371,8 +393,8 @@ export const pricingPlans = [
     id: "plan-permis-b",
     slug: "permis-b",
     title: "Permis B",
-    price: 1190,
-    badge: "Le plus choisi",
+    price: 0,
+    badge: "Permis B",
     features: ["20 h de conduite", "Code inclus", "Planning flexible", "Suivi élève"],
     cta: "Choisir ce pack"
   },
@@ -380,8 +402,8 @@ export const pricingPlans = [
     id: "plan-permis-accelere",
     slug: "permis-accelere",
     title: "Permis accéléré",
-    price: 1590,
-    badge: "Rapide",
+    price: 0,
+    badge: "Permis accéléré",
     features: ["Parcours 2 à 4 semaines", "Créneaux prioritaires", "Coach référent", "Présentation examen"],
     cta: "Démarrer vite"
   },
@@ -389,8 +411,8 @@ export const pricingPlans = [
     id: "plan-boite-automatique",
     slug: "boite-automatique",
     title: "Boîte automatique",
-    price: 890,
-    badge: "Confort",
+    price: 0,
+    badge: "Boîte automatique",
     features: ["13 h de conduite", "Voitures récentes", "Conversion possible", "CPF compatible"],
     cta: "Voir le pack"
   },
@@ -399,7 +421,7 @@ export const pricingPlans = [
     slug: "pack-cpf",
     title: "Pack CPF",
     price: 0,
-    badge: "Financé",
+    badge: "CPF",
     features: ["Montage dossier", "Conseiller dédié", "Devis personnalisé", "Reste à charge optimisé"],
     cta: "Vérifier mon CPF"
   }
@@ -428,54 +450,16 @@ export const slots = [
   { day: "Ven", date: "12", slots: ["09:30", "13:30", "19:00"] }
 ];
 
-export const instructors = [
-  {
-    name: "Sarah Benali",
-    role: "Référente conduite urbaine",
-    experience: "9 ans d'expérience",
-    rating: "4,9",
-    initials: "SB"
-  },
-  {
-    name: "Mathieu Lefèvre",
-    role: "Spécialiste permis accéléré",
-    experience: "11 ans d'expérience",
-    rating: "4,8",
-    initials: "ML"
-  },
-  {
-    name: "Nadia Diallo",
-    role: "Coach confiance au volant",
-    experience: "7 ans d'expérience",
-    rating: "5,0",
-    initials: "ND"
-  }
-];
+export type Instructor = { name: string; role: string; experience: string; rating: string; initials: string };
 
-export type Instructor = (typeof instructors)[number];
+// Aucune identité de moniteur n'est officiellement vérifiée -> liste vide (pas de fausses personnes).
+// L'équipe réelle s'alimente via le CRM (gestion des moniteurs).
+export const instructors: Instructor[] = [];
 
-export const testimonials = [
-  {
-    name: "Camille R.",
-    location: "Paris 11",
-    rating: 5,
-    text: "Inscription rapide, monitrice très claire et planning vraiment flexible. J'ai eu mon permis du premier coup."
-  },
-  {
-    name: "Yanis B.",
-    location: "Montreuil",
-    rating: 5,
-    text: "Le simulateur et l'app donnent une vraie visibilité sur le budget et la progression. Très rassurant."
-  },
-  {
-    name: "Léa M.",
-    location: "Vincennes",
-    rating: 5,
-    text: "LODEN m'a accompagnée pour le CPF et les créneaux d'examen. Une expérience moderne et sérieuse."
-  }
-];
+export type Testimonial = { name: string; location: string; rating: number; text: string };
 
-export type Testimonial = (typeof testimonials)[number];
+// Aucun avis client vérifié -> liste vide (pas de faux témoignages). À alimenter avec de vrais avis.
+export const testimonials: Testimonial[] = [];
 
 export const appFeatures = [
   { icon: CalendarCheck, label: "Réserver une leçon" },
@@ -518,19 +502,19 @@ export const faqEntries: FaqEntry[] = [
   {
     question: "Le permis peut-il être financé avec le CPF ?",
     answer:
-      "Oui, plusieurs formations LODEN sont compatibles CPF. Un conseiller vérifie ton besoin, ton solde disponible, le reste à charge éventuel et les pièces nécessaires avant validation du dossier.",
+      "Oui, plusieurs formations LODENE sont compatibles CPF. Un conseiller vérifie ton besoin, ton solde disponible, le reste à charge éventuel et les pièces nécessaires avant validation du dossier.",
     category: "CPF"
   },
   {
-    question: "Combien coûte le permis B chez LODEN ?",
+    question: "Combien coûte le permis B chez LODENE ?",
     answer:
-      "Le pack permis B démarre à 1 190 euros avec 20 heures de conduite, code inclus, planning flexible et suivi élève. Un devis personnalisé confirme le tarif selon ton niveau et ton objectif.",
+      "Le permis B comprend les heures de conduite, le code et le suivi élève. Le tarif est communiqué sur devis personnalisé, selon ton niveau et ton objectif.",
     category: "Tarifs"
   },
   {
     question: "Peut-on payer en plusieurs fois ?",
     answer:
-      "Oui, LODEN propose des solutions de paiement fractionné selon le dossier, en complément du paiement comptant, du CPF ou d'un reste à charge estimé.",
+      "Oui, LODENE propose des solutions de paiement fractionné selon le dossier, en complément du paiement comptant, du CPF ou d'un reste à charge estimé.",
     category: "Tarifs"
   },
   {
@@ -548,7 +532,7 @@ export const faqEntries: FaqEntry[] = [
   {
     question: "Où se passent les leçons de conduite ?",
     answer:
-      "LODEN organise les rendez-vous autour de Paris 11 et de l'Est parisien, avec des parcours urbains utiles pour progresser en circulation dense et préparer l'examen.",
+      "LODENE organise les rendez-vous autour de Paris 11 et de l'Est parisien, avec des parcours urbains utiles pour progresser en circulation dense et préparer l'examen.",
     category: "Formation"
   }
 ];
@@ -570,7 +554,7 @@ export const searchItems = [
     title: "Financement CPF",
     category: "Guide",
     href: "/cpf",
-    description: "Comprendre le financement CPF avec LODEN."
+    description: "Comprendre le financement CPF avec LODENE."
   },
   {
     title: "Point de rendez-vous République",
@@ -600,25 +584,18 @@ export const searchItems = [
     title: page.label,
     category: "Page",
     href: page.href,
-    description: "Informations légales et réglementaires LODEN Auto-École."
+    description: "Informations légales et réglementaires LODENE Auto-École."
   }))
 ];
 
 // Points de rendez-vous — les `id` doivent correspondre à ceux du backend
 // (backend/src/data/initial-data.ts → initialMeetingPoints).
-export const meetingPoints = [
-  { id: "meeting-republique", name: "République", address: "24 avenue de la République, 75011 Paris" },
-  { id: "meeting-nation", name: "Nation", address: "Place de la Nation, 75012 Paris" }
-];
+// Aucun point de rendez-vous confirmé hors établissement -> liste vide (pas de centres inventés).
+export const meetingPoints: { id: string; name: string; address: string }[] = [];
 
+// Faits affichés : uniquement des éléments officiels/vérifiés (implantation, agrément, financement CPF).
 export const quickFacts = [
-  { icon: PhoneIconPlaceholder, label: contactInfo.phone },
-  { icon: MapPin, label: "Paris 11 et Est parisien" },
-  { icon: Clock3, label: contactInfo.hours },
-  { icon: CreditCard, label: "CPF et paiement 4x" },
-  { icon: Star, label: "4,9/5 avis élèves" }
+  { icon: MapPin, label: "Conflans-Sainte-Honorine (78)" },
+  { icon: ShieldCheck, label: "Agrément E2507800260" },
+  { icon: CreditCard, label: "CPF accepté" }
 ];
-
-function PhoneIconPlaceholder() {
-  return null;
-}

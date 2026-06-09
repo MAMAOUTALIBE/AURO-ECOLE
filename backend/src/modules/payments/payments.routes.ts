@@ -3,7 +3,7 @@ import { Router } from "express";
 import { z } from "zod";
 import type { ApiConfig } from "../../config/env";
 import type { AuthenticatedRequest } from "../../http/request-context";
-import { authenticate, requirePermission } from "../../middleware/auth";
+import { authenticate, requirePermission, resolveScopedAgencyId } from "../../middleware/auth";
 import type { LodenRepository } from "../../repositories/loden-repository";
 import { asyncHandler } from "../../shared/async-handler";
 import { hasPermission } from "../../domain/permissions";
@@ -61,7 +61,8 @@ export function createPaymentsRouter(repository: LodenRepository, config: ApiCon
       }
       if (!hasPermission(user.role, "payments.read")) throw forbidden();
       const query = validateQuery(listQuerySchema, req);
-      const payments = await repository.listPayments(query);
+      const agencyId = await resolveScopedAgencyId(repository, req, query.agencyId);
+      const payments = await repository.listPayments({ ...query, agencyId });
       const data = await Promise.all(
         payments.map(async (payment) => {
           const payer = await repository.findUserById(payment.userId);
@@ -92,6 +93,7 @@ export function createPaymentsRouter(repository: LodenRepository, config: ApiCon
       const needed = body.status === "REMBOURSE" ? "payments.refund" : "payments.manage";
       if (!hasPermission(user.role, needed)) throw forbidden();
       const payment = await repository.updatePayment(String(req.params.id), body);
+      void repository.createAuditLog({ userId: user.id, action: "payment.status", entityType: "Payment", entityId: payment.id, metadata: { status: body.status } });
       res.json({ data: payment });
     })
   );

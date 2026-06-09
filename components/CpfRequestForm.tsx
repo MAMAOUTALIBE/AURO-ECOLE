@@ -134,7 +134,7 @@ export function CpfRequestForm() {
 
       {sent ? (
         <p className="mt-4 rounded-2xl bg-loden-50 p-4 text-sm font-medium text-loden-800">
-          Demande CPF envoyée. LODEN revient vers toi avec une estimation claire.
+          Demande CPF envoyée. LODENE revient vers toi avec une estimation claire.
         </p>
       ) : null}
       {submitError ? (

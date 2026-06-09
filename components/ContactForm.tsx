@@ -124,7 +124,7 @@ export function ContactForm() {
         <div>
           <h2 className="text-2xl font-semibold text-loden-ink">Diagnostic & devis</h2>
           <p className="mt-2 text-sm leading-6 text-loden-muted">
-            Les réponses permettent à LODEN de te rappeler avec le bon parcours, le bon financement et un planning réaliste.
+            Les réponses permettent à LODENE de te rappeler avec le bon parcours, le bon financement et un planning réaliste.
           </p>
         </div>
       </div>
@@ -204,7 +204,7 @@ export function ContactForm() {
       </button>
       {sent ? (
         <p className="mt-4 rounded-2xl bg-loden-50 p-4 text-sm font-medium text-loden-800">
-          Diagnostic envoyé. Un conseiller LODEN te répondra avec un parcours et un devis adaptés.
+          Diagnostic envoyé. Un conseiller LODENE te répondra avec un parcours et un devis adaptés.
         </p>
       ) : null}
       {submitError ? (

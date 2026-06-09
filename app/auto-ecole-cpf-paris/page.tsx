@@ -6,15 +6,16 @@ import { PageHero } from "@/components/PageHero";
 import { SectionHeader } from "@/components/SectionHeader";
 
 export const metadata: Metadata = {
-  title: "Auto-école CPF Paris",
+  title: "Auto-école CPF Conflans-Sainte-Honorine",
   description:
-    "Financez votre permis avec le CPF à Paris avec LODEN Auto-École : diagnostic, devis, accompagnement administratif et planning adapté."
+    "Financez votre permis avec le CPF à Conflans-Sainte-Honorine (78) avec LODENE Auto-École : diagnostic, devis, accompagnement administratif et planning adapté.",
+  alternates: { canonical: "/auto-ecole-cpf-paris" }
 };
 
 const cpfFaq = [
   {
     question: "Le permis B est-il finançable avec le CPF ?",
-    answer: "Oui, selon ton dossier et ton objectif professionnel. LODEN vérifie l'éligibilité avant de préparer le devis."
+    answer: "Oui, selon ton dossier et ton objectif professionnel. LODENE vérifie l'éligibilité avant de préparer le devis."
   },
   {
     question: "Puis-je compléter avec un paiement en plusieurs fois ?",
@@ -30,9 +31,9 @@ export default function AutoEcoleCpfParisPage() {
   return (
     <main>
       <PageHero
-        eyebrow="CPF permis Paris"
-        title="Finance ton permis avec le CPF à Paris"
-        text="LODEN t'aide à comprendre ton solde, préparer ton dossier et choisir une formation compatible avec ton planning."
+        eyebrow="CPF permis Conflans-Sainte-Honorine"
+        title="Finance ton permis avec le CPF à Conflans-Sainte-Honorine"
+        text="LODENE t'aide à comprendre ton solde, préparer ton dossier et choisir une formation compatible avec ton planning."
         cta="Vérifier mon CPF"
         ctaHref="#demande-cpf"
       />
@@ -41,7 +42,7 @@ export default function AutoEcoleCpfParisPage() {
           <SectionHeader
             eyebrow="Accompagnement CPF"
             title="Un dossier clair avant engagement"
-            text="Le financement CPF doit rassurer, pas compliquer l'inscription. LODEN centralise le diagnostic, le devis et les prochaines étapes administratives."
+            text="Le financement CPF doit rassurer, pas compliquer l'inscription. LODENE centralise le diagnostic, le devis et les prochaines étapes administratives."
           />
           <div className="grid gap-4 sm:grid-cols-3">
             <Step icon={FileCheck2} title="Diagnostic" text="Solde, formation et pièces nécessaires." />

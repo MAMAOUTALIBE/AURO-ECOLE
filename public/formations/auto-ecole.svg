@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 270" width="480" height="270" role="img" aria-label="Illustration auto-école : voiture sur la route">
+  <defs>
+    <linearGradient id="aeSky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0e7490"/>
+      <stop offset="0.55" stop-color="#08AEB8"/>
+      <stop offset="1" stop-color="#22d3ee"/>
+    </linearGradient>
+    <linearGradient id="aeRoad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0b3b46"/>
+      <stop offset="1" stop-color="#0f5563"/>
+    </linearGradient>
+  </defs>
+  <rect width="480" height="270" fill="url(#aeSky)"/>
+  <circle cx="392" cy="66" r="46" fill="#ffffff" opacity="0.16"/>
+  <circle cx="392" cy="66" r="30" fill="#ffffff" opacity="0.18"/>
+  <path d="M0 184 L480 184 L480 270 L0 270 Z" fill="url(#aeRoad)"/>
+  <path d="M150 270 L210 184 L270 184 L210 270 Z" fill="#ffffff" opacity="0.18"/>
+  <g fill="#ffffff" opacity="0.55">
+    <rect x="222" y="196" width="26" height="7" rx="3"/>
+    <rect x="214" y="216" width="34" height="8" rx="4"/>
+    <rect x="204" y="242" width="44" height="9" rx="4"/>
+  </g>
+  <!-- voiture -->
+  <g transform="translate(150 96)">
+    <ellipse cx="92" cy="96" rx="96" ry="14" fill="#06343d" opacity="0.35"/>
+    <path d="M14 64 C14 50 26 44 40 42 L60 22 C66 14 76 10 88 10 L128 10 C140 10 150 16 156 26 L168 44 C182 46 192 52 192 66 L192 82 C192 88 188 92 182 92 L20 92 C16 92 14 88 14 82 Z" fill="#f8fafc"/>
+    <path d="M64 26 C68 20 74 18 84 18 L104 18 L104 44 L52 44 Z" fill="#bfeef2"/>
+    <path d="M112 18 L126 18 C134 18 140 22 144 30 L152 44 L112 44 Z" fill="#bfeef2"/>
+    <rect x="150" y="60" width="16" height="10" rx="3" fill="#fde68a"/>
+    <rect x="20" y="60" width="12" height="9" rx="3" fill="#f87171"/>
+    <circle cx="58" cy="92" r="20" fill="#0f172a"/><circle cx="58" cy="92" r="9" fill="#cbd5e1"/>
+    <circle cx="150" cy="92" r="20" fill="#0f172a"/><circle cx="150" cy="92" r="9" fill="#cbd5e1"/>
+  </g>
+  <!-- plaque L (apprentissage) -->
+  <g transform="translate(40 196)">
+    <rect x="0" y="0" width="40" height="46" rx="8" fill="#ef4444"/>
+    <text x="20" y="36" font-family="Arial, sans-serif" font-size="34" font-weight="700" fill="#ffffff" text-anchor="middle">A</text>
+  </g>
+</svg>

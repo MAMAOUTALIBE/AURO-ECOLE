@@ -20,6 +20,29 @@ const faqUpdateSchema = z.object({
   active: z.boolean().optional()
 });
 
+// Champs société éditables (tous optionnels, vides autorisés). id/updatedAt gérés serveur.
+const companyUpdateSchema = z.object({
+  brandName: z.string().trim().max(120).optional(),
+  legalName: z.string().trim().max(160).optional(),
+  address: z.string().trim().max(200).optional(),
+  postalCode: z.string().trim().max(20).optional(),
+  city: z.string().trim().max(120).optional(),
+  country: z.string().trim().max(80).optional(),
+  siret: z.string().trim().max(20).optional(),
+  approvalNumber: z.string().trim().max(40).optional(),
+  phone: z.string().trim().max(40).optional(),
+  email: z.string().trim().max(160).optional(),
+  hours: z.string().trim().max(200).optional(),
+  legalForm: z.string().trim().max(120).optional(),
+  capital: z.string().trim().max(60).optional(),
+  publicationDirector: z.string().trim().max(120).optional(),
+  hostingProvider: z.string().trim().max(300).optional(),
+  instagram: z.string().trim().max(300).optional(),
+  facebook: z.string().trim().max(300).optional(),
+  tiktok: z.string().trim().max(300).optional(),
+  youtube: z.string().trim().max(300).optional()
+});
+
 export function createContentRouter(repository: LodenRepository, config: ApiConfig) {
   const router = Router();
   const adminOnly = [authenticate(repository, config.JWT_SECRET), requirePermission("content.manage")];
@@ -38,6 +61,25 @@ export function createContentRouter(repository: LodenRepository, config: ApiConf
     ...adminOnly,
     asyncHandler(async (_req, res) => {
       res.json({ data: await repository.listFaqEntries(true) });
+    })
+  );
+
+  // Informations société : lecture publique, édition réservée (content.manage).
+  // Défini AVANT /:id pour ne pas être capturé par la route paramétrée.
+  router.get(
+    "/company",
+    asyncHandler(async (_req, res) => {
+      res.json({ data: await repository.getCompanyInfo() });
+    })
+  );
+
+  router.patch(
+    "/company",
+    ...adminOnly,
+    asyncHandler(async (req, res) => {
+      const body = validateBody(companyUpdateSchema, req);
+      const data = await repository.updateCompanyInfo(body);
+      res.json({ data });
     })
   );
 

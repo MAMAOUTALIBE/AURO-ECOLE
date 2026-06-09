@@ -1,5 +1,4 @@
 import type { ReactElement, SVGProps } from "react";
-import { contactInfo } from "@/data/site";
 
 type IconProps = SVGProps<SVGSVGElement>;
 
@@ -69,11 +68,6 @@ export type SocialChannel = {
   Icon: (props: IconProps) => ReactElement;
 };
 
-export const socialChannels: SocialChannel[] = [
-  { label: "Instagram", href: "https://www.instagram.com/loden.autoecole", Icon: InstagramIcon },
-  { label: "Facebook", href: "https://www.facebook.com/loden.autoecole", Icon: FacebookIcon },
-  { label: "TikTok", href: "https://www.tiktok.com/@loden.autoecole", Icon: TiktokIcon },
-  { label: "YouTube", href: "https://www.youtube.com/@loden.autoecole", Icon: YoutubeIcon },
-  { label: "X (Twitter)", href: "https://x.com/loden_autoecole", Icon: XIcon },
-  { label: "WhatsApp", href: `https://wa.me/${contactInfo.whatsapp}`, Icon: WhatsappIcon }
-];
+// Aucun compte de réseau social officiel confirmé -> liste vide (les composants n'affichent rien).
+// Les icônes ci-dessus restent disponibles pour réactivation via le CMS dès confirmation des URLs.
+export const socialChannels: SocialChannel[] = [];

@@ -1,7 +1,8 @@
 import { Router } from "express";
 import { z } from "zod";
 import type { ApiConfig } from "../../config/env";
-import { authenticate, requirePermission } from "../../middleware/auth";
+import type { AuthenticatedRequest } from "../../http/request-context";
+import { authenticate, requirePermission, resolveScopedAgencyId } from "../../middleware/auth";
 import type { LodenRepository } from "../../repositories/loden-repository";
 import { asyncHandler } from "../../shared/async-handler";
 import { validateQuery } from "../../shared/validation";
@@ -23,7 +24,8 @@ export function createStatsRouter(repository: LodenRepository, config: ApiConfig
   router.get(
     "/stats",
     asyncHandler(async (req, res) => {
-      const { agencyId } = validateQuery(querySchema, req);
+      const { agencyId: requested } = validateQuery(querySchema, req);
+      const agencyId = await resolveScopedAgencyId(repository, req as AuthenticatedRequest, requested);
       const scope = agencyId ? { agencyId } : undefined;
 
       const [students, leads, bookings, payments, cpfRequests, reviews, exams] = await Promise.all([

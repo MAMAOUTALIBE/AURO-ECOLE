@@ -1,7 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Award, Plus } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Award, Plus, Search } from "lucide-react";
+import { Pagination } from "@/components/crm/ui";
+
+const PAGE_SIZE = 10;
 
 type Exam = {
   id: string;
@@ -43,6 +46,9 @@ export function Exams() {
   const [loading, setLoading] = useState(true);
   const [form, setForm] = useState({ studentId: "", type: "CODE", scheduledAt: "", center: "" });
   const [creating, setCreating] = useState(false);
+  const [query, setQuery] = useState("");
+  const [resultFilter, setResultFilter] = useState("ALL");
+  const [page, setPage] = useState(1);
 
   const load = () => {
     Promise.all([
@@ -67,6 +73,21 @@ export function Exams() {
   useEffect(load, []);
 
   const studentName = (id: string) => students.find((s) => s.id === id)?.name ?? id;
+
+  const filteredExams = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return exams.filter((exam) => {
+      const name = (students.find((s) => s.id === exam.studentId)?.name ?? "").toLowerCase();
+      const matchesQuery = !q || name.includes(q) || (exam.center ?? "").toLowerCase().includes(q);
+      const matchesResult = resultFilter === "ALL" || exam.result === resultFilter;
+      return matchesQuery && matchesResult;
+    });
+  }, [exams, students, query, resultFilter]);
+  const pagedExams = filteredExams.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+  useEffect(() => {
+    setPage(1);
+  }, [query, resultFilter]);
 
   const create = async () => {
     if (!form.studentId || !form.scheduledAt) {
@@ -111,6 +132,26 @@ export function Exams() {
     }
   };
 
+  const updateScore = async (exam: Exam, value: string) => {
+    if (value === "") return;
+    const score = Number(value);
+    if (Number.isNaN(score) || score < 0 || score > 100) {
+      setError("Le score doit être compris entre 0 et 100.");
+      return;
+    }
+    try {
+      const response = await fetch(`/api/exams/${exam.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ score })
+      });
+      if (!response.ok) throw new Error();
+      setExams((current) => current.map((item) => (item.id === exam.id ? { ...item, score } : item)));
+    } catch {
+      setError("Mise à jour du score impossible.");
+    }
+  };
+
   return (
     <div className="grid gap-6">
       <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-soft">
@@ -144,11 +185,29 @@ export function Exams() {
       </div>
 
       <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-soft">
-        <div className="flex items-center gap-3">
-          <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-loden-50 text-loden-700">
-            <Award className="h-5 w-5" aria-hidden="true" />
-          </span>
-          <h2 className="text-lg font-semibold text-loden-ink">Examens</h2>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-loden-50 text-loden-700">
+              <Award className="h-5 w-5" aria-hidden="true" />
+            </span>
+            <h2 className="text-lg font-semibold text-loden-ink">Examens</h2>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="relative min-w-[180px]">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" aria-hidden="true" />
+              <input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Rechercher (élève, centre)…"
+                aria-label="Rechercher un examen"
+                className="focus-ring w-full rounded-xl border border-slate-200 bg-slate-50/70 py-2 pl-9 pr-3 text-sm outline-none transition focus:border-loden-200 focus:bg-white"
+              />
+            </div>
+            <select value={resultFilter} onChange={(e) => setResultFilter(e.target.value)} aria-label="Filtrer par résultat" className="field-input sm:max-w-[160px]">
+              <option value="ALL">Tous les résultats</option>
+              {RESULTS.map((r) => <option key={r.key} value={r.key}>{r.label}</option>)}
+            </select>
+          </div>
         </div>
         {loading ? <p className="mt-6 text-sm text-loden-muted">Chargement…</p> : null}
         {!loading ? (
@@ -163,7 +222,7 @@ export function Exams() {
                 </tr>
               </thead>
               <tbody>
-                {exams.map((exam) => (
+                {pagedExams.map((exam) => (
                   <tr key={exam.id} className="border-b border-slate-100 last:border-0">
                     <td className="py-3 pr-4 font-semibold text-loden-ink">{studentName(exam.studentId)}</td>
                     <td className="py-3 pr-4">{TYPES.find((t) => t.key === exam.type)?.label ?? exam.type}</td>
@@ -181,15 +240,32 @@ export function Exams() {
                         >
                           {RESULTS.map((r) => <option key={r.key} value={r.key}>{r.label}</option>)}
                         </select>
+                        {exam.result === "REUSSI" || exam.result === "ECHOUE" ? (
+                          <input
+                            type="number"
+                            min={0}
+                            max={100}
+                            defaultValue={exam.score ?? ""}
+                            onBlur={(e) => updateScore(exam, e.target.value)}
+                            placeholder="/100"
+                            aria-label="Score sur 100"
+                            className="focus-ring w-16 rounded-lg border border-slate-200 px-2 py-1 text-xs text-loden-ink outline-none"
+                          />
+                        ) : exam.score != null ? (
+                          <span className="text-xs font-semibold text-loden-muted">{exam.score}/100</span>
+                        ) : null}
                       </div>
                     </td>
                   </tr>
                 ))}
-                {exams.length === 0 ? (
-                  <tr><td colSpan={4} className="py-6 text-center text-sm text-loden-muted">Aucun examen programmé.</td></tr>
+                {filteredExams.length === 0 ? (
+                  <tr><td colSpan={4} className="py-6 text-center text-sm text-loden-muted">
+                    {exams.length === 0 ? "Aucun examen programmé." : "Aucun examen ne correspond."}
+                  </td></tr>
                 ) : null}
               </tbody>
             </table>
+            <Pagination page={page} pageSize={PAGE_SIZE} total={filteredExams.length} onPage={setPage} />
           </div>
         ) : null}
       </div>

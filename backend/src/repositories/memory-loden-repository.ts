@@ -3,6 +3,7 @@ import {
   initialAgencies,
   initialAgencyMemberships,
   initialAvailabilities,
+  initialCompanyInfo,
   initialFaqEntries,
   initialFormations,
   initialInstructors,
@@ -15,6 +16,7 @@ import type {
   AgencyMembershipRecord,
   AgencyRecord,
   AuditLogRecord,
+  CompanyInfoRecord,
   AvailabilityRecord,
   BookingRecord,
   ContactRequestRecord,
@@ -33,7 +35,8 @@ import type {
   StudentRecord,
   StudentSkillRecord,
   StudentDocumentRecord,
-  UserRecord
+  UserRecord,
+  VehicleRecord
 } from "../domain/types";
 import { notFound } from "../shared/http-error";
 import type {
@@ -44,9 +47,11 @@ import type {
   CreateLeadInput,
   CreatePaymentInput,
   CreateReviewInput,
+  CreateAgencyInput,
   CreateInstructorInput,
   CreateStudentInput,
   CreateUserInput,
+  CreateVehicleInput,
   ListUsersFilters,
   LodenRepository
 } from "./loden-repository";
@@ -73,6 +78,8 @@ type MutableStore = {
   studentSkills: StudentSkillRecord[];
   studentDocuments: StudentDocumentRecord[];
   auditLogs: AuditLogRecord[];
+  vehicles: VehicleRecord[];
+  companyInfo: CompanyInfoRecord;
 };
 
 export class MemoryLodenRepository implements LodenRepository {
@@ -101,8 +108,19 @@ export class MemoryLodenRepository implements LodenRepository {
       studentSkills: [],
       studentDocuments: [],
       auditLogs: [],
+      vehicles: [],
+      companyInfo: { ...initialCompanyInfo },
       ...seed
     };
+  }
+
+  async getCompanyInfo() {
+    return this.store.companyInfo;
+  }
+
+  async updateCompanyInfo(input: Partial<CompanyInfoRecord>) {
+    Object.assign(this.store.companyInfo, input, { id: "company", updatedAt: new Date() });
+    return this.store.companyInfo;
   }
 
   async listAgencies() {
@@ -111,6 +129,46 @@ export class MemoryLodenRepository implements LodenRepository {
 
   async findAgencyById(id: string) {
     return this.store.agencies.find((agency) => agency.id === id) ?? null;
+  }
+
+  async createAgency(input: CreateAgencyInput) {
+    const agency: AgencyRecord = {
+      ...input,
+      id: randomUUID(),
+      active: input.active ?? true
+    };
+    this.store.agencies.push(agency);
+    return agency;
+  }
+
+  async updateAgency(id: string, input: Partial<AgencyRecord>) {
+    const agency = this.store.agencies.find((item) => item.id === id);
+    if (!agency) throw notFound("Agence introuvable");
+    Object.assign(agency, input);
+    return agency;
+  }
+
+  async listVehicles(filters?: { agencyId?: string }) {
+    return this.store.vehicles.filter(
+      (vehicle) => !filters?.agencyId || vehicle.agencyId === filters.agencyId || vehicle.agencyId == null
+    );
+  }
+
+  async findVehicleById(id: string) {
+    return this.store.vehicles.find((vehicle) => vehicle.id === id) ?? null;
+  }
+
+  async createVehicle(input: CreateVehicleInput) {
+    const vehicle: VehicleRecord = { ...input, id: randomUUID(), active: input.active ?? true };
+    this.store.vehicles.push(vehicle);
+    return vehicle;
+  }
+
+  async updateVehicle(id: string, input: Partial<VehicleRecord>) {
+    const vehicle = this.store.vehicles.find((item) => item.id === id);
+    if (!vehicle) throw notFound("Véhicule introuvable");
+    Object.assign(vehicle, input);
+    return vehicle;
   }
 
   async listAgencyMembershipsByUser(userId: string) {
@@ -626,7 +684,7 @@ export class MemoryLodenRepository implements LodenRepository {
 
     for (const instructor of await this.listInstructors()) {
       const value = score(`${instructor.name} ${instructor.bio ?? ""} ${instructor.specialties.join(" ")}`);
-      if (value) results.push({ category: "moniteur", title: instructor.name, description: instructor.bio ?? "Moniteur LODEN", href: "/a-propos", score: value });
+      if (value) results.push({ category: "moniteur", title: instructor.name, description: instructor.bio ?? "Moniteur LODENE", href: "/a-propos", score: value });
     }
 
     for (const faq of await this.listFaqEntries()) {
@@ -641,7 +699,7 @@ export class MemoryLodenRepository implements LodenRepository {
 
     const pages = [
       { title: "CPF et financement", description: "Financement CPF, paiement 3x / 4x, aides régionales", href: "/cpf" },
-      { title: "Contact LODEN", description: "Formulaire de contact, inscription et rappel", href: "/contact" },
+      { title: "Contact LODENE", description: "Formulaire de contact, inscription et rappel", href: "/contact" },
       { title: "Avis clients", description: "Avis Google et témoignages élèves", href: "/avis" }
     ];
 

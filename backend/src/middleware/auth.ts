@@ -50,3 +50,46 @@ export function requirePermission(...permissions: Permission[]) {
     next();
   };
 }
+
+/**
+ * Cloisonnement multi-agences. Résout l'agence effective d'une requête de liste/stats :
+ * - SUPER_ADMIN / DIRECTEUR : toute agence (retourne l'agence demandée, ou undefined = toutes).
+ * - Autres rôles : limités à leurs `AgencyMembership`. Demander une agence hors de leur
+ *   périmètre -> 403 (corrige l'IDOR inter-agences). Sans agence explicite, on épingle sur
+ *   leur agence d'affiliation. Aucun rattachement -> 403 (pas d'accès aux données d'agence).
+ */
+export async function resolveScopedAgencyId(
+  repository: LodenRepository,
+  req: AuthenticatedRequest,
+  requestedAgencyId?: string
+): Promise<string | undefined> {
+  const user = req.user;
+  if (!user) throw unauthorized();
+  if (user.role === "SUPER_ADMIN" || user.role === "DIRECTEUR") return requestedAgencyId;
+  const memberships = await repository.listAgencyMembershipsByUser(user.id);
+  const ids = memberships.map((membership) => membership.agencyId);
+  if (requestedAgencyId) {
+    if (!ids.includes(requestedAgencyId)) throw forbidden();
+    return requestedAgencyId;
+  }
+  if (ids.length === 0) throw forbidden();
+  return ids[0];
+}
+
+/**
+ * Vérifie qu'un utilisateur a le droit d'accéder à une ressource rattachée à `agencyId`
+ * (lecture/écriture d'un enregistrement précis : fiche élève, etc.). Corrige l'IDOR unitaire.
+ * SUPER_ADMIN/DIRECTEUR : tout. Ressource non rattachée (null) : autorisée (transition).
+ */
+export async function assertAgencyAccess(
+  repository: LodenRepository,
+  req: AuthenticatedRequest,
+  agencyId?: string | null
+): Promise<void> {
+  const user = req.user;
+  if (!user) throw unauthorized();
+  if (user.role === "SUPER_ADMIN" || user.role === "DIRECTEUR") return;
+  if (agencyId == null) return;
+  const memberships = await repository.listAgencyMembershipsByUser(user.id);
+  if (!memberships.some((membership) => membership.agencyId === agencyId)) throw forbidden();
+}

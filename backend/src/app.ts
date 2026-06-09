@@ -7,6 +7,7 @@ import { createAiProvider } from "./ai/provider-factory";
 import type { AiProvider } from "./ai/types";
 import { createAgenciesRouter } from "./modules/agencies/agencies.routes";
 import { createAiRouter } from "./modules/ai/ai.routes";
+import { createAuditRouter } from "./modules/audit/audit.routes";
 import { createAuthRouter } from "./modules/auth/auth.routes";
 import { createBookingsRouter } from "./modules/bookings/bookings.routes";
 import { createCatalogRouter } from "./modules/catalog/catalog.routes";
@@ -18,12 +19,14 @@ import { createInstallmentsRouter } from "./modules/installments/installments.ro
 import { createInstructorsRouter } from "./modules/instructors/instructors.routes";
 import { createLeadsRouter } from "./modules/leads/leads.routes";
 import { createPaymentsRouter, createStripeWebhookHandler } from "./modules/payments/payments.routes";
+import { createPermissionsRouter } from "./modules/permissions/permissions.routes";
 import { createStripeProvider } from "./payments/stripe-provider";
 import { createReviewsRouter } from "./modules/reviews/reviews.routes";
 import { createSearchRouter } from "./modules/search/search.routes";
 import { createStatsRouter } from "./modules/stats/stats.routes";
 import { createStudentsRouter } from "./modules/students/students.routes";
 import { createUsersRouter } from "./modules/users/users.routes";
+import { createVehiclesRouter } from "./modules/vehicles/vehicles.routes";
 import type { LodenRepository } from "./repositories/loden-repository";
 import { errorHandler } from "./middleware/error-handler";
 import { notFoundHandler } from "./middleware/not-found";
@@ -77,8 +80,11 @@ export function createApp(repository: LodenRepository, config: ApiConfig, deps: 
   app.use("/api/auth", createAuthRouter(repository, config));
   app.use("/api/agencies", createAgenciesRouter(repository, config));
   app.use("/api/admin", createStatsRouter(repository, config));
+  app.use("/api/audit-logs", createAuditRouter(repository, config));
+  app.use("/api/permissions", createPermissionsRouter(repository, config));
   app.use("/api", createCatalogRouter(repository, config));
   app.use("/api/instructors", createInstructorsRouter(repository, config));
+  app.use("/api/vehicles", createVehiclesRouter(repository, config));
   app.use("/api/leads", createLeadsRouter(repository, config, aiProvider));
   app.use("/api/users", createUsersRouter(repository, config));
   app.use("/api/students", createStudentsRouter(repository, config));
@@ -88,7 +94,10 @@ export function createApp(repository: LodenRepository, config: ApiConfig, deps: 
   app.use("/api/cpf", createCpfRouter(repository, config));
   app.use("/api/exams", createExamsRouter(repository, config));
   app.use("/api/contact-requests", createContactsRouter(repository, config, aiProvider));
-  app.use("/api/faq", createContentRouter(repository, config));
+  const contentRouter = createContentRouter(repository, config);
+  app.use("/api/faq", contentRouter);
+  // Même routeur exposé sous /api/content (notamment /api/content/company).
+  app.use("/api/content", contentRouter);
   app.use("/api/reviews", createReviewsRouter(repository, config));
   app.use("/api/search", createSearchRouter(repository));
   app.use("/api/ai", createAiRouter(repository, config, aiProvider));

@@ -119,3 +119,47 @@ export function hasPermission(role: UserRole, permission: Permission): boolean {
   if (role === "SUPER_ADMIN" || role === "DIRECTEUR") return true;
   return (ROLE_PERMISSIONS[role] ?? []).includes(permission);
 }
+
+// Référentiel complet (lecture seule) — sert à exposer la matrice RBAC dans le CRM.
+export const ALL_PERMISSIONS: Permission[] = [
+  "dashboard.read",
+  "catalog.manage",
+  "students.read",
+  "students.manage",
+  "instructors.read",
+  "instructors.manage",
+  "bookings.read",
+  "bookings.manage",
+  "payments.read",
+  "payments.manage",
+  "payments.refund",
+  "cpf.read",
+  "cpf.manage",
+  "exams.read",
+  "exams.manage",
+  "contacts.read",
+  "contacts.manage",
+  "leads.read",
+  "leads.manage",
+  "reviews.read",
+  "reviews.moderate",
+  "users.read",
+  "users.manage",
+  "content.manage",
+  "agency.manage",
+  "roles.manage",
+  "audit.read"
+];
+
+export const ALL_ROLES: UserRole[] = [
+  "SUPER_ADMIN",
+  "DIRECTEUR",
+  "RESPONSABLE_AGENCE",
+  "RESPONSABLE_PEDAGOGIQUE",
+  "ADMIN",
+  "SECRETAIRE",
+  "COMPTABLE",
+  "MONITEUR",
+  "ELEVE",
+  "VISITEUR"
+];

@@ -14,7 +14,7 @@ export async function sendSms(config: ApiConfig, to: string, text: string): Prom
     const response = await fetch("https://api.brevo.com/v3/transactionalSMS/sms", {
       method: "POST",
       headers: { "api-key": config.SMS_API_KEY, "Content-Type": "application/json" },
-      body: JSON.stringify({ sender: config.SMS_SENDER ?? "LODEN", recipient: to, content: text })
+      body: JSON.stringify({ sender: config.SMS_SENDER ?? "LODENE", recipient: to, content: text })
     });
     if (!response.ok) {
       const detail = await response.text().catch(() => "");

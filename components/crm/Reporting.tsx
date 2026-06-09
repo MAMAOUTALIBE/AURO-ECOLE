@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Download } from "lucide-react";
 
 type Stats = {
   students: { total: number };
@@ -40,7 +41,7 @@ export function Reporting() {
         if (valid.length === 0) setError("Aucune donnée de reporting disponible.");
         setRows(valid);
       } catch {
-        setError("Le service LODEN est momentanément indisponible.");
+        setError("Le service LODENE est momentanément indisponible.");
       } finally {
         setLoading(false);
       }
@@ -59,10 +60,35 @@ export function Reporting() {
     { key: "cpf", label: "CPF en cours", render: (s) => String(s.cpf.pending) }
   ];
 
+  const exportCsv = () => {
+    const header = ["Agence", ...columns.map((c) => c.label)];
+    const lines = [header, ...rows.map((r) => [r.label, ...columns.map((c) => c.render(r.stats))])];
+    const csv = lines.map((line) => line.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(";")).join("\n");
+    const blob = new Blob([`﻿${csv}`], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "reporting-lodene.csv";
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-soft">
-      <h2 className="text-lg font-semibold text-loden-ink">Comparatif par agence</h2>
-      <p className="mt-1 text-sm text-loden-muted">Indicateurs clés agrégés par centre.</p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h2 className="text-lg font-semibold text-loden-ink">Comparatif par agence</h2>
+          <p className="mt-1 text-sm text-loden-muted">Indicateurs clés agrégés par centre.</p>
+        </div>
+        <button
+          type="button"
+          onClick={exportCsv}
+          className="focus-ring inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-loden-700 shadow-soft transition hover:bg-loden-50"
+        >
+          <Download className="h-4 w-4" aria-hidden="true" />
+          Exporter CSV
+        </button>
+      </div>
       <div className="mt-6 overflow-x-auto">
         <table className="w-full text-left text-sm">
           <thead className="text-xs uppercase tracking-wide text-loden-muted">

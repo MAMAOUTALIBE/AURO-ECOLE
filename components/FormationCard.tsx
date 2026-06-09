@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -19,12 +20,13 @@ import {
   type LucideIcon
 } from "lucide-react";
 import { productLineLabels, type Formation } from "@/data/site";
+import { formationImage } from "@/lib/formation-image";
 import { formatCurrency } from "@/lib/utils";
 
 type Visual = { icon: LucideIcon; gradient: string };
 
 // Identité visuelle dédiée par formation (couleur + icône) — reconnaissable au premier regard,
-// tout en restant cohérent avec la charte LODEN (turquoise dominant + accents maîtrisés).
+// tout en restant cohérent avec la charte LODENE (turquoise dominant + accents maîtrisés).
 const BY_SLUG: Record<string, Visual> = {
   "permis-b-manuel": { icon: Car, gradient: "linear-gradient(135deg,#0e7490,#08AEB8 55%,#22d3ee)" },
   "permis-b-automatique": { icon: Gauge, gradient: "linear-gradient(135deg,#0891a0,#22d3ee 55%,#38bdf8)" },
@@ -52,6 +54,7 @@ const BY_MODE: Record<Formation["mode"], Visual> = {
 export function FormationCard({ formation }: { formation: Formation }) {
   const visual = BY_SLUG[formation.slug] ?? BY_MODE[formation.mode];
   const Icon = visual.icon;
+  const headerImage = formationImage(formation.slug, formation.productLine);
   // Badge = pôle métier pour VTC/CACES, sinon le mode (Manuel/Auto/…).
   const badgeLabel =
     formation.productLine && formation.productLine !== "AUTO_ECOLE"
@@ -65,17 +68,18 @@ export function FormationCard({ formation }: { formation: Formation }) {
       className="focus-ring group block h-full rounded-[1.75rem]"
     >
       <article className="flex h-full flex-col overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white shadow-soft transition duration-300 group-hover:-translate-y-1.5 group-hover:border-loden-200 group-hover:shadow-premium">
-        {/* En-tête visuel dédié */}
+        {/* En-tête illustré (SVG on-brand par formation) */}
         <div className="relative h-40 overflow-hidden" style={{ backgroundImage: visual.gradient }}>
-          <div
-            className="absolute inset-0 opacity-70"
-            style={{ backgroundImage: "radial-gradient(120% 80% at 15% 0%, rgba(255,255,255,0.35), rgba(255,255,255,0) 55%)" }}
-            aria-hidden="true"
+          <Image
+            src={headerImage}
+            alt=""
+            fill
+            sizes="(min-width: 1280px) 30vw, (min-width: 768px) 45vw, 100vw"
+            unoptimized
+            className="object-cover transition duration-500 group-hover:scale-105"
           />
-          <Icon
-            className="pointer-events-none absolute -bottom-6 -right-3 h-36 w-36 text-white/15 transition duration-500 group-hover:scale-110 group-hover:-rotate-6"
-            aria-hidden="true"
-          />
+          {/* Voile sombre en haut pour la lisibilité des badges */}
+          <div className="absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-black/25 to-transparent" aria-hidden="true" />
           <div className="absolute left-4 top-4 flex flex-wrap gap-2">
             <span className="rounded-full bg-white/20 px-3 py-1 text-xs font-semibold text-white ring-1 ring-white/40 backdrop-blur">
               {badgeLabel}
@@ -110,7 +114,7 @@ export function FormationCard({ formation }: { formation: Formation }) {
               </span>
               <span className="mt-1.5 flex items-center gap-2 text-loden-muted">
                 <BadgeCheck className="h-4 w-4 text-loden-500" aria-hidden="true" />
-                Dès {formatCurrency(formation.price)}
+                {formation.price > 0 ? `Dès ${formatCurrency(formation.price)}` : "Sur devis"}
               </span>
             </div>
             <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-loden-700 text-white shadow-soft transition group-hover:translate-x-0.5 group-hover:bg-loden-800">

@@ -4,7 +4,7 @@ import { PageHero } from "@/components/PageHero";
 
 export const metadata: Metadata = {
   title: "Espace formateur",
-  description: "Espace formateur LODEN : planning des leçons et examens à venir.",
+  description: "Espace formateur LODENE : planning des leçons et examens à venir.",
   robots: { index: false, follow: false }
 };
 

@@ -8,7 +8,8 @@ import { qualifyLead } from "./qualify";
 import type { AiProvider, AiTool } from "./types";
 
 function euros(cents: number) {
-  return `${Math.round(cents / 100)} €`;
+  // Aucun tarif officiel confirmé -> "sur devis" tant que le prix n'est pas renseigné.
+  return cents > 0 ? `${Math.round(cents / 100)} €` : "sur devis";
 }
 
 export type ToolContext = {
@@ -52,13 +53,13 @@ export const publicTools: ToolEntry[] = [
       type: "function",
       function: {
         name: "get_formations",
-        description: "Liste les formations au permis proposées par LODEN (titre, type de boîte, durée, prix indicatif, éligibilité CPF).",
+        description: "Liste les formations au permis proposées par LODENE (titre, type de boîte, durée, prix indicatif, éligibilité CPF).",
         parameters: { type: "object", properties: {}, additionalProperties: false }
       }
     },
     handler: async (_args, ctx) => {
       const formations = await ctx.repository.listFormations();
-      return formations.map((f) => ({ titre: f.title, type: f.mode, duree: f.durationLabel, prix: `dès ${euros(f.priceCents)}`, cpf: f.cpfEligible }));
+      return formations.map((f) => ({ titre: f.title, type: f.mode, duree: f.durationLabel, prix: euros(f.priceCents), cpf: f.cpfEligible }));
     }
   },
   {
@@ -66,13 +67,13 @@ export const publicTools: ToolEntry[] = [
       type: "function",
       function: {
         name: "get_prices",
-        description: "Liste les packs et tarifs publics validés de LODEN.",
+        description: "Liste les packs et tarifs publics validés de LODENE.",
         parameters: { type: "object", properties: {}, additionalProperties: false }
       }
     },
     handler: async (_args, ctx) => {
       const plans = await ctx.repository.listPricingPlans();
-      return plans.map((p) => ({ titre: p.title, prix: `dès ${euros(p.priceCents)}`, inclus: p.features.slice(0, 4) }));
+      return plans.map((p) => ({ titre: p.title, prix: euros(p.priceCents), inclus: p.features.slice(0, 4) }));
     }
   },
   {
@@ -80,7 +81,7 @@ export const publicTools: ToolEntry[] = [
       type: "function",
       function: {
         name: "get_agencies",
-        description: "Liste les agences LODEN (nom et adresse publique).",
+        description: "Liste les agences LODENE (nom et adresse publique).",
         parameters: { type: "object", properties: {}, additionalProperties: false }
       }
     },
@@ -101,7 +102,7 @@ export const publicTools: ToolEntry[] = [
     handler: async (_args, ctx) => {
       const [availabilities, instructors] = await Promise.all([ctx.repository.listAvailabilities(), ctx.repository.listInstructors()]);
       const nameById = new Map(instructors.map((i) => [i.id, i.name]));
-      return availabilities.slice(0, 8).map((a) => ({ moniteur: nameById.get(a.instructorId) ?? "Moniteur LODEN", debut: a.startsAt.toISOString(), fin: a.endsAt.toISOString() }));
+      return availabilities.slice(0, 8).map((a) => ({ moniteur: nameById.get(a.instructorId) ?? "Moniteur LODENE", debut: a.startsAt.toISOString(), fin: a.endsAt.toISOString() }));
     }
   },
   {
@@ -183,10 +184,10 @@ export const publicTools: ToolEntry[] = [
       void notifyNewLead(ctx.config, lead);
       void sendEmail(ctx.config, {
         to: d.email,
-        subject: "Votre demande de rendez-vous — LODEN Auto-École",
-        text: `Bonjour ${d.fullName},\n\nNous avons bien reçu votre demande de rendez-vous${d.desiredDate ? ` (${d.desiredDate})` : ""}. Un conseiller LODEN va confirmer le créneau rapidement.\n\nÀ très vite,\nL'équipe LODEN`
+        subject: "Votre demande de rendez-vous — LODENE Auto-École",
+        text: `Bonjour ${d.fullName},\n\nNous avons bien reçu votre demande de rendez-vous${d.desiredDate ? ` (${d.desiredDate})` : ""}. Un conseiller LODENE va confirmer le créneau rapidement.\n\nÀ très vite,\nL'équipe LODENE`
       });
-      if (d.phone) void sendSms(ctx.config, d.phone, `LODEN : votre demande de RDV est bien reçue${d.desiredDate ? ` (${d.desiredDate})` : ""}. Un conseiller confirmera le créneau.`);
+      if (d.phone) void sendSms(ctx.config, d.phone, `LODENE : votre demande de RDV est bien reçue${d.desiredDate ? ` (${d.desiredDate})` : ""}. Un conseiller confirmera le créneau.`);
       void qualifyLead(ctx.aiProvider, ctx.repository, lead);
       await ctx.repository.createAuditLog({ action: "ai.request_appointment", entityType: "Lead", entityId: lead.id, metadata: { desiredDate: d.desiredDate ?? null }, userId: ctx.actorUserId ?? null });
       return { ok: true, message: "Demande de rendez-vous enregistrée. Un conseiller confirmera le créneau (rien n'est définitif avant sa confirmation)." };
@@ -305,11 +306,11 @@ const bookAppointmentTool: ToolEntry = {
     if (user?.email) {
       void sendEmail(ctx.config, {
         to: user.email,
-        subject: "Confirmation de votre leçon — LODEN Auto-École",
+        subject: "Confirmation de votre leçon — LODENE Auto-École",
         text: `Bonjour ${user.firstName},\n\nVotre leçon est confirmée le ${b.startsAt.toLocaleString("fr-FR")}.\n\nÀ très vite,\nLODEN Auto-École`
       });
     }
-    if (user?.phone) void sendSms(ctx.config, user.phone, `LODEN : votre leçon est confirmée le ${b.startsAt.toLocaleString("fr-FR")}.`);
+    if (user?.phone) void sendSms(ctx.config, user.phone, `LODENE : votre leçon est confirmée le ${b.startsAt.toLocaleString("fr-FR")}.`);
 
     await ctx.repository.createAuditLog({
       action: "ai.book_appointment",

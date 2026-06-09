@@ -1,27 +1,21 @@
 import type { Metadata } from "next";
 import { Exams } from "@/components/crm/Exams";
-import { PageHero } from "@/components/PageHero";
+import { CrmPageHeader } from "@/components/crm/ui";
 
 export const metadata: Metadata = {
-  title: "Examens — CRM",
+  title: "Examens",
   robots: { index: false, follow: false }
 };
 
 export default function AdminExamsPage() {
   return (
-    <main>
-      <PageHero
-        eyebrow="CRM · Pédagogie"
+    <>
+      <CrmPageHeader
+        eyebrow="Pédagogie"
         title="Examens & réussite"
-        text="Programmation des examens code et conduite, saisie des résultats et taux de réussite."
-        cta="Retour au CRM"
-        ctaHref="/admin"
+        subtitle="Programmation des examens code et conduite, saisie des résultats et taux de réussite."
       />
-      <section className="bg-loden-pearl py-14 sm:py-20">
-        <div className="container-pad">
-          <Exams />
-        </div>
-      </section>
-    </main>
+      <Exams />
+    </>
   );
 }

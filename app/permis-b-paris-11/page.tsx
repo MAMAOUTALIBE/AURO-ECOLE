@@ -1,30 +1,31 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, BadgeCheck, CalendarCheck, MapPin } from "lucide-react";
+import { ArrowRight, BadgeCheck, MapPin, ShieldCheck } from "lucide-react";
 import { PageHero } from "@/components/PageHero";
 import { SectionHeader } from "@/components/SectionHeader";
-import { contactInfo } from "@/data/site";
+import { companyInfo, contactInfo } from "@/data/site";
 
 export const metadata: Metadata = {
-  title: "Permis B Paris 11",
+  title: "Permis B à Conflans-Sainte-Honorine",
   description:
-    "Passez votre permis B à Paris 11 avec LODEN Auto-École : boîte manuelle, automatique, CPF, planning flexible et point de rendez-vous République."
+    "Passez votre permis B à Conflans-Sainte-Honorine (78) avec LODENE Auto-École : boîte manuelle ou automatique, CPF et planning flexible.",
+  alternates: { canonical: "/permis-b-paris-11" }
 };
 
 const highlights = [
   "Formation permis B manuel ou automatique",
-  "Point de rendez-vous République, Paris 11",
-  "CPF et paiement fractionné possibles",
+  "À Conflans-Sainte-Honorine et dans les Yvelines (78)",
+  "CPF et financements selon le dossier",
   "Planning adapté aux soirs, samedis et parcours accélérés"
 ];
 
-export default function PermisBParis11Page() {
+export default function PermisBConflansPage() {
   return (
     <main>
       <PageHero
-        eyebrow="Permis B Paris 11"
-        title="Passe ton permis B près de République"
-        text="LODEN accompagne les élèves de Paris 11 et de l'Est parisien avec une formation claire, flexible et orientée réussite à l'examen."
+        eyebrow="Permis B Conflans-Sainte-Honorine"
+        title="Passe ton permis B à Conflans-Sainte-Honorine"
+        text="LODENE accompagne les élèves de Conflans-Sainte-Honorine et des Yvelines avec une formation claire, flexible et orientée réussite à l'examen."
         cta="Demander un diagnostic"
         ctaHref="/contact"
       />
@@ -32,8 +33,8 @@ export default function PermisBParis11Page() {
         <div className="container-pad grid gap-8 lg:grid-cols-[0.9fr_1.1fr]">
           <SectionHeader
             eyebrow="Formation locale"
-            title="Un parcours pensé pour la conduite urbaine"
-            text="La circulation parisienne demande des réflexes précis : priorités, intersections, stationnement, périphérie et conduite dense. Le parcours LODEN prépare ces situations avec des moniteurs habitués au secteur."
+            title="Un parcours pensé pour ta réussite"
+            text="Priorités, intersections, stationnement et conduite en conditions réelles : le parcours LODENE prépare ces situations avec des moniteurs habitués au secteur de Conflans-Sainte-Honorine."
           />
           <div className="grid gap-4 sm:grid-cols-2">
             {highlights.map((item) => (
@@ -48,8 +49,8 @@ export default function PermisBParis11Page() {
       <section className="bg-loden-pearl py-14 sm:py-20">
         <div className="container-pad grid gap-5 md:grid-cols-3">
           <InfoCard icon={MapPin} title="Adresse" text={contactInfo.address} />
-          <InfoCard icon={CalendarCheck} title="Horaires" text={contactInfo.hours} />
-          <InfoCard icon={BadgeCheck} title="Financement" text="CPF, packs et paiement 3x / 4x selon dossier." />
+          <InfoCard icon={ShieldCheck} title="Agrément préfectoral" text={companyInfo.approvalNumber} />
+          <InfoCard icon={BadgeCheck} title="Financement" text="CPF et financements étudiés selon le dossier." />
         </div>
       </section>
       <section className="bg-loden-700 py-14 text-white">

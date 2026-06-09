@@ -1,26 +1,28 @@
 import type { Metadata } from "next";
-import { contactInfo } from "@/data/site";
+import { companyInfo, contactInfo } from "@/data/site";
 
 export const metadata: Metadata = {
   title: "Mentions légales",
-  description: "Mentions légales de LODEN Auto-École : éditeur, contact, hébergement, propriété intellectuelle et responsabilités."
+  description: "Mentions légales de LODENE Auto-École : éditeur, agrément, SIRET, hébergement, propriété intellectuelle et responsabilités."
 };
 
 const legalSections = [
   {
     title: "Éditeur du site",
     content: [
-      "LODEN Auto-École",
+      "LODENE Auto-École",
       contactInfo.address,
-      `Email : ${contactInfo.email}`,
-      `Téléphone : ${contactInfo.phone}`,
-      "SIRET, forme juridique, capital social et numéro d'agrément préfectoral : à compléter avec les informations officielles de l'établissement."
+      `SIRET : ${companyInfo.siret}`,
+      `Numéro d'agrément préfectoral : ${companyInfo.approvalNumber}`,
+      ...(contactInfo.email ? [`Email : ${contactInfo.email}`] : []),
+      ...(contactInfo.phone ? [`Téléphone : ${contactInfo.phone}`] : []),
+      "Forme juridique et capital social : à compléter avec les informations officielles de l'établissement."
     ]
   },
   {
     title: "Directeur de la publication",
     content: [
-      "Direction LODEN Auto-École.",
+      "Direction LODENE Auto-École.",
       "Cette information doit être confirmée avec le représentant légal avant publication définitive."
     ]
   },
@@ -41,7 +43,7 @@ const legalSections = [
   {
     title: "Responsabilité",
     content: [
-      "LODEN Auto-École s'efforce de maintenir des informations exactes et à jour.",
+      "LODENE Auto-École s'efforce de maintenir des informations exactes et à jour.",
       "Les tarifs, disponibilités, financements et conditions d'inscription sont confirmés par devis ou échange avec un conseiller."
     ]
   }

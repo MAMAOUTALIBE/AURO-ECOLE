@@ -2,7 +2,8 @@ import { Router } from "express";
 import { z } from "zod";
 import type { ApiConfig } from "../../config/env";
 import type { AuthenticatedRequest } from "../../http/request-context";
-import { authenticate, requirePermission } from "../../middleware/auth";
+import { authenticate, requirePermission, resolveScopedAgencyId } from "../../middleware/auth";
+import { hasPermission } from "../../domain/permissions";
 import type { LodenRepository } from "../../repositories/loden-repository";
 import { asyncHandler } from "../../shared/async-handler";
 import { conflict, forbidden, notFound } from "../../shared/http-error";
@@ -52,7 +53,8 @@ export function createBookingsRouter(repository: LodenRepository, config: ApiCon
         res.json({ data: student ? await repository.listBookings({ studentId: student.id, status: query.status }) : [] });
         return;
       }
-      res.json({ data: await repository.listBookings(query) });
+      const agencyId = await resolveScopedAgencyId(repository, req, undefined);
+      res.json({ data: await repository.listBookings({ ...query, agencyId }) });
     })
   );
 
@@ -67,8 +69,10 @@ export function createBookingsRouter(repository: LodenRepository, config: ApiCon
         const student = await repository.findStudentByUserId(req.user.id);
         if (!student) throw notFound("Profil élève introuvable");
         studentId = student.id;
-      } else if (!studentId) {
-        throw conflict("studentId requis pour une réservation admin");
+      } else {
+        // Réserver pour un élève tiers exige la permission de gestion des leçons.
+        if (!(req.user && hasPermission(req.user.role, "bookings.manage"))) throw forbidden();
+        if (!studentId) throw conflict("studentId requis pour une réservation admin");
       }
 
       const hasConflict = await repository.hasInstructorConflict(body.instructorId, body.startsAt, body.endsAt);
@@ -93,6 +97,13 @@ export function createBookingsRouter(repository: LodenRepository, config: ApiCon
     asyncHandler(async (req, res) => {
       const body = validateBody(bookingStatusSchema, req);
       const booking = await repository.updateBooking(String(req.params.id), body);
+      void repository.createAuditLog({
+        userId: (req as AuthenticatedRequest).user?.id ?? null,
+        action: "booking.status",
+        entityType: "Booking",
+        entityId: booking.id,
+        metadata: { status: body.status }
+      });
       res.json({ data: booking });
     })
   );

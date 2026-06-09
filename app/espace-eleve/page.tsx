@@ -4,7 +4,7 @@ import { StudentDashboard } from "@/components/StudentDashboard";
 
 export const metadata: Metadata = {
   title: "Espace élève",
-  description: "Tableau de bord élève LODEN Auto-École."
+  description: "Tableau de bord élève LODENE Auto-École."
 };
 
 export default function EspaceElevePage() {

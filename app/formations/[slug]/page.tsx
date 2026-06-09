@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { formationImage } from "@/lib/formation-image";
 import { ArrowRight, BadgeCheck, CalendarCheck, CheckCircle2, Clock3, ShieldCheck } from "lucide-react";
 import { formations, productLineLabels } from "@/data/site";
 import { formatCurrency } from "@/lib/utils";
@@ -25,8 +27,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 
   return {
-    title: `${formation.title} à Paris`,
-    description: `${formation.description} Durée : ${formation.duration}. Tarif dès ${formatCurrency(formation.price)}.`
+    title: `${formation.title} à Conflans-Sainte-Honorine`,
+    description: `${formation.description} Durée : ${formation.duration}. Tarif sur devis personnalisé.`
   };
 }
 
@@ -47,16 +49,21 @@ export default async function FormationDetailPage({ params }: PageProps) {
     description: formation.description,
     provider: {
       "@type": ["LocalBusiness", "DrivingSchool"],
-      name: "LODEN Auto-École",
+      name: "LODENE Auto-École",
       sameAs: "https://loden-autoecole.fr"
     },
-    offers: {
-      "@type": "Offer",
-      price: formation.price,
-      priceCurrency: "EUR",
-      availability: "https://schema.org/InStock",
-      url: `https://loden-autoecole.fr/formations/${formation.slug}`
-    }
+    // Pas de prix officiel confirmé -> on n'émet pas d'Offer chiffrée (tarif sur devis).
+    ...(formation.price > 0
+      ? {
+          offers: {
+            "@type": "Offer",
+            price: formation.price,
+            priceCurrency: "EUR",
+            availability: "https://schema.org/InStock",
+            url: `https://loden-autoecole.fr/formations/${formation.slug}`
+          }
+        }
+      : {})
   };
 
   const programSteps = [
@@ -82,6 +89,17 @@ export default async function FormationDetailPage({ params }: PageProps) {
       />
       <section className="bg-loden-pearl py-14 sm:py-20">
         <div className="container-pad grid gap-8 lg:grid-cols-[1fr_0.75fr] lg:items-start">
+          <div className="relative h-44 overflow-hidden rounded-3xl shadow-soft sm:h-52 lg:col-span-2">
+            <Image
+              src={formationImage(formation.slug, productLine)}
+              alt=""
+              fill
+              priority
+              unoptimized
+              sizes="100vw"
+              className="object-cover"
+            />
+          </div>
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.14em] text-loden-700">
               {eyebrow}
@@ -126,7 +144,7 @@ export default async function FormationDetailPage({ params }: PageProps) {
               <div className="flex items-start gap-3">
                 <BadgeCheck className="mt-1 h-5 w-5 text-loden-600" />
                 <div>
-                  <p className="font-semibold text-loden-ink">Dès {formatCurrency(formation.price)}</p>
+                  <p className="font-semibold text-loden-ink">{formation.price > 0 ? `Dès ${formatCurrency(formation.price)}` : "Sur devis"}</p>
                   <p className="text-sm text-loden-muted">Devis confirmé avant inscription</p>
                 </div>
               </div>
@@ -164,7 +182,7 @@ export default async function FormationDetailPage({ params }: PageProps) {
             </div>
           </div>
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.14em] text-loden-700">Garanties LODEN</p>
+            <p className="text-sm font-semibold uppercase tracking-[0.14em] text-loden-700">Garanties LODENE</p>
             <h2 className="mt-3 text-3xl font-semibold text-loden-ink">Des conditions lisibles avant de commencer</h2>
             <div className="mt-7 grid gap-4">
               {guarantees.map((item) => (
@@ -178,7 +196,7 @@ export default async function FormationDetailPage({ params }: PageProps) {
               <CalendarCheck className="h-7 w-7" />
               <h3 className="mt-4 text-2xl font-semibold">Besoin d&apos;un planning précis ?</h3>
               <p className="mt-3 text-sm leading-6 text-white/85">
-                Envoie tes disponibilités et ton objectif. LODEN te propose un rythme réaliste avant l&apos;engagement.
+                Envoie tes disponibilités et ton objectif. LODENE te propose un rythme réaliste avant l&apos;engagement.
               </p>
               <Link
                 href={`/contact?formation=${formation.slug}#demande`}

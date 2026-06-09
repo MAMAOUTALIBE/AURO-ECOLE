@@ -98,7 +98,7 @@ function Logo() {
       </span>
       <span className="shrink-0">
         <span className="block whitespace-nowrap text-lg font-extrabold tracking-[0.08em] text-white drop-shadow-sm sm:text-xl">
-          LODEN
+          LODENE
         </span>
       </span>
     </Link>

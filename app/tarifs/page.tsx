@@ -8,7 +8,7 @@ import { SectionHeader } from "@/components/SectionHeader";
 
 export const metadata: Metadata = {
   title: "Tarifs",
-  description: "Tarifs permis B, permis accéléré, boîte automatique, CPF et paiement en plusieurs fois chez LODEN."
+  description: "Tarifs permis B, permis accéléré, boîte automatique, CPF et paiement en plusieurs fois chez LODENE."
 };
 
 export default function TarifsPage() {

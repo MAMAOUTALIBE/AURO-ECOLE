@@ -56,7 +56,7 @@ export async function notifyNewLead(config: ApiConfig, lead: LeadLike): Promise<
   }
 
   const lines = [
-    `Nouveau prospect LODEN : ${lead.fullName}`,
+    `Nouveau prospect LODENE : ${lead.fullName}`,
     `Email : ${lead.email}`,
     lead.phone ? `Téléphone : ${lead.phone}` : null,
     lead.interest ? `Intérêt : ${lead.interest}` : null,

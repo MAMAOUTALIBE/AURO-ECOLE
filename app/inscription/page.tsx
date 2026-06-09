@@ -7,7 +7,7 @@ import { StudentRegistrationForm } from "@/components/StudentRegistrationForm";
 
 export const metadata: Metadata = {
   title: "Inscription",
-  description: "Créer son compte élève LODEN et démarrer une formation permis avec suivi personnalisé."
+  description: "Créer son compte élève LODENE et démarrer une formation permis avec suivi personnalisé."
 };
 
 export default function InscriptionPage() {
@@ -15,7 +15,7 @@ export default function InscriptionPage() {
     <main>
       <PageHero
         eyebrow="Inscription élève"
-        title="Crée ton espace LODEN et prépare ton parcours permis"
+        title="Crée ton espace LODENE et prépare ton parcours permis"
         text="Un compte élève permet de centraliser la formation choisie, les heures, le planning et le futur suivi de progression."
         cta="Parler à un conseiller"
         ctaHref="/contact"

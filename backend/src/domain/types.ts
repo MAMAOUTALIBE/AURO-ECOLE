@@ -29,6 +29,16 @@ export type AgencyMembershipRecord = {
   role: UserRole;
   isPrimary: boolean;
 };
+
+export type VehicleRecord = {
+  id: string;
+  instructorId?: string | null;
+  label: string;
+  transmission: "MANUEL" | "AUTOMATIQUE" | "MIXTE" | "CODE";
+  registration?: string | null;
+  active: boolean;
+  agencyId?: string | null;
+};
 export type UserStatus = "PENDING_EMAIL" | "ACTIVE" | "SUSPENDED" | "ARCHIVED";
 export type BookingStatus = "EN_ATTENTE" | "CONFIRMEE" | "ANNULEE" | "TERMINEE" | "ABSENT";
 export type PaymentStatus = "EN_ATTENTE" | "PAYE" | "ECHOUE" | "REMBOURSE" | "PARTIEL";
@@ -139,6 +149,32 @@ export type InstructorRecord = {
 };
 
 export type ProductLine = "AUTO_ECOLE" | "VTC" | "CACES";
+
+// Informations administratives de l'entreprise (singleton, éditable via le CMS).
+// Seuls les champs officiellement vérifiés sont renseignés ; le reste reste vide.
+export type CompanyInfoRecord = {
+  id: string;
+  brandName: string;
+  legalName: string;
+  address: string;
+  postalCode: string;
+  city: string;
+  country: string;
+  siret: string;
+  approvalNumber: string;
+  phone: string;
+  email: string;
+  hours: string;
+  legalForm: string;
+  capital: string;
+  publicationDirector: string;
+  hostingProvider: string;
+  instagram: string;
+  facebook: string;
+  tiktok: string;
+  youtube: string;
+  updatedAt: Date;
+};
 
 export type FormationRecord = {
   id: string;

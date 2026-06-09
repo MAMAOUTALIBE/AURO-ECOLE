@@ -55,7 +55,7 @@ export function mapApiPricingPlan(plan: ApiPricingPlan): PricingPlan {
     slug: plan.slug,
     title: plan.title,
     price: plan.priceCents / 100,
-    badge: plan.promotionalLabel ?? "LODEN",
+    badge: plan.promotionalLabel ?? "LODENE",
     features: plan.features,
     cta: plan.title.toLowerCase().includes("cpf") ? "Vérifier mon CPF" : "Choisir ce pack"
   };

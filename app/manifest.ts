@@ -2,8 +2,8 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "LODEN Auto-École",
-    short_name: "LODEN",
+    name: "LODENE Auto-École",
+    short_name: "LODENE",
     description: "Auto-école premium nouvelle génération avec CPF, réservation et suivi personnalisé.",
     start_url: "/",
     display: "standalone",

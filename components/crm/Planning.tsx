@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { CalendarDays } from "lucide-react";
+import { CalendarDays, Plus, X } from "lucide-react";
 
 type Booking = {
   id: string;
@@ -11,6 +11,8 @@ type Booking = {
   endsAt: string;
   status: string;
 };
+
+const EMPTY_BOOKING_FORM = { studentId: "", instructorId: "", formationId: "", date: "", start: "", end: "" };
 
 const STATUSES: { key: string; label: string }[] = [
   { key: "EN_ATTENTE", label: "En attente" },
@@ -40,17 +42,22 @@ export function Planning() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [instructors, setInstructors] = useState<Record<string, string>>({});
   const [students, setStudents] = useState<Record<string, string>>({});
+  const [formations, setFormations] = useState<{ id: string; title: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [showForm, setShowForm] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [form, setForm] = useState(EMPTY_BOOKING_FORM);
 
   useEffect(() => {
     Promise.all([
       fetch("/api/bookings").then((r) => r.json()).catch(() => null),
       fetch("/api/instructors").then((r) => r.json()).catch(() => null),
-      fetch("/api/students").then((r) => r.json()).catch(() => null)
+      fetch("/api/students").then((r) => r.json()).catch(() => null),
+      fetch("/api/formations").then((r) => r.json()).catch(() => null)
     ])
-      .then(([bookingPayload, instructorPayload, studentPayload]) => {
+      .then(([bookingPayload, instructorPayload, studentPayload, formationPayload]) => {
         if (Array.isArray(bookingPayload?.data)) setBookings(bookingPayload.data as Booking[]);
         else setError(bookingPayload?.error?.message ?? "Impossible de charger le planning.");
         if (Array.isArray(instructorPayload?.data)) {
@@ -66,9 +73,49 @@ export function Planning() {
             )
           );
         }
+        if (Array.isArray(formationPayload?.data)) {
+          setFormations(formationPayload.data.map((f: { id: string; title: string }) => ({ id: f.id, title: f.title })));
+        }
       })
       .finally(() => setLoading(false));
   }, []);
+
+  const createBooking = async () => {
+    if (!form.studentId || !form.instructorId || !form.formationId || !form.date || !form.start || !form.end) {
+      setError("Renseigne élève, moniteur, formation, date et horaires.");
+      return;
+    }
+    const startsAt = new Date(`${form.date}T${form.start}`);
+    const endsAt = new Date(`${form.date}T${form.end}`);
+    if (endsAt <= startsAt) {
+      setError("L'heure de fin doit être après l'heure de début.");
+      return;
+    }
+    setCreating(true);
+    setError(null);
+    try {
+      const response = await fetch("/api/bookings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          studentId: form.studentId,
+          instructorId: form.instructorId,
+          formationId: form.formationId,
+          startsAt: startsAt.toISOString(),
+          endsAt: endsAt.toISOString()
+        })
+      });
+      const payload = await response.json().catch(() => null);
+      if (!response.ok) throw new Error(payload?.error?.message ?? "Création impossible.");
+      setBookings((current) => [...current, payload.data as Booking]);
+      setForm(EMPTY_BOOKING_FORM);
+      setShowForm(false);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Création de la leçon impossible.");
+    } finally {
+      setCreating(false);
+    }
+  };
 
   const changeStatus = async (booking: Booking, status: string) => {
     if (status === booking.status) return;
@@ -100,6 +147,50 @@ export function Planning() {
 
   return (
     <div>
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <p className="text-sm text-loden-muted">{bookings.length} leçon(s)</p>
+        <button
+          type="button"
+          onClick={() => setShowForm((v) => !v)}
+          className="focus-ring inline-flex items-center gap-1.5 rounded-xl bg-loden-700 px-4 py-2 text-sm font-semibold text-white shadow-soft transition hover:bg-loden-800"
+        >
+          {showForm ? <X className="h-4 w-4" aria-hidden="true" /> : <Plus className="h-4 w-4" aria-hidden="true" />}
+          {showForm ? "Fermer" : "Planifier une leçon"}
+        </button>
+      </div>
+      {showForm ? (
+        <div className="mb-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-soft">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <select className="field-input" value={form.studentId} onChange={(e) => setForm({ ...form, studentId: e.target.value })} aria-label="Élève">
+              <option value="">— Élève —</option>
+              {Object.entries(students).map(([id, name]) => <option key={id} value={id}>{name}</option>)}
+            </select>
+            <select className="field-input" value={form.instructorId} onChange={(e) => setForm({ ...form, instructorId: e.target.value })} aria-label="Moniteur">
+              <option value="">— Moniteur —</option>
+              {Object.entries(instructors).map(([id, name]) => <option key={id} value={id}>{name}</option>)}
+            </select>
+            <select className="field-input" value={form.formationId} onChange={(e) => setForm({ ...form, formationId: e.target.value })} aria-label="Formation">
+              <option value="">— Formation —</option>
+              {formations.map((f) => <option key={f.id} value={f.id}>{f.title}</option>)}
+            </select>
+            <input type="date" className="field-input" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} aria-label="Date" />
+            <input type="time" className="field-input" value={form.start} onChange={(e) => setForm({ ...form, start: e.target.value })} aria-label="Heure de début" />
+            <input type="time" className="field-input" value={form.end} onChange={(e) => setForm({ ...form, end: e.target.value })} aria-label="Heure de fin" />
+          </div>
+          {Object.keys(students).length === 0 || Object.keys(instructors).length === 0 || formations.length === 0 ? (
+            <p className="mt-3 text-xs text-loden-muted">Il faut au moins un élève, un moniteur et une formation pour planifier une leçon.</p>
+          ) : null}
+          <button
+            type="button"
+            onClick={createBooking}
+            disabled={creating}
+            className="focus-ring mt-3 inline-flex items-center gap-2 rounded-xl bg-loden-700 px-5 py-2.5 text-sm font-semibold text-white shadow-soft transition hover:bg-loden-800 disabled:opacity-70"
+          >
+            <Plus className="h-4 w-4" aria-hidden="true" />
+            {creating ? "Création…" : "Créer la leçon"}
+          </button>
+        </div>
+      ) : null}
       {error ? <p className="mb-4 rounded-2xl bg-red-50 p-4 text-sm font-medium text-red-700">{error}</p> : null}
 
       {days.size === 0 ? (

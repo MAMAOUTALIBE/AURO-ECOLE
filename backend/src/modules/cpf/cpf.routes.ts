@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { z } from "zod";
 import type { ApiConfig } from "../../config/env";
+import type { AuthenticatedRequest } from "../../http/request-context";
 import { authenticate, requirePermission } from "../../middleware/auth";
 import type { LodenRepository } from "../../repositories/loden-repository";
 import { asyncHandler } from "../../shared/async-handler";
@@ -50,6 +51,13 @@ export function createCpfRouter(repository: LodenRepository, config: ApiConfig) 
     asyncHandler(async (req, res) => {
       const body = validateBody(statusSchema, req);
       const cpfRequest = await repository.updateCpfRequest(String(req.params.id), body);
+      void repository.createAuditLog({
+        userId: (req as AuthenticatedRequest).user?.id ?? null,
+        action: "cpf.status",
+        entityType: "CpfRequest",
+        entityId: cpfRequest.id,
+        metadata: { status: body.status }
+      });
       res.json({ data: cpfRequest });
     })
   );

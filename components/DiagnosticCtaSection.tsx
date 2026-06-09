@@ -11,7 +11,7 @@ export function DiagnosticCtaSection() {
           <SectionHeader
             eyebrow="Diagnostic gratuit"
             title="Obtiens un parcours clair avant de payer"
-            text="LODEN doit rassurer avant de vendre : on vérifie ton besoin, ton financement et ton planning, puis on t'oriente vers le bon pack."
+            text="LODENE doit rassurer avant de vendre : on vérifie ton besoin, ton financement et ton planning, puis on t'oriente vers le bon pack."
             tone="light"
           />
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">

@@ -547,3 +547,28 @@ model AuditLog {
 
   user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
 }
+
+// Informations société (singleton, id = "company"), éditables depuis le CMS.
+model CompanyInfo {
+  id                  String   @id @default("company")
+  brandName           String   @default("LODENE")
+  legalName           String   @default("")
+  address             String   @default("")
+  postalCode          String   @default("")
+  city                String   @default("")
+  country             String   @default("France")
+  siret               String   @default("")
+  approvalNumber      String   @default("")
+  phone               String   @default("")
+  email               String   @default("")
+  hours               String   @default("")
+  legalForm           String   @default("")
+  capital             String   @default("")
+  publicationDirector String   @default("")
+  hostingProvider     String   @default("")
+  instagram           String   @default("")
+  facebook            String   @default("")
+  tiktok              String   @default("")
+  youtube             String   @default("")
+  updatedAt           DateTime @updatedAt
+}

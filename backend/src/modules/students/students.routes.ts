@@ -5,7 +5,7 @@ import { z } from "zod";
 import type { ApiConfig } from "../../config/env";
 import { MAX_SKILL_LEVEL, SKILL_CATALOG, SKILL_CODES } from "../../domain/skills";
 import type { AuthenticatedRequest } from "../../http/request-context";
-import { authenticate, requirePermission } from "../../middleware/auth";
+import { assertAgencyAccess, authenticate, requirePermission, resolveScopedAgencyId } from "../../middleware/auth";
 import type { LodenRepository } from "../../repositories/loden-repository";
 import { asyncHandler } from "../../shared/async-handler";
 import { conflict, notFound } from "../../shared/http-error";
@@ -80,7 +80,8 @@ export function createStudentsRouter(repository: LodenRepository, config: ApiCon
     requirePermission("students.read"),
     asyncHandler(async (req, res) => {
       const query = validateQuery(listQuerySchema, req);
-      const students = await repository.listStudents(query);
+      const agencyId = await resolveScopedAgencyId(repository, req as AuthenticatedRequest, query.agencyId);
+      const students = await repository.listStudents({ agencyId });
       const data = await Promise.all(
         students.map(async (student) => {
           const user = await repository.findUserById(student.userId);
@@ -122,6 +123,12 @@ export function createStudentsRouter(repository: LodenRepository, config: ApiCon
         ? await repository.updateStudent(created.id, { agencyId: body.agencyId })
         : created;
 
+      void repository.createAuditLog({
+        userId: (req as AuthenticatedRequest).user?.id ?? null,
+        action: "student.create",
+        entityType: "Student",
+        entityId: student.id
+      });
       res.status(201).json({ data: { ...student, user: publicUser(user) } });
     })
   );
@@ -133,6 +140,7 @@ export function createStudentsRouter(repository: LodenRepository, config: ApiCon
     asyncHandler(async (req, res) => {
       const student = await repository.findStudentById(String(req.params.id));
       if (!student) throw notFound("Élève introuvable");
+      await assertAgencyAccess(repository, req as AuthenticatedRequest, student.agencyId);
       const user = await repository.findUserById(student.userId);
       res.json({ data: { ...student, user: user ? publicUser(user) : null } });
     })
@@ -143,8 +151,12 @@ export function createStudentsRouter(repository: LodenRepository, config: ApiCon
     authenticate(repository, config.JWT_SECRET),
     requirePermission("students.manage"),
     asyncHandler(async (req, res) => {
+      const id = String(req.params.id);
+      const existing = await repository.findStudentById(id);
+      if (!existing) throw notFound("Élève introuvable");
+      await assertAgencyAccess(repository, req as AuthenticatedRequest, existing.agencyId);
       const body = validateBody(studentUpdateSchema, req);
-      const student = await repository.updateStudent(String(req.params.id), body);
+      const student = await repository.updateStudent(id, body);
       res.json({ data: student });
     })
   );
@@ -154,7 +166,11 @@ export function createStudentsRouter(repository: LodenRepository, config: ApiCon
     authenticate(repository, config.JWT_SECRET),
     requirePermission("students.read"),
     asyncHandler(async (req, res) => {
-      const skills = await repository.listStudentSkills(String(req.params.id));
+      const id = String(req.params.id);
+      const student = await repository.findStudentById(id);
+      if (!student) throw notFound("Élève introuvable");
+      await assertAgencyAccess(repository, req as AuthenticatedRequest, student.agencyId);
+      const skills = await repository.listStudentSkills(id);
       const levelByCode = new Map(skills.map((skill) => [skill.skillCode, skill.level]));
       const data = SKILL_CATALOG.map((skill) => ({
         code: skill.code,
@@ -173,6 +189,7 @@ export function createStudentsRouter(repository: LodenRepository, config: ApiCon
       const id = String(req.params.id);
       const student = await repository.findStudentById(id);
       if (!student) throw notFound("Élève introuvable");
+      await assertAgencyAccess(repository, req as AuthenticatedRequest, student.agencyId);
       const body = validateBody(skillUpdateSchema, req);
       const skill = await repository.setStudentSkill(id, body.skillCode, body.level);
       res.json({ data: skill });
@@ -185,7 +202,11 @@ export function createStudentsRouter(repository: LodenRepository, config: ApiCon
     authenticate(repository, config.JWT_SECRET),
     requirePermission("students.read"),
     asyncHandler(async (req, res) => {
-      res.json({ data: await repository.listStudentDocuments(String(req.params.id)) });
+      const id = String(req.params.id);
+      const student = await repository.findStudentById(id);
+      if (!student) throw notFound("Élève introuvable");
+      await assertAgencyAccess(repository, req as AuthenticatedRequest, student.agencyId);
+      res.json({ data: await repository.listStudentDocuments(id) });
     })
   );
 
@@ -197,6 +218,7 @@ export function createStudentsRouter(repository: LodenRepository, config: ApiCon
       const id = String(req.params.id);
       const student = await repository.findStudentById(id);
       if (!student) throw notFound("Élève introuvable");
+      await assertAgencyAccess(repository, req as AuthenticatedRequest, student.agencyId);
       const body = validateBody(documentCreateSchema, req);
       const document = await repository.createStudentDocument({ studentId: id, type: body.type, url: body.url });
       res.status(201).json({ data: document });
@@ -208,6 +230,9 @@ export function createStudentsRouter(repository: LodenRepository, config: ApiCon
     authenticate(repository, config.JWT_SECRET),
     requirePermission("students.manage"),
     asyncHandler(async (req, res) => {
+      const student = await repository.findStudentById(String(req.params.id));
+      if (!student) throw notFound("Élève introuvable");
+      await assertAgencyAccess(repository, req as AuthenticatedRequest, student.agencyId);
       const body = validateBody(documentVerifySchema, req);
       const document = await repository.setStudentDocumentVerified(String(req.params.documentId), body.verified);
       res.json({ data: document });
@@ -219,6 +244,9 @@ export function createStudentsRouter(repository: LodenRepository, config: ApiCon
     authenticate(repository, config.JWT_SECRET),
     requirePermission("students.manage"),
     asyncHandler(async (req, res) => {
+      const student = await repository.findStudentById(String(req.params.id));
+      if (!student) throw notFound("Élève introuvable");
+      await assertAgencyAccess(repository, req as AuthenticatedRequest, student.agencyId);
       await repository.deleteStudentDocument(String(req.params.documentId));
       res.json({ ok: true });
     })

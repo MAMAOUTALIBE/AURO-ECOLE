@@ -5,7 +5,60 @@ import type { AiProvider } from "../src/ai/types";
 import { qualifyLead } from "../src/ai/qualify";
 import { crmTools } from "../src/ai/tools";
 import { loadConfig } from "../src/config/env";
+import { initialAgencyMemberships, initialPricingPlans, initialUsers } from "../src/data/initial-data";
 import { MemoryLodenRepository } from "../src/repositories/memory-loden-repository";
+
+// Fixtures de TEST uniquement (la production ne seed AUCUNE donnée fictive : pas d'avis,
+// pas de moniteur nommé, prix à 0). Ici on reconstitue le minimum nécessaire aux tests :
+// un moniteur connectable, un instructeur listable, un avis publié et un pack payant.
+const TEST_NOW = new Date("2026-06-06T00:00:00.000Z");
+const TEST_MONITEUR = {
+  id: "user-test-moniteur",
+  firstName: "Moniteur",
+  lastName: "Test",
+  email: "moniteur.test@loden-autoecole.fr",
+  role: "MONITEUR" as const,
+  status: "ACTIVE" as const,
+  // hash bcrypt de "moniteur-password"
+  passwordHash: "$2b$12$VIx2vVB4pKggoYxz0uh.n.sIFBfoDTJ3MZUz.y2dS7MLoNk0V6nPe",
+  createdAt: TEST_NOW,
+  updatedAt: TEST_NOW
+};
+
+function buildTestSeed() {
+  return {
+    users: [...initialUsers, TEST_MONITEUR],
+    agencyMemberships: [
+      ...initialAgencyMemberships,
+      { id: "membership-test-moniteur", userId: TEST_MONITEUR.id, agencyId: "agency-republique", role: "MONITEUR" as const, isPrimary: true }
+    ],
+    instructors: [
+      {
+        id: "instructor-test",
+        userId: TEST_MONITEUR.id,
+        agencyId: "agency-republique",
+        name: "Moniteur Test",
+        specialties: ["Conduite"],
+        interventionZones: [],
+        ratingAverage: 0,
+        ratingCount: 0,
+        active: true
+      }
+    ],
+    reviews: [
+      {
+        id: "review-test",
+        rating: 5,
+        comment: "Avis de test publié.",
+        status: "PUBLIE" as const,
+        publishedAt: TEST_NOW,
+        createdAt: TEST_NOW,
+        updatedAt: TEST_NOW
+      }
+    ],
+    pricingPlans: initialPricingPlans.map((plan) => (plan.id === "plan-permis-b" ? { ...plan, priceCents: 119000 } : plan))
+  };
+}
 
 function testApp(aiProvider?: AiProvider) {
   const config = loadConfig({
@@ -15,7 +68,7 @@ function testApp(aiProvider?: AiProvider) {
     CORS_ORIGIN: "http://localhost:3000",
     API_USE_MEMORY: "true"
   });
-  const repository = new MemoryLodenRepository();
+  const repository = new MemoryLodenRepository(buildTestSeed());
   return { app: createApp(repository, config, aiProvider ? { aiProvider } : undefined), repository };
 }
 
@@ -48,7 +101,7 @@ const toolAi: AiProvider = {
   async complete() { return "ok"; }
 };
 
-describe("LODEN API", () => {
+describe("LODENE API", () => {
   it("rejects unsafe production configuration", () => {
     expect(() =>
       loadConfig({
@@ -120,6 +173,34 @@ describe("LODEN API", () => {
       const formation = body.data.find((item: { category: string; href: string }) => item.category === "formation");
       expect(formation?.href).toMatch(/^\/formations\/.+/);
     });
+  });
+
+  it("exposes and updates official company info via the CMS with RBAC", async () => {
+    const { app } = testApp();
+
+    // Lecture publique : données officielles posées, champs non confirmés vides.
+    await request(app).get("/api/content/company").expect(200).expect(({ body }) => {
+      expect(body.data.brandName).toBe("LODENE");
+      expect(body.data.siret).toBe("84282888100040");
+      expect(body.data.approvalNumber).toBe("E2507800260");
+      expect(body.data.city).toBe("Conflans-Sainte-Honorine");
+      expect(body.data.phone).toBe("");
+    });
+
+    // Édition réservée : un anonyme ne peut pas modifier.
+    await request(app).patch("/api/content/company").send({ phone: "01 39 00 00 00" }).expect(401);
+
+    const admin = await request(app)
+      .post("/api/auth/login")
+      .send({ email: "admin@loden-autoecole.fr", password: "admin-password" })
+      .expect(200);
+
+    await request(app)
+      .patch("/api/content/company")
+      .set("Authorization", `Bearer ${admin.body.token}`)
+      .send({ phone: "01 39 00 00 00" })
+      .expect(200)
+      .expect(({ body }) => expect(body.data.phone).toBe("01 39 00 00 00"));
   });
 
   it("accepts contact and CPF public requests with validation", async () => {
@@ -296,15 +377,21 @@ describe("LODEN API", () => {
 
     const login = await request(app)
       .post("/api/auth/login")
-      .send({ email: "sarah.benali@loden-autoecole.fr", password: "moniteur-password" })
+      .send({ email: "moniteur.test@loden-autoecole.fr", password: "moniteur-password" })
       .expect(200);
     expect(login.body.user.role).toBe("MONITEUR");
     const token = login.body.token as string;
 
     await request(app).get("/api/bookings").set("Authorization", `Bearer ${token}`).expect(200);
     await request(app).get("/api/exams").set("Authorization", `Bearer ${token}`).expect(200);
-    // Pas d'accès à la gestion des comptes utilisateurs.
+    // Cloisonnement multi-agences : lit bien SA propre agence…
+    await request(app).get("/api/exams").query({ agencyId: "agency-republique" }).set("Authorization", `Bearer ${token}`).expect(200);
+    // …mais 403 sur une agence hors de son périmètre (anti-IDOR inter-agences).
+    await request(app).get("/api/exams").query({ agencyId: "agency-autre" }).set("Authorization", `Bearer ${token}`).expect(403);
+    // Pas d'accès à la gestion des comptes utilisateurs ni aux journaux d'audit.
     await request(app).get("/api/users").set("Authorization", `Bearer ${token}`).expect(403);
+    await request(app).get("/api/audit-logs").set("Authorization", `Bearer ${token}`).expect(403);
+    await request(app).get("/api/permissions").set("Authorization", `Bearer ${token}`).expect(403);
   });
 
   it("creates a student (user + profile) from the CRM with RBAC", async () => {
@@ -369,12 +456,80 @@ describe("LODEN API", () => {
     // Un moniteur ne peut pas créer un moniteur.
     const mon = await request(app)
       .post("/api/auth/login")
-      .send({ email: "sarah.benali@loden-autoecole.fr", password: "moniteur-password" })
+      .send({ email: "moniteur.test@loden-autoecole.fr", password: "moniteur-password" })
       .expect(200);
     await request(app)
       .post("/api/instructors")
       .set("Authorization", `Bearer ${mon.body.token}`)
       .send({ firstName: "A", lastName: "B", email: "a.b@example.com" })
+      .expect(403);
+  });
+
+  it("manages staff users and agencies (create + update) with RBAC", async () => {
+    const { app } = testApp();
+    const admin = await request(app)
+      .post("/api/auth/login")
+      .send({ email: "admin@loden-autoecole.fr", password: "admin-password" })
+      .expect(200);
+    const token = admin.body.token as string;
+
+    // Création d'un membre du personnel + changement de statut.
+    const user = await request(app)
+      .post("/api/users")
+      .set("Authorization", `Bearer ${token}`)
+      .send({ firstName: "Sandra", lastName: "Secrétaire", email: "sandra.secretaire@example.com", role: "SECRETAIRE" })
+      .expect(201);
+    expect(user.body.data.role).toBe("SECRETAIRE");
+    expect(user.body.data.passwordHash).toBeUndefined();
+    await request(app)
+      .patch(`/api/users/${user.body.data.id}`)
+      .set("Authorization", `Bearer ${token}`)
+      .send({ status: "SUSPENDED" })
+      .expect(200)
+      .expect(({ body }) => expect(body.data.status).toBe("SUSPENDED"));
+
+    // Création + édition d'une agence.
+    const agency = await request(app)
+      .post("/api/agencies")
+      .set("Authorization", `Bearer ${token}`)
+      .send({ name: "LODENE Cergy", slug: "cergy" })
+      .expect(201);
+    expect(agency.body.data.name).toBe("LODENE Cergy");
+    await request(app)
+      .patch(`/api/agencies/${agency.body.data.id}`)
+      .set("Authorization", `Bearer ${token}`)
+      .send({ phone: "0100000000" })
+      .expect(200)
+      .expect(({ body }) => expect(body.data.phone).toBe("0100000000"));
+
+    // Un moniteur ne peut ni créer un utilisateur ni une agence.
+    const mon = await request(app)
+      .post("/api/auth/login")
+      .send({ email: "moniteur.test@loden-autoecole.fr", password: "moniteur-password" })
+      .expect(200);
+    await request(app)
+      .post("/api/users")
+      .set("Authorization", `Bearer ${mon.body.token}`)
+      .send({ firstName: "X", lastName: "Y", email: "x.y2@example.com", role: "SECRETAIRE" })
+      .expect(403);
+    await request(app)
+      .post("/api/agencies")
+      .set("Authorization", `Bearer ${mon.body.token}`)
+      .send({ name: "Pirate", slug: "pirate" })
+      .expect(403);
+
+    // Véhicules : l'admin crée ; le moniteur peut consulter mais pas créer.
+    const vehicle = await request(app)
+      .post("/api/vehicles")
+      .set("Authorization", `Bearer ${token}`)
+      .send({ label: "Clio Test", transmission: "MANUEL", registration: "AA-123-BB" })
+      .expect(201);
+    expect(vehicle.body.data.label).toBe("Clio Test");
+    await request(app).get("/api/vehicles").set("Authorization", `Bearer ${mon.body.token}`).expect(200);
+    await request(app)
+      .post("/api/vehicles")
+      .set("Authorization", `Bearer ${mon.body.token}`)
+      .send({ label: "Pirate", transmission: "MANUEL" })
       .expect(403);
   });
 

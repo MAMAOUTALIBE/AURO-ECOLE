@@ -15,7 +15,7 @@ export function PoleLanding({ pole }: { pole: "VTC" | "CACES" }) {
   const itemListSchema = {
     "@context": "https://schema.org",
     "@type": "ItemList",
-    name: `Formations ${productLineLabels[pole]} — LODEN`,
+    name: `Formations ${productLineLabels[pole]} — LODENE`,
     itemListElement: poleFormations.map((formation, index) => ({
       "@type": "ListItem",
       position: index + 1,
@@ -26,7 +26,7 @@ export function PoleLanding({ pole }: { pole: "VTC" | "CACES" }) {
         url: `https://loden-autoecole.fr/formations/${formation.slug}`,
         provider: {
           "@type": ["LocalBusiness", "DrivingSchool"],
-          name: "LODEN Auto-École",
+          name: "LODENE Auto-École",
           sameAs: "https://loden-autoecole.fr"
         },
         offers: { "@type": "Offer", price: formation.price, priceCurrency: "EUR" }

@@ -5,7 +5,7 @@ import type { PricingPlan } from "@/data/site";
 
 type Visual = { icon: LucideIcon; gradient: string };
 
-// Identité visuelle par pack — alignée sur les dégradés des formations (cohérence LODEN).
+// Identité visuelle par pack — alignée sur les dégradés des formations (cohérence LODENE).
 const VISUALS: Record<string, Visual> = {
   "permis-b": { icon: Car, gradient: "linear-gradient(135deg,#0e7490,#08AEB8 55%,#22d3ee)" },
   "permis-accelere": { icon: Zap, gradient: "linear-gradient(135deg,#b45309,#f59e0b 55%,#fbbf24)" },
@@ -15,7 +15,9 @@ const VISUALS: Record<string, Visual> = {
 const FALLBACK: Visual = { icon: Sparkles, gradient: "linear-gradient(135deg,#155e75,#0e7490 55%,#14b8a6)" };
 
 export function PricingCard({ plan, featured = false }: { plan: PricingPlan; featured?: boolean }) {
-  const ctaHref = plan.price === 0 ? "/cpf" : `/paiement?plan=${encodeURIComponent(plan.id)}`;
+  // Tarifs sur devis tant qu'aucune grille officielle n'est confirmée -> CTA vers la demande de devis.
+  const ctaHref = plan.price === 0 ? "/contact#demande" : `/paiement?plan=${encodeURIComponent(plan.id)}`;
+  const ctaLabel = plan.price === 0 ? "Demander un devis" : plan.cta;
   const visual = VISUALS[plan.slug] ?? FALLBACK;
   const Icon = visual.icon;
 
@@ -64,7 +66,7 @@ export function PricingCard({ plan, featured = false }: { plan: PricingPlan; fea
           featured ? "bg-white text-loden-ink hover:bg-loden-50" : "bg-loden-700 text-white hover:bg-loden-800"
         }`}
       >
-        {plan.cta}
+        {ctaLabel}
         <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" aria-hidden="true" />
       </Link>
     </article>

@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 270" width="480" height="270" role="img" aria-label="Illustration CACES R482 : pelle de chantier">
+  <defs>
+    <linearGradient id="chaBg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#78350f"/>
+      <stop offset="0.55" stop-color="#b45309"/>
+      <stop offset="1" stop-color="#f59e0b"/>
+    </linearGradient>
+  </defs>
+  <rect width="480" height="270" fill="url(#chaBg)"/>
+  <circle cx="92" cy="62" r="46" fill="#ffffff" opacity="0.12"/>
+  <!-- tas de terre -->
+  <path d="M286 230 q60 -54 132 0 Z" fill="#5a2a04"/>
+  <path d="M0 226 L480 226 L480 270 L0 270 Z" fill="#5a2a04"/>
+  <rect x="0" y="222" width="480" height="6" fill="#ffffff" opacity="0.2"/>
+  <!-- pelle -->
+  <g transform="translate(58 80)">
+    <ellipse cx="120" cy="150" rx="128" ry="14" fill="#3d1c03" opacity="0.4"/>
+    <!-- chenilles -->
+    <rect x="40" y="120" width="170" height="34" rx="17" fill="#1f2937"/>
+    <circle cx="62" cy="137" r="13" fill="#374151"/>
+    <circle cx="188" cy="137" r="13" fill="#374151"/>
+    <circle cx="125" cy="137" r="9" fill="#374151"/>
+    <!-- tourelle + cabine -->
+    <rect x="74" y="74" width="118" height="48" rx="8" fill="#f59e0b"/>
+    <path d="M96 40 L150 40 C160 40 168 46 170 56 L172 74 L92 74 L92 52 C92 45 94 40 96 40 Z" fill="#1f2937"/>
+    <rect x="102" y="48" width="56" height="22" rx="3" fill="#bae6fd"/>
+    <rect x="184" y="92" width="14" height="12" rx="3" fill="#fde68a"/>
+    <!-- bras articulé -->
+    <g stroke="#1f2937" stroke-width="14" stroke-linecap="round" fill="none">
+      <path d="M176 92 L246 44"/>
+      <path d="M246 44 L300 96"/>
+    </g>
+    <!-- godet -->
+    <path d="M292 92 q22 4 30 24 q-6 22 -34 26 q-8 -28 4 -50 Z" fill="#111827"/>
+    <g fill="#111827"><rect x="300" y="138" width="6" height="12"/><rect x="310" y="138" width="6" height="12"/><rect x="290" y="138" width="6" height="12"/></g>
+  </g>
+</svg>

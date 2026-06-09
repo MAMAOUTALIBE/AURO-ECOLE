@@ -3,7 +3,7 @@ import { contactInfo } from "@/data/site";
 
 export const metadata: Metadata = {
   title: "Politique de confidentialité",
-  description: "Politique de confidentialité LODEN Auto-École : données collectées, finalités, conservation, droits et contact."
+  description: "Politique de confidentialité LODENE Auto-École : données collectées, finalités, conservation, droits et contact."
 };
 
 const privacySections = [
@@ -31,7 +31,7 @@ const privacySections = [
   {
     title: "Destinataires",
     content: [
-      "Les données sont accessibles aux équipes LODEN Auto-École habilitées et aux prestataires techniques nécessaires au fonctionnement du site.",
+      "Les données sont accessibles aux équipes LODENE Auto-École habilitées et aux prestataires techniques nécessaires au fonctionnement du site.",
       "Chaque prestataire doit être encadré par des garanties de confidentialité et de sécurité."
     ]
   },
@@ -39,13 +39,15 @@ const privacySections = [
     title: "Tes droits",
     content: [
       "Tu peux demander l'accès, la rectification, l'effacement ou la limitation du traitement de tes données.",
-      `Pour exercer tes droits, contacte LODEN à ${contactInfo.email}.`
+      contactInfo.email
+        ? `Pour exercer tes droits, contacte LODENE à ${contactInfo.email}.`
+        : "Pour exercer tes droits, contacte LODENE via le formulaire de la page Contact."
     ]
   },
   {
     title: "Sécurité",
     content: [
-      "LODEN met en place des mesures techniques et organisationnelles pour limiter les accès non autorisés.",
+      "LODENE met en place des mesures techniques et organisationnelles pour limiter les accès non autorisés.",
       "Les secrets de production, accès administrateurs et bases de données doivent être configurés de façon sécurisée avant mise en ligne."
     ]
   }
@@ -61,7 +63,7 @@ export default function PrivacyPage() {
             Politique de confidentialité
           </h1>
           <p className="mt-5 text-lg leading-8 text-loden-muted">
-            Cette page explique quelles données peuvent être traitées par LODEN Auto-École et comment exercer tes droits.
+            Cette page explique quelles données peuvent être traitées par LODENE Auto-École et comment exercer tes droits.
           </p>
         </div>
         <div className="mt-10 grid gap-5">

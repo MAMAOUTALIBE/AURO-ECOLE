@@ -6,7 +6,7 @@ import { SectionHeader } from "@/components/SectionHeader";
 
 export const metadata: Metadata = {
   title: "Blog",
-  description: "Conseils LODEN Auto-École pour choisir sa formation, financer son permis et préparer le code."
+  description: "Conseils LODENE Auto-École pour choisir sa formation, financer son permis et préparer le code."
 };
 
 const articles = [
@@ -43,7 +43,7 @@ export default function BlogPage() {
       <section className="bg-white py-14 sm:py-20">
         <div className="container-pad">
           <SectionHeader
-            eyebrow="Guides LODEN"
+            eyebrow="Guides LODENE"
             title="Les sujets utiles avant de démarrer"
             text="Chaque guide renvoie vers une page concrète pour comparer, simuler ou demander un accompagnement."
             align="center"

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { HelpCircle, Pencil, Plus, X } from "lucide-react";
+import { HelpCircle, Pencil, Plus, Trash2, X } from "lucide-react";
 
 type FaqEntry = { id: string; question: string; answer: string; category?: string | null; active: boolean };
 
@@ -22,7 +22,7 @@ export function FaqManager() {
         if (Array.isArray(p?.data)) setEntries(p.data as FaqEntry[]);
         else setError(p?.error?.message ?? "Impossible de charger la FAQ.");
       })
-      .catch(() => setError("Le service LODEN est momentanément indisponible."))
+      .catch(() => setError("Le service LODENE est momentanément indisponible."))
       .finally(() => setLoading(false));
   };
 
@@ -80,6 +80,17 @@ export function FaqManager() {
     }
   };
 
+  const remove = async (entry: FaqEntry) => {
+    if (!window.confirm(`Supprimer définitivement la question « ${entry.question} » ?`)) return;
+    try {
+      const response = await fetch(`/api/faq/${entry.id}`, { method: "DELETE" });
+      if (!response.ok && response.status !== 204) throw new Error();
+      setEntries((current) => current.filter((e) => e.id !== entry.id));
+    } catch {
+      setError("Suppression impossible.");
+    }
+  };
+
   return (
     <div className="grid gap-6">
       <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-soft">
@@ -134,6 +145,9 @@ export function FaqManager() {
                   <button type="button" onClick={() => startEdit(entry)} className="focus-ring rounded-lg border border-slate-200 px-2 py-1 text-xs font-semibold text-loden-700 hover:bg-loden-50">Modifier</button>
                   <button type="button" onClick={() => toggleActive(entry)} className="focus-ring rounded-lg border border-slate-200 px-2 py-1 text-xs font-semibold text-loden-muted hover:bg-loden-50">
                     {entry.active ? "Masquer" : "Afficher"}
+                  </button>
+                  <button type="button" onClick={() => remove(entry)} aria-label="Supprimer" className="focus-ring inline-flex items-center gap-1 rounded-lg border border-rose-200 px-2 py-1 text-xs font-semibold text-rose-600 hover:bg-rose-50">
+                    <Trash2 className="h-3.5 w-3.5" aria-hidden="true" /> Supprimer
                   </button>
                 </div>
               </div>

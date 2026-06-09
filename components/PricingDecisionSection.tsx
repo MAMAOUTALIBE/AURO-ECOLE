@@ -7,21 +7,21 @@ const recommendations = [
     icon: BadgeCheck,
     profile: "Je démarre de zéro",
     plan: "Permis B",
-    budget: "À partir de 1 190 €",
+    budget: "Sur devis",
     text: "Parcours complet avec code, 20 h de conduite et suivi élève."
   },
   {
     icon: Timer,
     profile: "Je veux aller vite",
     plan: "Permis accéléré",
-    budget: "À partir de 1 590 €",
+    budget: "Sur devis",
     text: "Créneaux priorisés et rythme condensé sur quelques semaines."
   },
   {
     icon: CalendarCheck,
     profile: "Je veux plus simple",
     plan: "Boîte automatique",
-    budget: "À partir de 890 €",
+    budget: "Sur devis",
     text: "Formation plus courte, conduite fluide et conversion possible."
   },
   {

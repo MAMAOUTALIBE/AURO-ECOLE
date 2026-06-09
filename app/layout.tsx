@@ -4,37 +4,38 @@ import { Footer } from "@/components/Footer";
 import { HeaderMain } from "@/components/HeaderMain";
 import { HeaderTop } from "@/components/HeaderTop";
 import { FloatingWhatsappButton } from "@/components/FloatingWhatsappButton";
-import { contactInfo } from "@/data/site";
+import { SiteChrome } from "@/components/SiteChrome";
+import { companyInfo, contactInfo, socialLinks } from "@/data/site";
 import { safeJsonLd } from "@/lib/json-ld";
 import "./globals.css";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://loden-autoecole.fr"),
   title: {
-    default: "LODEN Auto-École | Permis nouvelle génération",
-    template: "%s | LODEN Auto-École"
+    default: "LODENE Auto-École | Permis nouvelle génération",
+    template: "%s | LODENE Auto-École"
   },
   description:
-    "LODEN Auto-École propose des formations au permis modernes, flexibles et premium avec CPF, réservation en ligne et suivi personnalisé.",
+    "LODENE Auto-École propose des formations au permis modernes, flexibles et premium avec CPF, réservation en ligne et suivi personnalisé.",
   keywords: [
     "auto-école",
     "permis B",
     "CPF permis",
     "permis accéléré",
     "code en ligne",
-    "LODEN"
+    "LODENE"
   ],
   openGraph: {
-    title: "LODEN Auto-École",
+    title: "LODENE Auto-École",
     description: "Passe ton permis avec une auto-école premium, flexible et rassurante.",
     url: "https://loden-autoecole.fr",
-    siteName: "LODEN Auto-École",
+    siteName: "LODENE Auto-École",
     images: [
       {
         url: "/loden-hero.jpg",
         width: 1200,
         height: 800,
-        alt: "Voiture école moderne LODEN dans une rue lumineuse"
+        alt: "Voiture école moderne LODENE dans une rue lumineuse"
       }
     ],
     locale: "fr_FR",
@@ -49,28 +50,26 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  // JSON-LD bâti uniquement sur des données vérifiées : on n'émet que les champs renseignés
+  // (pas de téléphone/email/horaires/réseaux non confirmés, pas de note ni de fourchette de prix).
   const organizationSchema = {
     "@context": "https://schema.org",
     "@type": ["LocalBusiness", "DrivingSchool"],
-    name: "LODEN Auto-École",
+    name: "LODENE Auto-École",
     url: "https://loden-autoecole.fr",
     image: "https://loden-autoecole.fr/loden-hero.jpg",
-    telephone: contactInfo.phone,
-    email: contactInfo.email,
+    ...(contactInfo.phone ? { telephone: contactInfo.phone } : {}),
+    ...(contactInfo.email ? { email: contactInfo.email } : {}),
     address: {
       "@type": "PostalAddress",
-      streetAddress: "24 avenue de la République",
-      postalCode: "75011",
-      addressLocality: "Paris",
+      streetAddress: companyInfo.address,
+      postalCode: companyInfo.postalCode,
+      addressLocality: companyInfo.city,
       addressCountry: "FR"
     },
-    areaServed: ["Paris 11", "Paris", "Est parisien", "Montreuil", "Vincennes"],
-    openingHours: "Mo-Sa 08:00-20:00",
-    priceRange: "€€",
-    sameAs: [
-      "https://www.instagram.com/loden.autoecole",
-      "https://www.facebook.com/loden.autoecole"
-    ]
+    areaServed: ["Conflans-Sainte-Honorine", "Yvelines"],
+    ...(contactInfo.hours ? { openingHours: contactInfo.hours } : {}),
+    ...(socialLinks.length > 0 ? { sameAs: socialLinks.map((social) => social.href) } : {})
   };
 
   return (
@@ -81,12 +80,23 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           suppressHydrationWarning
           dangerouslySetInnerHTML={{ __html: safeJsonLd(organizationSchema) }}
         />
-        <HeaderTop />
-        <HeaderMain />
-        {children}
-        <Footer />
-        <FloatingWhatsappButton />
-        <AiChatWidget />
+        <SiteChrome
+          header={
+            <>
+              <HeaderTop />
+              <HeaderMain />
+            </>
+          }
+          footer={
+            <>
+              <Footer />
+              <FloatingWhatsappButton />
+              <AiChatWidget />
+            </>
+          }
+        >
+          {children}
+        </SiteChrome>
       </body>
     </html>
   );

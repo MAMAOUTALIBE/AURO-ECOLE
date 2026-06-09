@@ -1,27 +1,21 @@
 import type { Metadata } from "next";
 import { Planning } from "@/components/crm/Planning";
-import { PageHero } from "@/components/PageHero";
+import { CrmPageHeader } from "@/components/crm/ui";
 
 export const metadata: Metadata = {
-  title: "Planning — CRM",
+  title: "Planning",
   robots: { index: false, follow: false }
 };
 
 export default function AdminPlanningPage() {
   return (
-    <main>
-      <PageHero
-        eyebrow="CRM · Opérations"
+    <>
+      <CrmPageHeader
+        eyebrow="Pédagogie"
         title="Planning des leçons"
-        text="Agenda des réservations par jour, avec moniteur, élève et statut de chaque leçon."
-        cta="Retour au CRM"
-        ctaHref="/admin"
+        subtitle="Agenda des réservations par jour, avec moniteur, élève et statut de chaque leçon."
       />
-      <section className="bg-loden-pearl py-14 sm:py-20">
-        <div className="container-pad">
-          <Planning />
-        </div>
-      </section>
-    </main>
+      <Planning />
+    </>
   );
 }

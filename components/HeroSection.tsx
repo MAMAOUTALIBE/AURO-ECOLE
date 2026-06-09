@@ -1,9 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Allura, Great_Vibes, Permanent_Marker } from "next/font/google";
-import { ArrowRight, CreditCard, PlayCircle, Star, UsersRound, WalletCards } from "lucide-react";
+import { ArrowRight, MapPin, PlayCircle, ShieldCheck, WalletCards } from "lucide-react";
 import { MotionReveal } from "@/components/MotionReveal";
-import { proofStats } from "@/data/site";
 
 const greatVibes = Great_Vibes({
   subsets: ["latin"],
@@ -23,11 +22,11 @@ const permanentMarker = Permanent_Marker({
   display: "swap"
 });
 
+// Badges hero : uniquement des éléments officiels/vérifiés (agrément, implantation, CPF).
 const badges = [
-  { icon: Star, title: proofStats.ratingDisplay, detail: "avis élèves" },
-  { icon: UsersRound, title: proofStats.studentsAccompanied, detail: "élèves accompagnés" },
-  { icon: WalletCards, title: "CPF", detail: "disponible" },
-  { icon: CreditCard, title: "Paiement", detail: "en 4x sans frais" }
+  { icon: ShieldCheck, title: "Agréée", detail: "Agrément E2507800260" },
+  { icon: MapPin, title: "Conflans", detail: "Sainte-Honorine (78)" },
+  { icon: WalletCards, title: "CPF", detail: "formations éligibles" }
 ];
 
 export function HeroSection() {
@@ -56,7 +55,7 @@ export function HeroSection() {
           <MotionReveal>
             <div className="max-w-[520px]">
               <h1
-                aria-label="Passe ton permis avec LODEN"
+                aria-label="Passe ton permis avec LODENE"
                 className="leading-none"
               >
                 <span className={`${greatVibes.className} block text-[3.6rem] font-normal leading-[0.9] text-[#087f92] sm:text-[4.5rem] lg:text-[5.25rem]`}>
@@ -66,7 +65,7 @@ export function HeroSection() {
                   avec
                 </span>
                 <span className={`${permanentMarker.className} block text-[3.4rem] font-normal leading-[0.95] tracking-[-0.04em] text-loden-ink sm:text-[4.25rem] lg:text-[4.75rem]`}>
-                  LODEN
+                  LODENE
                 </span>
               </h1>
 
@@ -111,7 +110,7 @@ export function HeroSection() {
             <div className="relative mt-10 min-h-[360px] lg:hidden">
               <Image
                 src="/loden-hero.jpg"
-                alt="Voiture école moderne LODEN avec élève et moniteur"
+                alt="Voiture école moderne LODENE avec élève et moniteur"
                 fill
                 priority
                 sizes="100vw"

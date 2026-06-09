@@ -7,7 +7,7 @@ type Message = { role: "user" | "assistant"; content: string };
 
 const GREETING: Message = {
   role: "assistant",
-  content: "Bonjour 👋 Je suis l'assistant LODEN. Je peux vous aider à choisir une formation, comprendre le CPF, les tarifs ou l'inscription. Que puis-je faire pour vous ?"
+  content: "Bonjour 👋 Je suis l'assistant LODENE. Je peux vous aider à choisir une formation, comprendre le CPF, les tarifs ou l'inscription. Que puis-je faire pour vous ?"
 };
 
 export function AiChatWidget() {
@@ -59,7 +59,7 @@ export function AiChatWidget() {
             <div className="flex items-center gap-2">
               <Sparkles className="h-5 w-5" aria-hidden="true" />
               <div>
-                <p className="text-sm font-semibold leading-tight">Assistant LODEN</p>
+                <p className="text-sm font-semibold leading-tight">Assistant LODENE</p>
                 <p className="text-[11px] text-white/80">Réponses indicatives — un conseiller peut vous rappeler</p>
               </div>
             </div>
@@ -114,7 +114,7 @@ export function AiChatWidget() {
         type="button"
         onClick={() => setOpen((value) => !value)}
         className="focus-ring fixed bottom-24 right-5 z-30 inline-flex h-14 w-14 items-center justify-center rounded-full bg-loden-500 text-white shadow-premium transition hover:bg-loden-600"
-        aria-label={open ? "Fermer l'assistant LODEN" : "Ouvrir l'assistant LODEN"}
+        aria-label={open ? "Fermer l'assistant LODENE" : "Ouvrir l'assistant LODENE"}
       >
         {open ? <X className="h-6 w-6" /> : <Sparkles className="h-6 w-6" />}
       </button>

@@ -5,6 +5,7 @@ import type {
   AvailabilityRecord,
   BookingRecord,
   BookingStatus,
+  CompanyInfoRecord,
   ExamRecord,
   InstallmentRecord,
   ContactRequestRecord,
@@ -27,12 +28,17 @@ import type {
   StudentSkillRecord,
   StudentDocumentRecord,
   UserRecord,
-  UserRole
+  UserRole,
+  VehicleRecord
 } from "../domain/types";
 
 export type CreateUserInput = Omit<UserRecord, "id" | "createdAt" | "updatedAt" | "status"> & {
   status?: UserRecord["status"];
 };
+
+export type CreateAgencyInput = Omit<AgencyRecord, "id" | "active"> & { active?: boolean };
+
+export type CreateVehicleInput = Omit<VehicleRecord, "id" | "active"> & { active?: boolean };
 
 export type CreateStudentInput = {
   userId: string;
@@ -92,7 +98,14 @@ export type ListUsersFilters = {
 export interface LodenRepository {
   listAgencies(): Promise<AgencyRecord[]>;
   findAgencyById(id: string): Promise<AgencyRecord | null>;
+  createAgency(input: CreateAgencyInput): Promise<AgencyRecord>;
+  updateAgency(id: string, input: Partial<AgencyRecord>): Promise<AgencyRecord>;
   listAgencyMembershipsByUser(userId: string): Promise<AgencyMembershipRecord[]>;
+
+  listVehicles(filters?: { agencyId?: string }): Promise<VehicleRecord[]>;
+  findVehicleById(id: string): Promise<VehicleRecord | null>;
+  createVehicle(input: CreateVehicleInput): Promise<VehicleRecord>;
+  updateVehicle(id: string, input: Partial<VehicleRecord>): Promise<VehicleRecord>;
 
   listUsers(filters?: ListUsersFilters): Promise<UserRecord[]>;
   findUserById(id: string): Promise<UserRecord | null>;
@@ -105,6 +118,9 @@ export interface LodenRepository {
   findStudentByUserId(userId: string): Promise<StudentRecord | null>;
   createStudent(input: CreateStudentInput): Promise<StudentRecord>;
   updateStudent(id: string, input: Partial<StudentRecord>): Promise<StudentRecord>;
+  getCompanyInfo(): Promise<CompanyInfoRecord>;
+  updateCompanyInfo(input: Partial<CompanyInfoRecord>): Promise<CompanyInfoRecord>;
+
   listStudentSkills(studentId: string): Promise<StudentSkillRecord[]>;
   setStudentSkill(studentId: string, skillCode: string, level: number): Promise<StudentSkillRecord>;
   listStudentDocuments(studentId: string): Promise<StudentDocumentRecord[]>;

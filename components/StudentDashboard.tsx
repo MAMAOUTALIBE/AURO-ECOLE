@@ -99,7 +99,7 @@ export function StudentDashboard() {
   }, []);
 
   if (state.status === "loading") {
-    return <Panel title="Chargement de ton espace" text="Synchronisation du profil élève LODEN..." />;
+    return <Panel title="Chargement de ton espace" text="Synchronisation du profil élève LODENE..." />;
   }
 
   if (state.status === "anonymous") {
@@ -137,7 +137,7 @@ export function StudentDashboard() {
 
   return (
     <div className="grid gap-6 lg:grid-cols-[0.8fr_1.2fr]">
-      <Panel title={`Bonjour ${state.user.firstName}`} text="Ton espace élève est prêt pour le suivi LODEN.">
+      <Panel title={`Bonjour ${state.user.firstName}`} text="Ton espace élève est prêt pour le suivi LODENE.">
         <button
           type="button"
           onClick={async () => {

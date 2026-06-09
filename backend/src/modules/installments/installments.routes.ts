@@ -1,7 +1,8 @@
 import { Router } from "express";
 import { z } from "zod";
 import type { ApiConfig } from "../../config/env";
-import { authenticate, requirePermission } from "../../middleware/auth";
+import type { AuthenticatedRequest } from "../../http/request-context";
+import { authenticate, requirePermission, resolveScopedAgencyId } from "../../middleware/auth";
 import type { LodenRepository } from "../../repositories/loden-repository";
 import { asyncHandler } from "../../shared/async-handler";
 import { validateBody, validateQuery } from "../../shared/validation";
@@ -32,7 +33,8 @@ export function createInstallmentsRouter(repository: LodenRepository, config: Ap
     requirePermission("payments.read"),
     asyncHandler(async (req, res) => {
       const query = validateQuery(listQuerySchema, req);
-      res.json({ data: await repository.listInstallments(query) });
+      const agencyId = await resolveScopedAgencyId(repository, req as AuthenticatedRequest, query.agencyId);
+      res.json({ data: await repository.listInstallments({ ...query, agencyId }) });
     })
   );
 

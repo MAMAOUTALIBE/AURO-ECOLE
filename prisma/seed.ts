@@ -4,6 +4,7 @@ import {
   initialAgencies,
   initialAgencyMemberships,
   initialAvailabilities,
+  initialCompanyInfo,
   initialFaqEntries,
   initialFormations,
   initialInstructors,
@@ -267,6 +268,16 @@ async function seedContent() {
       create: faq
     });
   }
+
+  // Informations société (singleton). On crée la ligne si absente avec les valeurs
+  // officielles ; on ne réécrase PAS les champs déjà édités via le CMS.
+  const { updatedAt: _companyUpdatedAt, ...companyDefaults } = initialCompanyInfo;
+  void _companyUpdatedAt;
+  await prisma.companyInfo.upsert({
+    where: { id: companyDefaults.id },
+    update: {},
+    create: companyDefaults
+  });
 }
 
 async function main() {

@@ -8,7 +8,7 @@ import { getFaqEntries } from "@/lib/faq";
 
 export const metadata: Metadata = {
   title: "CPF et financement",
-  description: "Financer son permis avec le CPF, paiement en plusieurs fois, aides régionales et accompagnement administratif LODEN."
+  description: "Financer son permis avec le CPF, paiement en plusieurs fois, aides régionales et accompagnement administratif LODENE."
 };
 
 export default async function CpfPage() {
@@ -18,7 +18,7 @@ export default async function CpfPage() {
       <PageHero
         eyebrow="CPF & financement"
         title="Finance ton permis avec un accompagnement clair"
-        text="LODEN t'aide à vérifier ton solde CPF, préparer ton dossier et choisir le parcours le plus adapté."
+        text="LODENE t'aide à vérifier ton solde CPF, préparer ton dossier et choisir le parcours le plus adapté."
         cta="Vérifier mon financement"
         ctaHref="#demande-cpf"
       />
@@ -53,7 +53,7 @@ export default async function CpfPage() {
             <SectionHeader
               eyebrow="Demande CPF"
               title="Obtiens une réponse claire avant de t'inscrire"
-              text="Le formulaire transmet une demande structurée au CRM LODEN. L'équipe peut ensuite qualifier le dossier, vérifier les pièces utiles et prioriser le planning."
+              text="Le formulaire transmet une demande structurée au CRM LODENE. L'équipe peut ensuite qualifier le dossier, vérifier les pièces utiles et prioriser le planning."
             />
             <div className="mt-6 grid gap-3 text-sm font-medium text-loden-muted">
               {["Éligibilité CPF analysée", "Reste à charge estimé", "Conseiller dédié", "Parcours adapté au planning"].map((item) => (

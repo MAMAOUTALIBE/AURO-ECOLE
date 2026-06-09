@@ -38,6 +38,12 @@ export async function proxyBackendJson(path: string, options: ProxyOptions = {})
       cache: "no-store"
     });
 
+    // Réponses sans corps (204 No Content, 205, 304) : un body JSON y est illégal
+    // (NextResponse.json lèverait). On relaie le statut tel quel. Typique des DELETE.
+    if (response.status === 204 || response.status === 205 || response.status === 304) {
+      return new NextResponse(null, { status: response.status });
+    }
+
     const payload = await response.json().catch(() => ({
       error: {
         code: "INVALID_BACKEND_RESPONSE",
@@ -51,7 +57,7 @@ export async function proxyBackendJson(path: string, options: ProxyOptions = {})
       {
         error: {
           code: "BACKEND_UNAVAILABLE",
-          message: "Le service LODEN est momentanément indisponible."
+          message: "Le service LODENE est momentanément indisponible."
         }
       },
       { status: 503 }

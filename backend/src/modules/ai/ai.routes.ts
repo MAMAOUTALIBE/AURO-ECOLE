@@ -19,7 +19,9 @@ import type { LodenRepository } from "../../repositories/loden-repository";
 import { asyncHandler } from "../../shared/async-handler";
 import { validateBody } from "../../shared/validation";
 
-const CONTACT_PHONE = "01 84 80 12 45";
+// Aucun numéro de téléphone officiel confirmé -> vide (l'IA renvoie vers la page Contact).
+// À renseigner via le CMS (CompanyInfo.phone) dès qu'un numéro officiel est disponible.
+const CONTACT_PHONE = "";
 
 const chatSchema = z.object({
   messages: z
@@ -47,7 +49,9 @@ function aiUnavailable(res: import("express").Response) {
   res.status(503).json({
     error: {
       code: "AI_UNAVAILABLE",
-      message: `L'assistant IA n'est pas disponible pour le moment. Vous pouvez joindre un conseiller au ${CONTACT_PHONE}.`
+      message: CONTACT_PHONE
+        ? `L'assistant IA n'est pas disponible pour le moment. Vous pouvez joindre un conseiller au ${CONTACT_PHONE}.`
+        : "L'assistant IA n'est pas disponible pour le moment. Vous pouvez nous contacter via la page Contact du site."
     }
   });
 }

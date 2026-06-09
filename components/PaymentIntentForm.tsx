@@ -85,7 +85,7 @@ export function PaymentIntentForm() {
               id: plan.id,
               title: plan.title,
               priceCents: plan.priceCents,
-              badge: plan.promotionalLabel ?? "LODEN",
+              badge: plan.promotionalLabel ?? "LODENE",
               features: plan.features
             }));
 
@@ -202,7 +202,7 @@ export function PaymentIntentForm() {
     <div className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
       <PaymentPanel
         title="Paiement formation"
-        text="Sélectionne ton pack. LODEN crée ici une intention Stripe mockée, sans saisie de carte ni débit réel."
+        text="Sélectionne ton pack. LODENE crée ici une intention Stripe mockée, sans saisie de carte ni débit réel."
       >
         <div className="mt-7 grid gap-3" role="radiogroup" aria-label="Choisir un pack">
           {plans

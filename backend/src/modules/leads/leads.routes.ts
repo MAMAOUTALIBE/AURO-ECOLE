@@ -2,8 +2,9 @@ import { Router } from "express";
 import { z } from "zod";
 import type { ApiConfig } from "../../config/env";
 import type { AiProvider } from "../../ai/types";
+import type { AuthenticatedRequest } from "../../http/request-context";
 import { qualifyLead } from "../../ai/qualify";
-import { authenticate, requirePermission } from "../../middleware/auth";
+import { authenticate, requirePermission, resolveScopedAgencyId } from "../../middleware/auth";
 import type { LodenRepository } from "../../repositories/loden-repository";
 import { asyncHandler } from "../../shared/async-handler";
 import { notifyNewLead } from "../../shared/mailer";
@@ -43,7 +44,8 @@ export function createLeadsRouter(repository: LodenRepository, config: ApiConfig
     "/",
     asyncHandler(async (req, res) => {
       const query = validateQuery(leadQuerySchema, req);
-      res.json({ data: await repository.listLeads(query) });
+      const agencyId = await resolveScopedAgencyId(repository, req as AuthenticatedRequest, query.agencyId);
+      res.json({ data: await repository.listLeads({ ...query, agencyId }) });
     })
   );
 
@@ -65,6 +67,13 @@ export function createLeadsRouter(repository: LodenRepository, config: ApiConfig
     asyncHandler(async (req, res) => {
       const body = validateBody(leadStatusUpdateSchema, req);
       const lead = await repository.updateLead(String(req.params.id), body);
+      void repository.createAuditLog({
+        userId: (req as AuthenticatedRequest).user?.id ?? null,
+        action: "lead.status",
+        entityType: "Lead",
+        entityId: lead.id,
+        metadata: { status: body.status }
+      });
       res.json({ data: lead });
     })
   );

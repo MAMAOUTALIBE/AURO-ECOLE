@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { KanbanSquare } from "lucide-react";
+import { KanbanSquare, Plus, X } from "lucide-react";
 import { ACTIVE_AGENCY_KEY } from "@/components/AgencySwitcher";
 
 type Lead = {
@@ -42,6 +42,9 @@ export function Pipeline() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [showForm, setShowForm] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [form, setForm] = useState({ fullName: "", email: "", phone: "", interest: "" });
 
   useEffect(() => {
     const agency = window.localStorage.getItem(ACTIVE_AGENCY_KEY);
@@ -53,7 +56,7 @@ export function Pipeline() {
         if (Array.isArray(payload?.data)) setLeads(payload.data as Lead[]);
         else setError(payload?.error?.message ?? "Impossible de charger le pipeline.");
       })
-      .catch(() => setError("Le service LODEN est momentanément indisponible."))
+      .catch(() => setError("Le service LODENE est momentanément indisponible."))
       .finally(() => setLoading(false));
   }, []);
 
@@ -75,10 +78,70 @@ export function Pipeline() {
     }
   };
 
+  const createLead = async () => {
+    if (!form.fullName.trim() || !form.email.trim()) {
+      setError("Nom et email sont requis.");
+      return;
+    }
+    setCreating(true);
+    setError(null);
+    try {
+      const response = await fetch("/api/leads", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fullName: form.fullName.trim(),
+          email: form.email.trim(),
+          ...(form.phone.trim() ? { phone: form.phone.trim() } : {}),
+          ...(form.interest.trim() ? { interest: form.interest.trim() } : {})
+        })
+      });
+      const payload = await response.json().catch(() => null);
+      if (!response.ok) throw new Error(payload?.error?.message ?? "Création impossible.");
+      setLeads((current) => [payload.data as Lead, ...current]);
+      setForm({ fullName: "", email: "", phone: "", interest: "" });
+      setShowForm(false);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Création impossible.");
+    } finally {
+      setCreating(false);
+    }
+  };
+
   if (loading) return <p className="text-sm text-loden-muted">Chargement du pipeline…</p>;
 
   return (
     <div>
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <p className="text-sm text-loden-muted">{leads.length} prospect(s)</p>
+        <button
+          type="button"
+          onClick={() => setShowForm((v) => !v)}
+          className="focus-ring inline-flex items-center gap-1.5 rounded-xl bg-loden-700 px-4 py-2 text-sm font-semibold text-white shadow-soft transition hover:bg-loden-800"
+        >
+          {showForm ? <X className="h-4 w-4" aria-hidden="true" /> : <Plus className="h-4 w-4" aria-hidden="true" />}
+          {showForm ? "Fermer" : "Nouveau prospect"}
+        </button>
+      </div>
+      {showForm ? (
+        <div className="mb-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-soft">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <input className="field-input" placeholder="Nom complet *" value={form.fullName} onChange={(e) => setForm({ ...form, fullName: e.target.value })} aria-label="Nom complet" />
+            <input className="field-input" type="email" placeholder="Email *" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} aria-label="Email" />
+            <input className="field-input" placeholder="Téléphone" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} aria-label="Téléphone" />
+            <input className="field-input" placeholder="Intérêt (ex. Permis B)" value={form.interest} onChange={(e) => setForm({ ...form, interest: e.target.value })} aria-label="Intérêt" />
+          </div>
+          <button
+            type="button"
+            onClick={createLead}
+            disabled={creating}
+            className="focus-ring mt-3 inline-flex items-center gap-2 rounded-xl bg-loden-700 px-5 py-2.5 text-sm font-semibold text-white shadow-soft transition hover:bg-loden-800 disabled:opacity-70"
+          >
+            <Plus className="h-4 w-4" aria-hidden="true" />
+            {creating ? "Création…" : "Créer le prospect"}
+          </button>
+        </div>
+      ) : null}
       {error ? <p className="mb-4 rounded-2xl bg-red-50 p-4 text-sm font-medium text-red-700">{error}</p> : null}
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-6">
         {STAGES.map((stage) => {
