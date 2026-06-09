@@ -14,7 +14,8 @@ import type {
   StudentRecord,
   UserRecord,
   VehicleRecord,
-  AgencyRecord
+  AgencyRecord,
+  AutomationRuleRecord
 } from "../domain/types";
 import { computeInvoiceTotals } from "../domain/invoice-totals";
 import {
@@ -313,6 +314,12 @@ const demoExams: ExamRecord[] = [
   { id: "demo-ex5", studentId: "demo-stu4", agencyId: AGENCY, type: "CODE", scheduledAt: inDays(12), center: "Conflans", result: "EN_ATTENTE", score: null, attempt: 1, createdAt: daysAgo(2), updatedAt: daysAgo(2) }
 ];
 
+// --- Automatisations (Workflows) ---
+const demoAutomationRules: AutomationRuleRecord[] = [
+  { id: "demo-auto1", name: "Accueil nouveaux prospects", trigger: "LEAD_CREATED", action: "SEND_WELCOME_EMAIL", active: true, agencyId: AGENCY, runCount: 14, lastRunAt: daysAgo(1), createdAt: daysAgo(30), updatedAt: daysAgo(1) },
+  { id: "demo-auto2", name: "Alerte équipe nouvel élève", trigger: "STUDENT_CREATED", action: "NOTIFY_TEAM", active: false, agencyId: AGENCY, runCount: 0, lastRunAt: null, createdAt: daysAgo(20), updatedAt: daysAgo(20) }
+];
+
 /**
  * Construit le seed de démonstration (override partiel du store mémoire).
  * Les tableaux fournis REMPLACENT ceux par défaut : on ré-inclut donc les
@@ -335,6 +342,7 @@ export function buildDemoSeed(): Partial<MutableStore> {
     cpfRequests: demoCpf,
     reviews: demoReviews,
     leads: demoLeads,
-    exams: demoExams
+    exams: demoExams,
+    automationRules: demoAutomationRules
   };
 }

@@ -358,6 +358,22 @@ export type ContentEntryRecord = {
   updatedAt: Date;
 };
 
+// Automatisations : règle « déclencheur -> action », activable/désactivable.
+export type AutomationTrigger = "LEAD_CREATED" | "STUDENT_CREATED";
+export type AutomationAction = "SEND_WELCOME_EMAIL" | "NOTIFY_TEAM" | "LOG";
+export type AutomationRuleRecord = {
+  id: string;
+  name: string;
+  trigger: AutomationTrigger;
+  action: AutomationAction;
+  active: boolean;
+  agencyId?: string | null;
+  runCount: number;
+  lastRunAt?: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
 export type ContractStatus = "BROUILLON" | "ACTIF" | "RESILIE" | "TERMINE";
 
 // Contrat de formation. Document texte + prix, signable (numéro attribué à l'activation).

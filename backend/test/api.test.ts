@@ -688,6 +688,70 @@ describe("LODENE API", () => {
     await request(app).get("/api/contracts").set("Authorization", `Bearer ${mon.body.token}`).expect(403);
   });
 
+  it("gère les automatisations : CRUD, moteur (lead → exécution), activation, RBAC", async () => {
+    const { app, repository } = testApp();
+    const admin = await request(app)
+      .post("/api/auth/login")
+      .send({ email: "admin@loden-autoecole.fr", password: "admin-password" })
+      .expect(200);
+    const bearer = `Bearer ${admin.body.token}`;
+
+    // Création d'une règle active : nouveau lead → email de bienvenue.
+    const created = await request(app)
+      .post("/api/automations")
+      .set("Authorization", bearer)
+      .send({ name: "Accueil prospects", trigger: "LEAD_CREATED", action: "SEND_WELCOME_EMAIL" })
+      .expect(201);
+    expect(created.body.data.active).toBe(true);
+    expect(created.body.data.runCount).toBe(0);
+    const ruleId = created.body.data.id as string;
+
+    // Filtre par déclencheur.
+    const list = await request(app).get("/api/automations").query({ trigger: "LEAD_CREATED" }).set("Authorization", bearer).expect(200);
+    expect(list.body.data.some((r: { id: string }) => r.id === ruleId)).toBe(true);
+
+    // Le moteur s'exécute à la création d'un lead (best-effort → on attend l'incrément).
+    await request(app)
+      .post("/api/leads")
+      .set("Authorization", bearer)
+      .send({ fullName: "Test Prospect", email: "prospect@example.com", phone: "0612345678" })
+      .expect(201);
+    let ran = false;
+    for (let i = 0; i < 25 && !ran; i += 1) {
+      const rule = await repository.findAutomationRuleById(ruleId);
+      if (rule && rule.runCount >= 1) ran = true;
+      else await new Promise((resolve) => setTimeout(resolve, 10));
+    }
+    expect(ran).toBe(true);
+
+    // Désactivation : aucune nouvelle exécution.
+    await request(app).patch(`/api/automations/${ruleId}`).set("Authorization", bearer).send({ active: false }).expect(200);
+    const runsBefore = (await repository.findAutomationRuleById(ruleId))?.runCount ?? 0;
+    await request(app)
+      .post("/api/leads")
+      .set("Authorization", bearer)
+      .send({ fullName: "Autre Prospect", email: "autre@example.com", phone: "0612345679" })
+      .expect(201);
+    await new Promise((resolve) => setTimeout(resolve, 60));
+    expect((await repository.findAutomationRuleById(ruleId))?.runCount).toBe(runsBefore);
+
+    // Suppression.
+    await request(app).delete(`/api/automations/${ruleId}`).set("Authorization", bearer).expect(204);
+    expect(await repository.findAutomationRuleById(ruleId)).toBeNull();
+
+    // RBAC : un moniteur (sans automations.*) ne lit ni ne gère.
+    const mon = await request(app)
+      .post("/api/auth/login")
+      .send({ email: "moniteur.test@loden-autoecole.fr", password: "moniteur-password" })
+      .expect(200);
+    await request(app).get("/api/automations").set("Authorization", `Bearer ${mon.body.token}`).expect(403);
+    await request(app)
+      .post("/api/automations")
+      .set("Authorization", `Bearer ${mon.body.token}`)
+      .send({ name: "Tentative", trigger: "LEAD_CREATED", action: "LOG" })
+      .expect(403);
+  });
+
   it("gère le CMS (pages/articles) : CRUD, publication, filtre par type, RBAC", async () => {
     const { app } = testApp();
     const admin = await request(app)

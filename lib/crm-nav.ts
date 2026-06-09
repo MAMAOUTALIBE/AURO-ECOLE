@@ -128,8 +128,8 @@ export const crmNav: NavSection[] = [
     icon: Sparkles,
     items: [
       { label: "Assistant IA", href: "/admin/assistant", icon: Bot, status: "live" },
-      { label: "Workflows", href: "/admin/bientot?m=Workflows", icon: Workflow, status: "soon" },
-      { label: "Automatisations", href: "/admin/bientot?m=Automatisations", icon: Wrench, status: "soon" }
+      { label: "Workflows", href: "/admin/workflows", icon: Workflow, status: "live" },
+      { label: "Automatisations", href: "/admin/automatisations", icon: Wrench, status: "live" }
     ]
   },
   {

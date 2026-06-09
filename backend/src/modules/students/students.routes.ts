@@ -6,6 +6,7 @@ import type { ApiConfig } from "../../config/env";
 import { MAX_SKILL_LEVEL, SKILL_CATALOG, SKILL_CODES } from "../../domain/skills";
 import type { AuthenticatedRequest } from "../../http/request-context";
 import { assertAgencyAccess, authenticate, requirePermission, resolveScopedAgencyId } from "../../middleware/auth";
+import { runAutomations } from "../../automations/engine";
 import type { LodenRepository } from "../../repositories/loden-repository";
 import { asyncHandler } from "../../shared/async-handler";
 import { conflict, notFound } from "../../shared/http-error";
@@ -129,6 +130,7 @@ export function createStudentsRouter(repository: LodenRepository, config: ApiCon
         entityType: "Student",
         entityId: student.id
       });
+      void runAutomations(repository, config, "STUDENT_CREATED", { entityType: "Student", entityId: student.id, email: user.email, name: `${user.firstName} ${user.lastName}` });
       res.status(201).json({ data: { ...student, user: publicUser(user) } });
     })
   );

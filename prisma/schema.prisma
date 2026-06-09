@@ -276,6 +276,32 @@ model ContentEntry {
   @@index([type, published])
 }
 
+enum AutomationTrigger {
+  LEAD_CREATED
+  STUDENT_CREATED
+}
+
+enum AutomationAction {
+  SEND_WELCOME_EMAIL
+  NOTIFY_TEAM
+  LOG
+}
+
+model AutomationRule {
+  id        String            @id @default(cuid())
+  name      String
+  trigger   AutomationTrigger
+  action    AutomationAction
+  active    Boolean           @default(true)
+  agencyId  String?
+  runCount  Int               @default(0)
+  lastRunAt DateTime?
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+
+  @@index([trigger, active])
+}
+
 model User {
   id                 String     @id @default(cuid())
   firstName          String

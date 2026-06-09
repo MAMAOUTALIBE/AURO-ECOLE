@@ -21,6 +21,7 @@ import { createInvoicesRouter } from "./modules/invoices/invoices.routes";
 import { createQuotesRouter } from "./modules/quotes/quotes.routes";
 import { createContractsRouter } from "./modules/contracts/contracts.routes";
 import { createCmsRouter } from "./modules/cms/cms.routes";
+import { createAutomationsRouter } from "./modules/automations/automations.routes";
 import { createLeadsRouter } from "./modules/leads/leads.routes";
 import { createPaymentsRouter, createStripeWebhookHandler } from "./modules/payments/payments.routes";
 import { createPermissionsRouter } from "./modules/permissions/permissions.routes";
@@ -99,6 +100,7 @@ export function createApp(repository: LodenRepository, config: ApiConfig, deps: 
   app.use("/api/quotes", createQuotesRouter(repository, config));
   app.use("/api/contracts", createContractsRouter(repository, config));
   app.use("/api/content-entries", createCmsRouter(repository, config));
+  app.use("/api/automations", createAutomationsRouter(repository, config));
   app.use("/api/cpf", createCpfRouter(repository, config));
   app.use("/api/exams", createExamsRouter(repository, config));
   app.use("/api/contact-requests", createContactsRouter(repository, config, aiProvider));

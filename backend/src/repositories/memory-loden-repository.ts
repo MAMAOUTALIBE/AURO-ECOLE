@@ -38,6 +38,7 @@ import type {
   QuoteRecord,
   ContractRecord,
   ContentEntryRecord,
+  AutomationRuleRecord,
   StudentRecord,
   StudentSkillRecord,
   StudentDocumentRecord,
@@ -60,6 +61,7 @@ import type {
   CreateQuoteInput,
   CreateContractInput,
   CreateContentEntryInput,
+  CreateAutomationRuleInput,
   CreateStudentInput,
   CreateUserInput,
   CreateVehicleInput,
@@ -68,7 +70,8 @@ import type {
   UpdateInvoiceInput,
   UpdateQuoteInput,
   UpdateContractInput,
-  UpdateContentEntryInput
+  UpdateContentEntryInput,
+  UpdateAutomationRuleInput
 } from "./loden-repository";
 
 export type MutableStore = {
@@ -98,6 +101,7 @@ export type MutableStore = {
   quotes: QuoteRecord[];
   contracts: ContractRecord[];
   contentEntries: ContentEntryRecord[];
+  automationRules: AutomationRuleRecord[];
   companyInfo: CompanyInfoRecord;
 };
 
@@ -132,6 +136,7 @@ export class MemoryLodenRepository implements LodenRepository {
       quotes: [],
       contracts: [],
       contentEntries: [],
+      automationRules: [],
       companyInfo: { ...initialCompanyInfo },
       ...seed
     };
@@ -467,6 +472,57 @@ export class MemoryLodenRepository implements LodenRepository {
 
   async deleteContentEntry(id: string) {
     this.store.contentEntries = this.store.contentEntries.filter((entry) => entry.id !== id);
+  }
+
+  async listAutomationRules(filters?: { trigger?: AutomationRuleRecord["trigger"]; active?: boolean }) {
+    return this.store.automationRules
+      .filter(
+        (rule) =>
+          (!filters?.trigger || rule.trigger === filters.trigger) &&
+          (filters?.active === undefined || rule.active === filters.active)
+      )
+      .slice()
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  }
+
+  async findAutomationRuleById(id: string) {
+    return this.store.automationRules.find((rule) => rule.id === id) ?? null;
+  }
+
+  async createAutomationRule(input: CreateAutomationRuleInput) {
+    const now = new Date();
+    const rule: AutomationRuleRecord = {
+      id: randomUUID(),
+      name: input.name,
+      trigger: input.trigger,
+      action: input.action,
+      active: input.active ?? true,
+      agencyId: input.agencyId ?? null,
+      runCount: 0,
+      lastRunAt: null,
+      createdAt: now,
+      updatedAt: now
+    };
+    this.store.automationRules.push(rule);
+    return rule;
+  }
+
+  async updateAutomationRule(id: string, input: UpdateAutomationRuleInput) {
+    const rule = this.store.automationRules.find((item) => item.id === id);
+    if (!rule) throw notFound("Règle d'automatisation introuvable");
+    Object.assign(rule, input, { updatedAt: new Date() });
+    return rule;
+  }
+
+  async deleteAutomationRule(id: string) {
+    this.store.automationRules = this.store.automationRules.filter((rule) => rule.id !== id);
+  }
+
+  async recordAutomationRun(id: string) {
+    const rule = this.store.automationRules.find((item) => item.id === id);
+    if (!rule) return;
+    rule.runCount += 1;
+    rule.lastRunAt = new Date();
   }
 
   async listAgencyMembershipsByUser(userId: string) {

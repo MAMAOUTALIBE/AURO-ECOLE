@@ -37,7 +37,9 @@ export type Permission =
   | "content.manage"
   | "agency.manage"
   | "roles.manage"
-  | "audit.read";
+  | "audit.read"
+  | "automations.read"
+  | "automations.manage";
 
 // Ensemble opérationnel courant (hors plateforme : agency/roles).
 const OPERATIONS: Permission[] = [
@@ -70,7 +72,9 @@ const OPERATIONS: Permission[] = [
   "reviews.moderate",
   "users.read",
   "content.manage",
-  "audit.read"
+  "audit.read",
+  "automations.read",
+  "automations.manage"
 ];
 
 /**
@@ -176,7 +180,9 @@ export const ALL_PERMISSIONS: Permission[] = [
   "content.manage",
   "agency.manage",
   "roles.manage",
-  "audit.read"
+  "audit.read",
+  "automations.read",
+  "automations.manage"
 ];
 
 export const ALL_ROLES: UserRole[] = [

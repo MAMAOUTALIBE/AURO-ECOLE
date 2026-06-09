@@ -11,6 +11,7 @@ import type {
   QuoteRecord,
   ContractRecord,
   ContentEntryRecord,
+  AutomationRuleRecord,
   SearchResult
 } from "../domain/types";
 import { computeInvoiceTotals } from "../domain/invoice-totals";
@@ -31,6 +32,7 @@ import type {
   CreateQuoteInput,
   CreateContractInput,
   CreateContentEntryInput,
+  CreateAutomationRuleInput,
   CreateStudentInput,
   CreateUserInput,
   CreateVehicleInput,
@@ -39,7 +41,8 @@ import type {
   UpdateInvoiceInput,
   UpdateQuoteInput,
   UpdateContractInput,
-  UpdateContentEntryInput
+  UpdateContentEntryInput,
+  UpdateAutomationRuleInput
 } from "./loden-repository";
 
 export class PrismaLodenRepository implements LodenRepository {
@@ -526,6 +529,42 @@ export class PrismaLodenRepository implements LodenRepository {
 
   async deleteContentEntry(id: string) {
     await this.prisma.contentEntry.delete({ where: { id } });
+  }
+
+  async listAutomationRules(filters?: { trigger?: AutomationRuleRecord["trigger"]; active?: boolean }) {
+    const where = {
+      ...(filters?.trigger ? { trigger: filters.trigger } : {}),
+      ...(filters?.active === undefined ? {} : { active: filters.active })
+    };
+    return this.prisma.automationRule.findMany({ where: where as never, orderBy: { createdAt: "desc" } }) as Promise<
+      Awaited<ReturnType<LodenRepository["listAutomationRules"]>>
+    >;
+  }
+
+  async findAutomationRuleById(id: string) {
+    return this.prisma.automationRule.findUnique({ where: { id } }) as Promise<
+      Awaited<ReturnType<LodenRepository["findAutomationRuleById"]>>
+    >;
+  }
+
+  async createAutomationRule(input: CreateAutomationRuleInput) {
+    return this.prisma.automationRule.create({
+      data: { name: input.name, trigger: input.trigger, action: input.action, active: input.active ?? true, agencyId: input.agencyId ?? null } as never
+    }) as Promise<Awaited<ReturnType<LodenRepository["createAutomationRule"]>>>;
+  }
+
+  async updateAutomationRule(id: string, input: UpdateAutomationRuleInput) {
+    return this.prisma.automationRule.update({ where: { id }, data: input as never }) as Promise<
+      Awaited<ReturnType<LodenRepository["updateAutomationRule"]>>
+    >;
+  }
+
+  async deleteAutomationRule(id: string) {
+    await this.prisma.automationRule.delete({ where: { id } });
+  }
+
+  async recordAutomationRun(id: string) {
+    await this.prisma.automationRule.update({ where: { id }, data: { runCount: { increment: 1 }, lastRunAt: new Date() } });
   }
 
   async listAgencyMembershipsByUser(userId: string) {

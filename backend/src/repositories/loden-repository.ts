@@ -18,6 +18,9 @@ import type {
   ContractStatus,
   ContentEntryRecord,
   ContentType,
+  AutomationRuleRecord,
+  AutomationTrigger,
+  AutomationAction,
   ContactRequestRecord,
   ContactRequestStatus,
   CpfRequestRecord,
@@ -131,6 +134,21 @@ export type UpdateContentEntryInput = {
   published?: boolean;
 };
 
+export type CreateAutomationRuleInput = {
+  name: string;
+  trigger: AutomationTrigger;
+  action: AutomationAction;
+  active?: boolean;
+  agencyId?: string | null;
+};
+
+export type UpdateAutomationRuleInput = {
+  name?: string;
+  trigger?: AutomationTrigger;
+  action?: AutomationAction;
+  active?: boolean;
+};
+
 export type CreateStudentInput = {
   userId: string;
   formationId?: string | null;
@@ -225,6 +243,13 @@ export interface LodenRepository {
   createContentEntry(input: CreateContentEntryInput): Promise<ContentEntryRecord>;
   updateContentEntry(id: string, input: UpdateContentEntryInput): Promise<ContentEntryRecord>;
   deleteContentEntry(id: string): Promise<void>;
+
+  listAutomationRules(filters?: { trigger?: AutomationTrigger; active?: boolean }): Promise<AutomationRuleRecord[]>;
+  findAutomationRuleById(id: string): Promise<AutomationRuleRecord | null>;
+  createAutomationRule(input: CreateAutomationRuleInput): Promise<AutomationRuleRecord>;
+  updateAutomationRule(id: string, input: UpdateAutomationRuleInput): Promise<AutomationRuleRecord>;
+  deleteAutomationRule(id: string): Promise<void>;
+  recordAutomationRun(id: string): Promise<void>;
 
   listUsers(filters?: ListUsersFilters): Promise<UserRecord[]>;
   findUserById(id: string): Promise<UserRecord | null>;

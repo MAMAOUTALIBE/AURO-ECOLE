@@ -4,6 +4,7 @@ import type { ApiConfig } from "../../config/env";
 import type { AiProvider } from "../../ai/types";
 import type { AuthenticatedRequest } from "../../http/request-context";
 import { qualifyLead } from "../../ai/qualify";
+import { runAutomations } from "../../automations/engine";
 import { authenticate, requirePermission, resolveScopedAgencyId } from "../../middleware/auth";
 import type { LodenRepository } from "../../repositories/loden-repository";
 import { asyncHandler } from "../../shared/async-handler";
@@ -57,6 +58,7 @@ export function createLeadsRouter(repository: LodenRepository, config: ApiConfig
       const lead = await repository.createLead(body);
       void notifyNewLead(config, lead);
       void qualifyLead(aiProvider, repository, lead);
+      void runAutomations(repository, config, "LEAD_CREATED", { entityType: "Lead", entityId: lead.id, email: lead.email, name: lead.fullName });
       res.status(201).json({ data: lead });
     })
   );
