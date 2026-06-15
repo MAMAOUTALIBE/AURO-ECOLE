@@ -254,6 +254,7 @@ export interface LodenRepository {
   listUsers(filters?: ListUsersFilters): Promise<UserRecord[]>;
   findUserById(id: string): Promise<UserRecord | null>;
   findUserByEmail(email: string): Promise<UserRecord | null>;
+  findUserByResetTokenHash(hash: string): Promise<UserRecord | null>;
   createUser(input: CreateUserInput): Promise<UserRecord>;
   updateUser(id: string, input: Partial<UserRecord>): Promise<UserRecord>;
 

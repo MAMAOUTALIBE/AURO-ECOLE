@@ -115,6 +115,8 @@ export type UserRecord = {
   lastLoginAt?: Date | null;
   resetTokenHash?: string | null;
   resetTokenExpiresAt?: Date | null;
+  // Version de session : incrémentée au reset de mot de passe pour invalider les JWT antérieurs.
+  tokenVersion?: number;
   createdAt: Date;
   updatedAt: Date;
 };

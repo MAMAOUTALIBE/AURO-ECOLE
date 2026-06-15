@@ -63,11 +63,28 @@ export function LoginForm() {
       </div>
 
       <Field label="Email" error={errors.email?.message} className="mt-5">
-        <input {...register("email")} className="field-input" placeholder="prenom@email.fr" autoComplete="email" />
+        <input
+          {...register("email")}
+          className="field-input"
+          placeholder="prenom@email.fr"
+          autoComplete="email"
+          aria-invalid={errors.email ? "true" : "false"}
+        />
       </Field>
       <Field label="Mot de passe" error={errors.password?.message} className="mt-4">
-        <input {...register("password")} className="field-input" type="password" autoComplete="current-password" />
+        <input
+          {...register("password")}
+          className="field-input"
+          type="password"
+          autoComplete="current-password"
+          aria-invalid={errors.password ? "true" : "false"}
+        />
       </Field>
+      <div className="mt-2 text-right">
+        <Link className="text-sm font-semibold text-loden-700 hover:text-loden-800" href="/mot-de-passe-oublie">
+          Mot de passe oublié ?
+        </Link>
+      </div>
 
       <button
         type="submit"
@@ -79,7 +96,7 @@ export function LoginForm() {
       </button>
 
       {submitError ? (
-        <p className="mt-4 rounded-2xl bg-red-50 p-4 text-sm font-medium text-red-700">
+        <p className="mt-4 rounded-2xl bg-red-50 p-4 text-sm font-medium text-red-700" role="alert">
           {submitError}
         </p>
       ) : null}

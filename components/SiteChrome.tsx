@@ -24,8 +24,16 @@ export function SiteChrome({
 
   return (
     <>
+      <a
+        href="#contenu-principal"
+        className="sr-only z-[100] rounded-full bg-loden-700 px-5 py-3 font-semibold text-white shadow-premium focus:not-sr-only focus:fixed focus:left-4 focus:top-4"
+      >
+        Aller au contenu
+      </a>
       {header}
-      {children}
+      <div id="contenu-principal" tabIndex={-1}>
+        {children}
+      </div>
       {footer}
     </>
   );

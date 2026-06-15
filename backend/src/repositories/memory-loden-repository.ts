@@ -541,12 +541,18 @@ export class MemoryLodenRepository implements LodenRepository {
     return this.store.users.find((user) => user.email.toLowerCase() === email.toLowerCase()) ?? null;
   }
 
+  async findUserByResetTokenHash(hash: string) {
+    if (!hash) return null;
+    return this.store.users.find((user) => user.resetTokenHash === hash) ?? null;
+  }
+
   async createUser(input: CreateUserInput) {
     const now = new Date();
     const user: UserRecord = {
       ...input,
       id: randomUUID(),
       status: input.status ?? "PENDING_EMAIL",
+      tokenVersion: input.tokenVersion ?? 0,
       createdAt: now,
       updatedAt: now
     };

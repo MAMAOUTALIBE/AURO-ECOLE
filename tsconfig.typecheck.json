@@ -1,0 +1,6 @@
+{
+  "//": "Typecheck autonome et déterministe : hérite de tsconfig.json mais EXCLUT .next/types (généré par Next, source de faux négatifs TS6053 quand .next est périmé). Les types de routes générés par Next restent vérifiés par `next build`.",
+  "extends": "./tsconfig.json",
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
+  "exclude": ["node_modules", ".next"]
+}

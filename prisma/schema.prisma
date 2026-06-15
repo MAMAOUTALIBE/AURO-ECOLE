@@ -317,6 +317,9 @@ model User {
   lastLoginAt        DateTime?
   resetTokenHash     String?
   resetTokenExpiresAt DateTime?
+  // Incrémenté à chaque réinitialisation de mot de passe : invalide tous les JWT
+  // émis avant (révocation de session stateless).
+  tokenVersion       Int        @default(0)
   createdAt          DateTime   @default(now())
   updatedAt          DateTime   @updatedAt
 

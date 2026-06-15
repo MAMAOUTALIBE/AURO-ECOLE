@@ -10,6 +10,7 @@ import { publicUser } from "../http/request-context";
 type JwtPayload = {
   sub: string;
   role: UserRole;
+  tokenVersion?: number;
 };
 
 export function authenticate(repository: LodenRepository, jwtSecret: string) {
@@ -21,6 +22,11 @@ export function authenticate(repository: LodenRepository, jwtSecret: string) {
       const payload = jwt.verify(token, jwtSecret) as JwtPayload;
       const user = await repository.findUserById(payload.sub);
       if (!user || user.status !== "ACTIVE") throw unauthorized("Session invalide");
+      // Révocation de session : un token émis avant une réinitialisation de mot de passe
+      // (tokenVersion plus ancien) est rejeté.
+      if ((payload.tokenVersion ?? 0) !== (user.tokenVersion ?? 0)) {
+        throw unauthorized("Session expirée, reconnectez-vous.");
+      }
       req.user = publicUser(user);
       req.token = token;
       next();

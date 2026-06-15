@@ -10,15 +10,24 @@ import { SESSION_COOKIE, isAdminRole, verifyJwt } from "@/lib/auth-session";
 const JWT_SECRET =
   process.env.JWT_SECRET ?? (process.env.NODE_ENV === "production" ? "" : "dev-secret-change-me");
 
-// Protège le CRM /admin : la signature ET l'expiration du JWT sont vérifiées ;
-// un cookie au rôle forgé ou expiré -> redirection /connexion.
+// Protège les zones authentifiées : la signature ET l'expiration du JWT sont
+// vérifiées côté serveur (un cookie au rôle forgé ou expiré -> redirection).
+// - /espace-eleve et /espace-formateur exigent une session valide.
+// - /admin (CRM) exige en plus un rôle admin.
+// La sécurité des données reste assurée par le RBAC de l'API ; ce middleware
+// évite surtout d'afficher la coquille d'une zone protégée à un visiteur anonyme.
 export async function middleware(request: NextRequest) {
   const token = request.cookies.get(SESSION_COOKIE)?.value;
   const payload = await verifyJwt(token, JWT_SECRET);
+  const { pathname } = request.nextUrl;
 
-  if (!payload || !isAdminRole(payload.role)) {
+  const needsAdmin = pathname === "/admin" || pathname.startsWith("/admin/");
+  const hasValidSession = Boolean(payload);
+  const authorized = needsAdmin ? hasValidSession && isAdminRole(payload!.role) : hasValidSession;
+
+  if (!authorized) {
     const loginUrl = new URL("/connexion", request.url);
-    loginUrl.searchParams.set("redirect", request.nextUrl.pathname);
+    loginUrl.searchParams.set("redirect", pathname);
     return NextResponse.redirect(loginUrl);
   }
 
@@ -26,5 +35,12 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin", "/admin/:path*"]
+  matcher: [
+    "/admin",
+    "/admin/:path*",
+    "/espace-eleve",
+    "/espace-eleve/:path*",
+    "/espace-formateur",
+    "/espace-formateur/:path*"
+  ]
 };

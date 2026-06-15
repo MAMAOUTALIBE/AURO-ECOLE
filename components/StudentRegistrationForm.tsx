@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { BadgeCheck, LockKeyhole, Send } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useMemo, useState } from "react";
+import { cloneElement, isValidElement, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { phoneInputProps, phoneSchema } from "@/lib/validation";
@@ -162,7 +162,7 @@ export function StudentRegistrationForm() {
       </button>
 
       {success ? (
-        <div className="mt-4 rounded-2xl bg-loden-50 p-4 text-sm font-medium text-loden-800">
+        <div className="mt-4 rounded-2xl bg-loden-50 p-4 text-sm font-medium text-loden-800" role="status">
           <span className="flex items-center gap-2">
             <BadgeCheck className="h-5 w-5" />
             Compte créé pour {success.firstName}. Formation choisie : {success.formation}.
@@ -170,7 +170,7 @@ export function StudentRegistrationForm() {
         </div>
       ) : null}
       {submitError ? (
-        <p className="mt-4 rounded-2xl bg-red-50 p-4 text-sm font-medium text-red-700">
+        <p className="mt-4 rounded-2xl bg-red-50 p-4 text-sm font-medium text-red-700" role="alert">
           {submitError}
         </p>
       ) : null}
@@ -189,11 +189,19 @@ function Field({
   children: React.ReactNode;
   className?: string;
 }) {
+  const field =
+    error && isValidElement(children)
+      ? cloneElement(children as React.ReactElement<{ "aria-invalid"?: boolean }>, { "aria-invalid": true })
+      : children;
   return (
     <label className={`grid gap-2 ${className}`}>
       <span className="text-sm font-semibold text-loden-ink">{label}</span>
-      {children}
-      {error ? <span className="text-sm font-medium text-red-600">{error}</span> : null}
+      {field}
+      {error ? (
+        <span className="text-sm font-medium text-red-600" role="alert">
+          {error}
+        </span>
+      ) : null}
     </label>
   );
 }

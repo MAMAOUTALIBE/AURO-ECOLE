@@ -242,7 +242,11 @@ export function PaymentIntentForm() {
           Préparer le paiement sécurisé
         </button>
 
-        {state.status === "error" ? <p className="mt-4 text-sm font-semibold text-red-600">{state.message}</p> : null}
+        {state.status === "error" ? (
+          <p className="mt-4 text-sm font-semibold text-red-600" role="alert">
+            {state.message}
+          </p>
+        ) : null}
       </PaymentPanel>
 
       <aside className="rounded-3xl border border-slate-200 bg-white p-6 shadow-premium">
@@ -254,7 +258,7 @@ export function PaymentIntentForm() {
           Cette étape prépare le futur checkout : montant, élève, pack et identifiant d’intention sont déjà structurés côté API.
         </p>
         <ul className="mt-6 grid gap-3 text-sm text-loden-muted">
-          {["Aucun débit réel", "JWT élève obligatoire", "Historique visible dans l’espace élève"].map((item) => (
+          {["Aucun débit réel", "Connexion élève requise", "Historique visible dans l’espace élève"].map((item) => (
             <li key={item} className="flex gap-3">
               <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-loden-600" />
               <span>{item}</span>
@@ -263,7 +267,7 @@ export function PaymentIntentForm() {
         </ul>
 
         {state.status === "success" ? (
-          <div className="mt-7 rounded-2xl bg-loden-50 p-4">
+          <div className="mt-7 rounded-2xl bg-loden-50 p-4" role="status">
             <p className="text-sm font-semibold text-loden-ink">Intention créée</p>
             <p className="mt-2 text-sm text-loden-muted">
               Statut : {formatPaymentStatus(state.payment.status)} · Référence : {state.payment.stripePaymentIntentId}

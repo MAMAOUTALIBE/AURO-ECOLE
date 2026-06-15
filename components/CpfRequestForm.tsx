@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FileCheck2, Send } from "lucide-react";
-import { useState } from "react";
+import { cloneElement, isValidElement, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { phoneInputProps, phoneSchema } from "@/lib/validation";
@@ -133,12 +133,12 @@ export function CpfRequestForm() {
       </button>
 
       {sent ? (
-        <p className="mt-4 rounded-2xl bg-loden-50 p-4 text-sm font-medium text-loden-800">
+        <p className="mt-4 rounded-2xl bg-loden-50 p-4 text-sm font-medium text-loden-800" role="status">
           Demande CPF envoyée. LODENE revient vers toi avec une estimation claire.
         </p>
       ) : null}
       {submitError ? (
-        <p className="mt-4 rounded-2xl bg-red-50 p-4 text-sm font-medium text-red-700">
+        <p className="mt-4 rounded-2xl bg-red-50 p-4 text-sm font-medium text-red-700" role="alert">
           {submitError}
         </p>
       ) : null}
@@ -157,11 +157,19 @@ function Field({
   children: React.ReactNode;
   className?: string;
 }) {
+  const field =
+    error && isValidElement(children)
+      ? cloneElement(children as React.ReactElement<{ "aria-invalid"?: boolean }>, { "aria-invalid": true })
+      : children;
   return (
     <label className={`grid gap-2 ${className}`}>
       <span className="text-sm font-semibold text-loden-ink">{label}</span>
-      {children}
-      {error ? <span className="text-sm font-medium text-red-600">{error}</span> : null}
+      {field}
+      {error ? (
+        <span className="text-sm font-medium text-red-600" role="alert">
+          {error}
+        </span>
+      ) : null}
     </label>
   );
 }

@@ -76,9 +76,20 @@ export function createPaymentsRouter(repository: LodenRepository, config: ApiCon
   router.post(
     "/",
     requirePermission("payments.manage"),
-    asyncHandler(async (req, res) => {
+    asyncHandler(async (req: AuthenticatedRequest, res) => {
       const body = validateBody(recordSchema, req);
       const payment = await repository.createPayment(body);
+      // Traçabilité : tout encaissement manuel (espèces/chèque/virement) est journalisé
+      // — qui l'a saisi, le montant et le statut — au même titre que les changements de statut.
+      // Le montant reste celui saisi par le staff (un acompte/échéance est légitimement
+      // inférieur au prix du pack, on ne le force donc pas).
+      void repository.createAuditLog({
+        userId: req.user?.id,
+        action: "payment.create",
+        entityType: "Payment",
+        entityId: payment.id,
+        metadata: { amountCents: payment.amountCents, status: payment.status, manual: true }
+      });
       res.status(201).json({ data: payment });
     })
   );

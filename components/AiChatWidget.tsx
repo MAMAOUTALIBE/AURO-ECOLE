@@ -39,12 +39,12 @@ export function AiChatWidget() {
       const reply =
         response.ok && payload?.data?.reply
           ? payload.data.reply
-          : payload?.error?.message ?? "Désolé, je ne peux pas répondre pour le moment. Vous pouvez nous joindre au 01 84 80 12 45.";
+          : payload?.error?.message ?? "Désolé, je ne peux pas répondre pour le moment. Vous pouvez passer par notre formulaire de contact.";
       setMessages((current) => [...current, { role: "assistant", content: reply }]);
     } catch {
       setMessages((current) => [
         ...current,
-        { role: "assistant", content: "Le service est momentanément indisponible. Réessayez ou appelez le 01 84 80 12 45." }
+        { role: "assistant", content: "Le service est momentanément indisponible. Réessayez ou passez par notre formulaire de contact." }
       ]);
     } finally {
       setLoading(false);
@@ -113,7 +113,7 @@ export function AiChatWidget() {
       <button
         type="button"
         onClick={() => setOpen((value) => !value)}
-        className="focus-ring fixed bottom-24 right-5 z-30 inline-flex h-14 w-14 items-center justify-center rounded-full bg-loden-500 text-white shadow-premium transition hover:bg-loden-600"
+        className="focus-ring fixed bottom-24 right-5 z-30 inline-flex h-14 w-14 items-center justify-center rounded-full bg-loden-700 text-white shadow-premium transition hover:bg-loden-800"
         aria-label={open ? "Fermer l'assistant LODENE" : "Ouvrir l'assistant LODENE"}
       >
         {open ? <X className="h-6 w-6" /> : <Sparkles className="h-6 w-6" />}

@@ -7,6 +7,10 @@ const envSchema = z.object({
   JWT_SECRET: z.string().min(16).default("dev-secret-change-me"),
   JWT_EXPIRES_IN: z.string().default("7d"),
   CORS_ORIGIN: z.string().default("http://localhost:3000,http://127.0.0.1:3000"),
+  // URL publique du front, utilisée pour construire les liens des emails
+  // (réinitialisation de mot de passe, vérification d'adresse). À défaut, on
+  // retombe sur la première origine CORS, puis sur localhost.
+  APP_BASE_URL: z.string().url().optional(),
   API_USE_MEMORY: z
     .string()
     .optional()
@@ -74,8 +78,10 @@ export function loadConfig(env = process.env) {
     }
   }
 
+  const corsOrigins = parsed.CORS_ORIGIN.split(",").map((origin) => origin.trim()).filter(Boolean);
   return {
     ...parsed,
-    corsOrigins: parsed.CORS_ORIGIN.split(",").map((origin) => origin.trim()).filter(Boolean)
+    corsOrigins,
+    appBaseUrl: parsed.APP_BASE_URL ?? corsOrigins[0] ?? "http://localhost:3000"
   };
 }

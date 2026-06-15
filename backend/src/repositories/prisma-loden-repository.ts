@@ -593,6 +593,11 @@ export class PrismaLodenRepository implements LodenRepository {
     return this.prisma.user.findUnique({ where: { email: email.toLowerCase() } });
   }
 
+  async findUserByResetTokenHash(hash: string) {
+    if (!hash) return null;
+    return this.prisma.user.findFirst({ where: { resetTokenHash: hash } });
+  }
+
   async createUser(input: CreateUserInput) {
     return this.prisma.user.create({
       data: {
