@@ -13,13 +13,13 @@ const COLLAPSE_KEY = "loden_crm_sidebar_collapsed";
 function Brand({ collapsed }: { collapsed?: boolean }) {
   return (
     <Link href="/admin" className="focus-ring flex items-center gap-2.5 rounded-xl" aria-label="LODENE CRM — Tableau de bord">
-      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-loden-500 to-loden-700 text-base font-black text-white shadow-soft">
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white text-base font-black text-red-700 shadow-soft">
         L
       </span>
       {!collapsed ? (
         <span className="leading-none">
-          <span className="block text-base font-extrabold tracking-tight text-loden-ink">LODENE</span>
-          <span className="block text-[10px] font-semibold uppercase tracking-[0.2em] text-loden-500">CRM</span>
+          <span className="block text-base font-extrabold tracking-tight text-white">LODENE</span>
+          <span className="block text-[10px] font-semibold uppercase tracking-[0.2em] text-red-200">CRM</span>
         </span>
       ) : null}
     </Link>
@@ -48,20 +48,20 @@ export function CrmShell({ children }: { children: ReactNode }) {
       {/* Sidebar desktop */}
       <aside
         className={cn(
-          "sticky top-0 hidden h-screen shrink-0 flex-col border-r border-slate-200 bg-white transition-[width] duration-300 lg:flex",
+          "sticky top-0 hidden h-screen shrink-0 flex-col border-r border-red-800 bg-red-700 transition-[width] duration-300 lg:flex",
           collapsed ? "w-[76px]" : "w-64"
         )}
       >
-        <div className={cn("flex h-16 items-center border-b border-slate-100", collapsed ? "justify-center px-2" : "px-4")}>
+        <div className={cn("flex h-16 items-center border-b border-red-600/40", collapsed ? "justify-center px-2" : "px-4")}>
           <Brand collapsed={collapsed} />
         </div>
         <SidebarNav collapsed={collapsed} />
-        <div className="border-t border-slate-100 p-3">
+        <div className="border-t border-red-600/40 p-3">
           <button
             type="button"
             onClick={toggleCollapsed}
             className={cn(
-              "focus-ring flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-loden-muted transition hover:bg-slate-50 hover:text-loden-ink",
+              "focus-ring flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-red-100 transition hover:bg-red-600 hover:text-white",
               collapsed && "justify-center px-0"
             )}
             aria-label={collapsed ? "Étendre le menu" : "Réduire le menu"}
@@ -81,13 +81,13 @@ export function CrmShell({ children }: { children: ReactNode }) {
             aria-label="Fermer le menu"
             onClick={() => setMobileOpen(false)}
           />
-          <div className="absolute left-0 top-0 flex h-full w-72 flex-col border-r border-slate-200 bg-white shadow-premium">
-            <div className="flex h-16 items-center justify-between border-b border-slate-100 px-4">
+          <div className="absolute left-0 top-0 flex h-full w-72 flex-col border-r border-red-800 bg-red-700 shadow-premium">
+            <div className="flex h-16 items-center justify-between border-b border-red-600/40 px-4">
               <Brand />
               <button
                 type="button"
                 onClick={() => setMobileOpen(false)}
-                className="focus-ring flex h-9 w-9 items-center justify-center rounded-lg text-loden-muted hover:bg-slate-100"
+                className="focus-ring flex h-9 w-9 items-center justify-center rounded-lg text-red-100 hover:bg-red-600 hover:text-white"
                 aria-label="Fermer le menu"
               >
                 <X className="h-5 w-5" aria-hidden="true" />
