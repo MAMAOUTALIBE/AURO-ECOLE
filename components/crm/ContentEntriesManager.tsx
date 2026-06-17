@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { FileText, Newspaper, Pencil, Plus, Search, Trash2, X } from "lucide-react";
+import { ExternalLink, FileText, ImagePlus, Newspaper, Pencil, Plus, Search, Trash2, X } from "lucide-react";
 import { Badge, Card, EmptyState, Pagination, SectionHeader, Skeleton } from "@/components/crm/ui";
+import { MediaPickerModal } from "@/components/crm/site/MediaPickerModal";
 
 const PAGE_SIZE = 10;
 const slugify = (s: string) =>
@@ -16,11 +17,15 @@ type Entry = {
   slug: string;
   excerpt?: string | null;
   body: string;
+  coverImageUrl?: string | null;
+  category?: string | null;
+  seoTitle?: string | null;
+  seoDescription?: string | null;
   published: boolean;
   publishedAt?: string | null;
   updatedAt: string;
 };
-const EMPTY = { title: "", slug: "", excerpt: "", body: "", published: false };
+const EMPTY = { title: "", slug: "", excerpt: "", body: "", coverImageUrl: "", category: "", seoTitle: "", seoDescription: "", published: false };
 
 export function ContentEntriesManager({ type }: { type: ContentType }) {
   const isArticle = type === "ARTICLE";
@@ -36,6 +41,7 @@ export function ContentEntriesManager({ type }: { type: ContentType }) {
   const [showForm, setShowForm] = useState(false);
   const [busy, setBusy] = useState(false);
   const [form, setForm] = useState(EMPTY);
+  const [pickerOpen, setPickerOpen] = useState(false);
 
   const load = () => {
     setLoading(true);
@@ -69,7 +75,17 @@ export function ContentEntriesManager({ type }: { type: ContentType }) {
   };
   const openEdit = (e: Entry) => {
     setEditingId(e.id);
-    setForm({ title: e.title, slug: e.slug, excerpt: e.excerpt ?? "", body: e.body, published: e.published });
+    setForm({
+      title: e.title,
+      slug: e.slug,
+      excerpt: e.excerpt ?? "",
+      body: e.body,
+      coverImageUrl: e.coverImageUrl ?? "",
+      category: e.category ?? "",
+      seoTitle: e.seoTitle ?? "",
+      seoDescription: e.seoDescription ?? "",
+      published: e.published
+    });
     setShowForm(true);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -86,8 +102,12 @@ export function ContentEntriesManager({ type }: { type: ContentType }) {
       ...(editingId ? {} : { type }),
       title: form.title.trim(),
       slug,
-      ...(form.excerpt.trim() ? { excerpt: form.excerpt.trim() } : {}),
+      excerpt: form.excerpt.trim(),
       body: form.body.trim(),
+      coverImageUrl: form.coverImageUrl.trim(),
+      category: form.category.trim(),
+      seoTitle: form.seoTitle.trim(),
+      seoDescription: form.seoDescription.trim(),
       published: form.published
     };
     try {
@@ -137,6 +157,7 @@ export function ContentEntriesManager({ type }: { type: ContentType }) {
 
   return (
     <div className="space-y-6">
+      <MediaPickerModal open={pickerOpen} onClose={() => setPickerOpen(false)} onSelect={(media) => setForm((prev) => ({ ...prev, coverImageUrl: media.url }))} />
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="relative min-w-[220px] max-w-sm flex-1">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" aria-hidden="true" />
@@ -167,12 +188,45 @@ export function ContentEntriesManager({ type }: { type: ContentType }) {
             }
           />
           <div className="mt-4 grid gap-3">
-            <input className="field-input" placeholder="Titre" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} aria-label="Titre" />
-            <input className="field-input" placeholder="Slug (auto si vide)" value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} aria-label="Slug" />
-            {isArticle ? (
+            <div className="grid gap-3 sm:grid-cols-2">
+              <input className="field-input" placeholder="Titre" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} aria-label="Titre" />
+              <input className="field-input" placeholder="Slug (auto si vide)" value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} aria-label="Slug" />
               <input className="field-input" placeholder="Extrait (résumé court)" value={form.excerpt} onChange={(e) => setForm({ ...form, excerpt: e.target.value })} aria-label="Extrait" />
-            ) : null}
-            <textarea className="field-input min-h-40" placeholder="Contenu" value={form.body} onChange={(e) => setForm({ ...form, body: e.target.value })} aria-label="Contenu" />
+              <input className="field-input" placeholder="Catégorie" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} aria-label="Catégorie" />
+            </div>
+
+            <div className="grid gap-2 rounded-2xl border border-slate-200 bg-loden-pearl/40 p-3">
+              <span className="text-sm font-semibold text-loden-ink">Image de couverture</span>
+              <div className="flex flex-wrap items-center gap-3">
+                {form.coverImageUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={form.coverImageUrl} alt="Aperçu" className="h-20 w-32 rounded-xl border border-slate-200 object-cover" />
+                ) : (
+                  <div className="flex h-20 w-32 items-center justify-center rounded-xl border border-dashed border-slate-300 text-xs text-loden-muted">Aucune</div>
+                )}
+                <div className="flex flex-col gap-2">
+                  <button type="button" onClick={() => setPickerOpen(true)} className="focus-ring inline-flex items-center gap-1.5 rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-loden-700 hover:bg-loden-50">
+                    <ImagePlus className="h-4 w-4" aria-hidden="true" /> Choisir dans la médiathèque
+                  </button>
+                  {form.coverImageUrl ? (
+                    <button type="button" onClick={() => setForm({ ...form, coverImageUrl: "" })} className="focus-ring inline-flex items-center gap-1 text-xs font-semibold text-rose-600 hover:underline">
+                      <X className="h-3.5 w-3.5" aria-hidden="true" /> Retirer
+                    </button>
+                  ) : null}
+                </div>
+              </div>
+            </div>
+
+            <textarea className="field-input min-h-40" placeholder="Contenu (séparez les paragraphes par une ligne vide)" value={form.body} onChange={(e) => setForm({ ...form, body: e.target.value })} aria-label="Contenu" />
+
+            <details className="rounded-2xl border border-slate-200 bg-white p-3">
+              <summary className="cursor-pointer text-sm font-semibold text-loden-ink">Référencement (SEO)</summary>
+              <div className="mt-3 grid gap-3">
+                <input className="field-input" placeholder="Titre SEO (balise title)" value={form.seoTitle} onChange={(e) => setForm({ ...form, seoTitle: e.target.value })} aria-label="Titre SEO" />
+                <textarea className="field-input min-h-20" placeholder="Méta description" value={form.seoDescription} onChange={(e) => setForm({ ...form, seoDescription: e.target.value })} aria-label="Méta description" />
+              </div>
+            </details>
+
             <label className="flex items-center gap-2 text-sm font-medium text-loden-ink">
               <input type="checkbox" checked={form.published} onChange={(e) => setForm({ ...form, published: e.target.checked })} /> Publié (visible sur le site)
             </label>
@@ -209,6 +263,11 @@ export function ContentEntriesManager({ type }: { type: ContentType }) {
                       <td className="px-5 py-3"><Badge variant={e.published ? "success" : "neutral"} dot>{e.published ? "Publié" : "Brouillon"}</Badge></td>
                       <td className="px-5 py-3">
                         <div className="flex items-center gap-2">
+                          {e.published ? (
+                            <a href={`${isArticle ? "/blog" : "/pages"}/${e.slug}`} target="_blank" rel="noreferrer" className="focus-ring inline-flex items-center gap-1 rounded-lg border border-slate-200 px-2 py-1 text-xs font-semibold text-loden-700 hover:bg-loden-50" aria-label="Voir sur le site">
+                              <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" /> Voir
+                            </a>
+                          ) : null}
                           <button type="button" onClick={() => openEdit(e)} className="focus-ring rounded-lg border border-slate-200 px-2 py-1 text-xs font-semibold text-loden-700 hover:bg-loden-50">Modifier</button>
                           <button type="button" onClick={() => togglePublish(e)} className="focus-ring rounded-lg border border-slate-200 px-2 py-1 text-xs font-semibold text-loden-muted hover:bg-slate-50">{e.published ? "Dépublier" : "Publier"}</button>
                           <button type="button" onClick={() => remove(e)} aria-label="Supprimer" className="focus-ring inline-flex items-center rounded-lg border border-rose-200 px-2 py-1 text-xs font-semibold text-rose-600 hover:bg-rose-50"><Trash2 className="h-3.5 w-3.5" aria-hidden="true" /></button>

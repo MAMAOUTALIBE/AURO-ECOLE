@@ -12,3 +12,11 @@ coverage
 .env.production
 
 .backup-assets
+
+# Artefacts de tests e2e
+test-results
+playwright-report
+
+# Médias uploadés via le CMS
+public/uploads/*
+!public/uploads/.gitkeep

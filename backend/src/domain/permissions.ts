@@ -35,6 +35,12 @@ export type Permission =
   | "users.read"
   | "users.manage"
   | "content.manage"
+  | "content.publish"
+  | "settings.manage"
+  | "nav.manage"
+  | "seo.manage"
+  | "media.read"
+  | "media.manage"
   | "agency.manage"
   | "roles.manage"
   | "audit.read"
@@ -72,9 +78,29 @@ const OPERATIONS: Permission[] = [
   "reviews.moderate",
   "users.read",
   "content.manage",
+  "content.publish",
+  "settings.manage",
+  "nav.manage",
+  "seo.manage",
+  "media.read",
+  "media.manage",
   "audit.read",
   "automations.read",
   "automations.manage"
+];
+
+// Permissions accordées au rôle ÉDITEUR de contenu (CMS du site public).
+const CONTENT_EDITOR: Permission[] = [
+  "dashboard.read",
+  "content.manage",
+  "content.publish",
+  "settings.manage",
+  "nav.manage",
+  "seo.manage",
+  "media.read",
+  "media.manage",
+  "reviews.read",
+  "audit.read"
 ];
 
 /**
@@ -138,7 +164,8 @@ export const ROLE_PERMISSIONS: Partial<Record<UserRole, Permission[]>> = {
     "leads.read",
     "contacts.read"
   ],
-  MONITEUR: ["dashboard.read", "bookings.read", "bookings.manage", "students.read", "exams.read", "reviews.read"]
+  MONITEUR: ["dashboard.read", "bookings.read", "bookings.manage", "students.read", "exams.read", "reviews.read"],
+  EDITEUR: [...CONTENT_EDITOR]
 };
 
 export function hasPermission(role: UserRole, permission: Permission): boolean {
@@ -178,6 +205,12 @@ export const ALL_PERMISSIONS: Permission[] = [
   "users.read",
   "users.manage",
   "content.manage",
+  "content.publish",
+  "settings.manage",
+  "nav.manage",
+  "seo.manage",
+  "media.read",
+  "media.manage",
   "agency.manage",
   "roles.manage",
   "audit.read",
@@ -194,6 +227,7 @@ export const ALL_ROLES: UserRole[] = [
   "SECRETAIRE",
   "COMPTABLE",
   "MONITEUR",
+  "EDITEUR",
   "ELEVE",
   "VISITEUR"
 ];

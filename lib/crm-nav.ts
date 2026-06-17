@@ -15,8 +15,10 @@ import {
   HelpCircle,
   Image as ImageIcon,
   LayoutDashboard,
+  LayoutTemplate,
   Mail,
   MapPin,
+  Menu,
   Megaphone,
   MessageSquare,
   Newspaper,
@@ -105,14 +107,22 @@ export const crmNav: NavSection[] = [
     ]
   },
   {
+    title: "Site public",
+    icon: LayoutTemplate,
+    items: [
+      { label: "Hero accueil", href: "/admin/site/hero", icon: LayoutTemplate, status: "live" },
+      { label: "Menu & navigation", href: "/admin/site/navigation", icon: Menu, status: "live" },
+      { label: "Médiathèque", href: "/admin/medias", icon: ImageIcon, status: "live" }
+    ]
+  },
+  {
     title: "Contenu",
     icon: FileText,
     items: [
       { label: "FAQ", href: "/admin/site/faq", icon: HelpCircle, status: "live" },
       { label: "Avis", href: "/admin/avis", icon: Star, status: "live" },
       { label: "Pages", href: "/admin/pages", icon: FileText, status: "live" },
-      { label: "Blog", href: "/admin/blog", icon: Newspaper, status: "live" },
-      { label: "Médias", href: "/admin/bientot?m=Médias", icon: ImageIcon, status: "soon" }
+      { label: "Blog", href: "/admin/blog", icon: Newspaper, status: "live" }
     ]
   },
   {

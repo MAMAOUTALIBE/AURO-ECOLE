@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { AppSection } from "@/components/AppSection";
@@ -14,6 +15,20 @@ import { SimulatorCard } from "@/components/SimulatorCard";
 import { TestimonialCard } from "@/components/TestimonialCard";
 import { TrustProofSection } from "@/components/TrustProofSection";
 import { formations, instructors, pricingPlans, testimonials } from "@/data/site";
+
+export const metadata: Metadata = {
+  title: "LODENE Auto-École | Permis B, VTC, SST & formations à Conflans",
+  description:
+    "Auto-école agréée à Conflans-Sainte-Honorine : permis B manuel/automatique, conduite accompagnée, stage accéléré, VTC, SST et formations professionnelles. Financement CPF, planning flexible, suivi personnalisé.",
+  alternates: { canonical: "/" },
+  openGraph: {
+    title: "LODENE Auto-École — Passe ton permis avec une école nouvelle génération",
+    description:
+      "Permis B, VTC, SST et formations pro à Conflans-Sainte-Honorine. CPF, réservation en ligne et accompagnement premium.",
+    url: "/",
+    type: "website"
+  }
+};
 
 export default function HomePage() {
   return (

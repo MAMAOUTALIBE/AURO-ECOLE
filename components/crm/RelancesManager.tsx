@@ -86,7 +86,7 @@ export function RelancesManager() {
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
         <KpiCard icon={BellRing} label="Relances en retard" value={loading ? "" : due.length} loading={loading} accent="rose" />
         <KpiCard icon={CalendarClock} label="Relances à venir" value={loading ? "" : upcoming.length} loading={loading} accent="amber" />
         <KpiCard icon={Target} label="Total à suivre" value={loading ? "" : toFollow.length} loading={loading} accent="brand" />

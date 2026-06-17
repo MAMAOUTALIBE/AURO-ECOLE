@@ -8,9 +8,17 @@ import { qualifyLead } from "./qualify";
 import type { AiProvider, AiTool } from "./types";
 
 function euros(cents: number) {
-  // Aucun tarif officiel confirmé -> "sur devis" tant que le prix n'est pas renseigné.
+  // "sur devis" tant que le prix public n'est pas renseigné.
   return cents > 0 ? `${Math.round(cents / 100)} €` : "sur devis";
 }
+
+const CATEGORY_LABELS: Record<string, string> = {
+  AUTO_ECOLE: "Auto-école / Permis B",
+  VTC: "VTC",
+  SST: "SST",
+  LOGISTIQUE_SECURITE: "Logistique & sécurité",
+  CACES: "CACES"
+};
 
 export type ToolContext = {
   repository: LodenRepository;
@@ -53,13 +61,21 @@ export const publicTools: ToolEntry[] = [
       type: "function",
       function: {
         name: "get_formations",
-        description: "Liste les formations au permis proposées par LODENE (titre, type de boîte, durée, prix indicatif, éligibilité CPF).",
+        description:
+          "Liste les formations proposées par LODENE (permis B, VTC, SST, logistique & sécurité) : titre, formule, catégorie, durée, prix public ou « sur devis », éligibilité CPF.",
         parameters: { type: "object", properties: {}, additionalProperties: false }
       }
     },
     handler: async (_args, ctx) => {
       const formations = await ctx.repository.listFormations();
-      return formations.map((f) => ({ titre: f.title, type: f.mode, duree: f.durationLabel, prix: euros(f.priceCents), cpf: f.cpfEligible }));
+      // Confidentialité : on n'expose que des champs publics (jamais internalPriceCents).
+      return formations.map((f) => ({
+        titre: f.subtitle ? `${f.title} — ${f.subtitle}` : f.title,
+        categorie: CATEGORY_LABELS[f.productLine ?? "AUTO_ECOLE"] ?? f.productLine,
+        duree: f.durationLabel,
+        prix: f.quoteOnly ? "sur devis" : `${euros(f.priceCents)}${f.priceCents > 0 ? ` ${f.taxMode ?? "TTC"}` : ""}`,
+        cpf: f.cpfEligible
+      }));
     }
   },
   {

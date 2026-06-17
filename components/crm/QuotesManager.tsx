@@ -160,7 +160,7 @@ export function QuotesManager() {
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
         <KpiCard icon={FileSpreadsheet} label="Devis acceptés" value={loading ? "" : euros(kpis.accepted)} loading={loading} accent="emerald" />
         <KpiCard icon={FileSpreadsheet} label="En attente (envoyés)" value={loading ? "" : euros(kpis.pending)} loading={loading} accent="amber" />
         <KpiCard icon={FileSpreadsheet} label="Brouillons" value={loading ? "" : kpis.drafts} loading={loading} accent="brand" />

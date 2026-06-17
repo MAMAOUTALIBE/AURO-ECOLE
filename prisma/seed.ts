@@ -11,6 +11,7 @@ import {
   initialMeetingPoints,
   initialPricingPlans,
   initialReviews,
+  initialSiteSettings,
   initialUsers
 } from "../backend/src/data/initial-data";
 
@@ -110,36 +111,29 @@ async function seedUsers() {
 
 async function seedCatalog() {
   for (const formation of initialFormations) {
+    const data = {
+      title: formation.title,
+      subtitle: formation.subtitle ?? null,
+      description: formation.description,
+      mode: formation.mode,
+      productLine: formation.productLine ?? "AUTO_ECOLE",
+      priceCents: formation.priceCents,
+      taxMode: formation.taxMode ?? "TTC",
+      quoteOnly: formation.quoteOnly ?? false,
+      internalPriceCents: formation.internalPriceCents ?? null,
+      durationLabel: formation.durationLabel,
+      defaultHours: formation.defaultHours ?? null,
+      imageUrl: formation.imageUrl,
+      options: (formation.options as Prisma.InputJsonValue) ?? undefined,
+      tags: formation.tags ?? [],
+      cpfEligible: formation.cpfEligible,
+      cpfStatus: formation.cpfStatus ?? "NON_RENSEIGNE",
+      active: formation.active
+    };
     await prisma.formation.upsert({
       where: { slug: formation.slug },
-      update: {
-        title: formation.title,
-        description: formation.description,
-        mode: formation.mode,
-        productLine: formation.productLine ?? "AUTO_ECOLE",
-        priceCents: formation.priceCents,
-        durationLabel: formation.durationLabel,
-        defaultHours: formation.defaultHours,
-        imageUrl: formation.imageUrl,
-        options: formation.options as Prisma.InputJsonValue,
-        cpfEligible: formation.cpfEligible,
-        active: formation.active
-      },
-      create: {
-        id: formation.id,
-        title: formation.title,
-        slug: formation.slug,
-        description: formation.description,
-        mode: formation.mode,
-        productLine: formation.productLine ?? "AUTO_ECOLE",
-        priceCents: formation.priceCents,
-        durationLabel: formation.durationLabel,
-        defaultHours: formation.defaultHours,
-        imageUrl: formation.imageUrl,
-        options: formation.options as Prisma.InputJsonValue,
-        cpfEligible: formation.cpfEligible,
-        active: formation.active
-      }
+      update: data,
+      create: { id: formation.id, slug: formation.slug, ...data }
     });
   }
 
@@ -280,6 +274,18 @@ async function seedContent() {
   });
 }
 
+// Réglages dynamiques du site : on crée la valeur par défaut si absente, sans jamais
+// écraser une valeur déjà éditée depuis le CMS.
+async function seedSiteSettings() {
+  for (const setting of initialSiteSettings) {
+    await prisma.siteSetting.upsert({
+      where: { key: setting.key },
+      update: {},
+      create: { key: setting.key, value: setting.value as Prisma.InputJsonValue }
+    });
+  }
+}
+
 async function main() {
   await seedAgencies();
   await seedUsers();
@@ -287,6 +293,7 @@ async function main() {
   await seedCatalog();
   await seedOperationsData();
   await seedContent();
+  await seedSiteSettings();
 }
 
 main()

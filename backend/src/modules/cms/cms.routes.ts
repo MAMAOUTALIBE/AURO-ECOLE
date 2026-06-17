@@ -19,6 +19,10 @@ const createSchema = z.object({
   slug: z.string().trim().min(2).regex(/^[a-z0-9-]+$/, "Slug invalide (a-z, 0-9, -)"),
   excerpt: z.string().trim().optional(),
   body: z.string().trim().min(10),
+  coverImageUrl: z.string().trim().max(400).optional(),
+  category: z.string().trim().max(80).optional(),
+  seoTitle: z.string().trim().max(160).optional(),
+  seoDescription: z.string().trim().max(320).optional(),
   published: z.boolean().optional()
 });
 
@@ -27,11 +31,39 @@ const updateSchema = z.object({
   slug: z.string().trim().min(2).regex(/^[a-z0-9-]+$/).optional(),
   excerpt: z.string().trim().optional(),
   body: z.string().trim().min(10).optional(),
+  coverImageUrl: z.string().trim().max(400).optional(),
+  category: z.string().trim().max(80).optional(),
+  seoTitle: z.string().trim().max(160).optional(),
+  seoDescription: z.string().trim().max(320).optional(),
   published: z.boolean().optional()
+});
+
+const publicListQuery = z.object({
+  type: z.enum(["PAGE", "ARTICLE"]).optional()
 });
 
 export function createCmsRouter(repository: LodenRepository, config: ApiConfig) {
   const router = Router();
+
+  // --- Routes PUBLIQUES (avant le guard d'authentification) : contenus publiés. ---
+  router.get(
+    "/public",
+    asyncHandler(async (req, res) => {
+      const query = validateQuery(publicListQuery, req);
+      res.json({ data: await repository.listContentEntries({ type: query.type, published: true }) });
+    })
+  );
+
+  router.get(
+    "/public/:slug",
+    asyncHandler(async (req, res) => {
+      const entry = await repository.findContentEntryBySlug(String(req.params.slug));
+      if (!entry || !entry.published) throw notFound("Contenu introuvable");
+      res.json({ data: entry });
+    })
+  );
+
+  // --- Routes ADMIN (protégées) ---
   router.use(authenticate(repository, config.JWT_SECRET), requirePermission("content.manage"));
 
   router.get(

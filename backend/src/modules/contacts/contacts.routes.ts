@@ -7,6 +7,7 @@ import { authenticate, requirePermission } from "../../middleware/auth";
 import type { LodenRepository } from "../../repositories/loden-repository";
 import { asyncHandler } from "../../shared/async-handler";
 import { notifyNewLead } from "../../shared/mailer";
+import { publicFormLimiter } from "../../shared/rate-limit";
 import { emailSchema, phoneSchema, validateBody } from "../../shared/validation";
 
 const contactSchema = z.object({
@@ -27,6 +28,7 @@ export function createContactsRouter(repository: LodenRepository, config: ApiCon
 
   router.post(
     "/",
+    publicFormLimiter(config),
     asyncHandler(async (req, res) => {
       const body = validateBody(contactSchema, req);
       const contact = await repository.createContactRequest(body);

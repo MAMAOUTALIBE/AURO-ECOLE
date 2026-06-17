@@ -12,7 +12,8 @@ const poles: { key: "ALL" | ProductLine; label: string }[] = [
   { key: "ALL", label: "Tous les pôles" },
   { key: "AUTO_ECOLE", label: productLineLabels.AUTO_ECOLE },
   { key: "VTC", label: productLineLabels.VTC },
-  { key: "CACES", label: productLineLabels.CACES }
+  { key: "SST", label: productLineLabels.SST },
+  { key: "LOGISTIQUE_SECURITE", label: productLineLabels.LOGISTIQUE_SECURITE }
 ];
 
 export function FormationExplorer() {

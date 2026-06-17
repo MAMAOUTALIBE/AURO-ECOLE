@@ -46,9 +46,9 @@ export function AutomationsOverview() {
 
   return (
     <div className="space-y-6">
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <KpiCard icon={Workflow} label="Règles configurées" value={loading ? "—" : rules.length} accent="brand" loading={loading} />
-        <KpiCard icon={CheckCircle2} label="Règles actives" value={loading ? "—" : active.length} accent="emerald" loading={loading} hint={loading ? undefined : `${rules.length - active.length} en pause`} />
+        <KpiCard icon={CheckCircle2} label="Règles actives" value={loading ? "—" : active.length} accent="emerald" loading={loading} subLabel={loading ? undefined : `${rules.length - active.length} en pause`} />
         <KpiCard icon={PlayCircle} label="Exécutions totales" value={loading ? "—" : totalRuns} accent="indigo" loading={loading} />
         <KpiCard icon={Activity} label="Dernière exécution" value={loading ? "—" : fmt(lastRun)} accent="sky" loading={loading} />
       </div>

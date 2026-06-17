@@ -1,47 +1,129 @@
 function euros(cents: number) {
-  // Aucun tarif officiel confirmé -> "sur devis" tant que le prix n'est pas renseigné.
-  return cents > 0 ? `${Math.round(cents / 100)} €` : "sur devis";
+  return `${Math.round(cents / 100).toLocaleString("fr-FR")} €`;
 }
 
+/** Prix public d'une formation : « sur devis » si quoteOnly ou prix non renseigné, sinon « X € TTC/HT ». */
+function formationPrice(f: PublicPromptFormation): string {
+  if (f.quoteOnly || !f.priceCents || f.priceCents <= 0) return "sur devis";
+  return `${euros(f.priceCents)} ${f.taxMode ?? "TTC"}`;
+}
+
+function cpfMention(f: PublicPromptFormation): string {
+  switch (f.cpfStatus) {
+    case "ELIGIBLE":
+      return ", éligible CPF";
+    case "POSSIBLE":
+      return ", CPF possible selon éligibilité";
+    case "A_CONFIRMER":
+      return ", CPF à confirmer";
+    default:
+      return f.cpfEligible ? ", CPF possible selon éligibilité" : "";
+  }
+}
+
+const CATEGORY_LABELS: Record<string, string> = {
+  AUTO_ECOLE: "Auto-école — Permis B",
+  VTC: "Formation chauffeur VTC",
+  SST: "SST — Sauveteur Secouriste du Travail",
+  LOGISTIQUE_SECURITE: "Logistique & sécurité",
+  CACES: "CACES — Logistique & sécurité"
+};
+
+export type PublicPromptFormation = {
+  title: string;
+  subtitle?: string | null;
+  mode: string;
+  productLine?: string;
+  durationLabel: string;
+  priceCents: number;
+  taxMode?: string;
+  quoteOnly?: boolean;
+  cpfEligible: boolean;
+  cpfStatus?: string;
+};
+
+export type PublicPromptCompany = {
+  brandName?: string;
+  address?: string;
+  phone?: string;
+  email?: string;
+  hours?: string;
+};
+
 export type PublicPromptContext = {
-  formations: { title: string; mode: string; durationLabel: string; priceCents: number; cpfEligible: boolean }[];
+  formations: PublicPromptFormation[];
   pricingPlans: { title: string; priceCents: number; features: string[] }[];
   agencies: { name: string; address?: string | null }[];
   contactPhone: string;
+  company?: PublicPromptCompany;
 };
+
+/** Liste des formations groupées par catégorie, avec prix publics. */
+function formationsByCategory(formations: PublicPromptFormation[]): string {
+  const order = ["AUTO_ECOLE", "VTC", "SST", "LOGISTIQUE_SECURITE", "CACES"];
+  const groups = new Map<string, PublicPromptFormation[]>();
+  for (const f of formations) {
+    const key = f.productLine ?? "AUTO_ECOLE";
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key)!.push(f);
+  }
+  const sortedKeys = [...groups.keys()].sort((a, b) => {
+    const ia = order.indexOf(a);
+    const ib = order.indexOf(b);
+    return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib);
+  });
+  return sortedKeys
+    .map((key) => {
+      const label = CATEGORY_LABELS[key] ?? key;
+      const lines = groups
+        .get(key)!
+        .map((f) => {
+          const name = f.subtitle ? `${f.title} — ${f.subtitle}` : f.title;
+          return `  - ${name} (${f.durationLabel}, ${formationPrice(f)}${cpfMention(f)})`;
+        })
+        .join("\n");
+      return `${label} :\n${lines}`;
+    })
+    .join("\n\n");
+}
 
 /** Assistant du site public — commercial, rassurant, ancré sur les données réelles. */
 export function buildPublicSystemPrompt(ctx: PublicPromptContext): string {
-  const formations = ctx.formations
-    .map((f) => `- ${f.title} (${f.mode.toLowerCase()}, ${f.durationLabel}, ${euros(f.priceCents)}${f.cpfEligible ? ", éligible CPF" : ""})`)
+  const formations = formationsByCategory(ctx.formations);
+  const c = ctx.company;
+  const phone = c?.phone || ctx.contactPhone;
+  const coordonnees = [
+    c?.address ? `- Adresse : ${c.address}` : null,
+    phone ? `- Téléphone : ${phone}` : null,
+    c?.email ? `- Email : ${c.email}` : null,
+    c?.hours ? `- Horaires : ${c.hours}` : null
+  ]
+    .filter(Boolean)
     .join("\n");
-  const plans = ctx.pricingPlans.map((p) => `- ${p.title} : ${euros(p.priceCents)} (${p.features.slice(0, 3).join(", ")})`).join("\n");
-  const agencies = ctx.agencies.map((a) => `- ${a.name}${a.address ? ` — ${a.address}` : ""}`).join("\n");
 
   return [
-    "Tu es l'assistant virtuel de LODENE Auto-École. Tu parles toujours en français.",
+    `Tu es l'assistant virtuel de ${c?.brandName || "LODENE"}, auto-école et centre de formation professionnelle à Conflans-Sainte-Honorine. Tu parles toujours en français.`,
     "Ton : clair, professionnel, rassurant, commercial mais jamais agressif.",
     "",
-    "Ton rôle : aider les visiteurs à choisir leur formation au permis, expliquer le CPF, les tarifs et le financement, orienter vers la bonne agence et encourager l'inscription.",
+    "Ton rôle : aider les visiteurs à choisir leur formation (permis B, VTC, SST, logistique & sécurité), communiquer les tarifs PUBLICS, expliquer le financement, orienter vers la bonne formule et encourager la prise de contact ou l'inscription.",
     "",
     "Règles impératives :",
     "- Réponses COURTES et utiles (2 à 5 phrases maximum).",
-    "- N'invente JAMAIS un tarif, une durée, une date ou une disponibilité qui n'est pas dans les informations ci-dessous.",
-    "- Les tarifs sont communiqués sur devis personnalisé : ne donne jamais de montant chiffré, invite à demander un devis.",
-    "- Si tu n'es pas sûr ou si la question dépasse ces informations (dossier précis, disponibilité d'un créneau, situation personnelle), invite poliment à contacter un conseiller via la page Contact du site" + (ctx.contactPhone ? ` (téléphone ${ctx.contactPhone})` : "") + ".",
+    "- Tu PEUX communiquer les tarifs publics listés ci-dessous (avec la mention TTC ou HT).",
+    "- Pour une formation marquée « sur devis », ne donne pas de montant : explique que le tarif dépend du besoin (matériel, nombre de participants, lieu, durée) et propose une demande de devis.",
+    "- N'invente JAMAIS un tarif, une durée, une date ou une disponibilité absents des informations ci-dessous.",
+    "- Ne communique JAMAIS d'information interne : coût réel, marge, ratio, remise non publiée, stratégie commerciale, notes internes, données d'élèves/prospects, clés ou configuration technique.",
+    "- Pour un dossier précis, une disponibilité de créneau ou une situation personnelle, invite à contacter un conseiller" + (phone ? ` (téléphone ${phone})` : " via la page Contact du site") + ".",
     "- Pour s'inscrire, oriente vers la page d'inscription du site.",
-    "- N'donne pas de conseils juridiques ou médicaux.",
+    "- Ne donne pas de conseils juridiques ou médicaux.",
     "",
-    "Formations disponibles :",
+    "Coordonnées LODENE :",
+    coordonnees || "- (voir la page Contact du site)",
+    "",
+    "Formations disponibles (tarifs publics) :",
     formations || "- (non communiquées)",
     "",
-    "Packs / tarifs :",
-    plans || "- (non communiqués)",
-    "",
-    "Agences :",
-    agencies || "- (non communiquées)",
-    "",
-    "Financement : CPF accepté pour les formations éligibles, paiement en plusieurs fois (3× / 4×) possible. Pour vérifier l'éligibilité CPF d'un dossier précis, oriente vers un conseiller."
+    "Financement : CPF possible selon l'éligibilité du dossier pour certaines formations ; aides LABAZ (jeunes 15-25 ans), OPCO/entreprises selon situation ; paiement en plusieurs fois (3× / 4×) possible sur les formules permis. Ne promets jamais un financement « 100 % financé » : invite à vérifier l'éligibilité avec un conseiller."
   ].join("\n");
 }
 

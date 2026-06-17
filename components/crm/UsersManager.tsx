@@ -24,11 +24,12 @@ const ROLE_LABELS: Record<string, string> = {
   SECRETAIRE: "Secrétaire",
   COMPTABLE: "Comptable",
   MONITEUR: "Moniteur",
+  EDITEUR: "Éditeur de contenu",
   ELEVE: "Élève",
   VISITEUR: "Visiteur"
 };
 // Rôles assignables via ce module (pas de SUPER_ADMIN ni ELEVE/VISITEUR).
-const ASSIGNABLE = ["DIRECTEUR", "RESPONSABLE_AGENCE", "RESPONSABLE_PEDAGOGIQUE", "ADMIN", "SECRETAIRE", "COMPTABLE", "MONITEUR"];
+const ASSIGNABLE = ["DIRECTEUR", "RESPONSABLE_AGENCE", "RESPONSABLE_PEDAGOGIQUE", "ADMIN", "SECRETAIRE", "COMPTABLE", "MONITEUR", "EDITEUR"];
 const STATUS_META: Record<string, { label: string; variant: BadgeVariant }> = {
   ACTIVE: { label: "Actif", variant: "success" },
   SUSPENDED: { label: "Suspendu", variant: "warning" },

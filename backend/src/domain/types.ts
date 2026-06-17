@@ -7,8 +7,31 @@ export type UserRole =
   | "SECRETAIRE"
   | "COMPTABLE"
   | "MONITEUR"
+  | "EDITEUR"
   | "ELEVE"
   | "VISITEUR";
+
+// Réglage dynamique du site public (clé/valeur JSON), piloté depuis le CMS.
+export type SiteSettingRecord = {
+  key: string;
+  value: unknown;
+  updatedAt: Date;
+};
+
+// Média uploadé depuis le CMS (image, PDF…), réutilisable (formations, hero, blocs…).
+export type MediaRecord = {
+  id: string;
+  filename: string;
+  originalName: string;
+  url: string;
+  mimeType: string;
+  sizeBytes: number;
+  altText: string;
+  category?: string | null;
+  createdById?: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+};
 
 export type AgencyRecord = {
   id: string;
@@ -150,7 +173,9 @@ export type InstructorRecord = {
   active: boolean;
 };
 
-export type ProductLine = "AUTO_ECOLE" | "VTC" | "CACES";
+export type ProductLine = "AUTO_ECOLE" | "VTC" | "CACES" | "SST" | "LOGISTIQUE_SECURITE";
+export type TaxMode = "TTC" | "HT";
+export type CpfStatus = "NON_RENSEIGNE" | "NON_ELIGIBLE" | "POSSIBLE" | "A_CONFIRMER" | "ELIGIBLE";
 
 // Informations administratives de l'entreprise (singleton, éditable via le CMS).
 // Seuls les champs officiellement vérifiés sont renseignés ; le reste reste vide.
@@ -182,15 +207,22 @@ export type FormationRecord = {
   id: string;
   title: string;
   slug: string;
+  subtitle?: string | null;
   description: string;
   mode: "MANUEL" | "AUTOMATIQUE" | "MIXTE" | "CODE";
   productLine?: ProductLine;
   priceCents: number;
+  taxMode?: TaxMode;
+  quoteOnly?: boolean;
+  // Prix interne (base de calcul de devis) — JAMAIS exposé côté public ni agent IA public.
+  internalPriceCents?: number | null;
   durationLabel: string;
   defaultHours?: number | null;
   imageUrl?: string | null;
   options?: unknown;
+  tags?: string[];
   cpfEligible: boolean;
+  cpfStatus?: CpfStatus;
   active: boolean;
 };
 
@@ -353,6 +385,10 @@ export type ContentEntryRecord = {
   slug: string;
   excerpt?: string | null;
   body: string;
+  coverImageUrl?: string | null;
+  category?: string | null;
+  seoTitle?: string | null;
+  seoDescription?: string | null;
   published: boolean;
   publishedAt?: Date | null;
   agencyId?: string | null;

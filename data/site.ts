@@ -24,7 +24,9 @@ export const navItems = [
   { href: "/", label: "Accueil" },
   { href: "/formations", label: "Formations" },
   { href: "/tarifs", label: "Tarifs" },
+  { href: "/financement", label: "Financement" },
   { href: "/cpf", label: "CPF" },
+  { href: "/faq", label: "FAQ" },
   { href: "/a-propos", label: "À propos" },
   { href: "/avis", label: "Avis" },
   { href: "/contact", label: "Contact" }
@@ -55,12 +57,13 @@ export const localSeoPages = [
 // RÈGLE : ne JAMAIS afficher une donnée non vérifiée — les champs non confirmés
 // (téléphone, WhatsApp, horaires, email) restent VIDES et l'UI masque les lignes vides.
 export const contactInfo = {
-  phone: "",
+  phone: "06 60 32 50 87",
   whatsapp: "",
   address: "30 rue Pierre Le Guen, 78700 Conflans-Sainte-Honorine, France",
   mapQuery: "30 rue Pierre Le Guen, 78700 Conflans-Sainte-Honorine",
-  hours: "",
-  email: ""
+  hours:
+    "Bureau : mar & mer 10h-12h / 14h-18h · jeu & ven 10h-12h / 14h-20h · sam 9h-12h / 13h-17h (fermé lun & dim). Cours pratiques : 7j/7, 8h-20h sur réservation.",
+  email: "ae@lodene.fr"
 };
 
 // Données officielles vérifiées de l'entreprise (source de repli ; éditable via CMS CompanyInfo).
@@ -181,177 +184,284 @@ export const diagnosticSteps = [
   }
 ];
 
-// Pôle métier d'une formation. Par défaut AUTO_ECOLE (permis) ; VTC et CACES
-// couvrent les centres de formation professionnelle.
-export type ProductLine = "AUTO_ECOLE" | "VTC" | "CACES";
+// Pôle métier d'une formation. Par défaut AUTO_ECOLE (permis) ; VTC, SST et
+// LOGISTIQUE_SECURITE couvrent le centre de formation professionnelle.
+// CACES reste pour compatibilité (sous-ensemble de la logistique & sécurité).
+export type ProductLine = "AUTO_ECOLE" | "VTC" | "CACES" | "SST" | "LOGISTIQUE_SECURITE";
 
 export type Formation = {
   title: string;
   slug: string;
+  subtitle?: string;
   mode: "Manuel" | "Automatique" | "Mixte" | "Code";
   productLine?: ProductLine;
   duration: string;
   price: number;
+  quoteOnly?: boolean;
   cpf: boolean;
   tags: string[];
   description: string;
+  imageUrl?: string;
 };
 
 // Libellés d'affichage des pôles (menu, filtres, fil d'ariane).
 export const productLineLabels: Record<ProductLine, string> = {
   AUTO_ECOLE: "Auto-école",
   VTC: "VTC",
-  CACES: "CACES"
+  CACES: "CACES",
+  SST: "SST",
+  LOGISTIQUE_SECURITE: "Logistique & sécurité"
 };
 
+// Catalogue public (SSR/SEO/accueil) — aligné sur la base (backend/src/data/initial-data.ts).
+// Prix publics en euros (0 = « sur devis »). Aucun coût/marge interne ici.
 export const formations: Formation[] = [
+  // ——— Pôle Auto-école / Permis B ———
   {
-    title: "Permis B manuel",
-    slug: "permis-b-manuel",
-    mode: "Manuel",
-    duration: "20 h minimum",
-    price: 0,
+    title: "Permis B automatique",
+    slug: "permis-b-auto-declic",
+    subtitle: "Formule Déclic Auto — 13 leçons",
+    mode: "Automatique",
+    productLine: "AUTO_ECOLE",
+    duration: "13 leçons",
+    price: 924,
     cpf: true,
-    tags: ["Débutant", "CPF", "Manuel"],
-    description: "La formation complète pour apprendre à conduire en boîte manuelle avec un suivi précis jusqu'à l'examen."
+    tags: ["Permis B", "Boîte automatique", "Rapide", "CPF possible"],
+    description: "Parcours court et confortable pour apprendre à conduire en boîte automatique et avancer efficacement vers l'examen."
   },
   {
     title: "Permis B automatique",
-    slug: "permis-b-automatique",
+    slug: "permis-b-auto-maitrise",
+    subtitle: "Formule Maîtrise Auto — 20 leçons",
     mode: "Automatique",
-    duration: "13 h minimum",
-    price: 0,
+    productLine: "AUTO_ECOLE",
+    duration: "20 leçons",
+    price: 1344,
     cpf: true,
-    tags: ["Automatique", "CPF", "Rapide"],
-    description: "Un parcours plus court et confortable pour obtenir ton permis sur boîte automatique."
+    tags: ["Permis B", "Boîte automatique", "CPF possible"],
+    description: "Une formule complète en boîte automatique pour progresser sereinement avec davantage d'heures de conduite individuelles."
+  },
+  {
+    title: "Permis B manuel",
+    slug: "permis-b-manuel-essentiel",
+    subtitle: "Formule Essentiel Manuelle — 20 leçons",
+    mode: "Manuel",
+    productLine: "AUTO_ECOLE",
+    duration: "20 leçons",
+    price: 1344,
+    cpf: true,
+    tags: ["Permis B", "Boîte manuelle", "CPF possible"],
+    description: "Formation complète pour apprendre à conduire en boîte manuelle avec un accompagnement pédagogique jusqu'à l'examen."
+  },
+  {
+    title: "Permis B manuel",
+    slug: "permis-b-manuel-confort",
+    subtitle: "Formule Confort Manuelle — 30 leçons",
+    mode: "Manuel",
+    productLine: "AUTO_ECOLE",
+    duration: "30 leçons",
+    price: 1944,
+    cpf: true,
+    tags: ["Permis B", "Boîte manuelle", "Plus d'heures", "CPF possible"],
+    description: "Une formule renforcée en boîte manuelle avec davantage d'heures de conduite pour aborder l'examen en confiance."
+  },
+  {
+    title: "Stage accéléré code et conduite",
+    slug: "stage-accelere",
+    subtitle: "Parcours intensif",
+    mode: "Mixte",
+    productLine: "AUTO_ECOLE",
+    duration: "2 à 4 semaines",
+    price: 0,
+    quoteOnly: true,
+    cpf: true,
+    tags: ["Permis B", "Accéléré", "Planning prioritaire"],
+    description: "Un parcours intensif pour avancer plus vite sur le code et la conduite avec une planification resserrée et prioritaire."
+  },
+  {
+    title: "Passerelle BVA vers boîte manuelle",
+    slug: "passerelle-bva-manuelle",
+    subtitle: "Complément de formation",
+    mode: "Manuel",
+    productLine: "AUTO_ECOLE",
+    duration: "Formation courte",
+    price: 0,
+    quoteOnly: true,
+    cpf: false,
+    tags: ["Permis B", "Passerelle", "Boîte manuelle"],
+    description: "La passerelle permet d'évoluer d'un permis boîte automatique vers la boîte manuelle après le délai réglementaire applicable."
   },
   {
     title: "Conduite accompagnée",
     slug: "conduite-accompagnee",
+    subtitle: "AAC dès 15 ans",
     mode: "Manuel",
+    productLine: "AUTO_ECOLE",
     duration: "Dès 15 ans",
     price: 0,
+    quoteOnly: true,
     cpf: false,
-    tags: ["Jeune conducteur", "Famille", "Manuel"],
-    description: "Un accompagnement complet pour gagner en expérience avant l'examen final."
-  },
-  {
-    title: "Permis accéléré",
-    slug: "permis-accelere",
-    mode: "Mixte",
-    duration: "2 à 4 semaines",
-    price: 0,
-    cpf: true,
-    tags: ["Accéléré", "CPF", "Planning prioritaire"],
-    description: "Un programme condensé avec créneaux prioritaires pour passer le permis rapidement."
-  },
-  {
-    title: "Code en ligne",
-    slug: "code-en-ligne",
-    mode: "Code",
-    duration: "Accès illimité",
-    price: 0,
-    cpf: false,
-    tags: ["Code", "Mobile", "Révisions"],
-    description: "Des séries de code, examens blancs et statistiques de progression accessibles depuis l'app."
-  },
-  {
-    title: "Stage de code",
-    slug: "stage-code",
-    mode: "Code",
-    duration: "3 jours",
-    price: 0,
-    cpf: false,
-    tags: ["Stage", "Code", "Intensif"],
-    description: "Une préparation intensive en petit groupe pour sécuriser ton passage à l'examen du code."
-  },
-  {
-    title: "Annulation permis",
-    slug: "annulation-permis",
-    mode: "Mixte",
-    duration: "Sur diagnostic",
-    price: 0,
-    cpf: true,
-    tags: ["Remise à niveau", "CPF", "Diagnostic"],
-    description: "Un plan de reprise ciblé après invalidation, suspension ou annulation du permis."
-  },
-  {
-    title: "Perfectionnement",
-    slug: "perfectionnement",
-    mode: "Mixte",
-    duration: "À la carte",
-    price: 0,
-    cpf: false,
-    tags: ["Remise à niveau", "Confiance", "À la carte"],
-    description: "Des séances pour reprendre confiance, conduire en ville ou préparer un trajet spécifique."
+    tags: ["Permis B", "Jeune conducteur", "Famille"],
+    description: "Accompagnement dès 15 ans pour gagner en expérience de conduite avant le passage de l'examen."
   },
   // ——— Pôle VTC ———
   {
-    title: "Formation VTC — Carte professionnelle",
-    slug: "formation-vtc",
+    title: "Formation VTC",
+    slug: "vtc-distanciel-eco",
+    subtitle: "Distanciel Éco",
     mode: "Mixte",
     productLine: "VTC",
-    duration: "Préparation examen + théorie",
-    price: 0,
-    cpf: true,
-    tags: ["VTC", "CPF", "Reconversion", "Carte pro"],
-    description:
-      "Préparation complète à l'examen VTC : réglementation T3P, sécurité routière, gestion, anglais et développement commercial pour obtenir ta carte professionnelle de chauffeur."
-  },
-  {
-    title: "VTC — Formation continue (recyclage)",
-    slug: "vtc-formation-continue",
-    mode: "Mixte",
-    productLine: "VTC",
-    duration: "14 h sur 2 jours",
-    price: 0,
+    duration: "Accès plateforme 24h/24",
+    price: 399,
     cpf: false,
-    tags: ["VTC", "Recyclage", "Obligatoire 5 ans"],
-    description:
-      "Stage de formation continue obligatoire tous les 5 ans pour renouveler ta carte VTC : mises à jour réglementaires, sécurité et relation client."
-  },
-  // ——— Pôle CACES ———
-  {
-    title: "CACES R489 — Chariots élévateurs",
-    slug: "caces-r489-chariots",
-    mode: "Mixte",
-    productLine: "CACES",
-    duration: "3 à 5 jours",
-    price: 0,
-    cpf: true,
-    tags: ["CACES", "R489", "CPF", "Logistique"],
-    description:
-      "Certificat d'aptitude à la conduite en sécurité des chariots élévateurs (catégories 1 à 5) : théorie, pratique et passage du test CACES R489."
+    tags: ["VTC", "Distanciel", "CMA"],
+    description: "L'accès essentiel pour préparer les épreuves théoriques VTC avec une plateforme en ligne 24h/24, les 7 modules réglementaires et l'aide au dossier CMA."
   },
   {
-    title: "CACES R486 — Nacelles élévatrices (PEMP)",
-    slug: "caces-r486-nacelles",
+    title: "Formation VTC",
+    slug: "vtc-intermediaire-light",
+    subtitle: "Intermédiaire Light",
     mode: "Mixte",
-    productLine: "CACES",
-    duration: "2 à 4 jours",
-    price: 0,
-    cpf: true,
-    tags: ["CACES", "R486", "CPF", "Nacelle"],
-    description:
-      "Formation à la conduite des plateformes élévatrices mobiles de personnes (catégories A et B) avec passage du test CACES R486."
+    productLine: "VTC",
+    duration: "Distanciel + 2 visios collectives",
+    price: 599,
+    cpf: false,
+    tags: ["VTC", "Distanciel", "Coaching"],
+    description: "Un parcours théorique renforcé avec 2 sessions de révision collectives en visioconférence et un module gestion/tarification."
   },
   {
-    title: "CACES R482 — Engins de chantier",
-    slug: "caces-r482-engins-chantier",
+    title: "Formation VTC",
+    slug: "vtc-confort-pro",
+    subtitle: "Confort Pro",
     mode: "Mixte",
-    productLine: "CACES",
-    duration: "3 à 5 jours",
+    productLine: "VTC",
+    duration: "Préparation complète sans conduite",
+    price: 899,
+    cpf: false,
+    tags: ["VTC", "Théorie + pratique", "Carte pro"],
+    description: "Une préparation complète théorie + épreuve pratique (hors conduite) avec module vidéo, simulations de repérage et assistance carte pro VTC."
+  },
+  {
+    title: "Formation VTC",
+    slug: "vtc-excellence",
+    subtitle: "Excellence Haute Exigence",
+    mode: "Mixte",
+    productLine: "VTC",
+    duration: "Pack clé en main avec conduite",
+    price: 2499,
+    cpf: false,
+    tags: ["VTC", "Clé en main", "Conduite incluse", "Véhicule examen"],
+    description: "La formule clé en main : plateforme complète, frais CMA inclus, 10 h de conduite, véhicule double-commande à l'examen et coaching jusqu'à la carte pro."
+  },
+  // ——— Pôle SST ———
+  {
+    title: "SST Initial",
+    slug: "sst-initial",
+    subtitle: "Sauveteur Secouriste du Travail",
+    mode: "Mixte",
+    productLine: "SST",
+    duration: "14 h / 2 jours",
+    price: 120,
+    cpf: false,
+    tags: ["SST", "Sécurité", "Inter & intra-entreprises"],
+    description: "Formation complète pour acquérir les gestes de premiers secours au travail et participer à la prévention des risques. 120 € HT/pers. (inter) ou 1 190 € HT/groupe (intra)."
+  },
+  {
+    title: "MAC SST / Recyclage",
+    slug: "mac-sst",
+    subtitle: "Maintien et actualisation des compétences",
+    mode: "Mixte",
+    productLine: "SST",
+    duration: "7 h / 1 jour",
+    price: 75,
+    cpf: false,
+    tags: ["SST", "Recyclage", "Inter & intra-entreprises"],
+    description: "Formation de maintien et d'actualisation des compétences SST pour les titulaires d'un certificat à renouveler. 75 € HT/pers. (inter) ou 690 € HT/groupe (intra)."
+  },
+  // ——— Pôle Logistique & sécurité (intra-entreprise, sur devis) ———
+  {
+    title: "Chariots élévateurs — R489",
+    slug: "chariots-elevateurs-r489",
+    subtitle: "Conduite en sécurité",
+    mode: "Mixte",
+    productLine: "LOGISTIQUE_SECURITE",
+    duration: "2 à 3 jours selon niveau",
     price: 0,
-    cpf: true,
-    tags: ["CACES", "R482", "CPF", "BTP"],
-    description:
-      "Formation à la conduite en sécurité des engins de chantier (pelles, chargeuses, mini-pelles…) avec passage du test CACES R482."
+    quoteOnly: true,
+    cpf: false,
+    tags: ["Logistique", "R489", "Intra-entreprise", "Sur devis"],
+    description: "Formation à la conduite en sécurité des chariots élévateurs (catégories 1, 2, 3, 5) : théorie, pratique, vérifications et chargement/déchargement, sur site client."
+  },
+  {
+    title: "Gerbeur accompagnant — R485",
+    slug: "gerbeur-r485",
+    subtitle: "Conduite en sécurité",
+    mode: "Mixte",
+    productLine: "LOGISTIQUE_SECURITE",
+    duration: "1 à 2 jours",
+    price: 0,
+    quoteOnly: true,
+    cpf: false,
+    tags: ["Logistique", "R485", "Intra-entreprise", "Sur devis"],
+    description: "Formation à l'utilisation en sécurité du gerbeur accompagnant, avec mise en pratique sur site client."
+  },
+  {
+    title: "Nacelles / PEMP — R486",
+    slug: "nacelles-pemp-r486",
+    subtitle: "Travaux en hauteur",
+    mode: "Mixte",
+    productLine: "LOGISTIQUE_SECURITE",
+    duration: "2 à 3 jours",
+    price: 0,
+    quoteOnly: true,
+    cpf: false,
+    tags: ["Travaux en hauteur", "R486", "Intra-entreprise", "Sur devis"],
+    description: "Formation à l'utilisation réglementaire des plateformes élévatrices mobiles de personnel : prévention des chutes, EPI et stabilisation de l'engin."
+  },
+  {
+    title: "Pont roulant — R484",
+    slug: "pont-roulant-r484",
+    subtitle: "Commande au sol ou télécommande",
+    mode: "Mixte",
+    productLine: "LOGISTIQUE_SECURITE",
+    duration: "1 à 2 jours",
+    price: 0,
+    quoteOnly: true,
+    cpf: false,
+    tags: ["Industrie", "R484", "Intra-entreprise", "Sur devis"],
+    description: "Formation à l'utilisation du pont roulant avec commande au sol ou télécommande, incluant l'évaluation pratique sur site."
+  },
+  {
+    title: "Échafaudage roulant — R457",
+    slug: "echafaudage-roulant-r457",
+    subtitle: "Montage, démontage, utilisation",
+    mode: "Mixte",
+    productLine: "LOGISTIQUE_SECURITE",
+    duration: "1 jour",
+    price: 0,
+    quoteOnly: true,
+    cpf: false,
+    tags: ["BTP", "R457", "Intra-entreprise", "Sur devis"],
+    description: "Formation au montage, démontage et utilisation en sécurité d'un échafaudage roulant, avec rappel des règles de conformité."
+  },
+  {
+    title: "Terberg / tracteur de parc",
+    slug: "terberg-tracteur-parc",
+    subtitle: "Manœuvres en environnement logistique",
+    mode: "Mixte",
+    productLine: "LOGISTIQUE_SECURITE",
+    duration: "1 à 2 jours",
+    price: 0,
+    quoteOnly: true,
+    cpf: false,
+    tags: ["Logistique", "Parc", "Intra-entreprise", "Sur devis"],
+    description: "Formation à la prise en main et aux manœuvres de tracteur de parc, adaptée aux environnements logistiques et industriels."
   }
 ];
 
 // Contenu éditorial des pages d'atterrissage des pôles professionnels (SEO + conversion).
 export const poleLandings: Record<
-  "VTC" | "CACES",
+  "VTC" | "SST" | "LOGISTIQUE_SECURITE",
   {
     eyebrow: string;
     title: string;
@@ -363,67 +473,80 @@ export const poleLandings: Record<
   VTC: {
     eyebrow: "Centre de formation VTC",
     title: "Deviens chauffeur VTC avec une formation reconnue",
-    text: "Préparation à l'examen, carte professionnelle et financement CPF : un parcours clair pour te lancer dans le transport de personnes.",
+    text: "Préparation à l'examen CMA, carte professionnelle et accompagnement administratif : un parcours clair pour te lancer dans le transport de personnes.",
     intro:
-      "Le métier de chauffeur VTC attire de nombreuses reconversions. LODENE te prépare à l'examen T3P et t'accompagne jusqu'à l'obtention de ta carte professionnelle, avec un financement CPF possible.",
+      "Le métier de chauffeur VTC attire de nombreuses reconversions. LODENE te prépare aux épreuves officielles VTC (gérées par la Chambre de Métiers et de l'Artisanat) avec 4 formules, de la préparation distancielle au pack clé en main avec conduite et véhicule d'examen.",
     benefits: [
-      { title: "Examen T3P préparé", text: "Réglementation, sécurité routière, gestion, anglais et relation client : tous les modules de l'examen VTC sont couverts." },
-      { title: "Financement CPF & reconversion", text: "Formation éligible au CPF et pensée pour les projets de reconversion professionnelle." },
-      { title: "Carte professionnelle", text: "Accompagnement administratif jusqu'à l'obtention de la carte VTC et l'immatriculation." },
-      { title: "Formation continue", text: "Le stage de recyclage obligatoire tous les 5 ans est assuré dans nos locaux." }
+      { title: "Examen CMA préparé", text: "Réglementation, sécurité routière, gestion, anglais et relation client : tous les modules théoriques de l'examen VTC sont couverts." },
+      { title: "4 formules dès 399 €", text: "Distanciel Éco, Intermédiaire Light, Confort Pro ou Excellence Haute Exigence (clé en main, jusqu'à 2 499 €)." },
+      { title: "Carte professionnelle", text: "Accompagnement administratif jusqu'à l'obtention de la carte VTC (formules Confort Pro et Excellence)." },
+      { title: "Conduite & véhicule d'examen", text: "La formule Excellence inclut 10 h de conduite et le véhicule double-commande le jour de l'examen pratique." }
     ]
   },
-  CACES: {
-    eyebrow: "Centre de formation CACES",
-    title: "Obtiens ton CACES et conduis en sécurité",
-    text: "Chariots, nacelles, engins de chantier : des formations certifiantes finançables par le CPF ou par ton entreprise.",
+  SST: {
+    eyebrow: "Sauveteur Secouriste du Travail",
+    title: "Formez vos salariés au SST avec LODENE",
+    text: "SST Initial (14 h) et MAC SST (7 h) : des sessions inter-entreprises ou intra-entreprise pour la prévention des risques au travail.",
     intro:
-      "Le CACES atteste de ta capacité à conduire un engin en sécurité. LODENE propose des formations conformes aux recommandations de la CNAM, avec théorie, pratique et passage du test par un testeur certifié.",
+      "Le SST permet à vos salariés de maîtriser les gestes de premiers secours et de participer à la prévention des risques professionnels. LODENE assure le SST Initial et le recyclage (MAC SST), en inter-entreprises ou directement chez vous.",
     benefits: [
-      { title: "Recommandations CNAM", text: "Formations conformes aux recommandations R489 (chariots), R486 (nacelles) et R482 (engins de chantier)." },
-      { title: "Théorie + pratique", text: "Sessions en petit groupe avec passage du test CACES par un testeur certifié indépendant." },
-      { title: "Financement entreprise / OPCO", text: "Prise en charge possible par le CPF, l'employeur ou l'OPCO selon ta situation." },
-      { title: "Sécurité au travail", text: "Réduction des risques et mise en conformité réglementaire pour les employeurs." }
+      { title: "SST Initial — 14 h / 2 jours", text: "Gestes de premiers secours, réaction face à un malaise ou un accident, utilisation d'un défibrillateur. 120 € HT/personne en inter." },
+      { title: "MAC SST — 7 h / 1 jour", text: "Maintien et actualisation des compétences pour prolonger la validité du certificat. 75 € HT/personne en inter." },
+      { title: "Sessions intra-entreprise", text: "Formation sur votre site pour des groupes : 1 190 € HT (SST Initial) ou 690 € HT (MAC SST) par groupe." },
+      { title: "Prévention des risques", text: "Un atout conformité pour l'employeur et la sécurité des équipes au quotidien." }
+    ]
+  },
+  LOGISTIQUE_SECURITE: {
+    eyebrow: "Logistique, manutention & sécurité",
+    title: "Formez vos équipes à la conduite en sécurité",
+    text: "Chariots, gerbeur, nacelles, pont roulant, échafaudage, tracteur de parc : des formations intra-entreprise proposées sur devis.",
+    intro:
+      "LODENE forme vos équipes à l'utilisation en sécurité des équipements de logistique et de manutention, directement sur votre site. Le tarif est établi sur devis car il dépend du matériel, du nombre de participants, du lieu et des objectifs.",
+    benefits: [
+      { title: "Chariots & gerbeur (R489 / R485)", text: "Conduite en sécurité des chariots élévateurs et du gerbeur accompagnant, théorie et pratique." },
+      { title: "Travaux en hauteur (R486 / R457)", text: "Nacelles / PEMP et échafaudage roulant : prévention des chutes, EPI et règles de conformité." },
+      { title: "Industrie & parc (R484 / Terberg)", text: "Pont roulant et tracteur de parc adaptés aux environnements industriels et logistiques." },
+      { title: "Sur site & sur devis", text: "Sessions intra-entreprise adaptées à vos effectifs, votre matériel et votre financement (OPCO/entreprise)." }
     ]
   }
 };
 
 export const pricingPlans = [
   {
-    id: "plan-permis-b",
-    slug: "permis-b",
-    title: "Permis B",
-    price: 0,
-    badge: "Permis B",
-    features: ["20 h de conduite", "Code inclus", "Planning flexible", "Suivi élève"],
+    id: "plan-declic-auto",
+    slug: "declic-auto-13",
+    title: "Déclic Auto — 13 leçons",
+    price: 924,
+    badge: "Boîte auto",
+    features: ["Pack administratif & Code", "Évaluation de départ", "13 h de conduite", "Accompagnement examen", "Suivi Drive inclus"],
     cta: "Choisir ce pack"
   },
   {
-    id: "plan-permis-accelere",
-    slug: "permis-accelere",
-    title: "Permis accéléré",
-    price: 0,
-    badge: "Permis accéléré",
-    features: ["Parcours 2 à 4 semaines", "Créneaux prioritaires", "Coach référent", "Présentation examen"],
-    cta: "Démarrer vite"
+    id: "plan-essentiel-manuelle",
+    slug: "essentiel-manuelle-20",
+    title: "Essentiel Manuelle — 20 leçons",
+    price: 1344,
+    badge: "Le plus choisi",
+    features: ["Pack administratif & Code", "Évaluation de départ", "20 h de conduite", "Accompagnement examen", "Suivi Drive inclus"],
+    cta: "Choisir ce pack"
   },
   {
-    id: "plan-boite-automatique",
-    slug: "boite-automatique",
-    title: "Boîte automatique",
-    price: 0,
-    badge: "Boîte automatique",
-    features: ["13 h de conduite", "Voitures récentes", "Conversion possible", "CPF compatible"],
+    id: "plan-vtc-distanciel-eco",
+    slug: "vtc-distanciel-eco",
+    title: "VTC Distanciel Éco",
+    price: 399,
+    badge: "VTC",
+    features: ["Plateforme VTC 24h/24", "7 modules réglementaires", "Aide au dossier CMA", "Examens blancs corrigés"],
     cta: "Voir le pack"
   },
   {
-    id: "plan-cpf",
-    slug: "pack-cpf",
-    title: "Pack CPF",
-    price: 0,
-    badge: "CPF",
-    features: ["Montage dossier", "Conseiller dédié", "Devis personnalisé", "Reste à charge optimisé"],
-    cta: "Vérifier mon CPF"
+    id: "plan-sst-initial",
+    slug: "sst-initial-inter",
+    title: "SST Initial",
+    price: 120,
+    badge: "Entreprises",
+    features: ["14 h / 2 jours", "120 € HT / personne (inter)", "1 190 € HT / groupe (intra)", "Certificat SST selon validation"],
+    cta: "Demander une session"
   }
 ];
 
@@ -495,45 +618,68 @@ export const values = [
 export type FaqEntry = {
   question: string;
   answer: string;
-  category: "CPF" | "Tarifs" | "Inscription" | "Formation" | "Examen";
+  category: "CPF" | "Tarifs" | "Inscription" | "Formation" | "Examen" | "Permis B" | "VTC" | "SST" | "Logistique & sécurité";
 };
 
 export const faqEntries: FaqEntry[] = [
   {
-    question: "Le permis peut-il être financé avec le CPF ?",
+    question: "Le permis B est-il finançable avec le CPF ?",
     answer:
-      "Oui, plusieurs formations LODENE sont compatibles CPF. Un conseiller vérifie ton besoin, ton solde disponible, le reste à charge éventuel et les pièces nécessaires avant validation du dossier.",
+      "Le financement CPF peut être possible selon votre situation et l'éligibilité de votre dossier. Un conseiller LODENE peut vous accompagner dans la vérification.",
     category: "CPF"
   },
   {
-    question: "Combien coûte le permis B chez LODENE ?",
+    question: "Proposez-vous le permis en boîte automatique ?",
     answer:
-      "Le permis B comprend les heures de conduite, le code et le suivi élève. Le tarif est communiqué sur devis personnalisé, selon ton niveau et ton objectif.",
+      "Oui. LODENE propose des formules boîte automatique : Déclic Auto (13 leçons, 924 € TTC) et Maîtrise Auto (20 leçons, 1 344 € TTC).",
+    category: "Permis B"
+  },
+  {
+    question: "Quel est le tarif d'une heure de conduite ?",
+    answer: "L'heure de conduite (boîte auto ou manuelle) est affichée à 60 € TTC. Le pack administratif & Code en ligne est à 59 € TTC.",
     category: "Tarifs"
+  },
+  {
+    question: "Puis-je faire un stage accéléré ?",
+    answer:
+      "Oui, LODENE propose des parcours intensifs selon les disponibilités du planning et votre niveau. Le tarif est établi sur devis.",
+    category: "Permis B"
   },
   {
     question: "Peut-on payer en plusieurs fois ?",
     answer:
-      "Oui, LODENE propose des solutions de paiement fractionné selon le dossier, en complément du paiement comptant, du CPF ou d'un reste à charge estimé.",
+      "Oui, LODENE propose le paiement en plusieurs fois (3× / 4×) sur les formules permis, en complément du paiement comptant ou d'un financement CPF.",
     category: "Tarifs"
+  },
+  {
+    question: "À quoi prépare la formation VTC ?",
+    answer:
+      "Elle prépare aux épreuves théoriques et pratiques de l'examen VTC gérées par la Chambre de Métiers et de l'Artisanat (CMA). Nos formules vont de 399 € à 2 499 €.",
+    category: "VTC"
+  },
+  {
+    question: "Les frais d'inscription CMA sont-ils inclus pour le VTC ?",
+    answer:
+      "Les frais CMA sont inclus uniquement dans la formule Excellence Haute Exigence (2 499 €). Les autres formules préparent à l'examen, hors frais d'inscription CMA.",
+    category: "VTC"
+  },
+  {
+    question: "Combien de temps dure la formation SST ?",
+    answer:
+      "Le SST Initial dure 14 heures (2 jours) et le MAC SST / recyclage 7 heures (1 jour). Sessions inter-entreprises ou intra-entreprise chez le client.",
+    category: "SST"
+  },
+  {
+    question: "Pourquoi les formations logistique sont-elles sur devis ?",
+    answer:
+      "Le tarif dépend du matériel, du nombre de participants, du lieu, de la durée et des objectifs. Ces formations sont proposées en intra-entreprise sur site client.",
+    category: "Logistique & sécurité"
   },
   {
     question: "Comment se déroule l'inscription ?",
     answer:
-      "Tu peux envoyer une demande de diagnostic en ligne. L'équipe te rappelle, vérifie ton objectif, prépare le dossier administratif puis ouvre ton planning et ton espace élève.",
+      "Vous pouvez envoyer une demande en ligne. L'équipe vous rappelle, vérifie votre objectif, prépare le dossier administratif puis ouvre votre planning et votre espace élève.",
     category: "Inscription"
-  },
-  {
-    question: "Puis-je suivre une formation accélérée ?",
-    answer:
-      "Oui, le parcours accéléré concentre les heures sur deux à quatre semaines avec des créneaux prioritaires, sous réserve de disponibilités et de validation du niveau de départ.",
-    category: "Formation"
-  },
-  {
-    question: "Où se passent les leçons de conduite ?",
-    answer:
-      "LODENE organise les rendez-vous autour de Paris 11 et de l'Est parisien, avec des parcours urbains utiles pour progresser en circulation dense et préparer l'examen.",
-    category: "Formation"
   }
 ];
 
@@ -571,7 +717,7 @@ export const searchItems = [
   ...faqEntries.map((entry) => ({
     title: entry.question,
     category: "FAQ",
-    href: "/cpf",
+    href: "/faq",
     description: entry.answer
   })),
   ...localSeoPages.map((page) => ({

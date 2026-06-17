@@ -12,7 +12,9 @@ import type {
   ContractRecord,
   ContentEntryRecord,
   AutomationRuleRecord,
-  SearchResult
+  MediaRecord,
+  SearchResult,
+  SiteSettingRecord
 } from "../domain/types";
 import { computeInvoiceTotals } from "../domain/invoice-totals";
 import { conflict } from "../shared/http-error";
@@ -33,6 +35,7 @@ import type {
   CreateContractInput,
   CreateContentEntryInput,
   CreateAutomationRuleInput,
+  CreateMediaInput,
   CreateStudentInput,
   CreateUserInput,
   CreateVehicleInput,
@@ -500,6 +503,12 @@ export class PrismaLodenRepository implements LodenRepository {
     >;
   }
 
+  async findContentEntryBySlug(slug: string) {
+    return this.prisma.contentEntry.findFirst({ where: { slug } }) as Promise<
+      Awaited<ReturnType<LodenRepository["findContentEntryBySlug"]>>
+    >;
+  }
+
   async createContentEntry(input: CreateContentEntryInput) {
     const published = input.published ?? false;
     return this.prisma.contentEntry.create({
@@ -509,6 +518,10 @@ export class PrismaLodenRepository implements LodenRepository {
         slug: input.slug,
         excerpt: input.excerpt ?? null,
         body: input.body,
+        coverImageUrl: input.coverImageUrl ?? null,
+        category: input.category ?? null,
+        seoTitle: input.seoTitle ?? null,
+        seoDescription: input.seoDescription ?? null,
         published,
         publishedAt: published ? new Date() : null,
         agencyId: input.agencyId ?? null
@@ -688,6 +701,66 @@ export class PrismaLodenRepository implements LodenRepository {
       update: data,
       create: { id: "company", ...defaults, ...data }
     });
+  }
+
+  async listSiteSettings(): Promise<SiteSettingRecord[]> {
+    const rows = await this.prisma.siteSetting.findMany({ orderBy: { key: "asc" } });
+    return rows.map((row) => ({ key: row.key, value: row.value, updatedAt: row.updatedAt }));
+  }
+
+  async getSiteSetting(key: string): Promise<SiteSettingRecord | null> {
+    const row = await this.prisma.siteSetting.findUnique({ where: { key } });
+    return row ? { key: row.key, value: row.value, updatedAt: row.updatedAt } : null;
+  }
+
+  async upsertSiteSetting(key: string, value: unknown): Promise<SiteSettingRecord> {
+    const row = await this.prisma.siteSetting.upsert({
+      where: { key },
+      update: { value: value as never },
+      create: { key, value: value as never }
+    });
+    return { key: row.key, value: row.value, updatedAt: row.updatedAt };
+  }
+
+  async deleteSiteSetting(key: string): Promise<void> {
+    await this.prisma.siteSetting.delete({ where: { key } }).catch(() => undefined);
+  }
+
+  async listMedia(filters?: { category?: string }): Promise<MediaRecord[]> {
+    return this.prisma.media.findMany({
+      where: filters?.category ? { category: filters.category } : undefined,
+      orderBy: { createdAt: "desc" }
+    });
+  }
+
+  async findMediaById(id: string): Promise<MediaRecord | null> {
+    return this.prisma.media.findUnique({ where: { id } });
+  }
+
+  async createMedia(input: CreateMediaInput): Promise<MediaRecord> {
+    return this.prisma.media.create({
+      data: {
+        filename: input.filename,
+        originalName: input.originalName,
+        url: input.url,
+        mimeType: input.mimeType,
+        sizeBytes: input.sizeBytes,
+        altText: input.altText ?? "",
+        category: input.category ?? null,
+        createdById: input.createdById ?? null
+      }
+    });
+  }
+
+  async updateMedia(id: string, input: { altText?: string; category?: string | null }): Promise<MediaRecord> {
+    return this.prisma.media.update({ where: { id }, data: input });
+  }
+
+  async deleteMedia(id: string): Promise<MediaRecord | null> {
+    const existing = await this.prisma.media.findUnique({ where: { id } });
+    if (!existing) return null;
+    await this.prisma.media.delete({ where: { id } });
+    return existing;
   }
 
   async createStudent(input: CreateStudentInput) {

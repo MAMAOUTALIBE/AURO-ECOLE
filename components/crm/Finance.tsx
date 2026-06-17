@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { CreditCard, Plus, Search } from "lucide-react";
+import { Clock, CreditCard, Plus, Search, Undo2 } from "lucide-react";
 import { ACTIVE_AGENCY_KEY } from "@/components/AgencySwitcher";
-import { Pagination } from "@/components/crm/ui";
+import { KpiCard, Pagination } from "@/components/crm/ui";
 
 const PAGE_SIZE = 10;
 
@@ -193,18 +193,10 @@ export function Finance() {
 
   return (
     <div className="grid gap-6">
-      <div className="grid gap-4 sm:grid-cols-3">
-        {[
-          { label: "Encaissé", value: euros(totals.paid) },
-          { label: "En attente", value: euros(totals.pending) },
-          { label: "Remboursé", value: euros(totals.refunded) }
-        ].map((card) => (
-          <div key={card.label} className="rounded-3xl border border-slate-200 bg-white p-5 shadow-soft">
-            <CreditCard className="h-5 w-5 text-loden-700" aria-hidden="true" />
-            <p className="mt-3 text-2xl font-semibold text-loden-ink">{card.value}</p>
-            <p className="mt-1 text-sm text-loden-muted">{card.label}</p>
-          </div>
-        ))}
+      <div className="grid gap-3 sm:grid-cols-3">
+        <KpiCard icon={CreditCard} label="Encaissé" value={euros(totals.paid)} accent="emerald" />
+        <KpiCard icon={Clock} label="En attente" value={euros(totals.pending)} accent="amber" />
+        <KpiCard icon={Undo2} label="Remboursé" value={euros(totals.refunded)} accent="rose" />
       </div>
 
       <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-soft">

@@ -19,9 +19,28 @@ import type { LodenRepository } from "../../repositories/loden-repository";
 import { asyncHandler } from "../../shared/async-handler";
 import { validateBody } from "../../shared/validation";
 
-// Aucun numéro de téléphone officiel confirmé -> vide (l'IA renvoie vers la page Contact).
-// À renseigner via le CMS (CompanyInfo.phone) dès qu'un numéro officiel est disponible.
+// Numéro de repli si CompanyInfo.phone est vide (l'IA renvoie alors vers la page Contact).
 const CONTACT_PHONE = "";
+
+// Contexte « coordonnées » fourni à l'agent IA, dérivé du singleton CompanyInfo (CMS).
+function buildCompanyContext(info: {
+  brandName: string;
+  address: string;
+  postalCode: string;
+  city: string;
+  phone: string;
+  email: string;
+  hours: string;
+}) {
+  const address = [info.address, [info.postalCode, info.city].filter(Boolean).join(" ")].filter(Boolean).join(", ");
+  return {
+    brandName: info.brandName || undefined,
+    address: address || undefined,
+    phone: info.phone || undefined,
+    email: info.email || undefined,
+    hours: info.hours || undefined
+  };
+}
 
 const chatSchema = z.object({
   messages: z
@@ -93,12 +112,20 @@ export function createAiRouter(repository: LodenRepository, config: ApiConfig, a
         aiUnavailable(res);
         return;
       }
-      const [formations, pricingPlans, agencies] = await Promise.all([
+      const [formations, pricingPlans, agencies, companyInfo] = await Promise.all([
         repository.listFormations(),
         repository.listPricingPlans(),
-        repository.listAgencies()
+        repository.listAgencies(),
+        repository.getCompanyInfo()
       ]);
-      const systemPrompt = buildPublicAgentSystemPrompt({ formations, pricingPlans, agencies, contactPhone: CONTACT_PHONE });
+      const company = buildCompanyContext(companyInfo);
+      const systemPrompt = buildPublicAgentSystemPrompt({
+        formations,
+        pricingPlans,
+        agencies,
+        contactPhone: company.phone ?? CONTACT_PHONE,
+        company
+      });
       const userMessages: AiMessage[] = body.messages.map((m) =>
         m.role === "assistant" ? { role: "assistant", content: m.content } : { role: "user", content: m.content }
       );
@@ -129,14 +156,23 @@ export function createAiRouter(repository: LodenRepository, config: ApiConfig, a
         aiUnavailable(res);
         return;
       }
-      const [formations, pricingPlans, agencies] = await Promise.all([
+      const [formations, pricingPlans, agencies, companyInfo] = await Promise.all([
         repository.listFormations(),
         repository.listPricingPlans(),
-        repository.listAgencies()
+        repository.listAgencies(),
+        repository.getCompanyInfo()
       ]);
+      const company = buildCompanyContext(companyInfo);
       // RBAC : on n'expose que les outils autorisés par le rôle de l'utilisateur.
       const allowedTools = crmTools.filter((tool) => !tool.permission || hasPermission(user.role, tool.permission));
-      const systemPrompt = buildCrmAgentSystemPrompt({ formations, pricingPlans, agencies, contactPhone: CONTACT_PHONE, role: user.role });
+      const systemPrompt = buildCrmAgentSystemPrompt({
+        formations,
+        pricingPlans,
+        agencies,
+        contactPhone: company.phone ?? CONTACT_PHONE,
+        role: user.role,
+        company
+      });
       const userMessages: AiMessage[] = body.messages.map((m) =>
         m.role === "assistant" ? { role: "assistant", content: m.content } : { role: "user", content: m.content }
       );

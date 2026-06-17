@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { formationImage } from "@/lib/formation-image";
+import { formationImageMeta } from "@/lib/formation-image";
 import { ArrowRight, BadgeCheck, CalendarCheck, CheckCircle2, Clock3, ShieldCheck } from "lucide-react";
 import { formations, productLineLabels } from "@/data/site";
 import { formatCurrency } from "@/lib/utils";
@@ -41,6 +41,7 @@ export default async function FormationDetailPage({ params }: PageProps) {
   const productLine = formation.productLine ?? "AUTO_ECOLE";
   const isPro = productLine !== "AUTO_ECOLE";
   const eyebrow = isPro ? `Formation ${productLineLabels[productLine]}` : `Formation ${formation.mode}`;
+  const headerImage = formationImageMeta(formation.slug, productLine);
 
   const courseSchema = {
     "@context": "https://schema.org",
@@ -91,13 +92,14 @@ export default async function FormationDetailPage({ params }: PageProps) {
         <div className="container-pad grid gap-8 lg:grid-cols-[1fr_0.75fr] lg:items-start">
           <div className="relative h-44 overflow-hidden rounded-3xl shadow-soft sm:h-52 lg:col-span-2">
             <Image
-              src={formationImage(formation.slug, productLine)}
-              alt=""
+              src={headerImage.src}
+              alt={headerImage.alt}
               fill
               priority
               unoptimized
               sizes="100vw"
               className="object-cover"
+              style={{ objectPosition: headerImage.objectPosition ?? "50% 50%" }}
             />
           </div>
           <div>

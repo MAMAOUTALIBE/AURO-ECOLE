@@ -30,6 +30,7 @@ import type {
   InstructorRecord,
   LeadRecord,
   LeadStatus,
+  MediaRecord,
   MeetingPointRecord,
   PaymentRecord,
   PaymentStatus,
@@ -37,6 +38,7 @@ import type {
   ReviewRecord,
   ReviewStatus,
   SearchResult,
+  SiteSettingRecord,
   StudentRecord,
   StudentSkillRecord,
   StudentDocumentRecord,
@@ -122,6 +124,10 @@ export type CreateContentEntryInput = {
   slug: string;
   excerpt?: string | null;
   body: string;
+  coverImageUrl?: string | null;
+  category?: string | null;
+  seoTitle?: string | null;
+  seoDescription?: string | null;
   published?: boolean;
   agencyId?: string | null;
 };
@@ -131,7 +137,22 @@ export type UpdateContentEntryInput = {
   slug?: string;
   excerpt?: string | null;
   body?: string;
+  coverImageUrl?: string | null;
+  category?: string | null;
+  seoTitle?: string | null;
+  seoDescription?: string | null;
   published?: boolean;
+};
+
+export type CreateMediaInput = {
+  filename: string;
+  originalName: string;
+  url: string;
+  mimeType: string;
+  sizeBytes: number;
+  altText?: string;
+  category?: string | null;
+  createdById?: string | null;
 };
 
 export type CreateAutomationRuleInput = {
@@ -240,6 +261,7 @@ export interface LodenRepository {
 
   listContentEntries(filters?: { type?: ContentType; published?: boolean }): Promise<ContentEntryRecord[]>;
   findContentEntryById(id: string): Promise<ContentEntryRecord | null>;
+  findContentEntryBySlug(slug: string): Promise<ContentEntryRecord | null>;
   createContentEntry(input: CreateContentEntryInput): Promise<ContentEntryRecord>;
   updateContentEntry(id: string, input: UpdateContentEntryInput): Promise<ContentEntryRecord>;
   deleteContentEntry(id: string): Promise<void>;
@@ -265,6 +287,17 @@ export interface LodenRepository {
   updateStudent(id: string, input: Partial<StudentRecord>): Promise<StudentRecord>;
   getCompanyInfo(): Promise<CompanyInfoRecord>;
   updateCompanyInfo(input: Partial<CompanyInfoRecord>): Promise<CompanyInfoRecord>;
+
+  listSiteSettings(): Promise<SiteSettingRecord[]>;
+  getSiteSetting(key: string): Promise<SiteSettingRecord | null>;
+  upsertSiteSetting(key: string, value: unknown): Promise<SiteSettingRecord>;
+  deleteSiteSetting(key: string): Promise<void>;
+
+  listMedia(filters?: { category?: string }): Promise<MediaRecord[]>;
+  findMediaById(id: string): Promise<MediaRecord | null>;
+  createMedia(input: CreateMediaInput): Promise<MediaRecord>;
+  updateMedia(id: string, input: { altText?: string; category?: string | null }): Promise<MediaRecord>;
+  deleteMedia(id: string): Promise<MediaRecord | null>;
 
   listStudentSkills(studentId: string): Promise<StudentSkillRecord[]>;
   setStudentSkill(studentId: string, skillCode: string, level: number): Promise<StudentSkillRecord>;

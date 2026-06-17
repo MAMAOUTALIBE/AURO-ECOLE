@@ -18,14 +18,22 @@ const listQuery = z.object({
 const formationSchema = z.object({
   title: z.string().trim().min(2),
   slug: z.string().trim().min(2).regex(/^[a-z0-9-]+$/),
+  subtitle: z.string().trim().optional(),
   description: z.string().trim().min(10),
   mode: z.enum(["MANUEL", "AUTOMATIQUE", "MIXTE", "CODE"]),
+  productLine: z.enum(["AUTO_ECOLE", "VTC", "CACES", "SST", "LOGISTIQUE_SECURITE"]).optional(),
   priceCents: z.number().int().nonnegative(),
+  taxMode: z.enum(["TTC", "HT"]).optional(),
+  quoteOnly: z.boolean().optional(),
+  // Champ interne : modifiable uniquement via l'admin (route protégée catalog.manage).
+  internalPriceCents: z.number().int().nonnegative().nullable().optional(),
   durationLabel: z.string().trim().min(2),
   defaultHours: z.number().int().positive().optional(),
   imageUrl: z.string().optional(),
   options: z.record(z.unknown()).optional(),
+  tags: z.array(z.string().trim()).optional(),
   cpfEligible: z.boolean().default(false),
+  cpfStatus: z.enum(["NON_RENSEIGNE", "NON_ELIGIBLE", "POSSIBLE", "A_CONFIRMER", "ELIGIBLE"]).optional(),
   active: z.boolean().default(true)
 });
 
@@ -37,7 +45,25 @@ export function createCatalogRouter(repository: LodenRepository, config: ApiConf
     "/formations",
     asyncHandler(async (req, res) => {
       const query = validateQuery(listQuery, req);
-      res.json({ data: await repository.listFormations(query.includeInactive) });
+      const formations = await repository.listFormations(query.includeInactive);
+      // Confidentialité : le prix interne (base de calcul de devis) ne sort jamais
+      // côté public. Il reste géré dans l'admin CRM via des routes protégées.
+      const publicFormations = formations.map((formation) => {
+        const rest = { ...formation };
+        delete rest.internalPriceCents;
+        return rest;
+      });
+      res.json({ data: publicFormations });
+    })
+  );
+
+  // Lecture ADMIN (protégée) : renvoie les formations complètes, y compris le prix
+  // interne (internalPriceCents) que la route publique masque. Inactives incluses.
+  router.get(
+    "/formations/admin",
+    ...adminOnly,
+    asyncHandler(async (_req, res) => {
+      res.json({ data: await repository.listFormations(true) });
     })
   );
 

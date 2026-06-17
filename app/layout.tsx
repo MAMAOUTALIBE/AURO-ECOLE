@@ -7,6 +7,13 @@ import { FloatingWhatsappButton } from "@/components/FloatingWhatsappButton";
 import { SiteChrome } from "@/components/SiteChrome";
 import { companyInfo, contactInfo, socialLinks } from "@/data/site";
 import { safeJsonLd } from "@/lib/json-ld";
+import {
+  defaultNavCtas,
+  defaultNavPrimary,
+  getSiteSetting,
+  type NavCtas,
+  type NavPrimary
+} from "@/lib/site-content";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -49,7 +56,13 @@ export const metadata: Metadata = {
   manifest: "/manifest.webmanifest"
 };
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  // Navigation pilotée depuis le CMS (fallback : valeurs par défaut si API indisponible).
+  const [nav, ctas] = await Promise.all([
+    getSiteSetting<NavPrimary>("nav.primary", defaultNavPrimary),
+    getSiteSetting<NavCtas>("nav.ctas", defaultNavCtas)
+  ]);
+
   // JSON-LD bâti uniquement sur des données vérifiées : on n'émet que les champs renseignés
   // (pas de téléphone/email/horaires/réseaux non confirmés, pas de note ni de fourchette de prix).
   const organizationSchema = {
@@ -84,7 +97,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           header={
             <>
               <HeaderTop />
-              <HeaderMain />
+              <HeaderMain nav={nav} ctas={ctas} />
             </>
           }
           footer={

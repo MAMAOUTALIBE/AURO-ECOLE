@@ -10,6 +10,7 @@ import {
   initialMeetingPoints,
   initialPricingPlans,
   initialReviews,
+  initialSiteSettings,
   initialUsers
 } from "../data/initial-data";
 import type {
@@ -30,8 +31,10 @@ import type {
   MeetingPointRecord,
   PaymentRecord,
   PricingPlanRecord,
+  MediaRecord,
   ReviewRecord,
   SearchResult,
+  SiteSettingRecord,
   InvoiceRecord,
   InvoiceClientSnapshot,
   InvoiceIssuerSnapshot,
@@ -62,6 +65,7 @@ import type {
   CreateContractInput,
   CreateContentEntryInput,
   CreateAutomationRuleInput,
+  CreateMediaInput,
   CreateStudentInput,
   CreateUserInput,
   CreateVehicleInput,
@@ -103,6 +107,8 @@ export type MutableStore = {
   contentEntries: ContentEntryRecord[];
   automationRules: AutomationRuleRecord[];
   companyInfo: CompanyInfoRecord;
+  siteSettings: SiteSettingRecord[];
+  media: MediaRecord[];
 };
 
 export class MemoryLodenRepository implements LodenRepository {
@@ -138,6 +144,8 @@ export class MemoryLodenRepository implements LodenRepository {
       contentEntries: [],
       automationRules: [],
       companyInfo: { ...initialCompanyInfo },
+      siteSettings: initialSiteSettings.map((setting) => ({ ...setting })),
+      media: [],
       ...seed
     };
   }
@@ -149,6 +157,75 @@ export class MemoryLodenRepository implements LodenRepository {
   async updateCompanyInfo(input: Partial<CompanyInfoRecord>) {
     Object.assign(this.store.companyInfo, input, { id: "company", updatedAt: new Date() });
     return this.store.companyInfo;
+  }
+
+  async listSiteSettings() {
+    return this.store.siteSettings;
+  }
+
+  async getSiteSetting(key: string) {
+    return this.store.siteSettings.find((setting) => setting.key === key) ?? null;
+  }
+
+  async upsertSiteSetting(key: string, value: unknown) {
+    const existing = this.store.siteSettings.find((setting) => setting.key === key);
+    if (existing) {
+      existing.value = value;
+      existing.updatedAt = new Date();
+      return existing;
+    }
+    const created: SiteSettingRecord = { key, value, updatedAt: new Date() };
+    this.store.siteSettings.push(created);
+    return created;
+  }
+
+  async deleteSiteSetting(key: string) {
+    this.store.siteSettings = this.store.siteSettings.filter((setting) => setting.key !== key);
+  }
+
+  async listMedia(filters?: { category?: string }) {
+    const all = filters?.category
+      ? this.store.media.filter((media) => media.category === filters.category)
+      : this.store.media;
+    return [...all].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  }
+
+  async findMediaById(id: string) {
+    return this.store.media.find((media) => media.id === id) ?? null;
+  }
+
+  async createMedia(input: CreateMediaInput) {
+    const now = new Date();
+    const media: MediaRecord = {
+      id: randomUUID(),
+      filename: input.filename,
+      originalName: input.originalName,
+      url: input.url,
+      mimeType: input.mimeType,
+      sizeBytes: input.sizeBytes,
+      altText: input.altText ?? "",
+      category: input.category ?? null,
+      createdById: input.createdById ?? null,
+      createdAt: now,
+      updatedAt: now
+    };
+    this.store.media.push(media);
+    return media;
+  }
+
+  async updateMedia(id: string, input: { altText?: string; category?: string | null }) {
+    const media = this.store.media.find((item) => item.id === id);
+    if (!media) throw notFound("Média introuvable");
+    if (input.altText !== undefined) media.altText = input.altText;
+    if (input.category !== undefined) media.category = input.category;
+    media.updatedAt = new Date();
+    return media;
+  }
+
+  async deleteMedia(id: string) {
+    const media = this.store.media.find((item) => item.id === id) ?? null;
+    this.store.media = this.store.media.filter((item) => item.id !== id);
+    return media;
   }
 
   async listAgencies() {
@@ -442,6 +519,10 @@ export class MemoryLodenRepository implements LodenRepository {
     return this.store.contentEntries.find((entry) => entry.id === id) ?? null;
   }
 
+  async findContentEntryBySlug(slug: string) {
+    return this.store.contentEntries.find((entry) => entry.slug === slug) ?? null;
+  }
+
   async createContentEntry(input: CreateContentEntryInput) {
     const now = new Date();
     const published = input.published ?? false;
@@ -452,6 +533,10 @@ export class MemoryLodenRepository implements LodenRepository {
       slug: input.slug,
       excerpt: input.excerpt ?? null,
       body: input.body,
+      coverImageUrl: input.coverImageUrl ?? null,
+      category: input.category ?? null,
+      seoTitle: input.seoTitle ?? null,
+      seoDescription: input.seoDescription ?? null,
       published,
       publishedAt: published ? now : null,
       agencyId: input.agencyId ?? null,

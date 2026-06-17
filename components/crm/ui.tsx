@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import Link from "next/link";
 import { ArrowDownRight, ArrowUpRight, Minus, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -141,58 +142,77 @@ const TREND_TONE = {
 
 const TREND_ICON = { up: ArrowUpRight, down: ArrowDownRight, flat: Minus } as const;
 
-/** Carte KPI : icône + valeur + libellé + tendance + indice. */
+const KPI_ACCENT: Record<string, string> = {
+  brand: "bg-loden-50 text-loden-700",
+  indigo: "bg-indigo-50 text-indigo-600",
+  amber: "bg-amber-50 text-amber-600",
+  emerald: "bg-emerald-50 text-emerald-600",
+  rose: "bg-rose-50 text-rose-600",
+  sky: "bg-sky-50 text-sky-600"
+};
+
+/**
+ * Carte KPI compacte (une seule ligne) :
+ *   [icône]  valeur libellé · subLabel        [tendance]
+ * Tout tient sur une ligne (nowrap + ellipsis) pour un dashboard dense et lisible.
+ */
 export function KpiCard({
   icon: Icon,
   label,
   value,
-  hint,
+  subLabel,
   trend,
   accent = "brand",
-  loading = false
+  loading = false,
+  href
 }: {
   icon: LucideIcon;
   label: string;
   value: ReactNode;
-  hint?: string;
+  subLabel?: string;
   trend?: { value: string; direction: "up" | "down" | "flat" };
   accent?: "brand" | "indigo" | "amber" | "emerald" | "rose" | "sky";
   loading?: boolean;
+  href?: string;
 }) {
-  const accentMap: Record<string, string> = {
-    brand: "bg-loden-50 text-loden-700",
-    indigo: "bg-indigo-50 text-indigo-600",
-    amber: "bg-amber-50 text-amber-600",
-    emerald: "bg-emerald-50 text-emerald-600",
-    rose: "bg-rose-50 text-rose-600",
-    sky: "bg-sky-50 text-sky-600"
-  };
+  const showTrend = !loading && trend && trend.value && trend.value !== "—";
+  const TrendIcon = trend ? TREND_ICON[trend.direction] : Minus;
 
-  return (
-    <Card className="p-4 transition duration-300 hover:-translate-y-0.5 hover:shadow-premium">
-      <div className="flex items-center justify-between">
-        <span className={cn("flex h-9 w-9 items-center justify-center rounded-xl", accentMap[accent])}>
-          <Icon className="h-[18px] w-[18px]" aria-hidden="true" />
-        </span>
-        {trend && !loading ? (
-          <span className={cn("inline-flex items-center gap-0.5 text-xs font-semibold", TREND_TONE[trend.direction])}>
-            {(() => {
-              const T = TREND_ICON[trend.direction];
-              return <T className="h-3.5 w-3.5" aria-hidden="true" />;
-            })()}
-            {trend.value}
-          </span>
-        ) : null}
+  const inner = (
+    <div className="flex items-center gap-3">
+      <span className={cn("flex h-10 w-10 shrink-0 items-center justify-center rounded-xl", KPI_ACCENT[accent])}>
+        <Icon className="h-5 w-5" aria-hidden="true" />
+      </span>
+      <div className="min-w-0 flex-1">
+        {loading ? (
+          <Skeleton className="h-4 w-32" />
+        ) : (
+          <p className="truncate text-sm leading-tight text-loden-muted">
+            <span className="text-[15px] font-bold tracking-tight text-loden-ink">{value}</span>{" "}
+            <span className="font-medium text-loden-ink">{label}</span>
+            {subLabel ? <span className="text-loden-muted"> · {subLabel}</span> : null}
+          </p>
+        )}
       </div>
-      {loading ? (
-        <Skeleton className="mt-4 h-7 w-20" />
-      ) : (
-        <p className="mt-3 text-2xl font-semibold tracking-tight text-loden-ink">{value}</p>
-      )}
-      <p className="mt-1 text-sm font-medium text-loden-muted">{label}</p>
-      {hint && !loading ? <p className="mt-0.5 text-xs text-loden-muted/80">{hint}</p> : null}
-    </Card>
+      {showTrend ? (
+        <span className={cn("inline-flex shrink-0 items-center gap-0.5 text-xs font-semibold", TREND_TONE[trend!.direction])}>
+          <TrendIcon className="h-3.5 w-3.5" aria-hidden="true" />
+          {trend!.value}
+        </span>
+      ) : null}
+    </div>
   );
+
+  if (href) {
+    return (
+      <Card className="p-0 transition duration-300 hover:-translate-y-0.5 hover:shadow-premium">
+        <Link href={href} className="focus-ring block rounded-2xl px-4 py-3.5">
+          {inner}
+        </Link>
+      </Card>
+    );
+  }
+  return <Card className="px-4 py-3.5">{inner}</Card>;
 }
 
 /** Pagination simple (côté client) : « X–Y sur N » + Précédent/Suivant. */

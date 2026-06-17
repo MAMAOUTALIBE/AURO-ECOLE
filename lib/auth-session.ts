@@ -12,7 +12,8 @@ export const ADMIN_ROLES = [
   "ADMIN",
   "SECRETAIRE",
   "COMPTABLE",
-  "MONITEUR"
+  "MONITEUR",
+  "EDITEUR"
 ] as const;
 
 export function isAdminRole(role: string | null | undefined): boolean {

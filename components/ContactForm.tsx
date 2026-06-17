@@ -11,13 +11,15 @@ import { phoneInputProps, phoneSchema } from "@/lib/validation";
 
 // Rapproche un slug de formation du libellé "Besoin" du diagnostic.
 const NEED_BY_FORMATION_SLUG: Record<string, string> = {
-  "permis-b-manuel": "Permis B manuel",
-  "permis-b-automatique": "Boîte automatique",
+  "permis-b-manuel-essentiel": "Permis B manuel",
+  "permis-b-manuel-confort": "Permis B manuel",
+  "permis-b-auto-declic": "Boîte automatique",
+  "permis-b-auto-maitrise": "Boîte automatique",
   "boite-automatique": "Boîte automatique",
-  "permis-accelere": "Permis accéléré",
-  "pack-cpf": "CPF / financement",
-  perfectionnement: "Remise à niveau",
-  "annulation-permis": "Remise à niveau"
+  "stage-accelere": "Permis accéléré",
+  "passerelle-bva-manuelle": "Permis B manuel",
+  "conduite-accompagnee": "Permis B manuel",
+  "pack-cpf": "CPF / financement"
 };
 
 const schema = z.object({

@@ -58,7 +58,9 @@ const euros = (cents: number) =>
 const nf = (n: number) => new Intl.NumberFormat("fr-FR").format(n);
 
 function trend(cur: number, prev: number): { value: string; direction: "up" | "down" | "flat" } {
-  if (prev === 0) return cur === 0 ? { value: "—", direction: "flat" } : { value: "Nouveau", direction: "up" };
+  // Pas de base de comparaison (période précédente vide) -> aucune tendance affichée
+  // (la KpiCard masque une tendance vide). On n'invente pas de badge "Nouveau".
+  if (prev === 0) return { value: "", direction: cur > 0 ? "up" : "flat" };
   const pct = Math.round(((cur - prev) / prev) * 100);
   return { value: `${pct > 0 ? "+" : ""}${pct}%`, direction: pct > 0 ? "up" : pct < 0 ? "down" : "flat" };
 }
@@ -354,16 +356,16 @@ export function CrmDashboard() {
         </div>
       </div>
 
-      {/* ZONE 1 — KPIs */}
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <KpiCard icon={GraduationCap} label="Élèves" value={loading ? "" : nf(stats?.students.total ?? 0)} loading={loading} accent="brand" trend={loading ? undefined : inscTrend} hint={`${stats?.students.byStatus.EN_COURS ?? 0} en cours`} />
-        <KpiCard icon={Target} label="Leads" value={loading ? "" : nf(stats?.leads.total ?? 0)} loading={loading} accent="indigo" trend={loading ? undefined : leadsTrend} hint={`${stats?.leads.byStage.PROSPECT ?? 0} nouveaux`} />
-        <KpiCard icon={CalendarDays} label="Leçons à venir" value={loading ? "" : nf(stats?.bookings.upcoming ?? 0)} loading={loading} accent="sky" />
-        <KpiCard icon={CreditCard} label="CA encaissé" value={loading ? "" : euros(stats?.payments.paidCents ?? 0)} loading={loading} accent="emerald" trend={loading ? undefined : caTrend} />
-        <KpiCard icon={FileText} label="Paiements en attente" value={loading ? "" : nf(stats?.payments.pending ?? 0)} loading={loading} accent="amber" />
-        <KpiCard icon={Award} label="Taux de réussite" value={loading ? "" : stats?.exams.passRate === null || stats?.exams.passRate === undefined ? "—" : `${stats.exams.passRate}%`} loading={loading} accent="brand" hint={`${stats?.exams.upcoming ?? 0} examen(s) à venir`} />
-        <KpiCard icon={PiggyBank} label="CPF en cours" value={loading ? "" : nf(stats?.cpf.pending ?? 0)} loading={loading} accent="indigo" />
-        <KpiCard icon={Star} label="Avis à modérer" value={loading ? "" : nf(stats?.reviews.pending ?? 0)} loading={loading} accent="rose" />
+      {/* ZONE 1 — KPIs (cartes compactes : 1 col mobile · 2 tablette · 4 desktop) */}
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <KpiCard icon={GraduationCap} href="/admin/eleves" label="Élèves" value={loading ? "" : nf(stats?.students.total ?? 0)} loading={loading} accent="brand" trend={loading ? undefined : inscTrend} subLabel={`${stats?.students.byStatus.EN_COURS ?? 0} en cours`} />
+        <KpiCard icon={Target} href="/admin/pipeline" label="Leads" value={loading ? "" : nf(stats?.leads.total ?? 0)} loading={loading} accent="indigo" trend={loading ? undefined : leadsTrend} subLabel={`${stats?.leads.byStage.PROSPECT ?? 0} nouveaux`} />
+        <KpiCard icon={CalendarDays} href="/admin/planning" label="Leçons à venir" value={loading ? "" : nf(stats?.bookings.upcoming ?? 0)} loading={loading} accent="sky" />
+        <KpiCard icon={CreditCard} href="/admin/finance" label="CA encaissé" value={loading ? "" : euros(stats?.payments.paidCents ?? 0)} loading={loading} accent="emerald" trend={loading ? undefined : caTrend} />
+        <KpiCard icon={FileText} href="/admin/finance" label="Paiements en attente" value={loading ? "" : nf(stats?.payments.pending ?? 0)} loading={loading} accent="amber" />
+        <KpiCard icon={Award} href="/admin/examens" label="Taux de réussite" value={loading ? "" : stats?.exams.passRate === null || stats?.exams.passRate === undefined ? "—" : `${stats.exams.passRate}%`} loading={loading} accent="brand" subLabel={`${stats?.exams.upcoming ?? 0} examen(s) à venir`} />
+        <KpiCard icon={PiggyBank} href="/admin/cpf" label="CPF en cours" value={loading ? "" : nf(stats?.cpf.pending ?? 0)} loading={loading} accent="indigo" />
+        <KpiCard icon={Star} href="/admin/avis" label="Avis à modérer" value={loading ? "" : nf(stats?.reviews.pending ?? 0)} loading={loading} accent="rose" />
       </div>
 
       {/* ZONE 2 — Analyse visuelle */}

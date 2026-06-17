@@ -18,6 +18,7 @@ const ROLE_SHORT: Record<string, string> = {
   SECRETAIRE: "Secrét.",
   COMPTABLE: "Compta",
   MONITEUR: "Monit.",
+  EDITEUR: "Éditeur",
   ELEVE: "Élève",
   VISITEUR: "Visit."
 };

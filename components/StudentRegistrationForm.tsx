@@ -8,15 +8,15 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { phoneInputProps, phoneSchema } from "@/lib/validation";
 
+// Les `value` doivent correspondre aux IDs réels des formations (backend/src/data/initial-data.ts).
 const formationOptions = [
-  { label: "Permis B manuel", value: "formation-permis-b-manuel" },
-  { label: "Permis B automatique", value: "formation-permis-b-automatique" },
+  { label: "Permis B automatique — Déclic Auto", value: "formation-permis-b-auto-declic" },
+  { label: "Permis B automatique — Maîtrise Auto", value: "formation-permis-b-auto-maitrise" },
+  { label: "Permis B manuel — Essentiel", value: "formation-permis-b-manuel-essentiel" },
+  { label: "Permis B manuel — Confort", value: "formation-permis-b-manuel-confort" },
+  { label: "Stage accéléré code et conduite", value: "formation-stage-accelere" },
   { label: "Conduite accompagnée", value: "formation-conduite-accompagnee" },
-  { label: "Permis accéléré", value: "formation-permis-accelere" },
-  { label: "Code en ligne", value: "formation-code-en-ligne" },
-  { label: "Stage de code", value: "formation-stage-code" },
-  { label: "Annulation permis", value: "formation-annulation-permis" },
-  { label: "Perfectionnement", value: "formation-perfectionnement" }
+  { label: "Formation VTC", value: "formation-vtc-excellence" }
 ];
 
 const schema = z

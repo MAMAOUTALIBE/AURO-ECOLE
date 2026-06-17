@@ -156,7 +156,7 @@ export function BookingCalendar() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           instructorId: slot.instructorId,
-          formationId: studentPayload.data?.formationId ?? "formation-permis-b-manuel",
+          formationId: studentPayload.data?.formationId ?? "formation-permis-b-manuel-essentiel",
           meetingPointId: selectedMeetingPoint,
           startsAt: slot.startsAt,
           endsAt: slot.endsAt

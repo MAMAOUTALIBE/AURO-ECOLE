@@ -134,9 +134,9 @@ describe("LODENE API", () => {
     await request(app).get("/api/formations").expect(200).expect(({ body }) => {
       expect(body.data.length).toBeGreaterThanOrEqual(13);
       expect(body.data[0]).toHaveProperty("slug");
-      // Les pôles professionnels VTC et CACES sont bien servis par le catalogue.
+      // Les pôles professionnels VTC et Logistique & sécurité sont bien servis par le catalogue.
       expect(body.data.some((f: { productLine?: string }) => f.productLine === "VTC")).toBe(true);
-      expect(body.data.some((f: { productLine?: string }) => f.productLine === "CACES")).toBe(true);
+      expect(body.data.some((f: { productLine?: string }) => f.productLine === "LOGISTIQUE_SECURITE")).toBe(true);
     });
 
     await request(app).get("/api/pricing-plans").expect(200).expect(({ body }) => {
@@ -160,8 +160,8 @@ describe("LODENE API", () => {
   it("searches formations, pricing and CPF content", async () => {
     const { app } = testApp();
 
-    await request(app).get("/api/search").query({ q: "permis accéléré" }).expect(200).expect(({ body }) => {
-      expect(body.data[0].title).toContain("Permis accéléré");
+    await request(app).get("/api/search").query({ q: "accéléré" }).expect(200).expect(({ body }) => {
+      expect(body.data.some((item: { title: string }) => item.title.toLowerCase().includes("accéléré"))).toBe(true);
     });
 
     await request(app).get("/api/search").query({ q: "cpf" }).expect(200).expect(({ body }) => {
@@ -184,7 +184,8 @@ describe("LODENE API", () => {
       expect(body.data.siret).toBe("84282888100040");
       expect(body.data.approvalNumber).toBe("E2507800260");
       expect(body.data.city).toBe("Conflans-Sainte-Honorine");
-      expect(body.data.phone).toBe("");
+      // Téléphone officiel LODENE désormais renseigné (donnée vérifiée).
+      expect(body.data.phone).toBe("06 60 32 50 87");
     });
 
     // Édition réservée : un anonyme ne peut pas modifier.
@@ -292,7 +293,7 @@ describe("LODENE API", () => {
       .post("/api/payments/payment-intents")
       .set("Authorization", `Bearer ${registration.body.token}`)
       .send({
-        pricingPlanId: "plan-permis-b",
+        pricingPlanId: "plan-essentiel-manuelle",
         kind: "FORMATION",
         amountCents: 119000,
         currency: "EUR"
@@ -311,7 +312,8 @@ describe("LODENE API", () => {
       .expect(200)
       .expect(({ body }) => {
         expect(body.data).toHaveLength(1);
-        expect(body.data[0].amountCents).toBe(119000);
+        // Le serveur impose le prix réel du pack "Essentiel Manuelle" (1344 €), pas le montant client.
+        expect(body.data[0].amountCents).toBe(134400);
       });
   });
 
@@ -329,15 +331,15 @@ describe("LODENE API", () => {
       })
       .expect(201);
 
-    // Tentative de fraude : 1 centime envoyé par le client pour un pack à 1190 €.
+    // Tentative de fraude : 1 centime envoyé par le client pour un pack à 1344 €.
     await request(app)
       .post("/api/payments/payment-intents")
       .set("Authorization", `Bearer ${registration.body.token}`)
-      .send({ pricingPlanId: "plan-permis-b", kind: "FORMATION", amountCents: 1, currency: "EUR" })
+      .send({ pricingPlanId: "plan-essentiel-manuelle", kind: "FORMATION", amountCents: 1, currency: "EUR" })
       .expect(201)
       .expect(({ body }) => {
         // Le serveur impose le prix réel du pack, pas le montant client.
-        expect(body.data.amountCents).toBe(119000);
+        expect(body.data.amountCents).toBe(134400);
       });
   });
 

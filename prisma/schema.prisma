@@ -16,6 +16,7 @@ enum UserRole {
   SECRETAIRE
   COMPTABLE
   MONITEUR
+  EDITEUR
   ELEVE
   VISITEUR
 }
@@ -48,6 +49,21 @@ enum ProductLine {
   AUTO_ECOLE
   VTC
   CACES
+  SST
+  LOGISTIQUE_SECURITE
+}
+
+enum TaxMode {
+  TTC
+  HT
+}
+
+enum CpfStatus {
+  NON_RENSEIGNE
+  NON_ELIGIBLE
+  POSSIBLE
+  A_CONFIRMER
+  ELIGIBLE
 }
 
 enum BookingStatus {
@@ -261,19 +277,24 @@ enum ContentType {
 }
 
 model ContentEntry {
-  id          String      @id @default(cuid())
-  type        ContentType
-  title       String
-  slug        String
-  excerpt     String?
-  body        String
-  published   Boolean     @default(false)
-  publishedAt DateTime?
-  agencyId    String?
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  id             String      @id @default(cuid())
+  type           ContentType
+  title          String
+  slug           String
+  excerpt        String?
+  body           String
+  coverImageUrl  String?
+  category       String?
+  seoTitle       String?
+  seoDescription String?
+  published      Boolean     @default(false)
+  publishedAt    DateTime?
+  agencyId       String?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
 
   @@index([type, published])
+  @@index([slug])
 }
 
 enum AutomationTrigger {
@@ -461,21 +482,28 @@ model Vehicle {
 }
 
 model Formation {
-  id              String        @id @default(cuid())
-  title           String
-  slug            String        @unique
-  description     String
-  mode            FormationMode
-  productLine     ProductLine   @default(AUTO_ECOLE)
-  priceCents      Int
-  durationLabel   String
-  defaultHours    Int?
-  imageUrl        String?
-  options         Json?
-  cpfEligible     Boolean       @default(false)
-  active          Boolean       @default(true)
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
+  id                 String        @id @default(cuid())
+  title              String
+  slug               String        @unique
+  subtitle           String?
+  description        String
+  mode               FormationMode
+  productLine        ProductLine   @default(AUTO_ECOLE)
+  priceCents         Int
+  taxMode            TaxMode       @default(TTC)
+  quoteOnly          Boolean       @default(false)
+  // Prix interne (coût/base de calcul de devis) — JAMAIS exposé côté site public ni agent IA public.
+  internalPriceCents Int?
+  durationLabel      String
+  defaultHours       Int?
+  imageUrl           String?
+  options            Json?
+  tags               String[]      @default([])
+  cpfEligible        Boolean       @default(false)
+  cpfStatus          CpfStatus     @default(NON_RENSEIGNE)
+  active             Boolean       @default(true)
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
 
   students        Student[]
   pricingPlans    PricingPlan[]
@@ -757,4 +785,31 @@ model CompanyInfo {
   tiktok              String   @default("")
   youtube             String   @default("")
   updatedAt           DateTime @updatedAt
+}
+
+// Médiathèque : fichiers uploadés depuis le CMS (images, PDF…), réutilisables partout.
+model Media {
+  id           String   @id @default(cuid())
+  filename     String
+  originalName String
+  url          String
+  mimeType     String
+  sizeBytes    Int
+  altText      String   @default("")
+  category     String?
+  createdById  String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([createdAt])
+  @@index([category])
+}
+
+// Réglages dynamiques du site public, pilotés depuis le CMS (singletons clé/valeur JSON).
+// Une clé par bloc éditable : "nav.primary", "nav.ctas", "hero.home", "footer",
+// "sections.home", "hours", "pole.VTC"… Le site public lit ces clés (fallback data/site.ts).
+model SiteSetting {
+  key       String   @id
+  value     Json
+  updatedAt DateTime @updatedAt
 }

@@ -23,11 +23,13 @@ import { createContractsRouter } from "./modules/contracts/contracts.routes";
 import { createCmsRouter } from "./modules/cms/cms.routes";
 import { createAutomationsRouter } from "./modules/automations/automations.routes";
 import { createLeadsRouter } from "./modules/leads/leads.routes";
+import { createMediaRouter } from "./modules/media/media.routes";
 import { createPaymentsRouter, createStripeWebhookHandler } from "./modules/payments/payments.routes";
 import { createPermissionsRouter } from "./modules/permissions/permissions.routes";
 import { createStripeProvider } from "./payments/stripe-provider";
 import { createReviewsRouter } from "./modules/reviews/reviews.routes";
 import { createSearchRouter } from "./modules/search/search.routes";
+import { createSiteRouter } from "./modules/site/site.routes";
 import { createStatsRouter } from "./modules/stats/stats.routes";
 import { createStudentsRouter } from "./modules/students/students.routes";
 import { createUsersRouter } from "./modules/users/users.routes";
@@ -109,6 +111,8 @@ export function createApp(repository: LodenRepository, config: ApiConfig, deps: 
   // Même routeur exposé sous /api/content (notamment /api/content/company).
   app.use("/api/content", contentRouter);
   app.use("/api/reviews", createReviewsRouter(repository, config));
+  app.use("/api/media", createMediaRouter(repository, config));
+  app.use("/api/site", createSiteRouter(repository, config));
   app.use("/api/search", createSearchRouter(repository));
   app.use("/api/ai", createAiRouter(repository, config, aiProvider));
 

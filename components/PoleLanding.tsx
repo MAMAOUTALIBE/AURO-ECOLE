@@ -8,7 +8,7 @@ import { safeJsonLd } from "@/lib/json-ld";
 
 // Page d'atterrissage d'un pôle professionnel (VTC / CACES) : hero, atouts,
 // catalogue filtré du pôle et appel au devis. Server component (SSG, bon pour le SEO).
-export function PoleLanding({ pole }: { pole: "VTC" | "CACES" }) {
+export function PoleLanding({ pole }: { pole: "VTC" | "SST" | "LOGISTIQUE_SECURITE" }) {
   const content = poleLandings[pole];
   const poleFormations = formations.filter((formation) => formation.productLine === pole);
 

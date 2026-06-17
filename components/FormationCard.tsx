@@ -20,7 +20,7 @@ import {
   type LucideIcon
 } from "lucide-react";
 import { productLineLabels, type Formation } from "@/data/site";
-import { formationImage } from "@/lib/formation-image";
+import { formationImageMeta } from "@/lib/formation-image";
 import { formatCurrency } from "@/lib/utils";
 
 type Visual = { icon: LucideIcon; gradient: string };
@@ -45,16 +45,29 @@ const BY_SLUG: Record<string, Visual> = {
 };
 
 const BY_MODE: Record<Formation["mode"], Visual> = {
-  Manuel: BY_SLUG["permis-b-manuel"],
-  Automatique: BY_SLUG["permis-b-automatique"],
+  Manuel: { icon: Car, gradient: "linear-gradient(135deg,#0e7490,#08AEB8 55%,#22d3ee)" },
+  Automatique: { icon: Gauge, gradient: "linear-gradient(135deg,#0891a0,#22d3ee 55%,#38bdf8)" },
   Mixte: { icon: Sparkles, gradient: "linear-gradient(135deg,#155e75,#0e7490 55%,#14b8a6)" },
-  Code: BY_SLUG["code-en-ligne"]
+  Code: { icon: MonitorPlay, gradient: "linear-gradient(135deg,#3730a3,#4f46e5 55%,#6366f1)" }
+};
+
+// Repli visuel par pôle métier (avant le repli par mode) — distingue VTC / SST / logistique.
+const BY_PRODUCT_LINE: Partial<Record<NonNullable<Formation["productLine"]>, Visual>> = {
+  VTC: { icon: CarTaxiFront, gradient: "linear-gradient(135deg,#3730a3,#4f46e5 55%,#818cf8)" },
+  SST: { icon: ShieldCheck, gradient: "linear-gradient(135deg,#0f766e,#10b981 55%,#34d399)" },
+  LOGISTIQUE_SECURITE: { icon: Forklift, gradient: "linear-gradient(135deg,#b45309,#f59e0b 55%,#fbbf24)" }
 };
 
 export function FormationCard({ formation }: { formation: Formation }) {
-  const visual = BY_SLUG[formation.slug] ?? BY_MODE[formation.mode];
+  const visual =
+    BY_SLUG[formation.slug] ??
+    (formation.productLine ? BY_PRODUCT_LINE[formation.productLine] : undefined) ??
+    BY_MODE[formation.mode];
   const Icon = visual.icon;
-  const headerImage = formationImage(formation.slug, formation.productLine);
+  // Image choisie au CMS (médiathèque) si définie, sinon photo réaliste par slug/pôle.
+  const headerImage = formation.imageUrl
+    ? { src: formation.imageUrl, alt: formation.subtitle ?? formation.title, objectPosition: "50% 50%" }
+    : formationImageMeta(formation.slug, formation.productLine);
   // Badge = pôle métier pour VTC/CACES, sinon le mode (Manuel/Auto/…).
   const badgeLabel =
     formation.productLine && formation.productLine !== "AUTO_ECOLE"
@@ -68,15 +81,17 @@ export function FormationCard({ formation }: { formation: Formation }) {
       className="focus-ring group block h-full rounded-[1.75rem]"
     >
       <article className="flex h-full flex-col overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white shadow-soft transition duration-300 group-hover:-translate-y-1.5 group-hover:border-loden-200 group-hover:shadow-premium">
-        {/* En-tête illustré (SVG on-brand par formation) */}
+        {/* En-tête photo réaliste par formation */}
         <div className="relative h-40 overflow-hidden" style={{ backgroundImage: visual.gradient }}>
           <Image
-            src={headerImage}
-            alt=""
+            src={headerImage.src}
+            alt={headerImage.alt}
             fill
+            loading="lazy"
             sizes="(min-width: 1280px) 30vw, (min-width: 768px) 45vw, 100vw"
             unoptimized
             className="object-cover transition duration-500 group-hover:scale-105"
+            style={{ objectPosition: headerImage.objectPosition ?? "50% 50%" }}
           />
           {/* Voile sombre en haut pour la lisibilité des badges */}
           <div className="absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-black/25 to-transparent" aria-hidden="true" />
@@ -96,6 +111,9 @@ export function FormationCard({ formation }: { formation: Formation }) {
         {/* Corps */}
         <div className="flex flex-1 flex-col p-6">
           <h3 className="text-xl font-semibold leading-tight text-loden-ink">{formation.title}</h3>
+          {formation.subtitle ? (
+            <p className="mt-1 text-sm font-semibold text-loden-600">{formation.subtitle}</p>
+          ) : null}
           <p className="mt-3 flex-1 text-sm leading-6 text-loden-muted">{formation.description}</p>
 
           <div className="mt-5 flex flex-wrap gap-2">

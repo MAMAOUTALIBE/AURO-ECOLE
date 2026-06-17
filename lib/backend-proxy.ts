@@ -5,7 +5,7 @@ import { SESSION_COOKIE } from "@/lib/auth-session";
 const DEFAULT_BACKEND_URL = "http://127.0.0.1:4000";
 
 type ProxyOptions = {
-  method?: "GET" | "POST" | "PATCH" | "DELETE";
+  method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
   body?: unknown;
   searchParams?: URLSearchParams;
   headers?: HeadersInit;

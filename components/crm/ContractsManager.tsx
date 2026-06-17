@@ -139,7 +139,7 @@ export function ContractsManager() {
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
         <KpiCard icon={FileSignature} label="Contrats actifs" value={loading ? "" : kpis.active} loading={loading} accent="emerald" />
         <KpiCard icon={FileSignature} label="Valeur active" value={loading ? "" : euros(kpis.activeValue)} loading={loading} accent="brand" />
         <KpiCard icon={FileSignature} label="Brouillons" value={loading ? "" : kpis.drafts} loading={loading} accent="amber" />
