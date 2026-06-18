@@ -42,6 +42,10 @@ import type {
   ContractRecord,
   ContentEntryRecord,
   AutomationRuleRecord,
+  ChatAppointmentRecord,
+  ChatAvailabilitySlotRecord,
+  ChatConversationRecord,
+  ChatTaskRecord,
   StudentRecord,
   StudentSkillRecord,
   StudentDocumentRecord,
@@ -65,6 +69,10 @@ import type {
   CreateContractInput,
   CreateContentEntryInput,
   CreateAutomationRuleInput,
+  CreateChatAppointmentInput,
+  CreateChatAvailabilitySlotInput,
+  CreateChatConversationInput,
+  CreateChatTaskInput,
   CreateMediaInput,
   CreateStudentInput,
   CreateUserInput,
@@ -75,7 +83,10 @@ import type {
   UpdateQuoteInput,
   UpdateContractInput,
   UpdateContentEntryInput,
-  UpdateAutomationRuleInput
+  UpdateAutomationRuleInput,
+  UpdateChatAppointmentInput,
+  UpdateChatAvailabilitySlotInput,
+  UpdateChatTaskInput
 } from "./loden-repository";
 
 export type MutableStore = {
@@ -95,6 +106,10 @@ export type MutableStore = {
   contactRequests: ContactRequestRecord[];
   reviews: ReviewRecord[];
   leads: LeadRecord[];
+  chatAppointments: ChatAppointmentRecord[];
+  chatTasks: ChatTaskRecord[];
+  chatConversations: ChatConversationRecord[];
+  chatAvailabilitySlots: ChatAvailabilitySlotRecord[];
   exams: ExamRecord[];
   installments: InstallmentRecord[];
   studentSkills: StudentSkillRecord[];
@@ -110,6 +125,42 @@ export type MutableStore = {
   siteSettings: SiteSettingRecord[];
   media: MediaRecord[];
 };
+
+function nextBusinessSlot(dayOffset: number, hour: number) {
+  const date = new Date();
+  date.setDate(date.getDate() + dayOffset);
+  date.setHours(hour, 0, 0, 0);
+  while (date.getDay() === 0 || date.getDay() === 1) {
+    date.setDate(date.getDate() + 1);
+  }
+  return date;
+}
+
+function buildInitialChatAvailabilitySlots(): ChatAvailabilitySlotRecord[] {
+  const windows = [
+    { offset: 1, hour: 10, type: "APPEL" as const, label: "Appel conseiller" },
+    { offset: 2, hour: 14, type: "AGENCE" as const, label: "Rendez-vous agence" },
+    { offset: 3, hour: 17, type: "DEVIS" as const, label: "Diagnostic devis" }
+  ];
+  return windows.map((window, index) => {
+    const startsAt = nextBusinessSlot(window.offset, window.hour);
+    const endsAt = new Date(startsAt.getTime() + 30 * 60_000);
+    return {
+      id: `chat-slot-${index + 1}`,
+      label: window.label,
+      startsAt,
+      endsAt,
+      type: window.type,
+      agencyId: "agency-republique",
+      assignedToId: "user-admin",
+      active: true,
+      capacity: 4,
+      bookedCount: 0,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+  });
+}
 
 export class MemoryLodenRepository implements LodenRepository {
   private readonly store: MutableStore;
@@ -132,6 +183,10 @@ export class MemoryLodenRepository implements LodenRepository {
       contactRequests: [],
       reviews: [...initialReviews],
       leads: [],
+      chatAppointments: [],
+      chatTasks: [],
+      chatConversations: [],
+      chatAvailabilitySlots: buildInitialChatAvailabilitySlots(),
       exams: [],
       installments: [],
       studentSkills: [],
@@ -1030,6 +1085,142 @@ export class MemoryLodenRepository implements LodenRepository {
     if (!lead) throw notFound("Lead introuvable");
     Object.assign(lead, input, { updatedAt: new Date() });
     return lead;
+  }
+
+  async listChatAppointments(filters?: { status?: ChatAppointmentRecord["status"]; agencyId?: string }) {
+    return this.store.chatAppointments
+      .filter(
+        (appointment) =>
+          (!filters?.status || appointment.status === filters.status) &&
+          (!filters?.agencyId || appointment.source === "chatbot")
+      )
+      .slice()
+      .sort((left, right) => right.createdAt.getTime() - left.createdAt.getTime());
+  }
+
+  async findChatAppointmentById(id: string) {
+    return this.store.chatAppointments.find((appointment) => appointment.id === id) ?? null;
+  }
+
+  async createChatAppointment(input: CreateChatAppointmentInput) {
+    const now = new Date();
+    const appointment: ChatAppointmentRecord = {
+      ...input,
+      id: randomUUID(),
+      source: "chatbot",
+      adminEmailStatus: input.adminEmailStatus ?? "pending",
+      clientEmailStatus: input.clientEmailStatus ?? "pending",
+      whatsappStatus: input.whatsappStatus ?? "pending",
+      createdAt: now,
+      updatedAt: now
+    };
+    this.store.chatAppointments.push(appointment);
+    const slot = this.store.chatAvailabilitySlots.find(
+      (item) => item.active && item.startsAt.getTime() === input.startsAt.getTime() && item.endsAt.getTime() === input.endsAt.getTime()
+    );
+    if (slot) {
+      slot.bookedCount += 1;
+      slot.updatedAt = now;
+      if (slot.bookedCount >= slot.capacity) slot.active = false;
+    }
+    return appointment;
+  }
+
+  async updateChatAppointment(id: string, input: UpdateChatAppointmentInput) {
+    const appointment = await this.findChatAppointmentById(id);
+    if (!appointment) throw notFound("Rendez-vous chatbot introuvable");
+    Object.assign(appointment, input, { updatedAt: new Date() });
+    return appointment;
+  }
+
+  async listChatTasks(filters?: { status?: ChatTaskRecord["status"]; leadId?: string; appointmentId?: string }) {
+    return this.store.chatTasks
+      .filter(
+        (task) =>
+          (!filters?.status || task.status === filters.status) &&
+          (!filters?.leadId || task.leadId === filters.leadId) &&
+          (!filters?.appointmentId || task.appointmentId === filters.appointmentId)
+      )
+      .slice()
+      .sort((left, right) => left.deadline.getTime() - right.deadline.getTime());
+  }
+
+  async createChatTask(input: CreateChatTaskInput) {
+    const now = new Date();
+    const task: ChatTaskRecord = {
+      ...input,
+      id: randomUUID(),
+      status: input.status ?? "A_FAIRE",
+      createdAt: now,
+      updatedAt: now
+    };
+    this.store.chatTasks.push(task);
+    return task;
+  }
+
+  async updateChatTask(id: string, input: UpdateChatTaskInput) {
+    const task = this.store.chatTasks.find((item) => item.id === id);
+    if (!task) throw notFound("Tâche chatbot introuvable");
+    Object.assign(task, input, { updatedAt: new Date() });
+    return task;
+  }
+
+  async listChatConversations(filters?: { leadId?: string; appointmentId?: string }) {
+    return this.store.chatConversations
+      .filter(
+        (conversation) =>
+          (!filters?.leadId || conversation.leadId === filters.leadId) &&
+          (!filters?.appointmentId || conversation.appointmentId === filters.appointmentId)
+      )
+      .slice()
+      .sort((left, right) => right.updatedAt.getTime() - left.updatedAt.getTime());
+  }
+
+  async createChatConversation(input: CreateChatConversationInput) {
+    const now = new Date();
+    const conversation: ChatConversationRecord = {
+      ...input,
+      id: randomUUID(),
+      status: input.status ?? "OUVERTE",
+      createdAt: now,
+      updatedAt: now
+    };
+    this.store.chatConversations.push(conversation);
+    return conversation;
+  }
+
+  async listChatAvailabilitySlots(filters?: { from?: Date; to?: Date; active?: boolean; agencyId?: string }) {
+    return this.store.chatAvailabilitySlots
+      .filter(
+        (slot) =>
+          (!filters?.from || slot.startsAt >= filters.from) &&
+          (!filters?.to || slot.startsAt <= filters.to) &&
+          (filters?.active === undefined || slot.active === filters.active) &&
+          (!filters?.agencyId || slot.agencyId === filters.agencyId || slot.agencyId == null) &&
+          slot.bookedCount < slot.capacity
+      )
+      .slice()
+      .sort((left, right) => left.startsAt.getTime() - right.startsAt.getTime());
+  }
+
+  async createChatAvailabilitySlot(input: CreateChatAvailabilitySlotInput) {
+    const now = new Date();
+    const slot: ChatAvailabilitySlotRecord = {
+      ...input,
+      id: randomUUID(),
+      bookedCount: input.bookedCount ?? 0,
+      createdAt: now,
+      updatedAt: now
+    };
+    this.store.chatAvailabilitySlots.push(slot);
+    return slot;
+  }
+
+  async updateChatAvailabilitySlot(id: string, input: UpdateChatAvailabilitySlotInput) {
+    const slot = this.store.chatAvailabilitySlots.find((item) => item.id === id);
+    if (!slot) throw notFound("Créneau chatbot introuvable");
+    Object.assign(slot, input, { updatedAt: new Date() });
+    return slot;
   }
 
   async listExams(filters?: { agencyId?: string; studentId?: string }) {

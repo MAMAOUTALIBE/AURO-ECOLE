@@ -58,7 +58,7 @@ export const localSeoPages = [
 // (téléphone, WhatsApp, horaires, email) restent VIDES et l'UI masque les lignes vides.
 export const contactInfo = {
   phone: "06 60 32 50 87",
-  whatsapp: "",
+  whatsapp: "33660325087",
   address: "30 rue Pierre Le Guen, 78700 Conflans-Sainte-Honorine, France",
   mapQuery: "30 rue Pierre Le Guen, 78700 Conflans-Sainte-Honorine",
   hours:

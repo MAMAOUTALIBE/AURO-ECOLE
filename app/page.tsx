@@ -1,20 +1,21 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
-import { AppSection } from "@/components/AppSection";
-import { BookingCalendar } from "@/components/BookingCalendar";
-import { DiagnosticCtaSection } from "@/components/DiagnosticCtaSection";
-import { FeatureBar } from "@/components/FeatureBar";
-import { FormationCard } from "@/components/FormationCard";
+import {
+  ArrowRight,
+  CalendarCheck,
+  Clock3,
+  Mail,
+  MapPin,
+  MessageCircle,
+  Phone,
+  UserRound,
+  WalletCards
+} from "lucide-react";
 import { HeroSection } from "@/components/HeroSection";
-import { InstructorCard } from "@/components/InstructorCard";
+import { HomeFormationsCarousel } from "@/components/HomeFormationsCarousel";
 import { MotionReveal } from "@/components/MotionReveal";
-import { PricingCard } from "@/components/PricingCard";
-import { SectionHeader } from "@/components/SectionHeader";
-import { SimulatorCard } from "@/components/SimulatorCard";
-import { TestimonialCard } from "@/components/TestimonialCard";
-import { TrustProofSection } from "@/components/TrustProofSection";
-import { formations, instructors, pricingPlans, testimonials } from "@/data/site";
+import { contactInfo, formations } from "@/data/site";
+import { formatCurrency } from "@/lib/utils";
 
 export const metadata: Metadata = {
   title: "LODENE Auto-École | Permis B, VTC, SST & formations à Conflans",
@@ -30,118 +31,175 @@ export const metadata: Metadata = {
   }
 };
 
+const advantages = [
+  {
+    icon: WalletCards,
+    title: "CPF accompagné",
+    text: "On vérifie ton dossier et ton financement avant l'inscription."
+  },
+  {
+    icon: CalendarCheck,
+    title: "Planning flexible",
+    text: "Des créneaux adaptés à ton rythme et à tes contraintes."
+  },
+  {
+    icon: Clock3,
+    title: "Formations courtes",
+    text: "Des formats rapides pour avancer sans perdre de temps."
+  },
+  {
+    icon: UserRound,
+    title: "Suivi humain",
+    text: "Un conseiller t'oriente et garde ton parcours lisible."
+  }
+];
+
+const priceHighlights = [
+  { label: "Permis B automatique", price: 924 },
+  { label: "Permis B manuel", price: 1344 },
+  { label: "Formation VTC", price: 399 }
+];
+
+function whatsappHref() {
+  if (contactInfo.whatsapp) return `https://wa.me/${contactInfo.whatsapp}`;
+  const digits = contactInfo.phone.replace(/\D/g, "");
+  const international = digits.startsWith("0") ? `33${digits.slice(1)}` : digits;
+  return `https://wa.me/${international}`;
+}
+
 export default function HomePage() {
   return (
     <main>
       <HeroSection />
-      <FeatureBar />
-      <TrustProofSection />
 
-      <section className="bg-loden-pearl py-16 sm:py-20">
+      <section className="bg-white py-10 sm:py-12">
         <div className="container-pad">
-          <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
-            <SectionHeader
-              eyebrow="Formations"
-              title="Un parcours adapté à chaque objectif"
-              text="Permis B, accéléré, conduite accompagnée ou boîte automatique avec suivi digital."
-            />
-            <Link className="focus-ring inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-5 py-3 font-semibold text-loden-ink shadow-soft hover:bg-loden-50" href="/formations">
-              Toutes les formations
-              <ArrowRight className="h-5 w-5" />
+          <HomeFormationsCarousel formations={formations} />
+        </div>
+      </section>
+
+      <section className="bg-loden-pearl py-10 sm:py-12">
+        <div className="container-pad">
+          <div className="max-w-2xl">
+            <p className="text-sm font-semibold uppercase text-loden-700">Pourquoi choisir LODENE ?</p>
+            <h2 className="mt-3 text-3xl font-semibold leading-tight text-loden-ink sm:text-4xl">
+              Un parcours simple, encadré et orienté résultat
+            </h2>
+          </div>
+          <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            {advantages.map((advantage, index) => {
+              const Icon = advantage.icon;
+              return (
+                <MotionReveal key={advantage.title} delay={index * 0.04}>
+                  <article className="h-full rounded-[1.5rem] border border-slate-200 bg-white p-5 shadow-soft">
+                    <span className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-loden-50 text-loden-700">
+                      <Icon className="h-5 w-5" aria-hidden="true" />
+                    </span>
+                    <h3 className="mt-4 text-lg font-semibold text-loden-ink">{advantage.title}</h3>
+                    <p className="mt-2 text-sm leading-6 text-loden-muted">{advantage.text}</p>
+                  </article>
+                </MotionReveal>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-white py-10">
+        <div className="container-pad">
+          <div className="rounded-[2rem] bg-loden-900 p-6 text-white shadow-premium sm:p-8 lg:flex lg:items-center lg:justify-between lg:gap-8">
+            <div className="max-w-2xl">
+              <p className="text-sm font-semibold uppercase text-loden-100">Diagnostic</p>
+              <h2 className="mt-3 text-3xl font-semibold leading-tight">Pas sûr de la bonne formation ?</h2>
+              <p className="mt-3 text-base leading-7 text-white/80">
+                Réponds à quelques questions, on t&apos;oriente vers le bon parcours.
+              </p>
+            </div>
+            <div className="mt-5 flex flex-col gap-3 sm:flex-row lg:mt-0">
+              <Link
+                href="/contact"
+                className="focus-ring inline-flex items-center justify-center gap-2 rounded-full bg-white px-6 py-3.5 font-semibold text-loden-ink shadow-soft transition hover:bg-loden-50"
+              >
+                Demander mon diagnostic
+                <ArrowRight className="h-5 w-5" aria-hidden="true" />
+              </Link>
+              <a
+                href={whatsappHref()}
+                className="focus-ring inline-flex items-center justify-center gap-2 rounded-full border border-white/30 px-6 py-3.5 font-semibold text-white transition hover:bg-white/10"
+              >
+                <MessageCircle className="h-5 w-5" aria-hidden="true" />
+                WhatsApp
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-white pb-10 sm:pb-12">
+        <div className="container-pad">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-sm font-semibold uppercase text-loden-700">Tarifs de départ</p>
+              <h2 className="mt-3 text-3xl font-semibold leading-tight text-loden-ink sm:text-4xl">
+                Trois repères pour décider vite
+              </h2>
+            </div>
+            <Link
+              href="/tarifs"
+              className="focus-ring inline-flex items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-loden-ink shadow-soft transition hover:border-loden-200 hover:text-loden-700"
+            >
+              Voir tous les tarifs
+              <ArrowRight className="h-4 w-4" aria-hidden="true" />
             </Link>
           </div>
-          <div className="mt-9 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-            {formations.slice(0, 4).map((formation, index) => (
-              <MotionReveal key={formation.slug} delay={index * 0.06}>
-                <FormationCard formation={formation} />
+          <div className="mt-6 grid gap-4 md:grid-cols-3">
+            {priceHighlights.map((item, index) => (
+              <MotionReveal key={item.label} delay={index * 0.04}>
+                <article className="rounded-[1.5rem] border border-slate-200 bg-loden-pearl p-6 shadow-soft">
+                  <p className="text-sm font-semibold text-loden-muted">{item.label}</p>
+                  <p className="mt-3 text-3xl font-semibold text-loden-ink">dès {formatCurrency(item.price)}</p>
+                </article>
               </MotionReveal>
             ))}
           </div>
         </div>
       </section>
 
-      <section id="reservation" className="bg-white py-16 sm:py-20">
-        <div className="container-pad grid gap-8 lg:grid-cols-2">
-          <MotionReveal>
-            <SimulatorCard />
-          </MotionReveal>
-          <MotionReveal delay={0.08}>
-            <BookingCalendar />
-          </MotionReveal>
-        </div>
-      </section>
-
-      <section className="bg-loden-pearl py-16 sm:py-20">
+      <section className="bg-loden-pearl py-10 sm:py-12">
         <div className="container-pad">
-          <SectionHeader
-            eyebrow="Tarifs"
-            title="Des packs clairs, sans surprise"
-            text="Chaque pack est lisible, modulable et pensé pour limiter les frictions à l'inscription."
-            align="center"
-          />
-          <div className="mt-9 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-            {pricingPlans.map((plan, index) => (
-              <MotionReveal key={plan.title} delay={index * 0.06}>
-                <PricingCard plan={plan} featured={index === 0} />
-              </MotionReveal>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {instructors.length > 0 ? (
-        <section className="bg-white py-16 sm:py-20">
-          <div className="container-pad">
-            <SectionHeader
-              eyebrow="Moniteurs"
-              title="Des coachs exigeants et bienveillants"
-              text="Chaque élève est suivi par une équipe qui combine pédagogie, ponctualité et exigence d'examen."
-            />
-            <div className="mt-9 grid gap-6 md:grid-cols-3">
-              {instructors.map((instructor, index) => (
-                <MotionReveal key={instructor.name} delay={index * 0.06}>
-                  <InstructorCard instructor={instructor} />
-                </MotionReveal>
-              ))}
+          <div className="grid gap-6 rounded-[2rem] border border-slate-200 bg-white p-6 shadow-soft sm:p-8 lg:grid-cols-[1fr_auto] lg:items-center">
+            <div>
+              <p className="text-sm font-semibold uppercase text-loden-700">Agence LODENE</p>
+              <h2 className="mt-3 text-3xl font-semibold leading-tight text-loden-ink">
+                Conflans-Sainte-Honorine
+              </h2>
+              <div className="mt-5 grid gap-3 text-sm leading-6 text-loden-muted sm:grid-cols-2">
+                <p className="flex gap-3">
+                  <MapPin className="mt-0.5 h-5 w-5 shrink-0 text-loden-600" aria-hidden="true" />
+                  <span>{contactInfo.address}</span>
+                </p>
+                <p className="flex gap-3">
+                  <Clock3 className="mt-0.5 h-5 w-5 shrink-0 text-loden-600" aria-hidden="true" />
+                  <span>Bureau mar-sam. Conduite 7j/7 sur réservation.</span>
+                </p>
+                <a className="flex gap-3 font-semibold text-loden-ink hover:text-loden-700" href={`tel:${contactInfo.phone.replaceAll(" ", "")}`}>
+                  <Phone className="mt-0.5 h-5 w-5 shrink-0 text-loden-600" aria-hidden="true" />
+                  {contactInfo.phone}
+                </a>
+                <a className="flex gap-3 font-semibold text-loden-ink hover:text-loden-700" href={`mailto:${contactInfo.email}`}>
+                  <Mail className="mt-0.5 h-5 w-5 shrink-0 text-loden-600" aria-hidden="true" />
+                  {contactInfo.email}
+                </a>
+              </div>
             </div>
+            <Link
+              href="/contact"
+              className="focus-ring inline-flex items-center justify-center gap-2 rounded-full bg-loden-700 px-6 py-3.5 font-semibold text-white shadow-soft transition hover:bg-loden-800"
+            >
+              Nous contacter
+              <ArrowRight className="h-5 w-5" aria-hidden="true" />
+            </Link>
           </div>
-        </section>
-      ) : null}
-
-      {testimonials.length > 0 ? (
-        <section className="bg-loden-pearl py-16 sm:py-20">
-          <div className="container-pad">
-            <SectionHeader
-              eyebrow="Avis clients"
-              title="Une expérience pensée pour rassurer"
-              text="Des retours élèves qui confirment la qualité du suivi, la disponibilité et la clarté du parcours."
-              align="center"
-            />
-            <div className="mt-9 grid gap-5 md:grid-cols-3">
-              {testimonials.map((testimonial, index) => (
-                <MotionReveal key={testimonial.name} delay={index * 0.04}>
-                  <TestimonialCard testimonial={testimonial} />
-                </MotionReveal>
-              ))}
-            </div>
-          </div>
-        </section>
-      ) : null}
-
-      <DiagnosticCtaSection />
-
-      <AppSection />
-
-      <section className="bg-loden-700 py-14 text-white">
-        <div className="container-pad flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-          <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.14em] text-white/90">Inscription</p>
-            <h2 className="mt-3 text-3xl font-semibold sm:text-4xl">Prêt à construire ton planning permis ?</h2>
-          </div>
-          <Link className="focus-ring inline-flex items-center justify-center gap-2 rounded-full bg-white px-6 py-4 font-semibold text-loden-ink shadow-soft hover:bg-loden-50" href="/inscription">
-            Créer mon compte élève
-            <ArrowRight className="h-5 w-5" />
-          </Link>
         </div>
       </section>
     </main>

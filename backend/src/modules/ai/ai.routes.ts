@@ -2,6 +2,7 @@ import { Router } from "express";
 import rateLimit from "express-rate-limit";
 import { z } from "zod";
 import { runAgent } from "../../ai/agent";
+import { buildCompactPublicAiPrompt, buildPublicFallbackReply } from "../../ai/public-fallback";
 import { crmTools, publicTools } from "../../ai/tools";
 import type { AiMessage, AiProvider } from "../../ai/types";
 import {
@@ -108,10 +109,6 @@ export function createAiRouter(repository: LodenRepository, config: ApiConfig, a
     "/chat",
     asyncHandler(async (req, res) => {
       const body = validateBody(chatSchema, req);
-      if (!ai.available) {
-        aiUnavailable(res);
-        return;
-      }
       const [formations, pricingPlans, agencies, companyInfo] = await Promise.all([
         repository.listFormations(),
         repository.listPricingPlans(),
@@ -119,6 +116,22 @@ export function createAiRouter(repository: LodenRepository, config: ApiConfig, a
         repository.getCompanyInfo()
       ]);
       const company = buildCompanyContext(companyInfo);
+      if (!ai.available) {
+        res.json({
+          data: {
+            reply: buildPublicFallbackReply({
+              messages: body.messages,
+              formations,
+              pricingPlans,
+              agencies,
+              company: companyInfo,
+              contactPhone: company.phone ?? CONTACT_PHONE
+            }),
+            mode: "fallback"
+          }
+        });
+        return;
+      }
       const systemPrompt = buildPublicAgentSystemPrompt({
         formations,
         pricingPlans,
@@ -129,6 +142,44 @@ export function createAiRouter(repository: LodenRepository, config: ApiConfig, a
       const userMessages: AiMessage[] = body.messages.map((m) =>
         m.role === "assistant" ? { role: "assistant", content: m.content } : { role: "user", content: m.content }
       );
+      if (ai.name === "groq") {
+        try {
+          const reply = await ai.complete(
+            [
+              {
+                role: "system",
+                content: buildCompactPublicAiPrompt({
+                  formations,
+                  pricingPlans,
+                  agencies,
+                  company: companyInfo,
+                  contactPhone: company.phone ?? CONTACT_PHONE
+                })
+              },
+              ...userMessages
+            ],
+            { temperature: 0.3, maxTokens: 260 }
+          );
+          res.json({ data: { reply } });
+          return;
+        } catch (error) {
+          console.error("[ai] chat compact échec:", error instanceof Error ? error.message : error);
+          res.json({
+            data: {
+              reply: buildPublicFallbackReply({
+                messages: body.messages,
+                formations,
+                pricingPlans,
+                agencies,
+                company: companyInfo,
+                contactPhone: company.phone ?? CONTACT_PHONE
+              }),
+              mode: "fallback"
+            }
+          });
+          return;
+        }
+      }
       try {
         const reply = await runAgent(ai, {
           systemPrompt,
@@ -139,7 +190,19 @@ export function createAiRouter(repository: LodenRepository, config: ApiConfig, a
         res.json({ data: { reply } });
       } catch (error) {
         console.error("[ai] chat échec:", error instanceof Error ? error.message : error);
-        aiUnavailable(res);
+        res.json({
+          data: {
+            reply: buildPublicFallbackReply({
+              messages: body.messages,
+              formations,
+              pricingPlans,
+              agencies,
+              company: companyInfo,
+              contactPhone: company.phone ?? CONTACT_PHONE
+            }),
+            mode: "fallback"
+          }
+        });
       }
     })
   );

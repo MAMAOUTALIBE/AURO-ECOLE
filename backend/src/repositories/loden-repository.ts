@@ -21,6 +21,12 @@ import type {
   AutomationRuleRecord,
   AutomationTrigger,
   AutomationAction,
+  ChatAppointmentRecord,
+  ChatAppointmentStatus,
+  ChatAvailabilitySlotRecord,
+  ChatConversationRecord,
+  ChatTaskRecord,
+  ChatTaskStatus,
   ContactRequestRecord,
   ContactRequestStatus,
   CpfRequestRecord,
@@ -212,6 +218,56 @@ export type CreateLeadInput = Omit<LeadRecord, "id" | "status" | "createdAt" | "
   status?: LeadStatus;
 };
 
+export type CreateChatAppointmentInput = Omit<
+  ChatAppointmentRecord,
+  | "id"
+  | "source"
+  | "adminEmailStatus"
+  | "clientEmailStatus"
+  | "whatsappStatus"
+  | "createdAt"
+  | "updatedAt"
+> & {
+  source?: "chatbot";
+  adminEmailStatus?: ChatAppointmentRecord["adminEmailStatus"];
+  clientEmailStatus?: ChatAppointmentRecord["clientEmailStatus"];
+  whatsappStatus?: ChatAppointmentRecord["whatsappStatus"];
+};
+
+export type CreateChatTaskInput = Omit<ChatTaskRecord, "id" | "status" | "createdAt" | "updatedAt"> & {
+  status?: ChatTaskStatus;
+};
+
+export type CreateChatConversationInput = Omit<ChatConversationRecord, "id" | "status" | "createdAt" | "updatedAt"> & {
+  status?: ChatConversationRecord["status"];
+};
+
+export type CreateChatAvailabilitySlotInput = Omit<
+  ChatAvailabilitySlotRecord,
+  "id" | "bookedCount" | "createdAt" | "updatedAt"
+> & {
+  bookedCount?: number;
+};
+
+export type UpdateChatAppointmentInput = Partial<
+  Pick<
+    ChatAppointmentRecord,
+    | "status"
+    | "assignedToId"
+    | "message"
+    | "adminEmailStatus"
+    | "clientEmailStatus"
+    | "whatsappStatus"
+    | "whatsappMessage"
+  >
+>;
+
+export type UpdateChatTaskInput = Partial<Pick<ChatTaskRecord, "status" | "assignedToId" | "deadline" | "note" | "priority">>;
+
+export type UpdateChatAvailabilitySlotInput = Partial<
+  Pick<ChatAvailabilitySlotRecord, "label" | "startsAt" | "endsAt" | "type" | "agencyId" | "assignedToId" | "active" | "capacity">
+>;
+
 export type CreateExamInput = Omit<ExamRecord, "id" | "result" | "attempt" | "createdAt" | "updatedAt"> & {
   result?: ExamRecord["result"];
   attempt?: number;
@@ -353,6 +409,22 @@ export interface LodenRepository {
   listLeads(filters?: { status?: LeadStatus; agencyId?: string }): Promise<LeadRecord[]>;
   createLead(input: CreateLeadInput): Promise<LeadRecord>;
   updateLead(id: string, input: Partial<LeadRecord>): Promise<LeadRecord>;
+
+  listChatAppointments(filters?: { status?: ChatAppointmentStatus; agencyId?: string }): Promise<ChatAppointmentRecord[]>;
+  findChatAppointmentById(id: string): Promise<ChatAppointmentRecord | null>;
+  createChatAppointment(input: CreateChatAppointmentInput): Promise<ChatAppointmentRecord>;
+  updateChatAppointment(id: string, input: UpdateChatAppointmentInput): Promise<ChatAppointmentRecord>;
+
+  listChatTasks(filters?: { status?: ChatTaskStatus; leadId?: string; appointmentId?: string }): Promise<ChatTaskRecord[]>;
+  createChatTask(input: CreateChatTaskInput): Promise<ChatTaskRecord>;
+  updateChatTask(id: string, input: UpdateChatTaskInput): Promise<ChatTaskRecord>;
+
+  listChatConversations(filters?: { leadId?: string; appointmentId?: string }): Promise<ChatConversationRecord[]>;
+  createChatConversation(input: CreateChatConversationInput): Promise<ChatConversationRecord>;
+
+  listChatAvailabilitySlots(filters?: { from?: Date; to?: Date; active?: boolean; agencyId?: string }): Promise<ChatAvailabilitySlotRecord[]>;
+  createChatAvailabilitySlot(input: CreateChatAvailabilitySlotInput): Promise<ChatAvailabilitySlotRecord>;
+  updateChatAvailabilitySlot(id: string, input: UpdateChatAvailabilitySlotInput): Promise<ChatAvailabilitySlotRecord>;
 
   listExams(filters?: { agencyId?: string; studentId?: string }): Promise<ExamRecord[]>;
   createExam(input: CreateExamInput): Promise<ExamRecord>;

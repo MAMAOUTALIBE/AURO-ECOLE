@@ -1,6 +1,10 @@
 import { PrismaClient } from "@prisma/client";
 import type {
   BookingRecord,
+  ChatAppointmentRecord,
+  ChatAvailabilitySlotRecord,
+  ChatConversationRecord,
+  ChatTaskRecord,
   CompanyInfoRecord,
   FormationRecord,
   InvoiceRecord,
@@ -35,6 +39,10 @@ import type {
   CreateContractInput,
   CreateContentEntryInput,
   CreateAutomationRuleInput,
+  CreateChatAppointmentInput,
+  CreateChatAvailabilitySlotInput,
+  CreateChatConversationInput,
+  CreateChatTaskInput,
   CreateMediaInput,
   CreateStudentInput,
   CreateUserInput,
@@ -45,7 +53,10 @@ import type {
   UpdateQuoteInput,
   UpdateContractInput,
   UpdateContentEntryInput,
-  UpdateAutomationRuleInput
+  UpdateAutomationRuleInput,
+  UpdateChatAppointmentInput,
+  UpdateChatAvailabilitySlotInput,
+  UpdateChatTaskInput
 } from "./loden-repository";
 
 export class PrismaLodenRepository implements LodenRepository {
@@ -1104,6 +1115,231 @@ export class PrismaLodenRepository implements LodenRepository {
       estimatedValueCents: row.estimatedValueCents ?? undefined,
       nextFollowUpAt: row.nextFollowUpAt ?? undefined
     };
+  }
+
+  private mapChatAppointment(row: {
+    id: string;
+    leadId: string;
+    fullName: string;
+    firstName: string;
+    lastName: string;
+    phone: string;
+    email: string | null;
+    formation: string;
+    objective: string;
+    message: string | null;
+    date: string;
+    time: string;
+    startsAt: Date;
+    endsAt: Date;
+    type: string;
+    status: string;
+    assignedToId: string | null;
+    source: string;
+    consentContact: boolean;
+    consentWhatsApp: boolean;
+    whatsappMessage: string | null;
+    adminEmailStatus: string;
+    clientEmailStatus: string;
+    whatsappStatus: string;
+    createdAt: Date;
+    updatedAt: Date;
+  }): ChatAppointmentRecord {
+    return {
+      ...row,
+      email: row.email ?? undefined,
+      message: row.message ?? undefined,
+      type: row.type as ChatAppointmentRecord["type"],
+      status: row.status as ChatAppointmentRecord["status"],
+      assignedToId: row.assignedToId ?? undefined,
+      source: "chatbot",
+      whatsappMessage: row.whatsappMessage ?? undefined,
+      adminEmailStatus: row.adminEmailStatus as ChatAppointmentRecord["adminEmailStatus"],
+      clientEmailStatus: row.clientEmailStatus as ChatAppointmentRecord["clientEmailStatus"],
+      whatsappStatus: row.whatsappStatus as ChatAppointmentRecord["whatsappStatus"]
+    };
+  }
+
+  async listChatAppointments(filters?: Parameters<LodenRepository["listChatAppointments"]>[0]) {
+    const rows = await this.prisma.chatAppointment.findMany({
+      where: {
+        ...(filters?.status ? { status: filters.status } : {})
+      },
+      orderBy: { createdAt: "desc" }
+    });
+    return rows.map((row) => this.mapChatAppointment(row));
+  }
+
+  async findChatAppointmentById(id: string) {
+    const row = await this.prisma.chatAppointment.findUnique({ where: { id } });
+    return row ? this.mapChatAppointment(row) : null;
+  }
+
+  async createChatAppointment(input: CreateChatAppointmentInput) {
+    const row = await this.prisma.chatAppointment.create({
+      data: {
+        ...input,
+        source: "chatbot",
+        adminEmailStatus: input.adminEmailStatus ?? "pending",
+        clientEmailStatus: input.clientEmailStatus ?? "pending",
+        whatsappStatus: input.whatsappStatus ?? "pending"
+      }
+    });
+    const slot = await this.prisma.chatAvailabilitySlot.findFirst({
+      where: { active: true, startsAt: input.startsAt, endsAt: input.endsAt }
+    });
+    if (slot) {
+      const nextBookedCount = slot.bookedCount + 1;
+      await this.prisma.chatAvailabilitySlot.update({
+        where: { id: slot.id },
+        data: {
+          bookedCount: nextBookedCount,
+          active: nextBookedCount < slot.capacity
+        }
+      });
+    }
+    return this.mapChatAppointment(row);
+  }
+
+  async updateChatAppointment(id: string, input: UpdateChatAppointmentInput) {
+    const row = await this.prisma.chatAppointment.update({ where: { id }, data: input });
+    return this.mapChatAppointment(row);
+  }
+
+  private mapChatTask(row: {
+    id: string;
+    leadId: string;
+    appointmentId: string | null;
+    type: string;
+    priority: string;
+    assignedToId: string | null;
+    deadline: Date;
+    note: string;
+    status: string;
+    createdAt: Date;
+    updatedAt: Date;
+  }): ChatTaskRecord {
+    return {
+      ...row,
+      appointmentId: row.appointmentId ?? undefined,
+      type: row.type as ChatTaskRecord["type"],
+      priority: row.priority as ChatTaskRecord["priority"],
+      assignedToId: row.assignedToId ?? undefined,
+      status: row.status as ChatTaskRecord["status"]
+    };
+  }
+
+  async listChatTasks(filters?: Parameters<LodenRepository["listChatTasks"]>[0]) {
+    const rows = await this.prisma.chatTask.findMany({
+      where: {
+        ...(filters?.status ? { status: filters.status } : {}),
+        ...(filters?.leadId ? { leadId: filters.leadId } : {}),
+        ...(filters?.appointmentId ? { appointmentId: filters.appointmentId } : {})
+      },
+      orderBy: { deadline: "asc" }
+    });
+    return rows.map((row) => this.mapChatTask(row));
+  }
+
+  async createChatTask(input: CreateChatTaskInput) {
+    const row = await this.prisma.chatTask.create({ data: { ...input, status: input.status ?? "A_FAIRE" } });
+    return this.mapChatTask(row);
+  }
+
+  async updateChatTask(id: string, input: UpdateChatTaskInput) {
+    const row = await this.prisma.chatTask.update({ where: { id }, data: input });
+    return this.mapChatTask(row);
+  }
+
+  private mapChatConversation(row: {
+    id: string;
+    leadId: string | null;
+    appointmentId: string | null;
+    visitorName: string | null;
+    messages: unknown;
+    status: string;
+    createdAt: Date;
+    updatedAt: Date;
+  }): ChatConversationRecord {
+    return {
+      ...row,
+      leadId: row.leadId ?? undefined,
+      appointmentId: row.appointmentId ?? undefined,
+      visitorName: row.visitorName ?? undefined,
+      messages: Array.isArray(row.messages) ? (row.messages as ChatConversationRecord["messages"]) : [],
+      status: row.status as ChatConversationRecord["status"]
+    };
+  }
+
+  async listChatConversations(filters?: Parameters<LodenRepository["listChatConversations"]>[0]) {
+    const rows = await this.prisma.chatConversation.findMany({
+      where: {
+        ...(filters?.leadId ? { leadId: filters.leadId } : {}),
+        ...(filters?.appointmentId ? { appointmentId: filters.appointmentId } : {})
+      },
+      orderBy: { updatedAt: "desc" }
+    });
+    return rows.map((row) => this.mapChatConversation(row));
+  }
+
+  async createChatConversation(input: CreateChatConversationInput) {
+    const row = await this.prisma.chatConversation.create({
+      data: { ...input, status: input.status ?? "OUVERTE", messages: input.messages as never }
+    });
+    return this.mapChatConversation(row);
+  }
+
+  private mapChatAvailabilitySlot(row: {
+    id: string;
+    label: string;
+    startsAt: Date;
+    endsAt: Date;
+    type: string;
+    agencyId: string | null;
+    assignedToId: string | null;
+    active: boolean;
+    capacity: number;
+    bookedCount: number;
+    createdAt: Date;
+    updatedAt: Date;
+  }): ChatAvailabilitySlotRecord {
+    return {
+      ...row,
+      type: row.type as ChatAvailabilitySlotRecord["type"],
+      agencyId: row.agencyId ?? undefined,
+      assignedToId: row.assignedToId ?? undefined
+    };
+  }
+
+  async listChatAvailabilitySlots(filters?: Parameters<LodenRepository["listChatAvailabilitySlots"]>[0]) {
+    const rows = await this.prisma.chatAvailabilitySlot.findMany({
+      where: {
+        ...(filters?.from || filters?.to
+          ? {
+              startsAt: {
+                ...(filters.from ? { gte: filters.from } : {}),
+                ...(filters.to ? { lte: filters.to } : {})
+              }
+            }
+          : {}),
+        ...(filters?.active === undefined ? {} : { active: filters.active }),
+        ...(filters?.agencyId ? { OR: [{ agencyId: filters.agencyId }, { agencyId: null }] } : {})
+      },
+      orderBy: { startsAt: "asc" }
+    });
+    return rows.filter((row) => row.bookedCount < row.capacity).map((row) => this.mapChatAvailabilitySlot(row));
+  }
+
+  async createChatAvailabilitySlot(input: CreateChatAvailabilitySlotInput) {
+    const row = await this.prisma.chatAvailabilitySlot.create({
+      data: { ...input, bookedCount: input.bookedCount ?? 0 }
+    });
+    return this.mapChatAvailabilitySlot(row);
+  }
+
+  async updateChatAvailabilitySlot(id: string, input: UpdateChatAvailabilitySlotInput) {
+    const row = await this.prisma.chatAvailabilitySlot.update({ where: { id }, data: input });
+    return this.mapChatAvailabilitySlot(row);
   }
 
   async listExams(filters?: { agencyId?: string; studentId?: string }) {

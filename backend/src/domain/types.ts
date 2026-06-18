@@ -499,6 +499,81 @@ export type LeadRecord = {
   updatedAt: Date;
 };
 
+export type ChatAppointmentStatus = "A_CONFIRMER" | "CONFIRME" | "TRAITE" | "ANNULE";
+export type ChatAppointmentType = "APPEL" | "AGENCE" | "VISIO" | "DEVIS" | "INSCRIPTION";
+export type ChatTaskStatus = "A_FAIRE" | "TERMINEE" | "ANNULEE";
+export type ChatTaskType = "RELANCE" | "CONFIRMATION";
+export type ChatTaskPriority = "HAUTE" | "NORMALE" | "BASSE";
+
+export type ChatAppointmentRecord = {
+  id: string;
+  leadId: string;
+  fullName: string;
+  firstName: string;
+  lastName: string;
+  phone: string;
+  email?: string | null;
+  formation: string;
+  objective: string;
+  message?: string | null;
+  date: string;
+  time: string;
+  startsAt: Date;
+  endsAt: Date;
+  type: ChatAppointmentType;
+  status: ChatAppointmentStatus;
+  assignedToId?: string | null;
+  source: "chatbot";
+  consentContact: boolean;
+  consentWhatsApp: boolean;
+  whatsappMessage?: string | null;
+  adminEmailStatus: "pending" | "sent" | "failed" | "skipped";
+  clientEmailStatus: "pending" | "sent" | "failed" | "skipped";
+  whatsappStatus: "pending" | "sent" | "failed" | "skipped";
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export type ChatTaskRecord = {
+  id: string;
+  leadId: string;
+  appointmentId?: string | null;
+  type: ChatTaskType;
+  priority: ChatTaskPriority;
+  assignedToId?: string | null;
+  deadline: Date;
+  note: string;
+  status: ChatTaskStatus;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export type ChatConversationRecord = {
+  id: string;
+  leadId?: string | null;
+  appointmentId?: string | null;
+  visitorName?: string | null;
+  messages: { role: "user" | "assistant"; content: string; createdAt: string }[];
+  status: "OUVERTE" | "TRAITEE";
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export type ChatAvailabilitySlotRecord = {
+  id: string;
+  label: string;
+  startsAt: Date;
+  endsAt: Date;
+  type: ChatAppointmentType;
+  agencyId?: string | null;
+  assignedToId?: string | null;
+  active: boolean;
+  capacity: number;
+  bookedCount: number;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
 export type FaqEntryRecord = {
   id: string;
   question: string;

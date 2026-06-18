@@ -68,6 +68,7 @@ export const crmNav: NavSection[] = [
     title: "Commercial",
     icon: Target,
     items: [
+      { label: "Demandes chatbot", href: "/admin/demandes-chatbot", icon: MessageSquare, status: "live" },
       { label: "Leads", href: "/admin/pipeline", icon: FolderKanban, status: "live" },
       { label: "Prospects", href: "/admin/pipeline", icon: Target, status: "live" },
       { label: "Devis", href: "/admin/devis", icon: FileSpreadsheet, status: "live" },

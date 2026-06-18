@@ -1,34 +1,19 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Allura, Great_Vibes, Permanent_Marker } from "next/font/google";
-import { ArrowRight, PlayCircle } from "lucide-react";
+import { ArrowRight, CheckCircle2, MapPin, Timer, WalletCards } from "lucide-react";
 import { MotionReveal } from "@/components/MotionReveal";
 import { defaultHeroHome, getSiteSetting, type HeroHome } from "@/lib/site-content";
-import { resolveSiteIcon } from "@/lib/site-icons";
-
-const greatVibes = Great_Vibes({
-  subsets: ["latin"],
-  weight: "400",
-  display: "swap"
-});
-
-const allura = Allura({
-  subsets: ["latin"],
-  weight: "400",
-  display: "swap"
-});
-
-const permanentMarker = Permanent_Marker({
-  subsets: ["latin"],
-  weight: "400",
-  display: "swap"
-});
 
 export async function HeroSection() {
   const hero = await getSiteSetting<HeroHome>("hero.home", defaultHeroHome);
   if (!hero.enabled) return null;
 
-  const ariaLabel = [hero.scriptLine, hero.connector, hero.brand].filter(Boolean).join(" ");
+  const badges = [
+    { icon: WalletCards, label: "CPF possible" },
+    { icon: Timer, label: "Formations rapides" },
+    { icon: CheckCircle2, label: "Planning flexible" },
+    { icon: MapPin, label: "Conflans" }
+  ];
 
   return (
     <section className="relative overflow-hidden bg-loden-pearl">
@@ -53,65 +38,53 @@ export async function HeroSection() {
           </div>
         ) : null}
 
-        <div className="container-pad relative z-20 grid items-center py-8 lg:min-h-[calc(100svh-8rem)] lg:py-6 lg:grid-cols-[520px_1fr]">
+        <div className="container-pad relative z-20 grid items-center py-10 sm:py-12 lg:min-h-[560px] lg:grid-cols-[520px_1fr] lg:py-10">
           <MotionReveal>
             <div className="max-w-[520px]">
-              <h1 aria-label={ariaLabel} className="leading-none">
-                <span className={`${greatVibes.className} block text-[3.6rem] font-normal leading-[0.9] text-[#087f92] sm:text-[4.5rem] lg:text-[5.25rem]`}>
-                  {hero.scriptLine}
-                </span>
-                {hero.connector ? (
-                  <span className={`${allura.className} block pl-5 text-[2.1rem] font-normal leading-[0.9] text-loden-ink sm:text-[2.4rem]`}>
-                    {hero.connector}
-                  </span>
-                ) : null}
-                <span className={`${permanentMarker.className} block text-[3.4rem] font-normal leading-[0.95] tracking-[-0.04em] text-loden-ink sm:text-[4.25rem] lg:text-[4.75rem]`}>
-                  {hero.brand}
-                </span>
+              <p className="mb-4 inline-flex rounded-full border border-loden-100 bg-white/90 px-4 py-2 text-sm font-semibold text-loden-700 shadow-soft">
+                Auto-école & centre de formation à Conflans
+              </p>
+              <h1 className="text-4xl font-semibold leading-tight text-loden-ink sm:text-5xl lg:text-6xl">
+                Passe ton permis avec LODENE
               </h1>
 
-              <p className="mt-4 max-w-md text-lg leading-7 text-loden-ink">{hero.subtitle}</p>
+              <p className="mt-5 max-w-md text-lg leading-8 text-loden-muted">
+                Permis B, VTC, SST et formations professionnelles à Conflans.
+              </p>
 
               <div className="mt-5 flex flex-col gap-3 sm:flex-row">
                 <Link
-                  href={hero.primaryCta.href}
+                  href="/inscription"
                   className="focus-ring inline-flex items-center justify-center gap-3 rounded-full bg-loden-700 px-7 py-3.5 text-base font-semibold text-white shadow-soft transition hover:bg-loden-800"
                 >
-                  {hero.primaryCta.label}
+                  Je m&apos;inscris
                   <ArrowRight className="h-5 w-5" aria-hidden="true" />
                 </Link>
-                {hero.secondaryCta ? (
-                  <Link
-                    href={hero.secondaryCta.href}
-                    className="focus-ring inline-flex items-center justify-center gap-3 rounded-full border border-loden-500 bg-white/82 px-7 py-3.5 text-base font-semibold text-loden-ink shadow-soft backdrop-blur transition hover:bg-white"
-                  >
-                    <PlayCircle className="h-5 w-5 text-loden-500" aria-hidden="true" />
-                    {hero.secondaryCta.label}
-                  </Link>
-                ) : null}
+                <Link
+                  href="/formations"
+                  className="focus-ring inline-flex items-center justify-center gap-3 rounded-full border border-loden-500 bg-white/90 px-7 py-3.5 text-base font-semibold text-loden-ink shadow-soft backdrop-blur transition hover:bg-white"
+                >
+                  Voir les formations
+                </Link>
               </div>
 
-              {hero.badges.length > 0 ? (
-                <div className="mt-6 grid max-w-[38rem] grid-cols-2 gap-2.5 sm:grid-cols-4">
-                  {hero.badges.map((badge) => {
-                    const Icon = resolveSiteIcon(badge.icon);
-
-                    return (
-                      <div key={badge.title} className="rounded-2xl bg-white/82 p-3.5 shadow-soft backdrop-blur">
-                        <Icon className="h-5 w-5 text-loden-700" aria-hidden="true" />
-                        <p className="mt-2 text-lg font-semibold text-loden-ink">{badge.title}</p>
-                        {badge.detail ? <p className="mt-0.5 text-sm text-loden-muted">{badge.detail}</p> : null}
-                      </div>
-                    );
-                  })}
-                </div>
-              ) : null}
+              <div className="mt-6 flex max-w-[38rem] flex-wrap gap-2.5">
+                {badges.map((badge) => {
+                  const Icon = badge.icon;
+                  return (
+                    <span key={badge.label} className="inline-flex items-center gap-2 rounded-full bg-white/90 px-4 py-2 text-sm font-semibold text-loden-ink shadow-soft backdrop-blur">
+                      <Icon className="h-4 w-4 text-loden-700" aria-hidden="true" />
+                      {badge.label}
+                    </span>
+                  );
+                })}
+              </div>
             </div>
           </MotionReveal>
 
           {hero.image ? (
             <MotionReveal delay={0.1}>
-              <div className="relative mt-10 min-h-[360px] lg:hidden">
+              <div className="relative mt-6 min-h-[210px] sm:min-h-[300px] lg:hidden">
                 <Image
                   src={hero.image}
                   alt={hero.imageAlt}

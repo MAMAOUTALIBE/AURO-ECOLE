@@ -3,7 +3,6 @@ import { AiChatWidget } from "@/components/AiChatWidget";
 import { Footer } from "@/components/Footer";
 import { HeaderMain } from "@/components/HeaderMain";
 import { HeaderTop } from "@/components/HeaderTop";
-import { FloatingWhatsappButton } from "@/components/FloatingWhatsappButton";
 import { SiteChrome } from "@/components/SiteChrome";
 import { companyInfo, contactInfo, socialLinks } from "@/data/site";
 import { safeJsonLd } from "@/lib/json-ld";
@@ -103,7 +102,6 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
           footer={
             <>
               <Footer />
-              <FloatingWhatsappButton />
               <AiChatWidget />
             </>
           }

@@ -11,6 +11,7 @@ import { createAuditRouter } from "./modules/audit/audit.routes";
 import { createAuthRouter } from "./modules/auth/auth.routes";
 import { createBookingsRouter } from "./modules/bookings/bookings.routes";
 import { createCatalogRouter } from "./modules/catalog/catalog.routes";
+import { createAppointmentsRouter, createChatAdminRouter, createChatRouter } from "./modules/chat/chat.routes";
 import { createContactsRouter } from "./modules/contacts/contacts.routes";
 import { createContentRouter } from "./modules/content/content.routes";
 import { createCpfRouter } from "./modules/cpf/cpf.routes";
@@ -24,6 +25,7 @@ import { createCmsRouter } from "./modules/cms/cms.routes";
 import { createAutomationsRouter } from "./modules/automations/automations.routes";
 import { createLeadsRouter } from "./modules/leads/leads.routes";
 import { createMediaRouter } from "./modules/media/media.routes";
+import { createNotificationsRouter } from "./modules/notifications/notifications.routes";
 import { createPaymentsRouter, createStripeWebhookHandler } from "./modules/payments/payments.routes";
 import { createPermissionsRouter } from "./modules/permissions/permissions.routes";
 import { createStripeProvider } from "./payments/stripe-provider";
@@ -87,6 +89,7 @@ export function createApp(repository: LodenRepository, config: ApiConfig, deps: 
   app.use("/api/auth", createAuthRouter(repository, config));
   app.use("/api/agencies", createAgenciesRouter(repository, config));
   app.use("/api/admin", createStatsRouter(repository, config));
+  app.use("/api/admin", createChatAdminRouter(repository, config));
   app.use("/api/audit-logs", createAuditRouter(repository, config));
   app.use("/api/permissions", createPermissionsRouter(repository, config));
   app.use("/api", createCatalogRouter(repository, config));
@@ -96,6 +99,7 @@ export function createApp(repository: LodenRepository, config: ApiConfig, deps: 
   app.use("/api/users", createUsersRouter(repository, config));
   app.use("/api/students", createStudentsRouter(repository, config));
   app.use("/api/bookings", createBookingsRouter(repository, config));
+  app.use("/api/appointments", createAppointmentsRouter(repository));
   app.use("/api/payments", createPaymentsRouter(repository, config, stripeProvider));
   app.use("/api/installments", createInstallmentsRouter(repository, config));
   app.use("/api/invoices", createInvoicesRouter(repository, config));
@@ -112,8 +116,10 @@ export function createApp(repository: LodenRepository, config: ApiConfig, deps: 
   app.use("/api/content", contentRouter);
   app.use("/api/reviews", createReviewsRouter(repository, config));
   app.use("/api/media", createMediaRouter(repository, config));
+  app.use("/api/notifications", createNotificationsRouter(repository, config));
   app.use("/api/site", createSiteRouter(repository, config));
   app.use("/api/search", createSearchRouter(repository));
+  app.use("/api/chat", createChatRouter(repository, config, aiProvider));
   app.use("/api/ai", createAiRouter(repository, config, aiProvider));
 
   app.use(notFoundHandler);

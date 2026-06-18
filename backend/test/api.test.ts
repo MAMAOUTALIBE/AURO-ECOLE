@@ -233,6 +233,54 @@ describe("LODENE API", () => {
     await request(app).post("/api/contact-requests").send({ email: "bad" }).expect(400);
   });
 
+  it("creates a chatbot lead, appointment, task and CRM admin view", async () => {
+    const { app } = testApp();
+
+    const availability = await request(app).get("/api/appointments/availability").expect(200);
+    expect(availability.body.data.length).toBeGreaterThan(0);
+    const slot = availability.body.data[0];
+
+    const created = await request(app)
+      .post("/api/chat/appointment")
+      .send({
+        slotId: slot.id,
+        formation: "Permis B automatique",
+        objective: "M'inscrire",
+        firstName: "Nadia",
+        lastName: "Chatbot",
+        phone: "0660325087",
+        email: "nadia.chatbot@example.com",
+        message: "Je souhaite commencer rapidement.",
+        consentContact: true,
+        consentWhatsApp: true,
+        conversation: [{ role: "user", content: "Je veux prendre rendez-vous." }]
+      })
+      .expect(201);
+
+    expect(created.body.data.lead.source).toBe("chatbot");
+    expect(created.body.data.lead.temperature).toBe("chaud");
+    expect(created.body.data.appointment.status).toBe("A_CONFIRMER");
+    expect(created.body.data.appointment.formation).toBe("Permis B automatique");
+    expect(created.body.data.task.priority).toBe("HAUTE");
+    expect(created.body.data.whatsapp.message).toContain("Permis B automatique");
+    expect(created.body.data.whatsapp.url).toContain("wa.me");
+
+    const admin = await request(app)
+      .post("/api/auth/login")
+      .send({ email: "admin@loden-autoecole.fr", password: "admin-password" })
+      .expect(200);
+
+    await request(app)
+      .get("/api/admin/appointments")
+      .set("Authorization", `Bearer ${admin.body.token}`)
+      .expect(200)
+      .expect(({ body }) => {
+        expect(body.data.appointments.some((item: { id: string }) => item.id === created.body.data.appointment.id)).toBe(true);
+        expect(body.data.leads.some((item: { id: string }) => item.id === created.body.data.lead.id)).toBe(true);
+        expect(body.data.tasks.some((item: { appointmentId: string }) => item.appointmentId === created.body.data.appointment.id)).toBe(true);
+      });
+  });
+
   it("registers and authenticates a student", async () => {
     const { app } = testApp();
 
@@ -1096,14 +1144,18 @@ describe("LODENE API", () => {
       .expect(({ body }) => expect(body.data.summary).toBe("Réponse de test."));
   });
 
-  it("returns a clear message when the AI provider is not configured", async () => {
+  it("serves a useful public chatbot fallback when the AI provider is not configured", async () => {
     const { app } = testApp(disabledAi);
 
     await request(app)
       .post("/api/ai/chat")
-      .send({ messages: [{ role: "user", content: "Bonjour" }] })
-      .expect(503)
-      .expect(({ body }) => expect(body.error.code).toBe("AI_UNAVAILABLE"));
+      .send({ messages: [{ role: "user", content: "Quel est le prix du permis B ?" }] })
+      .expect(200)
+      .expect(({ body }) => {
+        expect(body.data.mode).toBe("fallback");
+        expect(body.data.reply).toContain("Permis B automatique");
+        expect(body.data.reply).toContain("924");
+      });
   });
 
   it("CRM agent endpoint requires authentication", async () => {

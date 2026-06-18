@@ -671,6 +671,89 @@ model Lead {
   @@index([email])
 }
 
+model ChatAppointment {
+  id                String   @id @default(cuid())
+  leadId            String
+  fullName          String
+  firstName         String
+  lastName          String
+  phone             String
+  email             String?
+  formation         String
+  objective         String
+  message           String?
+  date              String
+  time              String
+  startsAt          DateTime
+  endsAt            DateTime
+  type              String
+  status            String   @default("A_CONFIRMER")
+  assignedToId      String?
+  source            String   @default("chatbot")
+  consentContact    Boolean  @default(true)
+  consentWhatsApp   Boolean  @default(false)
+  whatsappMessage   String?
+  adminEmailStatus  String   @default("pending")
+  clientEmailStatus String   @default("pending")
+  whatsappStatus    String   @default("pending")
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([status, createdAt])
+  @@index([leadId])
+  @@index([startsAt])
+}
+
+model ChatTask {
+  id            String   @id @default(cuid())
+  leadId        String
+  appointmentId String?
+  type          String
+  priority      String   @default("HAUTE")
+  assignedToId  String?
+  deadline      DateTime
+  note          String
+  status        String   @default("A_FAIRE")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([status, deadline])
+  @@index([leadId])
+  @@index([appointmentId])
+}
+
+model ChatConversation {
+  id            String   @id @default(cuid())
+  leadId        String?
+  appointmentId String?
+  visitorName   String?
+  messages      Json
+  status        String   @default("OUVERTE")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([updatedAt])
+  @@index([leadId])
+  @@index([appointmentId])
+}
+
+model ChatAvailabilitySlot {
+  id            String   @id @default(cuid())
+  label         String
+  startsAt      DateTime
+  endsAt        DateTime
+  type          String
+  agencyId      String?
+  assignedToId  String?
+  active        Boolean  @default(true)
+  capacity      Int      @default(1)
+  bookedCount   Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([active, startsAt])
+}
+
 model Review {
   id            String       @id @default(cuid())
   userId        String?
