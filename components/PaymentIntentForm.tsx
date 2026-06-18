@@ -57,17 +57,17 @@ export function PaymentIntentForm() {
   const [state, setState] = useState<FormState>({ status: "loading" });
 
   useEffect(() => {
-    const token = window.localStorage.getItem("loden_student_token");
-
-    if (!token) {
-      setState({ status: "anonymous" });
-      return;
-    }
-
     const controller = new AbortController();
 
     async function loadPlans() {
       try {
+        // Auth via cookie httpOnly : on sonde la session (jamais de token en JS).
+        const meResponse = await fetch("/api/auth/me", { signal: controller.signal });
+        if (!meResponse.ok) {
+          setState({ status: "anonymous" });
+          return;
+        }
+
         const response = await fetch("/api/tarifs", { signal: controller.signal });
         if (response.ok) {
           const payload = (await response.json()) as {
@@ -85,7 +85,7 @@ export function PaymentIntentForm() {
               id: plan.id,
               title: plan.title,
               priceCents: plan.priceCents,
-              badge: plan.promotionalLabel ?? "LODEN",
+              badge: plan.promotionalLabel ?? "LODENE",
               features: plan.features
             }));
 
@@ -114,12 +114,6 @@ export function PaymentIntentForm() {
   );
 
   async function createPaymentIntent() {
-    const token = window.localStorage.getItem("loden_student_token");
-    if (!token) {
-      setState({ status: "anonymous" });
-      return;
-    }
-
     if (!selectedPlan) {
       setState({ status: "error", message: "Aucun pack payant disponible pour le moment." });
       return;
@@ -130,10 +124,7 @@ export function PaymentIntentForm() {
     try {
       const response = await fetch("/api/payments/payment-intents", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           pricingPlanId: selectedPlan.id,
           kind: "FORMATION",
@@ -143,7 +134,6 @@ export function PaymentIntentForm() {
       });
 
       if (response.status === 401) {
-        window.localStorage.removeItem("loden_student_token");
         setState({ status: "anonymous" });
         return;
       }
@@ -169,7 +159,32 @@ export function PaymentIntentForm() {
 
   if (state.status === "anonymous") {
     return (
-      <PaymentPanel title="Compte élève requis" text="Connecte-toi ou crée ton compte avant de préparer un paiement.">
+      <PaymentPanel
+        title="Ton pack sélectionné"
+        text="Voici le détail de ta formation. Connecte-toi ou crée ton compte élève pour finaliser le paiement en toute sécurité."
+      >
+        {selectedPlan ? (
+          <div className="mt-6 rounded-2xl border border-slate-200 bg-loden-pearl p-5">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <span className="text-lg font-semibold text-loden-ink">{selectedPlan.title}</span>
+              <span className="rounded-full bg-white px-3 py-1 text-sm font-semibold text-loden-700 shadow-soft">
+                {formatCurrency(selectedPlan.priceCents / 100)}
+              </span>
+            </div>
+            {selectedPlan.badge ? <p className="mt-1 text-sm text-loden-muted">{selectedPlan.badge}</p> : null}
+            {selectedPlan.features.length > 0 ? (
+              <ul className="mt-4 grid gap-2 text-sm text-loden-muted">
+                {selectedPlan.features.map((feature) => (
+                  <li key={feature} className="flex gap-2">
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-loden-600" />
+                    <span>{feature}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+          </div>
+        ) : null}
+
         <div className="mt-6 flex flex-col gap-3 sm:flex-row">
           <Link className="focus-ring rounded-full bg-loden-700 px-5 py-3 text-center font-semibold text-white" href="/connexion">
             Me connecter
@@ -178,6 +193,7 @@ export function PaymentIntentForm() {
             Créer un compte
           </Link>
         </div>
+        <p className="mt-4 text-xs text-loden-muted">Aucun débit à cette étape — la préparation du paiement se fait une fois connecté.</p>
       </PaymentPanel>
     );
   }
@@ -186,7 +202,7 @@ export function PaymentIntentForm() {
     <div className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
       <PaymentPanel
         title="Paiement formation"
-        text="Sélectionne ton pack. LODEN crée ici une intention Stripe mockée, sans saisie de carte ni débit réel."
+        text="Sélectionne ton pack. LODENE crée ici une intention Stripe mockée, sans saisie de carte ni débit réel."
       >
         <div className="mt-7 grid gap-3" role="radiogroup" aria-label="Choisir un pack">
           {plans
@@ -220,13 +236,17 @@ export function PaymentIntentForm() {
           type="button"
           onClick={createPaymentIntent}
           disabled={state.status === "submitting" || !selectedPlan}
-          className="focus-ring mt-7 inline-flex w-full items-center justify-center gap-2 rounded-full bg-loden-700 px-6 py-4 font-semibold text-white shadow-soft transition hover:bg-loden-800 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+          className="focus-ring mt-7 inline-flex w-full items-center justify-center gap-2 rounded-full bg-loden-700 px-6 py-4 font-semibold text-white shadow-soft transition hover:bg-loden-800 disabled:cursor-not-allowed disabled:opacity-70 sm:w-auto"
         >
           {state.status === "submitting" ? <Loader2 className="h-5 w-5 animate-spin" /> : <CreditCard className="h-5 w-5" />}
           Préparer le paiement sécurisé
         </button>
 
-        {state.status === "error" ? <p className="mt-4 text-sm font-semibold text-red-600">{state.message}</p> : null}
+        {state.status === "error" ? (
+          <p className="mt-4 text-sm font-semibold text-red-600" role="alert">
+            {state.message}
+          </p>
+        ) : null}
       </PaymentPanel>
 
       <aside className="rounded-3xl border border-slate-200 bg-white p-6 shadow-premium">
@@ -238,7 +258,7 @@ export function PaymentIntentForm() {
           Cette étape prépare le futur checkout : montant, élève, pack et identifiant d’intention sont déjà structurés côté API.
         </p>
         <ul className="mt-6 grid gap-3 text-sm text-loden-muted">
-          {["Aucun débit réel", "JWT élève obligatoire", "Historique visible dans l’espace élève"].map((item) => (
+          {["Aucun débit réel", "Connexion élève requise", "Historique visible dans l’espace élève"].map((item) => (
             <li key={item} className="flex gap-3">
               <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-loden-600" />
               <span>{item}</span>
@@ -247,12 +267,11 @@ export function PaymentIntentForm() {
         </ul>
 
         {state.status === "success" ? (
-          <div className="mt-7 rounded-2xl bg-loden-50 p-4">
+          <div className="mt-7 rounded-2xl bg-loden-50 p-4" role="status">
             <p className="text-sm font-semibold text-loden-ink">Intention créée</p>
             <p className="mt-2 text-sm text-loden-muted">
               Statut : {formatPaymentStatus(state.payment.status)} · Référence : {state.payment.stripePaymentIntentId}
             </p>
-            <p className="mt-2 break-all text-xs text-loden-muted">Client secret mock : {state.clientSecret}</p>
             <Link className="focus-ring mt-4 inline-flex rounded-full bg-white px-4 py-2 text-sm font-semibold text-loden-700 shadow-soft" href="/espace-eleve">
               Voir mon espace élève
             </Link>

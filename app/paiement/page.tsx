@@ -5,7 +5,7 @@ import { PaymentIntentForm } from "@/components/PaymentIntentForm";
 
 export const metadata: Metadata = {
   title: "Paiement sécurisé",
-  description: "Préparation du paiement formation LODEN avec une base compatible Stripe."
+  description: "Préparation du paiement formation LODENE avec une base compatible Stripe."
 };
 
 export default function PaiementPage() {
@@ -13,7 +13,7 @@ export default function PaiementPage() {
     <main>
       <PageHero
         eyebrow="Paiement"
-        title="Prépare ton paiement LODEN en toute sécurité"
+        title="Prépare ton paiement LODENE en toute sécurité"
         text="Un parcours connecté au backend pour préparer le futur checkout Stripe sans paiement réel à ce stade."
         cta="Voir les tarifs"
         ctaHref="/tarifs"

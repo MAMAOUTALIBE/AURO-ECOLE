@@ -5,12 +5,14 @@ export function SectionHeader({
   title,
   text,
   align = "left",
+  tone = "default",
   className
 }: {
   eyebrow?: string;
   title: string;
   text?: string;
   align?: "left" | "center";
+  tone?: "default" | "light";
   className?: string;
 }) {
   return (
@@ -22,14 +24,33 @@ export function SectionHeader({
       )}
     >
       {eyebrow ? (
-        <p className="mb-3 text-sm font-semibold uppercase tracking-[0.14em] text-loden-700">
+        <p
+          className={cn(
+            "mb-3 text-sm font-semibold uppercase tracking-[0.14em]",
+            tone === "light" ? "text-white/80" : "text-loden-700"
+          )}
+        >
           {eyebrow}
         </p>
       ) : null}
-      <h2 className="text-3xl font-semibold leading-tight text-loden-ink sm:text-4xl">
+      <h2
+        className={cn(
+          "text-3xl font-semibold leading-tight sm:text-4xl",
+          tone === "light" ? "text-white" : "text-loden-ink"
+        )}
+      >
         {title}
       </h2>
-      {text ? <p className="mt-4 text-base leading-7 text-loden-muted sm:text-lg">{text}</p> : null}
+      {text ? (
+        <p
+          className={cn(
+            "mt-4 text-base leading-7 sm:text-lg",
+            tone === "light" ? "text-white/80" : "text-loden-muted"
+          )}
+        >
+          {text}
+        </p>
+      ) : null}
     </div>
   );
 }

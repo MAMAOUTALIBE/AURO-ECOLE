@@ -1,136 +1,533 @@
 import type {
+  AgencyMembershipRecord,
+  AgencyRecord,
   AvailabilityRecord,
+  CompanyInfoRecord,
   FaqEntryRecord,
   FormationRecord,
   InstructorRecord,
   MeetingPointRecord,
   PricingPlanRecord,
   ReviewRecord,
+  SiteSettingRecord,
   UserRecord
 } from "../domain/types";
 
+// Informations société officielles (singleton). Seuls nom, adresse, SIRET et agrément
+// sont confirmés ; tél/email/horaires/réseaux/forme/capital restent vides (jamais inventés).
+export const initialCompanyInfo: CompanyInfoRecord = {
+  id: "company",
+  brandName: "LODENE",
+  legalName: "",
+  address: "30 rue Pierre Le Guen",
+  postalCode: "78700",
+  city: "Conflans-Sainte-Honorine",
+  country: "France",
+  siret: "84282888100040",
+  approvalNumber: "E2507800260",
+  phone: "06 60 32 50 87",
+  email: "ae@lodene.fr",
+  hours:
+    "Bureau : mardi & mercredi 10h-12h / 14h-18h · jeudi & vendredi 10h-12h / 14h-20h · samedi 9h-12h / 13h-17h (fermé lundi & dimanche). Cours pratiques : 7j/7, 8h-20h sur réservation.",
+  legalForm: "",
+  capital: "",
+  publicationDirector: "",
+  hostingProvider: "",
+  instagram: "",
+  facebook: "",
+  tiktok: "",
+  youtube: "",
+  updatedAt: new Date("2026-06-06T00:00:00.000Z")
+};
+
 const now = new Date("2026-06-06T00:00:00.000Z");
 
-export const initialFormations: FormationRecord[] = [
+// Établissement unique officiel (Conflans-Sainte-Honorine). Coordonnées GPS et
+// téléphone/email non confirmés -> laissés vides (jamais inventés).
+export const initialAgencies: AgencyRecord[] = [
   {
-    id: "formation-permis-b-manuel",
-    title: "Permis B manuel",
-    slug: "permis-b-manuel",
-    description: "Formation complète en boîte manuelle avec suivi jusqu'à l'examen.",
-    mode: "MANUEL",
-    priceCents: 119000,
-    durationLabel: "20 h minimum",
-    defaultHours: 20,
-    imageUrl: "/loden-hero.jpg",
-    options: { tags: ["Débutant", "CPF", "Manuel"] },
+    id: "agency-republique",
+    name: "LODENE Conflans-Sainte-Honorine",
+    slug: "conflans-sainte-honorine",
+    address: "30 rue Pierre Le Guen, 78700 Conflans-Sainte-Honorine, France",
+    latitude: null,
+    longitude: null,
+    phone: "06 60 32 50 87",
+    email: "ae@lodene.fr",
+    active: true
+  }
+];
+
+export const initialAgencyMemberships: AgencyMembershipRecord[] = [
+  { id: "membership-admin-republique", userId: "user-admin", agencyId: "agency-republique", role: "SUPER_ADMIN", isPrimary: true }
+];
+
+// Catalogue public LODENE. Prix = tarifs PUBLICS issus du dossier d'intégration
+// (à confirmer commercialement avant publication définitive). Aucun coût/marge
+// interne n'est stocké ici (internalPriceCents laissé absent) : confidentialité.
+export const initialFormations: FormationRecord[] = [
+  // ---------------------------------------------------------------------------
+  // 1. Auto-école — Permis B
+  // ---------------------------------------------------------------------------
+  {
+    id: "formation-permis-b-auto-declic",
+    title: "Permis B automatique",
+    slug: "permis-b-auto-declic",
+    subtitle: "Formule Déclic Auto — 13 leçons",
+    description:
+      "Parcours court et confortable pour apprendre à conduire en boîte automatique et avancer efficacement vers l'examen.",
+    mode: "AUTOMATIQUE",
+    productLine: "AUTO_ECOLE",
+    priceCents: 92400,
+    taxMode: "TTC",
+    quoteOnly: false,
+    durationLabel: "13 leçons",
+    defaultHours: 13,
+    imageUrl: null,
+    tags: ["Permis B", "Boîte automatique", "Rapide", "CPF possible"],
     cpfEligible: true,
+    cpfStatus: "POSSIBLE",
     active: true
   },
   {
-    id: "formation-permis-b-automatique",
+    id: "formation-permis-b-auto-maitrise",
     title: "Permis B automatique",
-    slug: "permis-b-automatique",
-    description: "Parcours court et confortable pour obtenir le permis en boîte automatique.",
+    slug: "permis-b-auto-maitrise",
+    subtitle: "Formule Maîtrise Auto — 20 leçons",
+    description:
+      "Une formule complète en boîte automatique pour progresser sereinement avec davantage d'heures de conduite individuelles.",
     mode: "AUTOMATIQUE",
-    priceCents: 89000,
-    durationLabel: "13 h minimum",
-    defaultHours: 13,
-    imageUrl: "/loden-hero.jpg",
-    options: { tags: ["Automatique", "CPF", "Rapide"] },
+    productLine: "AUTO_ECOLE",
+    priceCents: 134400,
+    taxMode: "TTC",
+    quoteOnly: false,
+    durationLabel: "20 leçons",
+    defaultHours: 20,
+    imageUrl: null,
+    tags: ["Permis B", "Boîte automatique", "CPF possible"],
     cpfEligible: true,
+    cpfStatus: "POSSIBLE",
+    active: true
+  },
+  {
+    id: "formation-permis-b-manuel-essentiel",
+    title: "Permis B manuel",
+    slug: "permis-b-manuel-essentiel",
+    subtitle: "Formule Essentiel Manuelle — 20 leçons",
+    description:
+      "Formation complète pour apprendre à conduire en boîte manuelle avec un accompagnement pédagogique jusqu'à l'examen.",
+    mode: "MANUEL",
+    productLine: "AUTO_ECOLE",
+    priceCents: 134400,
+    taxMode: "TTC",
+    quoteOnly: false,
+    durationLabel: "20 leçons",
+    defaultHours: 20,
+    imageUrl: null,
+    tags: ["Permis B", "Boîte manuelle", "CPF possible"],
+    cpfEligible: true,
+    cpfStatus: "POSSIBLE",
+    active: true
+  },
+  {
+    id: "formation-permis-b-manuel-confort",
+    title: "Permis B manuel",
+    slug: "permis-b-manuel-confort",
+    subtitle: "Formule Confort Manuelle — 30 leçons",
+    description:
+      "Une formule renforcée en boîte manuelle avec davantage d'heures de conduite pour aborder l'examen en confiance.",
+    mode: "MANUEL",
+    productLine: "AUTO_ECOLE",
+    priceCents: 194400,
+    taxMode: "TTC",
+    quoteOnly: false,
+    durationLabel: "30 leçons",
+    defaultHours: 30,
+    imageUrl: null,
+    tags: ["Permis B", "Boîte manuelle", "Plus d'heures", "CPF possible"],
+    cpfEligible: true,
+    cpfStatus: "POSSIBLE",
+    active: true
+  },
+  {
+    id: "formation-stage-accelere",
+    title: "Stage accéléré code et conduite",
+    slug: "stage-accelere",
+    subtitle: "Parcours intensif",
+    description:
+      "Un parcours intensif pour avancer plus vite sur le code et la conduite avec une planification resserrée et prioritaire.",
+    mode: "MIXTE",
+    productLine: "AUTO_ECOLE",
+    priceCents: 0,
+    taxMode: "TTC",
+    quoteOnly: true,
+    durationLabel: "2 à 4 semaines",
+    imageUrl: null,
+    tags: ["Permis B", "Accéléré", "Planning prioritaire"],
+    cpfEligible: true,
+    cpfStatus: "POSSIBLE",
+    active: true
+  },
+  {
+    id: "formation-passerelle-bva-manuelle",
+    title: "Passerelle BVA vers boîte manuelle",
+    slug: "passerelle-bva-manuelle",
+    subtitle: "Complément de formation",
+    description:
+      "La passerelle permet d'évoluer d'un permis boîte automatique vers la boîte manuelle après le délai réglementaire applicable.",
+    mode: "MANUEL",
+    productLine: "AUTO_ECOLE",
+    priceCents: 0,
+    taxMode: "TTC",
+    quoteOnly: true,
+    durationLabel: "Formation courte",
+    imageUrl: null,
+    tags: ["Permis B", "Passerelle", "Boîte manuelle"],
+    cpfEligible: false,
+    cpfStatus: "NON_RENSEIGNE",
     active: true
   },
   {
     id: "formation-conduite-accompagnee",
     title: "Conduite accompagnée",
     slug: "conduite-accompagnee",
-    description: "Accompagnement dès 15 ans pour gagner en expérience avant l'examen.",
+    subtitle: "AAC dès 15 ans",
+    description:
+      "Accompagnement dès 15 ans pour gagner en expérience de conduite avant le passage de l'examen.",
     mode: "MANUEL",
-    priceCents: 129000,
+    productLine: "AUTO_ECOLE",
+    priceCents: 0,
+    taxMode: "TTC",
+    quoteOnly: true,
     durationLabel: "Dès 15 ans",
     defaultHours: 20,
-    imageUrl: "/loden-hero.jpg",
-    options: { tags: ["Jeune conducteur", "Famille", "Manuel"] },
+    imageUrl: null,
+    tags: ["Permis B", "Jeune conducteur", "Famille"],
     cpfEligible: false,
+    cpfStatus: "NON_RENSEIGNE",
     active: true
   },
+  // ---------------------------------------------------------------------------
+  // 2. Formation chauffeur VTC (préparation examen CMA / T3P)
+  // ---------------------------------------------------------------------------
   {
-    id: "formation-permis-accelere",
-    title: "Permis accéléré",
-    slug: "permis-accelere",
-    description: "Programme condensé avec créneaux prioritaires pour passer rapidement.",
+    id: "formation-vtc-distanciel-eco",
+    title: "Formation VTC",
+    slug: "vtc-distanciel-eco",
+    subtitle: "Distanciel Éco",
+    description:
+      "L'accès essentiel pour préparer les épreuves théoriques VTC avec une plateforme en ligne disponible 24h/24, couvrant les 7 modules réglementaires et l'aide au dossier CMA.",
     mode: "MIXTE",
-    priceCents: 159000,
-    durationLabel: "2 à 4 semaines",
-    defaultHours: 20,
-    imageUrl: "/loden-hero.jpg",
-    options: { tags: ["Accéléré", "CPF", "Planning prioritaire"] },
-    cpfEligible: true,
-    active: true
-  },
-  {
-    id: "formation-code-en-ligne",
-    title: "Code en ligne",
-    slug: "code-en-ligne",
-    description: "Séries de code, examens blancs et statistiques de progression.",
-    mode: "CODE",
-    priceCents: 3900,
-    durationLabel: "Accès illimité",
-    imageUrl: "/loden-hero.jpg",
-    options: { tags: ["Code", "Mobile", "Révisions"] },
+    productLine: "VTC",
+    priceCents: 39900,
+    taxMode: "TTC",
+    quoteOnly: false,
+    durationLabel: "Accès plateforme 24h/24",
+    imageUrl: null,
+    tags: ["VTC", "Distanciel", "CMA"],
     cpfEligible: false,
+    cpfStatus: "A_CONFIRMER",
     active: true
   },
   {
-    id: "formation-stage-code",
-    title: "Stage de code",
-    slug: "stage-code",
-    description: "Préparation intensive en petit groupe pour sécuriser l'examen du code.",
-    mode: "CODE",
-    priceCents: 19900,
-    durationLabel: "3 jours",
-    imageUrl: "/loden-hero.jpg",
-    options: { tags: ["Stage", "Code", "Intensif"] },
-    cpfEligible: false,
-    active: true
-  },
-  {
-    id: "formation-annulation-permis",
-    title: "Annulation permis",
-    slug: "annulation-permis",
-    description: "Plan de reprise après invalidation, suspension ou annulation.",
+    id: "formation-vtc-intermediaire-light",
+    title: "Formation VTC",
+    slug: "vtc-intermediaire-light",
+    subtitle: "Intermédiaire Light",
+    description:
+      "Un parcours théorique renforcé avec 2 sessions de révision collectives en visioconférence et un module gestion/tarification pour consolider la préparation.",
     mode: "MIXTE",
-    priceCents: 49000,
-    durationLabel: "Sur diagnostic",
-    imageUrl: "/loden-hero.jpg",
-    options: { tags: ["Remise à niveau", "CPF", "Diagnostic"] },
-    cpfEligible: true,
+    productLine: "VTC",
+    priceCents: 59900,
+    taxMode: "TTC",
+    quoteOnly: false,
+    durationLabel: "Distanciel + 2 visios collectives",
+    imageUrl: null,
+    tags: ["VTC", "Distanciel", "Coaching"],
+    cpfEligible: false,
+    cpfStatus: "A_CONFIRMER",
     active: true
   },
   {
-    id: "formation-perfectionnement",
-    title: "Perfectionnement",
-    slug: "perfectionnement",
-    description: "Séances pour reprendre confiance ou préparer un trajet spécifique.",
+    id: "formation-vtc-confort-pro",
+    title: "Formation VTC",
+    slug: "vtc-confort-pro",
+    subtitle: "Confort Pro",
+    description:
+      "Une préparation complète théorie + épreuve pratique (hors conduite) avec module vidéo, simulations de repérage et assistance pour la carte professionnelle VTC.",
     mode: "MIXTE",
-    priceCents: 6500,
-    durationLabel: "À la carte",
-    imageUrl: "/loden-hero.jpg",
-    options: { tags: ["Remise à niveau", "Confiance", "À la carte"] },
+    productLine: "VTC",
+    priceCents: 89900,
+    taxMode: "TTC",
+    quoteOnly: false,
+    durationLabel: "Préparation complète sans conduite",
+    imageUrl: null,
+    tags: ["VTC", "Théorie + pratique", "Carte pro"],
     cpfEligible: false,
+    cpfStatus: "A_CONFIRMER",
+    active: true
+  },
+  {
+    id: "formation-vtc-excellence",
+    title: "Formation VTC",
+    slug: "vtc-excellence",
+    subtitle: "Excellence Haute Exigence",
+    description:
+      "La formule clé en main : plateforme complète, frais d'inscription CMA inclus, 10 h de conduite, véhicule double-commande le jour de l'examen et coaching jusqu'à l'obtention de la carte pro.",
+    mode: "MIXTE",
+    productLine: "VTC",
+    priceCents: 249900,
+    taxMode: "TTC",
+    quoteOnly: false,
+    durationLabel: "Pack clé en main avec conduite",
+    imageUrl: null,
+    tags: ["VTC", "Clé en main", "Conduite incluse", "Véhicule examen"],
+    cpfEligible: false,
+    cpfStatus: "A_CONFIRMER",
+    active: true
+  },
+  // ---------------------------------------------------------------------------
+  // 3. SST — Sauveteur Secouriste du Travail (tarifs HT)
+  // ---------------------------------------------------------------------------
+  {
+    id: "formation-sst-initial",
+    title: "SST Initial",
+    slug: "sst-initial",
+    subtitle: "Sauveteur Secouriste du Travail",
+    description:
+      "Formation complète pour acquérir les gestes de premiers secours au travail et participer à la prévention des risques professionnels. Sessions inter-entreprises (120 € HT/pers.) ou intra-entreprise (1 190 € HT/groupe).",
+    mode: "MIXTE",
+    productLine: "SST",
+    priceCents: 12000,
+    taxMode: "HT",
+    quoteOnly: false,
+    durationLabel: "14 h / 2 jours",
+    imageUrl: null,
+    tags: ["SST", "Sécurité", "Inter & intra-entreprises"],
+    cpfEligible: false,
+    cpfStatus: "NON_RENSEIGNE",
+    active: true
+  },
+  {
+    id: "formation-mac-sst",
+    title: "MAC SST / Recyclage",
+    slug: "mac-sst",
+    subtitle: "Maintien et actualisation des compétences",
+    description:
+      "Formation de maintien et d'actualisation des compétences SST pour les titulaires d'un certificat à renouveler. Inter-entreprises (75 € HT/pers.) ou intra-entreprise (690 € HT/groupe).",
+    mode: "MIXTE",
+    productLine: "SST",
+    priceCents: 7500,
+    taxMode: "HT",
+    quoteOnly: false,
+    durationLabel: "7 h / 1 jour",
+    imageUrl: null,
+    tags: ["SST", "Recyclage", "Inter & intra-entreprises"],
+    cpfEligible: false,
+    cpfStatus: "NON_RENSEIGNE",
+    active: true
+  },
+  // ---------------------------------------------------------------------------
+  // 4. Logistique & sécurité (intra-entreprise, sur devis — tarifs HT)
+  // ---------------------------------------------------------------------------
+  {
+    id: "formation-chariots-r489",
+    title: "Chariots élévateurs — R489",
+    slug: "chariots-elevateurs-r489",
+    subtitle: "Conduite en sécurité",
+    description:
+      "Formation à la conduite en sécurité des chariots élévateurs (catégories 1, 2, 3, 5) : théorie, pratique, vérifications de base et techniques de chargement/déchargement, sur site client.",
+    mode: "MIXTE",
+    productLine: "LOGISTIQUE_SECURITE",
+    priceCents: 0,
+    taxMode: "HT",
+    quoteOnly: true,
+    durationLabel: "2 à 3 jours selon niveau",
+    imageUrl: null,
+    tags: ["Logistique", "R489", "Intra-entreprise", "Sur devis"],
+    cpfEligible: false,
+    cpfStatus: "NON_RENSEIGNE",
+    active: true
+  },
+  {
+    id: "formation-gerbeur-r485",
+    title: "Gerbeur accompagnant — R485",
+    slug: "gerbeur-r485",
+    subtitle: "Conduite en sécurité",
+    description:
+      "Formation à l'utilisation en sécurité du gerbeur accompagnant, avec mise en pratique sur site client.",
+    mode: "MIXTE",
+    productLine: "LOGISTIQUE_SECURITE",
+    priceCents: 0,
+    taxMode: "HT",
+    quoteOnly: true,
+    durationLabel: "1 à 2 jours",
+    imageUrl: null,
+    tags: ["Logistique", "R485", "Intra-entreprise", "Sur devis"],
+    cpfEligible: false,
+    cpfStatus: "NON_RENSEIGNE",
+    active: true
+  },
+  {
+    id: "formation-nacelles-r486",
+    title: "Nacelles / PEMP — R486",
+    slug: "nacelles-pemp-r486",
+    subtitle: "Travaux en hauteur",
+    description:
+      "Formation à l'utilisation réglementaire des plateformes élévatrices mobiles de personnel : prévention des chutes, EPI et stabilisation de l'engin.",
+    mode: "MIXTE",
+    productLine: "LOGISTIQUE_SECURITE",
+    priceCents: 0,
+    taxMode: "HT",
+    quoteOnly: true,
+    durationLabel: "2 à 3 jours",
+    imageUrl: null,
+    tags: ["Travaux en hauteur", "R486", "Intra-entreprise", "Sur devis"],
+    cpfEligible: false,
+    cpfStatus: "NON_RENSEIGNE",
+    active: true
+  },
+  {
+    id: "formation-pont-roulant-r484",
+    title: "Pont roulant — R484",
+    slug: "pont-roulant-r484",
+    subtitle: "Commande au sol ou télécommande",
+    description:
+      "Formation à l'utilisation du pont roulant avec commande au sol ou télécommande, incluant l'évaluation pratique sur site.",
+    mode: "MIXTE",
+    productLine: "LOGISTIQUE_SECURITE",
+    priceCents: 0,
+    taxMode: "HT",
+    quoteOnly: true,
+    durationLabel: "1 à 2 jours",
+    imageUrl: null,
+    tags: ["Industrie", "R484", "Intra-entreprise", "Sur devis"],
+    cpfEligible: false,
+    cpfStatus: "NON_RENSEIGNE",
+    active: true
+  },
+  {
+    id: "formation-echafaudage-r457",
+    title: "Échafaudage roulant — R457",
+    slug: "echafaudage-roulant-r457",
+    subtitle: "Montage, démontage, utilisation",
+    description:
+      "Formation au montage, démontage et utilisation en sécurité d'un échafaudage roulant, avec rappel des règles de conformité.",
+    mode: "MIXTE",
+    productLine: "LOGISTIQUE_SECURITE",
+    priceCents: 0,
+    taxMode: "HT",
+    quoteOnly: true,
+    durationLabel: "1 jour",
+    imageUrl: null,
+    tags: ["BTP", "R457", "Intra-entreprise", "Sur devis"],
+    cpfEligible: false,
+    cpfStatus: "NON_RENSEIGNE",
+    active: true
+  },
+  {
+    id: "formation-terberg",
+    title: "Terberg / tracteur de parc",
+    slug: "terberg-tracteur-parc",
+    subtitle: "Manœuvres en environnement logistique",
+    description:
+      "Formation à la prise en main et aux manœuvres de tracteur de parc, adaptée aux environnements logistiques et industriels.",
+    mode: "MIXTE",
+    productLine: "LOGISTIQUE_SECURITE",
+    priceCents: 0,
+    taxMode: "HT",
+    quoteOnly: true,
+    durationLabel: "1 à 2 jours",
+    imageUrl: null,
+    tags: ["Logistique", "Parc", "Intra-entreprise", "Sur devis"],
+    cpfEligible: false,
+    cpfStatus: "NON_RENSEIGNE",
     active: true
   }
 ];
 
+// Tarifs publics (packs et formules). Montants en centimes. Tarifs internes/marges
+// non stockés ici. Le détail à l'unité reste dans les `features`.
 export const initialPricingPlans: PricingPlanRecord[] = [
+  // --- Auto-école : prestations à l'unité ---
   {
-    id: "plan-permis-b",
-    formationId: "formation-permis-b-manuel",
-    title: "Permis B",
-    slug: "permis-b",
-    description: "Pack 20 h avec code inclus.",
-    priceCents: 119000,
-    features: ["20 h de conduite", "Code inclus", "Planning flexible", "Suivi élève"],
+    id: "plan-unite-auto-ecole",
+    title: "Prestations à l'unité",
+    slug: "prestations-unite",
+    description: "Tarifs à la carte pour compléter une formation ou avancer à votre rythme.",
+    priceCents: 6000,
+    features: [
+      "Heure de conduite (auto ou manuelle) : 60 € TTC",
+      "Accompagnement à l'examen pratique : 60 € TTC",
+      "Évaluation de départ : 60 € TTC",
+      "Pack administratif & Code en ligne : 59 € TTC",
+      "Suivi Drive / pédagogique numérique : 15 € TTC"
+    ],
+    allowOneShotPayment: true,
+    allowThreeTimes: false,
+    allowFourTimes: false,
+    discountCents: 0,
+    promotionalLabel: "À la carte",
+    active: true
+  },
+  // --- Permis B : boîte automatique ---
+  {
+    id: "plan-declic-auto",
+    formationId: "formation-permis-b-auto-declic",
+    title: "Déclic Auto — 13 leçons",
+    slug: "declic-auto-13",
+    description: "Formule boîte automatique pour démarrer vite et bien.",
+    priceCents: 92400,
+    features: [
+      "Pack administratif & Code : 59 €",
+      "Évaluation de départ : 60 €",
+      "13 h de conduite : 780 €",
+      "Accompagnement examen : 60 €",
+      "Suivi Drive inclus : 15 €"
+    ],
+    allowOneShotPayment: true,
+    allowThreeTimes: true,
+    allowFourTimes: true,
+    discountCents: 0,
+    promotionalLabel: "Boîte auto",
+    active: true
+  },
+  {
+    id: "plan-maitrise-auto",
+    formationId: "formation-permis-b-auto-maitrise",
+    title: "Maîtrise Auto — 20 leçons",
+    slug: "maitrise-auto-20",
+    description: "Formule complète en boîte automatique, plus d'heures de conduite.",
+    priceCents: 134400,
+    features: [
+      "Pack administratif & Code : 59 €",
+      "Évaluation de départ : 60 €",
+      "20 h de conduite : 1 200 €",
+      "Accompagnement examen : 60 €",
+      "Suivi Drive inclus : 15 €"
+    ],
+    allowOneShotPayment: true,
+    allowThreeTimes: true,
+    allowFourTimes: true,
+    discountCents: 0,
+    promotionalLabel: null,
+    active: true
+  },
+  // --- Permis B : boîte manuelle ---
+  {
+    id: "plan-essentiel-manuelle",
+    formationId: "formation-permis-b-manuel-essentiel",
+    title: "Essentiel Manuelle — 20 leçons",
+    slug: "essentiel-manuelle-20",
+    description: "Formule complète en boîte manuelle avec accompagnement jusqu'à l'examen.",
+    priceCents: 134400,
+    features: [
+      "Pack administratif & Code : 59 €",
+      "Évaluation de départ : 60 €",
+      "20 h de conduite : 1 200 €",
+      "Accompagnement examen : 60 €",
+      "Suivi Drive inclus : 15 €"
+    ],
     allowOneShotPayment: true,
     allowThreeTimes: true,
     allowFourTimes: true,
@@ -139,220 +536,305 @@ export const initialPricingPlans: PricingPlanRecord[] = [
     active: true
   },
   {
-    id: "plan-permis-accelere",
-    formationId: "formation-permis-accelere",
-    title: "Permis accéléré",
-    slug: "permis-accelere",
-    description: "Créneaux prioritaires sur 2 à 4 semaines.",
-    priceCents: 159000,
-    features: ["Parcours 2 à 4 semaines", "Créneaux prioritaires", "Coach référent", "Présentation examen"],
-    allowOneShotPayment: true,
-    allowThreeTimes: true,
-    allowFourTimes: false,
-    discountCents: 0,
-    promotionalLabel: "Rapide",
-    active: true
-  },
-  {
-    id: "plan-boite-automatique",
-    formationId: "formation-permis-b-automatique",
-    title: "Boîte automatique",
-    slug: "boite-automatique",
-    description: "Pack 13 h boîte automatique.",
-    priceCents: 89000,
-    features: ["13 h de conduite", "Voitures récentes", "Conversion possible", "CPF compatible"],
+    id: "plan-confort-manuelle",
+    formationId: "formation-permis-b-manuel-confort",
+    title: "Confort Manuelle — 30 leçons",
+    slug: "confort-manuelle-30",
+    description: "Formule renforcée en boîte manuelle pour aborder l'examen en confiance.",
+    priceCents: 194400,
+    features: [
+      "Pack administratif & Code : 59 €",
+      "Évaluation de départ : 60 €",
+      "30 h de conduite : 1 800 €",
+      "Accompagnement examen : 60 €",
+      "Suivi Drive inclus : 15 €"
+    ],
     allowOneShotPayment: true,
     allowThreeTimes: true,
     allowFourTimes: true,
     discountCents: 0,
-    promotionalLabel: "Confort",
+    promotionalLabel: null,
+    active: true
+  },
+  // --- VTC ---
+  {
+    id: "plan-vtc-distanciel-eco",
+    formationId: "formation-vtc-distanciel-eco",
+    title: "VTC Distanciel Éco",
+    slug: "vtc-distanciel-eco",
+    description: "Plateforme en ligne + suivi administratif pour préparer l'examen VTC.",
+    priceCents: 39900,
+    features: ["Plateforme VTC 24h/24", "7 modules réglementaires", "Aide au dossier CMA", "Examens blancs corrigés"],
+    allowOneShotPayment: true,
+    allowThreeTimes: true,
+    allowFourTimes: false,
+    discountCents: 0,
+    promotionalLabel: "Économique",
     active: true
   },
   {
-    id: "plan-cpf",
-    title: "Pack CPF",
-    slug: "pack-cpf",
-    description: "Accompagnement administratif CPF.",
-    priceCents: 0,
-    features: ["Montage dossier", "Conseiller dédié", "Devis personnalisé", "Reste à charge optimisé"],
-    allowOneShotPayment: false,
+    id: "plan-vtc-intermediaire-light",
+    formationId: "formation-vtc-intermediaire-light",
+    title: "VTC Intermédiaire Light",
+    slug: "vtc-intermediaire-light",
+    description: "Distanciel renforcé avec coaching collectif.",
+    priceCents: 59900,
+    features: ["Tout Distanciel Éco", "2 visios collectives", "Module gestion & tarification", "Fiches de synthèse"],
+    allowOneShotPayment: true,
+    allowThreeTimes: true,
+    allowFourTimes: false,
+    discountCents: 0,
+    promotionalLabel: null,
+    active: true
+  },
+  {
+    id: "plan-vtc-confort-pro",
+    formationId: "formation-vtc-confort-pro",
+    title: "VTC Confort Pro",
+    slug: "vtc-confort-pro",
+    description: "Préparation complète théorie + épreuve pratique (hors conduite).",
+    priceCents: 89900,
+    features: ["Tout Intermédiaire Light", "Module vidéo épreuve pratique", "Simulations repérage & parcours", "Assistance carte pro VTC"],
+    allowOneShotPayment: true,
+    allowThreeTimes: true,
+    allowFourTimes: false,
+    discountCents: 0,
+    promotionalLabel: null,
+    active: true
+  },
+  {
+    id: "plan-vtc-excellence",
+    formationId: "formation-vtc-excellence",
+    title: "VTC Excellence Haute Exigence",
+    slug: "vtc-excellence",
+    description: "Pack clé en main avec conduite et véhicule d'examen.",
+    priceCents: 249900,
+    features: ["Plateforme complète", "Frais CMA inclus", "10 h de conduite", "Véhicule double-commande à l'examen", "Coaching jusqu'à la carte pro"],
+    allowOneShotPayment: true,
+    allowThreeTimes: true,
+    allowFourTimes: true,
+    discountCents: 0,
+    promotionalLabel: "Clé en main",
+    active: true
+  },
+  // --- SST (tarifs HT, sessions inter-entreprises) ---
+  {
+    id: "plan-sst-initial",
+    formationId: "formation-sst-initial",
+    title: "SST Initial",
+    slug: "sst-initial-inter",
+    description: "Session inter-entreprises — Sauveteur Secouriste du Travail (14 h / 2 jours).",
+    priceCents: 12000,
+    features: ["14 h / 2 jours", "120 € HT / personne (inter)", "1 190 € HT / groupe (intra)", "Certificat SST selon validation"],
+    allowOneShotPayment: true,
     allowThreeTimes: false,
     allowFourTimes: false,
     discountCents: 0,
-    promotionalLabel: "Financé",
+    promotionalLabel: "Entreprises",
+    active: true
+  },
+  {
+    id: "plan-mac-sst",
+    formationId: "formation-mac-sst",
+    title: "MAC SST / Recyclage",
+    slug: "mac-sst-inter",
+    description: "Session inter-entreprises — maintien et actualisation des compétences (7 h / 1 jour).",
+    priceCents: 7500,
+    features: ["7 h / 1 jour", "75 € HT / personne (inter)", "690 € HT / groupe (intra)", "Prolongation de validité SST"],
+    allowOneShotPayment: true,
+    allowThreeTimes: false,
+    allowFourTimes: false,
+    discountCents: 0,
+    promotionalLabel: "Entreprises",
     active: true
   }
 ];
 
-export const initialReviews: ReviewRecord[] = [
-  {
-    id: "review-camille",
-    rating: 5,
-    comment: "Inscription rapide, monitrice très claire et planning vraiment flexible. J'ai eu mon permis du premier coup.",
-    status: "PUBLIE",
-    publishedAt: new Date("2026-05-12T10:00:00.000Z"),
-    createdAt: new Date("2026-05-12T10:00:00.000Z"),
-    updatedAt: new Date("2026-05-12T10:00:00.000Z")
-  },
-  {
-    id: "review-yanis",
-    rating: 5,
-    comment: "Le simulateur et l'app donnent une vraie visibilité sur le budget et la progression. Très rassurant.",
-    status: "PUBLIE",
-    publishedAt: new Date("2026-05-18T10:00:00.000Z"),
-    createdAt: new Date("2026-05-18T10:00:00.000Z"),
-    updatedAt: new Date("2026-05-18T10:00:00.000Z")
-  },
-  {
-    id: "review-lea",
-    rating: 5,
-    comment: "LODEN m'a accompagnée pour le CPF et les créneaux d'examen. Une expérience moderne et sérieuse.",
-    status: "PUBLIE",
-    publishedAt: new Date("2026-05-24T10:00:00.000Z"),
-    createdAt: new Date("2026-05-24T10:00:00.000Z"),
-    updatedAt: new Date("2026-05-24T10:00:00.000Z")
-  }
-];
+// Aucun avis client vérifié -> aucun avis seedé (pas de faux témoignages).
+export const initialReviews: ReviewRecord[] = [];
 
 export const initialUsers: UserRecord[] = [
   {
     id: "user-admin",
     firstName: "Admin",
-    lastName: "LODEN",
+    lastName: "LODENE",
     email: "admin@loden-autoecole.fr",
     role: "SUPER_ADMIN",
     status: "ACTIVE",
     passwordHash: "$2b$12$mRza/sJqI7LAe1tXc9ddveiJQ063tyGfnZV.eZ2RS.nYiHJsY72gm",
     createdAt: now,
     updatedAt: now
-  },
-  {
-    id: "user-sarah",
-    firstName: "Sarah",
-    lastName: "Benali",
-    email: "sarah.benali@loden-autoecole.fr",
-    phone: "0600000001",
-    role: "MONITEUR",
-    status: "ACTIVE",
-    createdAt: now,
-    updatedAt: now
-  },
-  {
-    id: "user-mathieu",
-    firstName: "Mathieu",
-    lastName: "Lefèvre",
-    email: "mathieu.lefevre@loden-autoecole.fr",
-    phone: "0600000002",
-    role: "MONITEUR",
-    status: "ACTIVE",
-    createdAt: now,
-    updatedAt: now
-  },
-  {
-    id: "user-nadia",
-    firstName: "Nadia",
-    lastName: "Diallo",
-    email: "nadia.diallo@loden-autoecole.fr",
-    phone: "0600000003",
-    role: "MONITEUR",
-    status: "ACTIVE",
-    createdAt: now,
-    updatedAt: now
   }
 ];
 
-export const initialInstructors: InstructorRecord[] = [
-  {
-    id: "instructor-sarah",
-    userId: "user-sarah",
-    name: "Sarah Benali",
-    bio: "Référente conduite urbaine.",
-    specialties: ["Conduite urbaine", "Permis B manuel"],
-    interventionZones: ["Paris 11", "Nation", "République"],
-    ratingAverage: 4.9,
-    ratingCount: 124,
-    active: true
-  },
-  {
-    id: "instructor-mathieu",
-    userId: "user-mathieu",
-    name: "Mathieu Lefèvre",
-    bio: "Spécialiste permis accéléré.",
-    specialties: ["Permis accéléré", "Boîte automatique"],
-    interventionZones: ["Montreuil", "Vincennes", "Paris Est"],
-    ratingAverage: 4.8,
-    ratingCount: 98,
-    active: true
-  },
-  {
-    id: "instructor-nadia",
-    userId: "user-nadia",
-    name: "Nadia Diallo",
-    bio: "Coach confiance au volant.",
-    specialties: ["Remise à niveau", "Conduite accompagnée"],
-    interventionZones: ["Paris 12", "Charonne", "Bastille"],
-    ratingAverage: 5,
-    ratingCount: 86,
-    active: true
-  }
-];
+// Aucune identité de moniteur vérifiée -> liste vide (pas de fausses personnes).
+// Les vrais moniteurs sont créés via le CRM (gestion des moniteurs).
+export const initialInstructors: InstructorRecord[] = [];
 
-export const initialMeetingPoints: MeetingPointRecord[] = [
-  {
-    id: "meeting-republique",
-    name: "Point de rendez-vous République",
-    address: "24 avenue de la République, 75011 Paris",
-    latitude: 48.865,
-    longitude: 2.37,
-    active: true
-  },
-  {
-    id: "meeting-nation",
-    name: "Point de rendez-vous Nation",
-    address: "Place de la Nation, 75012 Paris",
-    latitude: 48.848,
-    longitude: 2.395,
-    active: true
-  }
-];
+// Aucun point de rendez-vous confirmé hors établissement -> liste vide.
+export const initialMeetingPoints: MeetingPointRecord[] = [];
 
-export const initialAvailabilities: AvailabilityRecord[] = [
-  {
-    id: "availability-sarah-1",
-    instructorId: "instructor-sarah",
-    startsAt: new Date("2026-06-08T08:30:00.000Z"),
-    endsAt: new Date("2026-06-08T19:30:00.000Z"),
-    isAvailable: true
-  },
-  {
-    id: "availability-mathieu-1",
-    instructorId: "instructor-mathieu",
-    startsAt: new Date("2026-06-09T08:30:00.000Z"),
-    endsAt: new Date("2026-06-09T19:30:00.000Z"),
-    isAvailable: true
-  },
-  {
-    id: "availability-nadia-1",
-    instructorId: "instructor-nadia",
-    startsAt: new Date("2026-06-10T08:30:00.000Z"),
-    endsAt: new Date("2026-06-10T19:30:00.000Z"),
-    isAvailable: true
-  }
-];
+export const initialAvailabilities: AvailabilityRecord[] = [];
 
 export const initialFaqEntries: FaqEntryRecord[] = [
   {
     id: "faq-cpf",
-    question: "Le permis est-il finançable avec le CPF ?",
-    answer: "Oui, les formations permis B éligibles peuvent être accompagnées par LODEN.",
+    question: "Le permis B est-il finançable avec le CPF ?",
+    answer:
+      "Le financement CPF peut être possible selon votre situation et l'éligibilité de votre dossier. Un conseiller LODENE peut vous accompagner dans la vérification.",
     category: "Financement",
+    active: true
+  },
+  {
+    id: "faq-boite-auto",
+    question: "Proposez-vous le permis en boîte automatique ?",
+    answer:
+      "Oui. LODENE propose des formules boîte automatique : Déclic Auto (13 leçons, 924 € TTC) et Maîtrise Auto (20 leçons, 1 344 € TTC).",
+    category: "Permis B",
+    active: true
+  },
+  {
+    id: "faq-heure-conduite",
+    question: "Quel est le tarif d'une heure de conduite ?",
+    answer: "L'heure de conduite (boîte auto ou manuelle) est affichée à 60 € TTC.",
+    category: "Permis B",
+    active: true
+  },
+  {
+    id: "faq-stage-accelere",
+    question: "Puis-je faire un stage accéléré ?",
+    answer:
+      "Oui, LODENE propose des parcours intensifs selon les disponibilités du planning et votre niveau. Le tarif est établi sur devis.",
+    category: "Permis B",
+    active: true
+  },
+  {
+    id: "faq-vtc-examen",
+    question: "À quoi prépare la formation VTC ?",
+    answer:
+      "Elle prépare aux épreuves théoriques et pratiques de l'examen VTC gérées par la Chambre de Métiers et de l'Artisanat (CMA). Nos formules vont de 399 € à 2 499 €.",
+    category: "VTC",
+    active: true
+  },
+  {
+    id: "faq-vtc-cma",
+    question: "Les frais d'inscription CMA sont-ils inclus ?",
+    answer:
+      "Les frais CMA sont inclus uniquement dans la formule Excellence Haute Exigence (2 499 €). Les autres formules préparent à l'examen, hors frais d'inscription CMA.",
+    category: "VTC",
+    active: true
+  },
+  {
+    id: "faq-sst-duree",
+    question: "Combien de temps dure la formation SST ?",
+    answer:
+      "Le SST Initial dure 14 heures (2 jours) et le MAC SST / recyclage 7 heures (1 jour). Sessions inter-entreprises ou intra-entreprise chez le client.",
+    category: "SST",
+    active: true
+  },
+  {
+    id: "faq-logistique-devis",
+    question: "Pourquoi les formations logistique sont-elles sur devis ?",
+    answer:
+      "Le tarif dépend du matériel, du nombre de participants, du lieu, de la durée et des objectifs. Ces formations sont proposées en intra-entreprise sur site client.",
+    category: "Logistique & sécurité",
     active: true
   },
   {
     id: "faq-reservation",
     question: "Puis-je réserver une leçon en ligne ?",
-    answer: "Oui, l'espace élève permettra de réserver, modifier ou annuler un créneau.",
+    answer: "Oui, l'espace élève permet de réserver, modifier ou annuler un créneau de conduite.",
     category: "Réservation",
     active: true
+  }
+];
+
+// Réglages dynamiques du site public (pilotés via le CMS). Valeurs par défaut = état
+// actuel du site (fallback). IMPORTANT : garder en phase avec lib/site-content.ts (front).
+const SITE_SETTINGS_DEFAULT_DATE = new Date("2025-01-01T00:00:00.000Z");
+
+export const initialSiteSettings: SiteSettingRecord[] = [
+  {
+    key: "nav.primary",
+    updatedAt: SITE_SETTINGS_DEFAULT_DATE,
+    value: {
+      items: [
+        {
+          id: "formations",
+          label: "Formations",
+          href: "/formations",
+          active: true,
+          icon: "GraduationCap",
+          children: [
+            { id: "permis-b-manuel", label: "Permis B manuel", href: "/formations/permis-b-manuel-essentiel", active: true, icon: "Car" },
+            { id: "permis-b-auto", label: "Permis B automatique", href: "/formations/permis-b-auto-declic", active: true, icon: "Car" },
+            { id: "conduite-accompagnee", label: "Conduite accompagnée", href: "/formations/conduite-accompagnee", active: true, icon: "ShieldCheck" },
+            { id: "stage-accelere", label: "Stage accéléré", href: "/formations/stage-accelere", active: true, icon: "Sparkles" },
+            { id: "vtc", label: "Formation VTC", href: "/vtc", active: true, icon: "CarTaxiFront" },
+            { id: "sst", label: "Formation SST", href: "/sst", active: true, icon: "ShieldCheck" },
+            { id: "logistique", label: "Logistique & sécurité", href: "/logistique-securite", active: true, icon: "HardHat" },
+            { id: "toutes", label: "Toutes les formations", href: "/formations", active: true, icon: "GraduationCap" }
+          ]
+        },
+        {
+          id: "financement",
+          label: "Financement",
+          href: "/financement",
+          active: true,
+          icon: "WalletCards",
+          children: [
+            { id: "financement", label: "Financement", href: "/financement", active: true, icon: "WalletCards" },
+            { id: "cpf", label: "CPF", href: "/cpf", active: true, icon: "WalletCards" },
+            { id: "tarifs", label: "Tarifs", href: "/tarifs", active: true, icon: "CreditCard" },
+            { id: "paiement", label: "Paiement en plusieurs fois", href: "/tarifs#simulateur", active: true, icon: "CreditCard" }
+          ]
+        },
+        { id: "agences", label: "Nos agences", href: "/contact#agences", active: true, icon: "Building2" },
+        {
+          id: "decouvrir",
+          label: "Découvrir",
+          href: "/a-propos",
+          active: true,
+          icon: "Sparkles",
+          children: [
+            { id: "a-propos", label: "À propos", href: "/a-propos", active: true, icon: "Info" },
+            { id: "avis", label: "Avis clients", href: "/avis", active: true, icon: "Star" },
+            { id: "faq", label: "FAQ", href: "/faq", active: true, icon: "CircleHelp" },
+            { id: "blog", label: "Blog", href: "/blog", active: true, icon: "Newspaper" }
+          ]
+        },
+        { id: "contact", label: "Contact", href: "/contact", active: true, icon: "MessageCircle" }
+      ]
+    }
+  },
+  {
+    key: "nav.ctas",
+    updatedAt: SITE_SETTINGS_DEFAULT_DATE,
+    value: {
+      items: [
+        { id: "espace-eleve", label: "Espace Élève", href: "/espace-eleve", active: true, icon: "UserRound", variant: "outline" },
+        { id: "inscription", label: "Inscription", href: "/inscription", active: true, icon: "Sparkles", variant: "solid" }
+      ]
+    }
+  },
+  {
+    key: "hero.home",
+    updatedAt: SITE_SETTINGS_DEFAULT_DATE,
+    value: {
+      enabled: true,
+      scriptLine: "Passe ton permis",
+      connector: "avec",
+      brand: "LODENE",
+      subtitle: "Une formation claire, rapide et flexible, adaptée à ton rythme.",
+      image: "/loden-hero.jpg",
+      imageAlt: "Voiture école moderne LODENE avec élève et moniteur",
+      primaryCta: { label: "Je m'inscris", href: "/inscription" },
+      secondaryCta: { label: "Nos formations", href: "/formations" },
+      badges: [
+        { icon: "ShieldCheck", title: "Agréée", detail: "Agrément E2507800260" },
+        { icon: "MapPin", title: "Conflans", detail: "Sainte-Honorine (78)" },
+        { icon: "WalletCards", title: "CPF", detail: "formations éligibles" }
+      ]
+    }
   }
 ];

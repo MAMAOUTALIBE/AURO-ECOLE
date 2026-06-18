@@ -1,0 +1,25 @@
+-- Informations société (singleton, id = 'company'), éditables depuis le CMS.
+CREATE TABLE "CompanyInfo" (
+    "id" TEXT NOT NULL DEFAULT 'company',
+    "brandName" TEXT NOT NULL DEFAULT 'LODENE',
+    "legalName" TEXT NOT NULL DEFAULT '',
+    "address" TEXT NOT NULL DEFAULT '',
+    "postalCode" TEXT NOT NULL DEFAULT '',
+    "city" TEXT NOT NULL DEFAULT '',
+    "country" TEXT NOT NULL DEFAULT 'France',
+    "siret" TEXT NOT NULL DEFAULT '',
+    "approvalNumber" TEXT NOT NULL DEFAULT '',
+    "phone" TEXT NOT NULL DEFAULT '',
+    "email" TEXT NOT NULL DEFAULT '',
+    "hours" TEXT NOT NULL DEFAULT '',
+    "legalForm" TEXT NOT NULL DEFAULT '',
+    "capital" TEXT NOT NULL DEFAULT '',
+    "publicationDirector" TEXT NOT NULL DEFAULT '',
+    "hostingProvider" TEXT NOT NULL DEFAULT '',
+    "instagram" TEXT NOT NULL DEFAULT '',
+    "facebook" TEXT NOT NULL DEFAULT '',
+    "tiktok" TEXT NOT NULL DEFAULT '',
+    "youtube" TEXT NOT NULL DEFAULT '',
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    CONSTRAINT "CompanyInfo_pkey" PRIMARY KEY ("id")
+);

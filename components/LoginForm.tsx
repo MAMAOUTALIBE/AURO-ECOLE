@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { isAdminRole } from "@/lib/auth-session";
 
 const schema = z.object({
   email: z.string().trim().email("Email invalide"),
@@ -37,15 +38,19 @@ export function LoginForm() {
       body: JSON.stringify(values)
     });
 
-    const payload = await response.json().catch(() => null) as { error?: { message?: string }; token?: string } | null;
+    const payload = await response.json().catch(() => null) as { error?: { message?: string }; user?: { role?: string } } | null;
 
-    if (!response.ok || !payload?.token) {
+    if (!response.ok || !payload?.user) {
       setSubmitError(payload?.error?.message ?? "Connexion impossible. Vérifie tes identifiants.");
       return;
     }
 
-    window.localStorage.setItem("loden_student_token", payload.token);
-    router.push("/espace-eleve");
+    // La session est dans le cookie httpOnly (posé par /api/auth/login).
+    // Le rôle vient de la réponse `user` (le token n'est plus exposé au navigateur).
+    const role = payload.user.role;
+    const destination = role === "MONITEUR" ? "/espace-formateur" : isAdminRole(role) ? "/admin" : "/espace-eleve";
+    router.push(destination);
+    router.refresh();
   };
 
   return (
@@ -53,16 +58,33 @@ export function LoginForm() {
       <div className="border-b border-slate-200 pb-5">
         <h2 className="text-2xl font-semibold text-loden-ink">Connexion élève</h2>
         <p className="mt-2 text-sm leading-6 text-loden-muted">
-          Accède à ton profil, ta formation et ton futur planning LODEN.
+          Accède à ton profil, ta formation et ton futur planning LODENE.
         </p>
       </div>
 
       <Field label="Email" error={errors.email?.message} className="mt-5">
-        <input {...register("email")} className="field-input" placeholder="prenom@email.fr" autoComplete="email" />
+        <input
+          {...register("email")}
+          className="field-input"
+          placeholder="prenom@email.fr"
+          autoComplete="email"
+          aria-invalid={errors.email ? "true" : "false"}
+        />
       </Field>
       <Field label="Mot de passe" error={errors.password?.message} className="mt-4">
-        <input {...register("password")} className="field-input" type="password" autoComplete="current-password" />
+        <input
+          {...register("password")}
+          className="field-input"
+          type="password"
+          autoComplete="current-password"
+          aria-invalid={errors.password ? "true" : "false"}
+        />
       </Field>
+      <div className="mt-2 text-right">
+        <Link className="text-sm font-semibold text-loden-700 hover:text-loden-800" href="/mot-de-passe-oublie">
+          Mot de passe oublié ?
+        </Link>
+      </div>
 
       <button
         type="submit"
@@ -74,7 +96,7 @@ export function LoginForm() {
       </button>
 
       {submitError ? (
-        <p className="mt-4 rounded-2xl bg-red-50 p-4 text-sm font-medium text-red-700">
+        <p className="mt-4 rounded-2xl bg-red-50 p-4 text-sm font-medium text-red-700" role="alert">
           {submitError}
         </p>
       ) : null}

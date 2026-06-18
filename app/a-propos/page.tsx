@@ -6,7 +6,7 @@ import { SectionHeader } from "@/components/SectionHeader";
 
 export const metadata: Metadata = {
   title: "À propos",
-  description: "Découvrez l'histoire, la mission, les valeurs et l'équipe de LODEN Auto-École."
+  description: "Découvrez l'histoire, la mission, les valeurs et l'équipe de LODENE Auto-École."
 };
 
 export default function AboutPage() {
@@ -15,7 +15,7 @@ export default function AboutPage() {
       <PageHero
         eyebrow="À propos"
         title="Une auto-école pensée comme une plateforme de confiance"
-        text="LODEN combine exigence pédagogique, expérience digitale et service premium pour moderniser l'apprentissage de la conduite."
+        text="LODENE combine exigence pédagogique, expérience digitale et service premium pour moderniser l'apprentissage de la conduite."
       />
       <section className="bg-white py-14 sm:py-20">
         <div className="container-pad grid gap-10 lg:grid-cols-[0.9fr_1.1fr]">
@@ -43,7 +43,7 @@ export default function AboutPage() {
           <SectionHeader
             eyebrow="Équipe"
             title="Des experts de terrain, une culture de service"
-            text="L'équipe LODEN est organisée pour répondre vite, planifier mieux et accompagner chaque élève jusqu'à l'examen."
+            text="L'équipe LODENE est organisée pour répondre vite, planifier mieux et accompagner chaque élève jusqu'à l'examen."
           />
           <InstructorsGrid />
         </div>

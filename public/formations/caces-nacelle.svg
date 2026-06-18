@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 270" width="480" height="270" role="img" aria-label="Illustration CACES R486 : nacelle élévatrice">
+  <defs>
+    <linearGradient id="naBg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#92400e"/>
+      <stop offset="0.55" stop-color="#d97706"/>
+      <stop offset="1" stop-color="#fbbf24"/>
+    </linearGradient>
+  </defs>
+  <rect width="480" height="270" fill="url(#naBg)"/>
+  <circle cx="96" cy="58" r="44" fill="#ffffff" opacity="0.13"/>
+  <path d="M0 214 L480 214 L480 270 L0 270 Z" fill="#6b3408"/>
+  <rect x="0" y="210" width="480" height="6" fill="#ffffff" opacity="0.22"/>
+  <g transform="translate(176 26)">
+    <ellipse cx="86" cy="190" rx="118" ry="13" fill="#4a2405" opacity="0.4"/>
+    <!-- plateforme + garde-corps -->
+    <rect x="20" y="40" width="140" height="14" rx="3" fill="#f59e0b" stroke="#1f2937" stroke-width="3"/>
+    <rect x="20" y="6" width="6" height="36" fill="#1f2937"/>
+    <rect x="154" y="6" width="6" height="36" fill="#1f2937"/>
+    <rect x="20" y="6" width="140" height="6" fill="#1f2937"/>
+    <rect x="20" y="22" width="140" height="4" fill="#1f2937"/>
+    <!-- opérateur (casque) -->
+    <circle cx="92" cy="22" r="9" fill="#fef3c7"/>
+    <path d="M81 20 a11 9 0 0 1 22 0 Z" fill="#f97316"/>
+    <rect x="86" y="30" width="12" height="14" rx="3" fill="#1d4ed8"/>
+    <!-- ciseaux -->
+    <g stroke="#1f2937" stroke-width="7" stroke-linecap="round">
+      <line x1="56" y1="56" x2="120" y2="150"/>
+      <line x1="120" y1="56" x2="56" y2="150"/>
+      <line x1="56" y1="150" x2="120" y2="186" opacity="0"/>
+    </g>
+    <g stroke="#374151" stroke-width="7" stroke-linecap="round">
+      <line x1="58" y1="100" x2="118" y2="100" opacity="0"/>
+    </g>
+    <!-- châssis -->
+    <rect x="30" y="172" width="116" height="26" rx="6" fill="#1f2937"/>
+    <rect x="36" y="160" width="104" height="16" rx="4" fill="#f97316"/>
+    <circle cx="58" cy="200" r="16" fill="#111827"/><circle cx="58" cy="200" r="6" fill="#d1d5db"/>
+    <circle cx="118" cy="200" r="16" fill="#111827"/><circle cx="118" cy="200" r="6" fill="#d1d5db"/>
+  </g>
+</svg>

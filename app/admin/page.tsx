@@ -1,31 +1,12 @@
 import type { Metadata } from "next";
-import { AdminDashboard } from "@/components/AdminDashboard";
-import { PageHero } from "@/components/PageHero";
+import { CrmDashboard } from "@/components/crm/dashboard/CrmDashboard";
 
 export const metadata: Metadata = {
-  title: "Admin CRM",
-  description: "Espace administrateur LODEN pour suivre les demandes, paiements et avis.",
-  robots: {
-    index: false,
-    follow: false
-  }
+  title: "Tableau de bord",
+  description: "Centre de pilotage LODENE : KPIs, activité, tâches et assistant IA.",
+  robots: { index: false, follow: false }
 };
 
-export default function AdminPage() {
-  return (
-    <main>
-      <PageHero
-        eyebrow="Administration"
-        title="CRM opérationnel LODEN"
-        text="Un premier centre de pilotage pour suivre les demandes entrantes, les dossiers CPF, les réservations, les paiements et les avis."
-        cta="Retour accueil"
-        ctaHref="/"
-      />
-      <section className="bg-loden-pearl py-14 sm:py-20">
-        <div className="container-pad">
-          <AdminDashboard />
-        </div>
-      </section>
-    </main>
-  );
+export default function AdminDashboardPage() {
+  return <CrmDashboard />;
 }

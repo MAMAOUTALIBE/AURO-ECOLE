@@ -2,21 +2,25 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FileCheck2, Send } from "lucide-react";
-import { useState } from "react";
+import { cloneElement, isValidElement, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { phoneInputProps, phoneSchema } from "@/lib/validation";
 
+// Les `value` doivent correspondre aux IDs réels des formations (backend/src/data/initial-data.ts).
 const formationOptions = [
-  { label: "Permis B manuel", value: "formation-permis-b-manuel" },
-  { label: "Permis B automatique", value: "formation-permis-b-automatique" },
-  { label: "Permis accéléré", value: "formation-permis-accelere" },
-  { label: "Annulation permis", value: "formation-annulation-permis" }
+  { label: "Permis B automatique — Déclic Auto", value: "formation-permis-b-auto-declic" },
+  { label: "Permis B automatique — Maîtrise Auto", value: "formation-permis-b-auto-maitrise" },
+  { label: "Permis B manuel — Essentiel", value: "formation-permis-b-manuel-essentiel" },
+  { label: "Permis B manuel — Confort", value: "formation-permis-b-manuel-confort" },
+  { label: "Stage accéléré code et conduite", value: "formation-stage-accelere" },
+  { label: "Formation VTC", value: "formation-vtc-excellence" }
 ];
 
 const schema = z.object({
   fullName: z.string().trim().min(2, "Indique ton nom complet"),
   email: z.string().trim().email("Email invalide"),
-  phone: z.string().trim().min(8, "Téléphone invalide"),
+  phone: phoneSchema,
   formationId: z.string().min(1, "Choisis une formation"),
   requestedAmount: z
     .string()
@@ -97,7 +101,7 @@ export function CpfRequestForm() {
           <input {...register("email")} className="field-input" placeholder="prenom@email.fr" autoComplete="email" />
         </Field>
         <Field label="Téléphone" error={errors.phone?.message}>
-          <input {...register("phone")} className="field-input" placeholder="06 12 34 56 78" autoComplete="tel" />
+          <input {...register("phone")} {...phoneInputProps} className="field-input" />
         </Field>
         <Field label="Formation" error={errors.formationId?.message}>
           <select {...register("formationId")} className="field-input">
@@ -132,12 +136,12 @@ export function CpfRequestForm() {
       </button>
 
       {sent ? (
-        <p className="mt-4 rounded-2xl bg-loden-50 p-4 text-sm font-medium text-loden-800">
-          Demande CPF envoyée. LODEN revient vers toi avec une estimation claire.
+        <p className="mt-4 rounded-2xl bg-loden-50 p-4 text-sm font-medium text-loden-800" role="status">
+          Demande CPF envoyée. LODENE revient vers toi avec une estimation claire.
         </p>
       ) : null}
       {submitError ? (
-        <p className="mt-4 rounded-2xl bg-red-50 p-4 text-sm font-medium text-red-700">
+        <p className="mt-4 rounded-2xl bg-red-50 p-4 text-sm font-medium text-red-700" role="alert">
           {submitError}
         </p>
       ) : null}
@@ -156,11 +160,19 @@ function Field({
   children: React.ReactNode;
   className?: string;
 }) {
+  const field =
+    error && isValidElement(children)
+      ? cloneElement(children as React.ReactElement<{ "aria-invalid"?: boolean }>, { "aria-invalid": true })
+      : children;
   return (
     <label className={`grid gap-2 ${className}`}>
       <span className="text-sm font-semibold text-loden-ink">{label}</span>
-      {children}
-      {error ? <span className="text-sm font-medium text-red-600">{error}</span> : null}
+      {field}
+      {error ? (
+        <span className="text-sm font-medium text-red-600" role="alert">
+          {error}
+        </span>
+      ) : null}
     </label>
   );
 }

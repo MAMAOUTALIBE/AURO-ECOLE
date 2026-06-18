@@ -1,9 +1,11 @@
 import { Router } from "express";
 import { z } from "zod";
 import type { ApiConfig } from "../../config/env";
-import { authenticate, requireRoles } from "../../middleware/auth";
+import type { AuthenticatedRequest } from "../../http/request-context";
+import { authenticate, requirePermission } from "../../middleware/auth";
 import type { LodenRepository } from "../../repositories/loden-repository";
 import { asyncHandler } from "../../shared/async-handler";
+import { publicFormLimiter } from "../../shared/rate-limit";
 import { emailSchema, phoneSchema, validateBody } from "../../shared/validation";
 
 const cpfRequestSchema = z.object({
@@ -27,6 +29,7 @@ export function createCpfRouter(repository: LodenRepository, config: ApiConfig) 
 
   router.post(
     "/requests",
+    publicFormLimiter(config),
     asyncHandler(async (req, res) => {
       const body = validateBody(cpfRequestSchema, req);
       const cpfRequest = await repository.createCpfRequest(body);
@@ -37,7 +40,7 @@ export function createCpfRouter(repository: LodenRepository, config: ApiConfig) 
   router.get(
     "/requests",
     authenticate(repository, config.JWT_SECRET),
-    requireRoles("SUPER_ADMIN", "ADMIN"),
+    requirePermission("cpf.read"),
     asyncHandler(async (_req, res) => {
       res.json({ data: await repository.listCpfRequests() });
     })
@@ -46,10 +49,17 @@ export function createCpfRouter(repository: LodenRepository, config: ApiConfig) 
   router.patch(
     "/requests/:id/status",
     authenticate(repository, config.JWT_SECRET),
-    requireRoles("SUPER_ADMIN", "ADMIN"),
+    requirePermission("cpf.manage"),
     asyncHandler(async (req, res) => {
       const body = validateBody(statusSchema, req);
       const cpfRequest = await repository.updateCpfRequest(String(req.params.id), body);
+      void repository.createAuditLog({
+        userId: (req as AuthenticatedRequest).user?.id ?? null,
+        action: "cpf.status",
+        entityType: "CpfRequest",
+        entityId: cpfRequest.id,
+        metadata: { status: body.status }
+      });
       res.json({ data: cpfRequest });
     })
   );

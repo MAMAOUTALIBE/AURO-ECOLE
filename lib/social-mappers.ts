@@ -21,10 +21,11 @@ function initialsFromName(name: string) {
     .join("");
 }
 
-export function mapApiReview(review: ApiReview, index: number): Testimonial {
+export function mapApiReview(review: ApiReview): Testimonial {
+  // Avis anonymisés côté API (pas de nom/lieu fabriqué, pas de mention "vérifié" non fondée).
   return {
-    name: `Élève LODEN ${index + 1}`,
-    location: "Avis vérifié",
+    name: "Avis élève",
+    location: "",
     rating: review.rating,
     text: review.comment
   };
@@ -33,8 +34,8 @@ export function mapApiReview(review: ApiReview, index: number): Testimonial {
 export function mapApiInstructor(instructor: ApiInstructor): Instructor {
   return {
     name: instructor.name,
-    role: instructor.bio ?? instructor.specialties[0] ?? "Moniteur LODEN",
-    experience: instructor.specialties.slice(0, 2).join(" · ") || "Moniteur certifié",
+    role: instructor.bio ?? instructor.specialties[0] ?? "Moniteur LODENE",
+    experience: instructor.specialties.slice(0, 2).join(" · ") || "Moniteur",
     rating: instructor.ratingAverage.toLocaleString("fr-FR", {
       minimumFractionDigits: 1,
       maximumFractionDigits: 1

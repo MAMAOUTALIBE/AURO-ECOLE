@@ -8,7 +8,7 @@ export function AppSection() {
       <div className="container-pad grid items-center gap-10 lg:grid-cols-[0.95fr_1.05fr]">
         <MotionReveal>
           <SectionHeader
-            eyebrow="Application mobile LODEN"
+            eyebrow="Application mobile LODENE"
             title="Toute ton auto-école dans ta poche"
             text="Réserve, révise, suis ta progression et reçois tes notifications sans friction."
           />
@@ -31,7 +31,7 @@ export function AppSection() {
             <div className="rounded-[1.5rem] bg-loden-pearl p-5">
               <div className="mx-auto mb-5 h-1.5 w-20 rounded-full bg-slate-300" />
               <div className="rounded-3xl bg-white p-5 shadow-soft">
-                <p className="text-sm font-semibold text-loden-700">LODEN App</p>
+                <p className="text-sm font-semibold text-loden-700">LODENE App</p>
                 <p className="mt-2 text-2xl font-semibold leading-tight text-loden-ink">Prochaine leçon</p>
                 <div className="mt-5 rounded-2xl bg-loden-700 p-4 text-white">
                   <p className="text-sm text-white">Vendredi · 09:30</p>

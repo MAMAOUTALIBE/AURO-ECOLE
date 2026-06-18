@@ -2,12 +2,13 @@ import type { Metadata } from "next";
 import { CheckCircle2 } from "lucide-react";
 import { PageHero } from "@/components/PageHero";
 import { PricingPlansGrid } from "@/components/PricingPlansGrid";
+import { PricingDecisionSection } from "@/components/PricingDecisionSection";
 import { SimulatorCard } from "@/components/SimulatorCard";
 import { SectionHeader } from "@/components/SectionHeader";
 
 export const metadata: Metadata = {
   title: "Tarifs",
-  description: "Tarifs permis B, permis accéléré, boîte automatique, CPF et paiement en plusieurs fois chez LODEN."
+  description: "Tarifs permis B, permis accéléré, boîte automatique, CPF et paiement en plusieurs fois chez LODENE."
 };
 
 export default function TarifsPage() {
@@ -21,7 +22,8 @@ export default function TarifsPage() {
       <section className="bg-white py-14 sm:py-20">
         <PricingPlansGrid />
       </section>
-      <section className="bg-loden-pearl py-14 sm:py-20">
+      <PricingDecisionSection />
+      <section id="simulateur" className="scroll-mt-28 bg-loden-pearl py-14 sm:py-20">
         <div className="container-pad grid items-start gap-8 lg:grid-cols-[0.9fr_1.1fr]">
           <div>
             <SectionHeader

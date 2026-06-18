@@ -31,6 +31,14 @@ export function InstructorsGrid() {
 
   const visibleInstructors = remoteInstructors ?? instructors;
 
+  if (visibleInstructors.length === 0) {
+    return (
+      <p className="mt-9 rounded-3xl border border-slate-200 bg-loden-pearl p-6 text-center text-sm text-loden-muted">
+        L&apos;équipe pédagogique sera présentée prochainement.
+      </p>
+    );
+  }
+
   return (
     <div className="mt-9 grid gap-5 md:grid-cols-3">
       {visibleInstructors.map((instructor) => (

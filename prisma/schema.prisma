@@ -9,8 +9,14 @@ datasource db {
 
 enum UserRole {
   SUPER_ADMIN
+  DIRECTEUR
+  RESPONSABLE_AGENCE
+  RESPONSABLE_PEDAGOGIQUE
   ADMIN
+  SECRETAIRE
+  COMPTABLE
   MONITEUR
+  EDITEUR
   ELEVE
   VISITEUR
 }
@@ -37,6 +43,27 @@ enum FormationMode {
   AUTOMATIQUE
   MIXTE
   CODE
+}
+
+enum ProductLine {
+  AUTO_ECOLE
+  VTC
+  CACES
+  SST
+  LOGISTIQUE_SECURITE
+}
+
+enum TaxMode {
+  TTC
+  HT
+}
+
+enum CpfStatus {
+  NON_RENSEIGNE
+  NON_ELIGIBLE
+  POSSIBLE
+  A_CONFIRMER
+  ELIGIBLE
 }
 
 enum BookingStatus {
@@ -100,6 +127,202 @@ enum LeadStatus {
   PERDU
 }
 
+enum ExamType {
+  CODE
+  CONDUITE
+}
+
+enum ExamResult {
+  EN_ATTENTE
+  REUSSI
+  ECHOUE
+  ABSENT
+}
+
+enum InstallmentStatus {
+  EN_ATTENTE
+  PAYE
+  EN_RETARD
+}
+
+enum InvoiceStatus {
+  BROUILLON
+  EMISE
+  PAYEE
+  ANNULEE
+}
+
+model Invoice {
+  id             String        @id @default(cuid())
+  number         String?       @unique
+  status         InvoiceStatus @default(BROUILLON)
+  clientUserId   String
+  studentId      String?
+  agencyId       String?
+  paymentId      String?       @unique
+  lines          Json
+  subtotalCents  Int
+  vatCents       Int
+  totalCents     Int
+  currency       String        @default("EUR")
+  issuerSnapshot Json?
+  clientSnapshot Json?
+  issuedAt       DateTime?
+  dueDate        DateTime?
+  paidAt         DateTime?
+  notes          String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  client  User     @relation("InvoiceClient", fields: [clientUserId], references: [id], onDelete: Cascade)
+  student Student? @relation(fields: [studentId], references: [id], onDelete: SetNull)
+  agency  Agency?  @relation(fields: [agencyId], references: [id], onDelete: SetNull)
+  payment Payment? @relation(fields: [paymentId], references: [id], onDelete: SetNull)
+
+  @@index([agencyId, issuedAt])
+  @@index([clientUserId])
+}
+
+model InvoiceCounter {
+  year       Int @id
+  lastNumber Int @default(0)
+}
+
+enum QuoteStatus {
+  BROUILLON
+  ENVOYE
+  ACCEPTE
+  REFUSE
+  EXPIRE
+}
+
+model Quote {
+  id             String      @id @default(cuid())
+  number         String?     @unique
+  status         QuoteStatus @default(BROUILLON)
+  clientUserId   String
+  studentId      String?
+  agencyId       String?
+  lines          Json
+  subtotalCents  Int
+  vatCents       Int
+  totalCents     Int
+  currency       String      @default("EUR")
+  issuerSnapshot Json?
+  clientSnapshot Json?
+  sentAt         DateTime?
+  validUntil     DateTime?
+  decidedAt      DateTime?
+  notes          String?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  client  User     @relation("QuoteClient", fields: [clientUserId], references: [id], onDelete: Cascade)
+  student Student? @relation(fields: [studentId], references: [id], onDelete: SetNull)
+  agency  Agency?  @relation(fields: [agencyId], references: [id], onDelete: SetNull)
+
+  @@index([agencyId, sentAt])
+  @@index([clientUserId])
+}
+
+model QuoteCounter {
+  year       Int @id
+  lastNumber Int @default(0)
+}
+
+enum ContractStatus {
+  BROUILLON
+  ACTIF
+  RESILIE
+  TERMINE
+}
+
+model Contract {
+  id             String         @id @default(cuid())
+  number         String?        @unique
+  status         ContractStatus @default(BROUILLON)
+  clientUserId   String
+  studentId      String?
+  formationId    String?
+  agencyId       String?
+  title          String
+  body           String
+  totalCents     Int            @default(0)
+  currency       String         @default("EUR")
+  issuerSnapshot Json?
+  clientSnapshot Json?
+  signedAt       DateTime?
+  startsAt       DateTime?
+  endsAt         DateTime?
+  notes          String?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  client  User     @relation("ContractClient", fields: [clientUserId], references: [id], onDelete: Cascade)
+  student Student? @relation(fields: [studentId], references: [id], onDelete: SetNull)
+  agency  Agency?  @relation(fields: [agencyId], references: [id], onDelete: SetNull)
+
+  @@index([agencyId, signedAt])
+  @@index([clientUserId])
+}
+
+model ContractCounter {
+  year       Int @id
+  lastNumber Int @default(0)
+}
+
+enum ContentType {
+  PAGE
+  ARTICLE
+}
+
+model ContentEntry {
+  id             String      @id @default(cuid())
+  type           ContentType
+  title          String
+  slug           String
+  excerpt        String?
+  body           String
+  coverImageUrl  String?
+  category       String?
+  seoTitle       String?
+  seoDescription String?
+  published      Boolean     @default(false)
+  publishedAt    DateTime?
+  agencyId       String?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  @@index([type, published])
+  @@index([slug])
+}
+
+enum AutomationTrigger {
+  LEAD_CREATED
+  STUDENT_CREATED
+}
+
+enum AutomationAction {
+  SEND_WELCOME_EMAIL
+  NOTIFY_TEAM
+  LOG
+}
+
+model AutomationRule {
+  id        String            @id @default(cuid())
+  name      String
+  trigger   AutomationTrigger
+  action    AutomationAction
+  active    Boolean           @default(true)
+  agencyId  String?
+  runCount  Int               @default(0)
+  lastRunAt DateTime?
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+
+  @@index([trigger, active])
+}
+
 model User {
   id                 String     @id @default(cuid())
   firstName          String
@@ -115,6 +338,9 @@ model User {
   lastLoginAt        DateTime?
   resetTokenHash     String?
   resetTokenExpiresAt DateTime?
+  // Incrémenté à chaque réinitialisation de mot de passe : invalide tous les JWT
+  // émis avant (révocation de session stateless).
+  tokenVersion       Int        @default(0)
   createdAt          DateTime   @default(now())
   updatedAt          DateTime   @updatedAt
 
@@ -124,6 +350,59 @@ model User {
   payments           Payment[]
   reviews            Review[]
   auditLogs          AuditLog[]
+  agencyMemberships  AgencyMembership[]
+  invoices           Invoice[]          @relation("InvoiceClient")
+  quotes             Quote[]            @relation("QuoteClient")
+  contracts          Contract[]         @relation("ContractClient")
+}
+
+model Agency {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  address     String?
+  latitude    Float?
+  longitude   Float?
+  phone       String?
+  email       String?
+  openingHours Json?
+  brand       Json?
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  memberships     AgencyMembership[]
+  students        Student[]
+  instructors     Instructor[]
+  vehicles        Vehicle[]
+  meetingPoints   MeetingPoint[]
+  availabilities  Availability[]
+  bookings        Booking[]
+  payments        Payment[]
+  cpfRequests     CpfRequest[]
+  contactRequests ContactRequest[]
+  leads           Lead[]
+  reviews         Review[]
+  exams           Exam[]
+  installments    Installment[]
+  invoices        Invoice[]
+  quotes          Quote[]
+  contracts       Contract[]
+}
+
+model AgencyMembership {
+  id        String   @id @default(cuid())
+  userId    String
+  agencyId  String
+  role      UserRole @default(SECRETAIRE)
+  isPrimary Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  agency    Agency   @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, agencyId])
+  @@index([agencyId])
 }
 
 model Student {
@@ -139,11 +418,20 @@ model Student {
   createdAt          DateTime          @default(now())
   updatedAt          DateTime          @updatedAt
 
+  agencyId           String?
+
   user               User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   formation          Formation?        @relation(fields: [formationId], references: [id])
+  agency             Agency?           @relation(fields: [agencyId], references: [id], onDelete: SetNull)
   documents          StudentDocument[]
   bookings           Booking[]
   cpfRequests        CpfRequest[]
+  exams              Exam[]
+  skills             StudentSkill[]
+  installments       Installment[]
+  invoices           Invoice[]
+  quotes             Quote[]
+  contracts          Contract[]
 }
 
 model StudentDocument {
@@ -170,7 +458,10 @@ model Instructor {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
+  agencyId       String?
+
   user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  agency         Agency?  @relation(fields: [agencyId], references: [id], onDelete: SetNull)
   vehicles       Vehicle[]
   availabilities Availability[]
   bookings       Booking[]
@@ -184,25 +475,35 @@ model Vehicle {
   transmission  FormationMode
   registration  String?
   active        Boolean    @default(true)
+  agencyId      String?
 
   instructor    Instructor? @relation(fields: [instructorId], references: [id], onDelete: SetNull)
+  agency        Agency?     @relation(fields: [agencyId], references: [id], onDelete: SetNull)
 }
 
 model Formation {
-  id              String        @id @default(cuid())
-  title           String
-  slug            String        @unique
-  description     String
-  mode            FormationMode
-  priceCents      Int
-  durationLabel   String
-  defaultHours    Int?
-  imageUrl        String?
-  options         Json?
-  cpfEligible     Boolean       @default(false)
-  active          Boolean       @default(true)
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
+  id                 String        @id @default(cuid())
+  title              String
+  slug               String        @unique
+  subtitle           String?
+  description        String
+  mode               FormationMode
+  productLine        ProductLine   @default(AUTO_ECOLE)
+  priceCents         Int
+  taxMode            TaxMode       @default(TTC)
+  quoteOnly          Boolean       @default(false)
+  // Prix interne (coût/base de calcul de devis) — JAMAIS exposé côté site public ni agent IA public.
+  internalPriceCents Int?
+  durationLabel      String
+  defaultHours       Int?
+  imageUrl           String?
+  options            Json?
+  tags               String[]      @default([])
+  cpfEligible        Boolean       @default(false)
+  cpfStatus          CpfStatus     @default(NON_RENSEIGNE)
+  active             Boolean       @default(true)
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
 
   students        Student[]
   pricingPlans    PricingPlan[]
@@ -238,8 +539,10 @@ model MeetingPoint {
   latitude    Float?
   longitude   Float?
   active      Boolean  @default(true)
+  agencyId    String?
   createdAt   DateTime @default(now())
 
+  agency      Agency?  @relation(fields: [agencyId], references: [id], onDelete: SetNull)
   bookings    Booking[]
 }
 
@@ -250,9 +553,11 @@ model Availability {
   endsAt        DateTime
   isAvailable   Boolean    @default(true)
   reason        String?
+  agencyId      String?
   createdAt     DateTime   @default(now())
 
   instructor    Instructor @relation(fields: [instructorId], references: [id], onDelete: Cascade)
+  agency        Agency?    @relation(fields: [agencyId], references: [id], onDelete: SetNull)
 
   @@index([instructorId, startsAt, endsAt])
 }
@@ -268,6 +573,7 @@ model Booking {
   status          BookingStatus @default(EN_ATTENTE)
   cancellationReason String?
   notificationSentAt DateTime?
+  agencyId        String?
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
 
@@ -275,6 +581,7 @@ model Booking {
   instructor      Instructor    @relation(fields: [instructorId], references: [id], onDelete: Restrict)
   formation       Formation     @relation(fields: [formationId], references: [id], onDelete: Restrict)
   meetingPoint    MeetingPoint? @relation(fields: [meetingPointId], references: [id], onDelete: SetNull)
+  agency          Agency?       @relation(fields: [agencyId], references: [id], onDelete: SetNull)
 
   @@index([instructorId, startsAt, endsAt])
   @@index([studentId, startsAt])
@@ -293,11 +600,14 @@ model Payment {
   invoiceUrl      String?
   metadata        Json?
   paidAt          DateTime?
+  agencyId        String?
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
 
   user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   pricingPlan     PricingPlan?  @relation(fields: [pricingPlanId], references: [id], onDelete: SetNull)
+  agency          Agency?       @relation(fields: [agencyId], references: [id], onDelete: SetNull)
+  invoice         Invoice?
 }
 
 model CpfRequest {
@@ -311,11 +621,13 @@ model CpfRequest {
   requestedAmountCents Int?
   missingDocuments String[]
   internalNotes    String?
+  agencyId        String?
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
 
   student         Student?         @relation(fields: [studentId], references: [id], onDelete: SetNull)
   formation       Formation?       @relation(fields: [formationId], references: [id], onDelete: SetNull)
+  agency          Agency?          @relation(fields: [agencyId], references: [id], onDelete: SetNull)
 }
 
 model ContactRequest {
@@ -328,10 +640,12 @@ model ContactRequest {
   source      String?
   message     String
   status      ContactRequestStatus @default(NOUVELLE)
+  agencyId    String?
   createdAt   DateTime             @default(now())
   updatedAt   DateTime             @updatedAt
 
   user        User?                @relation(fields: [userId], references: [id], onDelete: SetNull)
+  agency      Agency?              @relation(fields: [agencyId], references: [id], onDelete: SetNull)
 }
 
 model Lead {
@@ -345,8 +659,13 @@ model Lead {
   notes               String?
   estimatedValueCents Int?
   nextFollowUpAt      DateTime?
+  agencyId            String?
+  temperature         String?
+  score               Int?
   createdAt           DateTime   @default(now())
   updatedAt           DateTime   @updatedAt
+
+  agency              Agency?    @relation(fields: [agencyId], references: [id], onDelete: SetNull)
 
   @@index([status, createdAt])
   @@index([email])
@@ -360,11 +679,13 @@ model Review {
   comment       String
   status        ReviewStatus @default(EN_ATTENTE)
   publishedAt   DateTime?
+  agencyId      String?
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
 
   user          User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
   instructor    Instructor?  @relation(fields: [instructorId], references: [id], onDelete: SetNull)
+  agency        Agency?      @relation(fields: [agencyId], references: [id], onDelete: SetNull)
 }
 
 model FaqEntry {
@@ -377,6 +698,58 @@ model FaqEntry {
   updatedAt   DateTime @updatedAt
 }
 
+model Installment {
+  id          String            @id @default(cuid())
+  studentId   String
+  agencyId    String?
+  label       String?
+  dueDate     DateTime
+  amountCents Int
+  status      InstallmentStatus @default(EN_ATTENTE)
+  paidAt      DateTime?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  student     Student           @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  agency      Agency?           @relation(fields: [agencyId], references: [id], onDelete: SetNull)
+
+  @@index([studentId])
+  @@index([agencyId, dueDate])
+}
+
+model StudentSkill {
+  id        String   @id @default(cuid())
+  studentId String
+  skillCode String
+  level     Int      @default(0)
+  updatedAt DateTime @updatedAt
+
+  student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, skillCode])
+  @@index([studentId])
+}
+
+model Exam {
+  id          String     @id @default(cuid())
+  studentId   String
+  agencyId    String?
+  type        ExamType
+  scheduledAt DateTime
+  center      String?
+  result      ExamResult @default(EN_ATTENTE)
+  score       Int?
+  attempt     Int        @default(1)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  student     Student    @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  agency      Agency?    @relation(fields: [agencyId], references: [id], onDelete: SetNull)
+
+  @@index([agencyId, scheduledAt])
+  @@index([studentId])
+}
+
 model AuditLog {
   id          String   @id @default(cuid())
   userId      String?
@@ -387,4 +760,56 @@ model AuditLog {
   createdAt   DateTime @default(now())
 
   user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+}
+
+// Informations société (singleton, id = "company"), éditables depuis le CMS.
+model CompanyInfo {
+  id                  String   @id @default("company")
+  brandName           String   @default("LODENE")
+  legalName           String   @default("")
+  address             String   @default("")
+  postalCode          String   @default("")
+  city                String   @default("")
+  country             String   @default("France")
+  siret               String   @default("")
+  approvalNumber      String   @default("")
+  phone               String   @default("")
+  email               String   @default("")
+  hours               String   @default("")
+  legalForm           String   @default("")
+  capital             String   @default("")
+  publicationDirector String   @default("")
+  hostingProvider     String   @default("")
+  instagram           String   @default("")
+  facebook            String   @default("")
+  tiktok              String   @default("")
+  youtube             String   @default("")
+  updatedAt           DateTime @updatedAt
+}
+
+// Médiathèque : fichiers uploadés depuis le CMS (images, PDF…), réutilisables partout.
+model Media {
+  id           String   @id @default(cuid())
+  filename     String
+  originalName String
+  url          String
+  mimeType     String
+  sizeBytes    Int
+  altText      String   @default("")
+  category     String?
+  createdById  String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([createdAt])
+  @@index([category])
+}
+
+// Réglages dynamiques du site public, pilotés depuis le CMS (singletons clé/valeur JSON).
+// Une clé par bloc éditable : "nav.primary", "nav.ctas", "hero.home", "footer",
+// "sections.home", "hours", "pole.VTC"… Le site public lit ces clés (fallback data/site.ts).
+model SiteSetting {
+  key       String   @id
+  value     Json
+  updatedAt DateTime @updatedAt
 }

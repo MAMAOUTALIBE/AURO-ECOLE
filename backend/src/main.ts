@@ -9,11 +9,11 @@ const app = createApp(repository, config);
 const server = createServer(app);
 
 server.listen(config.PORT, () => {
-  console.log(`LODEN API listening on http://127.0.0.1:${config.PORT}`);
+  console.log(`LODENE API listening on http://127.0.0.1:${config.PORT}`);
 });
 
 function shutdown(signal: string) {
-  console.log(`Received ${signal}, shutting down LODEN API`);
+  console.log(`Received ${signal}, shutting down LODENE API`);
   server.close(() => process.exit(0));
 }
 

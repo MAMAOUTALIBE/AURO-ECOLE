@@ -1,33 +1,51 @@
 import type { Metadata } from "next";
-import { Clock3, Mail, MapPin, MessageCircle, Phone } from "lucide-react";
+import { Suspense } from "react";
+import { Clock3, Mail, MapPin, MessageCircle, Phone, type LucideIcon } from "lucide-react";
 import { ContactForm } from "@/components/ContactForm";
+import { LocalMapPanel } from "@/components/LocalMapPanel";
 import { PageHero } from "@/components/PageHero";
 import { contactInfo } from "@/data/site";
 
 export const metadata: Metadata = {
   title: "Contact",
-  description: "Contacter LODEN Auto-École, demander une inscription, appeler, écrire ou trouver le point de rendez-vous."
+  description: "Contacter LODENE Auto-École, demander une inscription, écrire ou trouver le point de rendez-vous à Conflans-Sainte-Honorine."
 };
+
+type ContactTile = { icon: LucideIcon; label: string; value: string; href?: string };
+
+// On n'affiche que les coordonnées officiellement confirmées (les champs vides sont masqués).
+function buildContactTiles(): ContactTile[] {
+  const tiles: ContactTile[] = [];
+  if (contactInfo.phone) {
+    tiles.push({ icon: Phone, label: "Téléphone", value: contactInfo.phone, href: `tel:${contactInfo.phone.replaceAll(" ", "")}` });
+  }
+  if (contactInfo.email) {
+    tiles.push({ icon: Mail, label: "Email", value: contactInfo.email, href: `mailto:${contactInfo.email}` });
+  }
+  tiles.push({ icon: MapPin, label: "Adresse", value: contactInfo.address });
+  if (contactInfo.hours) {
+    tiles.push({ icon: Clock3, label: "Horaires", value: contactInfo.hours });
+  }
+  if (contactInfo.whatsapp) {
+    tiles.push({ icon: MessageCircle, label: "WhatsApp", value: "Réponse rapide", href: `https://wa.me/${contactInfo.whatsapp}` });
+  }
+  return tiles;
+}
 
 export default function ContactPage() {
   return (
     <main>
       <PageHero
         eyebrow="Contact"
-        title="Parle à un conseiller LODEN"
-        text="Formulaire, téléphone, WhatsApp et point de rendez-vous : tout est prévu pour démarrer simplement."
+        title="Parle à un conseiller LODENE"
+        text="Remplis le formulaire ci-dessous : un conseiller te recontacte avec un parcours et un devis adaptés."
         cta="Envoyer une demande"
+        ctaHref="#demande"
       />
-      <section className="bg-white py-14 sm:py-20">
+      <section id="demande" className="bg-white py-14 sm:py-20">
         <div className="container-pad grid gap-8 lg:grid-cols-[0.9fr_1.1fr]">
           <div className="grid gap-4">
-            {[
-              { icon: Phone, label: "Téléphone", value: contactInfo.phone, href: `tel:${contactInfo.phone.replaceAll(" ", "")}` },
-              { icon: Mail, label: "Email", value: contactInfo.email, href: `mailto:${contactInfo.email}` },
-              { icon: MapPin, label: "Adresse", value: contactInfo.address },
-              { icon: Clock3, label: "Horaires", value: contactInfo.hours },
-              { icon: MessageCircle, label: "WhatsApp", value: "Réponse rapide", href: `https://wa.me/${contactInfo.whatsapp}` }
-            ].map((item) => {
+            {buildContactTiles().map((item) => {
               const Icon = item.icon;
               const content = (
                 <div className="flex items-center gap-4 rounded-3xl border border-slate-200 bg-loden-pearl p-5 shadow-soft">
@@ -48,13 +66,11 @@ export default function ContactPage() {
                 <div key={item.label}>{content}</div>
               );
             })}
-            <div className="overflow-hidden rounded-3xl border border-slate-200 bg-loden-pearl p-4 shadow-soft">
-              <div className="flex aspect-[16/9] items-center justify-center rounded-2xl bg-white text-center text-sm font-semibold text-loden-muted">
-                Google Maps · Point de rendez-vous République
-              </div>
-            </div>
+            <LocalMapPanel />
           </div>
-          <ContactForm />
+          <Suspense fallback={<div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-premium">Chargement du formulaire...</div>}>
+            <ContactForm />
+          </Suspense>
         </div>
       </section>
     </main>

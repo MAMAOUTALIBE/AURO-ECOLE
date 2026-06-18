@@ -4,7 +4,7 @@ import { MotionReveal } from "@/components/MotionReveal";
 export function FeatureBar() {
   return (
     <section className="bg-white py-12">
-      <h2 className="sr-only">Avantages de LODEN Auto-École</h2>
+      <h2 className="sr-only">Avantages de LODENE Auto-École</h2>
       <div className="container-pad grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {benefits.map((benefit, index) => {
           const Icon = benefit.icon;

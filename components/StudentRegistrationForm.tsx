@@ -2,19 +2,21 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { BadgeCheck, LockKeyhole, Send } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { cloneElement, isValidElement, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { phoneInputProps, phoneSchema } from "@/lib/validation";
 
+// Les `value` doivent correspondre aux IDs réels des formations (backend/src/data/initial-data.ts).
 const formationOptions = [
-  { label: "Permis B manuel", value: "formation-permis-b-manuel" },
-  { label: "Permis B automatique", value: "formation-permis-b-automatique" },
+  { label: "Permis B automatique — Déclic Auto", value: "formation-permis-b-auto-declic" },
+  { label: "Permis B automatique — Maîtrise Auto", value: "formation-permis-b-auto-maitrise" },
+  { label: "Permis B manuel — Essentiel", value: "formation-permis-b-manuel-essentiel" },
+  { label: "Permis B manuel — Confort", value: "formation-permis-b-manuel-confort" },
+  { label: "Stage accéléré code et conduite", value: "formation-stage-accelere" },
   { label: "Conduite accompagnée", value: "formation-conduite-accompagnee" },
-  { label: "Permis accéléré", value: "formation-permis-accelere" },
-  { label: "Code en ligne", value: "formation-code-en-ligne" },
-  { label: "Stage de code", value: "formation-stage-code" },
-  { label: "Annulation permis", value: "formation-annulation-permis" },
-  { label: "Perfectionnement", value: "formation-perfectionnement" }
+  { label: "Formation VTC", value: "formation-vtc-excellence" }
 ];
 
 const schema = z
@@ -22,7 +24,7 @@ const schema = z
     firstName: z.string().trim().min(2, "Indique ton prénom"),
     lastName: z.string().trim().min(2, "Indique ton nom"),
     email: z.string().trim().email("Email invalide"),
-    phone: z.string().trim().min(8, "Téléphone invalide"),
+    phone: phoneSchema,
     formationId: z.string().min(1, "Choisis une formation"),
     password: z.string().min(10, "10 caractères minimum"),
     confirmPassword: z.string().min(10, "Confirme ton mot de passe")
@@ -40,18 +42,26 @@ type RegistrationSuccess = {
 };
 
 export function StudentRegistrationForm() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  // Pré-sélection de la formation depuis le contexte (?formation=<slug>) propagé
+  // par les pages de formation. On retombe sur la 1re option si le slug est inconnu.
+  const requestedFormationId = `formation-${searchParams.get("formation") ?? ""}`;
+  const initialFormationId = formationOptions.some((option) => option.value === requestedFormationId)
+    ? requestedFormationId
+    : formationOptions[0].value;
+
   const [success, setSuccess] = useState<RegistrationSuccess | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const {
     register,
     handleSubmit,
     watch,
-    formState: { errors, isSubmitting },
-    reset
+    formState: { errors, isSubmitting }
   } = useForm<RegistrationValues>({
     resolver: zodResolver(schema),
     defaultValues: {
-      formationId: formationOptions[0].value
+      formationId: initialFormationId
     }
   });
 
@@ -80,19 +90,18 @@ export function StudentRegistrationForm() {
       })
     });
 
-    const payload = await response.json().catch(() => null) as { error?: { message?: string }; token?: string } | null;
+    const payload = await response.json().catch(() => null) as { error?: { message?: string } } | null;
 
     if (!response.ok) {
       setSubmitError(payload?.error?.message ?? "L'inscription n'a pas pu être créée. Réessaie dans quelques instants.");
       return;
     }
 
-    if (payload?.token) {
-      window.localStorage.setItem("loden_student_token", payload.token);
-    }
-
+    // La session est désormais dans le cookie httpOnly posé par /api/auth/register.
+    // On confirme puis on redirige vers l'espace élève (le tunnel ne s'arrête plus net).
     setSuccess({ firstName: values.firstName, formation: selectedFormationLabel });
-    reset({ formationId: formationOptions[0].value });
+    router.push("/espace-eleve");
+    router.refresh();
   };
 
   return (
@@ -120,7 +129,7 @@ export function StudentRegistrationForm() {
           <input {...register("email")} className="field-input" placeholder="prenom@email.fr" autoComplete="email" />
         </Field>
         <Field label="Téléphone" error={errors.phone?.message}>
-          <input {...register("phone")} className="field-input" placeholder="06 12 34 56 78" autoComplete="tel" />
+          <input {...register("phone")} {...phoneInputProps} className="field-input" />
         </Field>
       </div>
 
@@ -153,7 +162,7 @@ export function StudentRegistrationForm() {
       </button>
 
       {success ? (
-        <div className="mt-4 rounded-2xl bg-loden-50 p-4 text-sm font-medium text-loden-800">
+        <div className="mt-4 rounded-2xl bg-loden-50 p-4 text-sm font-medium text-loden-800" role="status">
           <span className="flex items-center gap-2">
             <BadgeCheck className="h-5 w-5" />
             Compte créé pour {success.firstName}. Formation choisie : {success.formation}.
@@ -161,7 +170,7 @@ export function StudentRegistrationForm() {
         </div>
       ) : null}
       {submitError ? (
-        <p className="mt-4 rounded-2xl bg-red-50 p-4 text-sm font-medium text-red-700">
+        <p className="mt-4 rounded-2xl bg-red-50 p-4 text-sm font-medium text-red-700" role="alert">
           {submitError}
         </p>
       ) : null}
@@ -180,11 +189,19 @@ function Field({
   children: React.ReactNode;
   className?: string;
 }) {
+  const field =
+    error && isValidElement(children)
+      ? cloneElement(children as React.ReactElement<{ "aria-invalid"?: boolean }>, { "aria-invalid": true })
+      : children;
   return (
     <label className={`grid gap-2 ${className}`}>
       <span className="text-sm font-semibold text-loden-ink">{label}</span>
-      {children}
-      {error ? <span className="text-sm font-medium text-red-600">{error}</span> : null}
+      {field}
+      {error ? (
+        <span className="text-sm font-medium text-red-600" role="alert">
+          {error}
+        </span>
+      ) : null}
     </label>
   );
 }

@@ -24,3 +24,7 @@ export function unauthorized(message = "Authentification requise") {
 export function conflict(message = "Conflit de ressource") {
   return new HttpError(409, message, "CONFLICT");
 }
+
+export function badRequest(message = "Requête invalide") {
+  return new HttpError(400, message, "BAD_REQUEST");
+}

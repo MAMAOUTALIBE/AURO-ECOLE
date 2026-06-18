@@ -2,18 +2,27 @@
   "name": "loden-auto-ecole-frontend",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=22 <25",
+    "npm": ">=10"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "api:dev": "tsx watch backend/src/main.ts",
+    "api:dev": "tsx watch --env-file-if-exists=.env backend/src/main.ts",
     "api:start": "node dist/backend/main.js",
     "api:build": "tsc -p backend/tsconfig.json",
     "api:test": "vitest run --config backend/vitest.config.ts",
     "api:typecheck": "tsc -p backend/tsconfig.json --noEmit",
     "prisma:generate": "prisma generate",
+    "db:migrate:deploy": "prisma migrate deploy",
+    "db:seed": "tsx prisma/seed.ts",
+    "db:clean-demo": "tsx --env-file=.env prisma/clean-demo.ts",
+    "deploy:build": "npm run prisma:generate && npm run api:build && npm run build",
+    "deploy:check": "npm run lint && npm run typecheck && npm run api:typecheck && npm run api:test && npm run api:build && npm run prisma:generate && npm run build",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc -p tsconfig.typecheck.json"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
@@ -26,16 +35,19 @@
     "helmet": "^8.2.0",
     "jsonwebtoken": "^9.0.3",
     "lucide-react": "^0.468.0",
+    "multer": "^2.2.0",
     "next": "^15.1.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-hook-form": "^7.53.2",
+    "recharts": "^2.15.4",
     "zod": "^3.25.76"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.10",
+    "@types/multer": "^2.1.0",
     "@types/node": "^22.10.1",
     "@types/react": "^19.0.1",
     "@types/react-dom": "^19.0.2",
