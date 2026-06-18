@@ -32,7 +32,7 @@ function ItemLink({ item, active, onNavigate }: { item: NavItem; active: boolean
       )}
     >
       <Icon
-        className={cn("h-[18px] w-[18px] shrink-0", active ? "text-red-700" : "text-red-200 group-hover:text-white")}
+        className={cn("h-[18px] w-[18px] shrink-0", active ? "text-red-700" : "text-red-100 group-hover:text-white")}
         aria-hidden="true"
       />
       <span className="truncate">{item.label}</span>
@@ -57,7 +57,7 @@ function ItemIcon({ item, active, onNavigate }: { item: NavItem; active: boolean
       aria-current={active ? "page" : undefined}
       className={cn(
         "focus-ring flex h-10 w-10 items-center justify-center rounded-xl transition",
-        active ? "bg-white text-red-700" : "text-red-200 hover:bg-red-600 hover:text-white",
+        active ? "bg-white text-red-700" : "text-red-100 hover:bg-red-600 hover:text-white",
         item.status === "soon" && !active && "opacity-60"
       )}
     >
@@ -120,7 +120,7 @@ export function SidebarNav({
             <button
               type="button"
               onClick={() => setClosed((prev) => ({ ...prev, [section.title]: !prev[section.title] }))}
-              className="focus-ring flex w-full items-center justify-between rounded-lg px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-red-200 transition hover:text-white"
+              className="focus-ring flex w-full items-center justify-between rounded-lg px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-red-100 transition hover:text-white"
             >
               {section.title}
               <ChevronDown

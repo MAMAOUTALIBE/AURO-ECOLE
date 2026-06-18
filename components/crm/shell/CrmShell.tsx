@@ -48,7 +48,7 @@ export function CrmShell({ children }: { children: ReactNode }) {
       {/* Sidebar desktop */}
       <aside
         className={cn(
-          "sticky top-0 hidden h-screen shrink-0 flex-col border-r border-red-800 bg-red-700 transition-[width] duration-300 lg:flex",
+          "sticky top-0 hidden h-screen shrink-0 flex-col border-r border-red-900 bg-red-800 transition-[width] duration-300 lg:flex",
           collapsed ? "w-[76px]" : "w-64"
         )}
       >
@@ -81,7 +81,7 @@ export function CrmShell({ children }: { children: ReactNode }) {
             aria-label="Fermer le menu"
             onClick={() => setMobileOpen(false)}
           />
-          <div className="absolute left-0 top-0 flex h-full w-72 flex-col border-r border-red-800 bg-red-700 shadow-premium">
+          <div className="absolute left-0 top-0 flex h-full w-72 flex-col border-r border-red-900 bg-red-800 shadow-premium">
             <div className="flex h-16 items-center justify-between border-b border-red-600/40 px-4">
               <Brand />
               <button
