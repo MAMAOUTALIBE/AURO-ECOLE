@@ -18,7 +18,7 @@ They are deployed together (PM2, see Deployment) but built and tested separately
 npm run dev            # dev server
 npm run build          # production build
 npm run lint           # eslint . (covers whole repo)
-npm run typecheck      # tsc --noEmit against root tsconfig (frontend)
+npm run typecheck      # tsc -p tsconfig.typecheck.json (extends root tsconfig but excludes .next — avoids stale-types false negatives)
 
 # Backend API (Express, :4000)
 npm run api:dev        # tsx watch backend/src/main.ts
@@ -33,6 +33,7 @@ npx vitest run --config backend/vitest.config.ts -t "test name substring"
 npm run prisma:generate
 npm run db:migrate:deploy   # prisma migrate deploy
 npm run db:seed             # tsx prisma/seed.ts
+npm run db:clean-demo       # tsx prisma/clean-demo.ts — purge demo rows (ids "demo-")
 
 # Aggregate gates
 npm run deploy:check        # lint + typecheck + api:typecheck + api:test + api:build + prisma:generate + build
@@ -51,36 +52,55 @@ The routes under `app/api/**/route.ts` are **thin proxies, not real handlers**. 
 
 ### Backend is layered: routes → repository abstraction → (memory | Prisma)
 
-- `backend/src/app.ts` wires Helmet + CORS + rate-limit and mounts one router per domain module under `backend/src/modules/<domain>/<domain>.routes.ts`. Note the **catalog router mounts at `/api` root**, so it owns `/api/formations`, `/api/pricing-plans`, and `/api/tarifs`.
+- `backend/src/app.ts` wires Helmet + CORS + rate-limit and mounts one router per domain module under `backend/src/modules/<domain>/<domain>.routes.ts` (~30 modules: catalog, instructors, vehicles, leads, bookings, appointments, payments, installments, invoices, quotes, contracts, cpf, exams, contacts, reviews, media, notifications, automations, search, chat, ai, plus auth/users/students/agencies/permissions/audit/stats/site/content/cms). A few mounts don't match the module name 1:1:
+  - **catalog** mounts at the `/api` root → owns `/api/formations`, `/api/pricing-plans`, `/api/tarifs`.
+  - **content** router (`content.routes.ts`) is mounted at *both* `/api/faq` and `/api/content` (the latter serves `/api/content/company` = the `CompanyInfo` singleton).
+  - **cms** router (`cms.routes.ts`) mounts at `/api/content-entries` (generic key/section `ContentEntry` records).
+  - **stats** and **chat-admin** both mount under `/api/admin`.
 - All data access goes through the `LodenRepository` interface ([backend/src/repositories/loden-repository.ts](backend/src/repositories/loden-repository.ts)). Two implementations:
   - `MemoryLodenRepository` — in-memory, seeded from `backend/src/data/initial-data.ts` (demo data mirroring the frontend mocks).
   - `PrismaLodenRepository` — PostgreSQL via Prisma.
 - `createRepository()` ([repository-factory.ts](backend/src/repositories/repository-factory.ts)) picks the memory repo when `API_USE_MEMORY=true` **or** `DATABASE_URL` is unset; otherwise Prisma. So the API runs with zero DB setup by default.
 - Validation uses **Zod** DTOs (`backend/src/shared/validation.ts` + per-module schemas).
-- **Auth & RBAC**: JWT (Bearer header **or** `loden_session` httpOnly cookie — the proxy falls back to the cookie, see [lib/backend-proxy.ts](lib/backend-proxy.ts)). Admin routes use **fine-grained permissions** via `requirePermission("module.action")` ([backend/src/middleware/auth.ts](backend/src/middleware/auth.ts)) backed by role presets in [backend/src/domain/permissions.ts](backend/src/domain/permissions.ts). 9 roles: `SUPER_ADMIN, DIRECTEUR, RESPONSABLE_AGENCE, RESPONSABLE_PEDAGOGIQUE, ADMIN, SECRETAIRE, COMPTABLE, MONITEUR, ELEVE, VISITEUR`. `requireRoles` still exists but new guards should use `requirePermission`.
+- **Auth & RBAC**: JWT (Bearer header **or** `loden_session` httpOnly cookie — the proxy falls back to the cookie, see [lib/backend-proxy.ts](lib/backend-proxy.ts)). Admin routes use **fine-grained permissions** via `requirePermission("module.action")` ([backend/src/middleware/auth.ts](backend/src/middleware/auth.ts)) backed by role presets in [backend/src/domain/permissions.ts](backend/src/domain/permissions.ts). 11 roles (`ALL_ROLES`): `SUPER_ADMIN, DIRECTEUR, RESPONSABLE_AGENCE, RESPONSABLE_PEDAGOGIQUE, ADMIN, SECRETAIRE, COMPTABLE, MONITEUR, EDITEUR, ELEVE, VISITEUR` (`EDITEUR` = CMS/content-only access). `requireRoles` still exists but new guards should use `requirePermission`.
 - **Multi-agences**: operational entities carry `agencyId`; users belong to agencies via `AgencyMembership`. List endpoints accept an `agencyId` filter (inclusive of unassigned rows during transition).
 
 Local memory admin login: `admin@loden-autoecole.fr` / `admin-password`.
 
 ### CRM admin (`/admin`)
 
-The CRM is the operational cockpit. [middleware.ts](middleware.ts) protects `/admin/*` (redirects to `/connexion` without a valid `loden_session` cookie + admin-capable role; the API enforces the real RBAC). Pages: `/admin` (cockpit KPIs), `/admin/pipeline`, `/admin/planning`, `/admin/examens`, `/admin/finance`, `/admin/eleves` + `/admin/eleves/[id]`. CRM-specific UI lives in `components/crm/`; the agency selector ([components/AgencySwitcher.tsx](components/AgencySwitcher.tsx)) persists the active agency in localStorage and reloads on change. Design vision & status: [docs/crm-blueprint.md](docs/crm-blueprint.md); deploy steps: [docs/crm-deployment.md](docs/crm-deployment.md).
+The CRM is the operational cockpit. [middleware.ts](middleware.ts) protects `/admin/*` (redirects to `/connexion` without a valid `loden_session` cookie + admin-capable role; the API enforces the real RBAC). Pages span operations (`/admin` cockpit KPIs, `/admin/pipeline`, `/admin/planning`, `/admin/examens`, `/admin/eleves` + `/admin/eleves/[id]`, `/admin/moniteurs`, `/admin/vehicules`, `/admin/agences`), finance (`/admin/finance`, `/admin/factures`, `/admin/devis`, `/admin/contrats`, `/admin/relances`, `/admin/cpf`), growth (`/admin/avis`, `/admin/reporting`, `/admin/rapports`), automation/AI (`/admin/workflows`, `/admin/automatisations`, `/admin/assistant`, `/admin/demandes-chatbot`), CMS (`/admin/site/*`, `/admin/pages`, `/admin/blog`, `/admin/medias`, `/admin/formations`), and admin (`/admin/utilisateurs`, `/admin/permissions`, `/admin/journaux`, `/admin/parametres`). CRM-specific UI lives in `components/crm/` (nav defined in [lib/crm-nav.ts](lib/crm-nav.ts)); the agency selector ([components/AgencySwitcher.tsx](components/AgencySwitcher.tsx)) persists the active agency in localStorage and reloads on change. Design vision & status: [docs/crm-blueprint.md](docs/crm-blueprint.md); deploy steps: [docs/crm-deployment.md](docs/crm-deployment.md).
+
+### AI layer is provider-agnostic and lives behind `backend/src/ai/`
+
+The chatbot (public) and CRM assistant route through `AiProvider` ([backend/src/ai/types.ts](backend/src/ai/types.ts)) — `chat()` (tool-calling) + `complete()`. `provider-factory.ts` returns the Groq impl when `GROQ_API_KEY` is set, otherwise a `DisabledAiProvider` that **degrades gracefully** (returns a clear "AI unavailable" message — no key, no crash). To add OpenAI/Mistral/Claude/Ollama, implement the interface and register it in the factory; the rest of the app only depends on the interface. `agent.ts` runs a bounded tool-calling loop (`maxSteps`); tools in `tools.ts` split into `publicTools` (anonymous-safe) and `crmTools` (RBAC-checked via `hasPermission` before execution). Endpoints (`/api/ai/*`, `/api/chat/*`) have a dedicated rate limit, Zod validation, and never expose the key to the browser (Next proxies relay same-origin only). Config: `AI_PROVIDER` (default `groq`), `AI_MODEL` (default `llama-3.1-8b-instant`), `GROQ_API_KEY`. Full design: [docs/ai-agent.md](docs/ai-agent.md).
+
+### CMS: the public site is steerable from the CRM via `SiteSetting`
+
+Site content (hero, nav, FAQ, company info, page sections) is editable from `/admin/site/*` and stored as JSON. Three distinct stores, do not conflate them:
+- **`SiteSetting`** (`key` → `value` JSON singleton) — structural site config (hero, primary nav, CTAs). Backend: `site.routes.ts` (`/api/site`), with a Zod schema **per key**. Frontend reads via [lib/site-content.ts](lib/site-content.ts), whose `default*` exports are the live fallback used when the API is down or a key is unset.
+- **`CompanyInfo`** — brand/address/phone/email/hours singleton, served at `/api/content/company`; also feeds the AI agent's "coordonnées" context.
+- **`ContentEntry`** — generic keyed content records (`/api/content-entries`, `cms.routes.ts`).
+
+When editing CMS content, **keep `lib/site-content.ts` defaults in sync with `backend/src/data/initial-data.ts` (`initialSiteSettings`)** — the file header calls this out. `EDITEUR` is the CMS-scoped role for this surface.
 
 ### Frontend data: mocks with API fallback, and a cents→euros mapping boundary
 
 - [data/site.ts](data/site.ts) is the canonical mock content (nav, formations, pricing, instructors, reviews, copy). Pages render from it as the **fallback** when the backend public endpoints are unavailable.
-- API responses use integer **cents** and backend enum values (`MANUEL`, `AUTOMATIQUE`…). The mappers in [lib/catalog-mappers.ts](lib/catalog-mappers.ts) and [lib/social-mappers.ts](lib/social-mappers.ts) convert API DTOs into the frontend display shapes (euros, French labels). Always map API data through these before rendering — don't render raw API payloads.
+- API responses use integer **cents** and backend enum values (`MANUEL`, `AUTOMATIQUE`…). The `lib/*-mappers.ts` files (`catalog-`, `social-`, `invoice-`, `quote-`, `contract-`) convert API DTOs into the frontend display shapes (euros, French labels). Always map API data through these before rendering — don't render raw API payloads.
 - `data/crm.ts` backs the admin/CRM dashboard views.
 
 ### Config & environment
 
-- Backend config is validated by Zod in [backend/src/config/env.ts](backend/src/config/env.ts). **In `NODE_ENV=production` the API refuses to start** if `JWT_SECRET` is a known dev value or `< 32` chars, if `DATABASE_URL` is missing, or if `API_USE_MEMORY=true`. Keep this guard intact.
-- `CORS_ORIGIN` is a comma-separated allowlist (split into `corsOrigins`).
+- Backend config is validated by Zod in [backend/src/config/env.ts](backend/src/config/env.ts). **In `NODE_ENV=production` the API refuses to start** if `JWT_SECRET` is a known dev value or `< 32` chars, if `DATABASE_URL` is missing, if `API_USE_MEMORY=true`, if `API_DEMO_SEED=true`, or if `STRIPE_SECRET_KEY` is set without `STRIPE_WEBHOOK_SECRET`. Keep these guards intact.
+- Most integrations are **optional and degrade to no-op/log when unconfigured**: AI (`GROQ_API_KEY`), email (`RESEND_API_KEY`/SMTP), SMS (`SMS_API_KEY`), WhatsApp (`WHATSAPP_*`), payments (`STRIPE_SECRET_KEY` → mock mode without it).
+- **`API_DEMO_SEED=true`** seeds a clearly-marked demo dataset (ids prefixed `demo-`) into the memory repo; it is a toggle for sales demos and is forbidden in production. `API_USE_MEMORY=true` forces the in-memory repo regardless of `DATABASE_URL`.
+- `CORS_ORIGIN` is a comma-separated allowlist (split into `corsOrigins`); `APP_BASE_URL` is the public front URL used to build email links (falls back to the first CORS origin).
 - Two separate TS configs: root [tsconfig.json](tsconfig.json) (Next, `noEmit`, `@/*` → repo root) and [backend/tsconfig.json](backend/tsconfig.json) (`NodeNext`, emits to `dist/backend/`). The `@/*` path alias is frontend-only; backend uses relative imports.
 
 ### Prisma
 
-Single source of truth: [prisma/schema.prisma](prisma/schema.prisma) (PostgreSQL). Rich domain model — `User`/`Student`/`Instructor`, `Formation`/`PricingPlan`, `Booking`/`Availability`/`MeetingPoint`, `Payment` (Stripe fields), `CpfRequest`, `ContactRequest`, `Lead`, `Review`, `AuditLog`, with status enums per entity. Migrations live in `prisma/migrations/`; seed data in [prisma/seed.ts](prisma/seed.ts).
+Single source of truth: [prisma/schema.prisma](prisma/schema.prisma) (PostgreSQL). Rich domain model — `User`/`Student`/`Instructor`, `Agency`/`AgencyMembership`, `Formation`/`PricingPlan`, `Booking`/`Availability`/`MeetingPoint`, `Payment` (Stripe fields)/`Installment`, `Invoice`/`Quote`/`Contract`, `CpfRequest`, `ContactRequest`, `Lead`, `Review`, `Automation`, CMS singletons (`SiteSetting`, `CompanyInfo`, `ContentEntry`), and `AuditLog`, with status enums per entity. Migrations live in `prisma/migrations/`; seed data in [prisma/seed.ts](prisma/seed.ts).
 
 ## Deployment
 

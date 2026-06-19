@@ -485,26 +485,50 @@ export type LeadRecord = {
   id: string;
   agencyId?: string | null;
   fullName: string;
+  firstName?: string | null;
+  lastName?: string | null;
   email: string;
   phone?: string | null;
   status: LeadStatus;
   source?: string | null;
   interest?: string | null;
+  financingType?: string | null;
   notes?: string | null;
   estimatedValueCents?: number | null;
   nextFollowUpAt?: Date | null;
   temperature?: string | null;
   score?: number | null;
+  consentEmail?: boolean;
+  consentWhatsapp?: boolean;
   createdAt: Date;
   updatedAt: Date;
 };
 
-export type ChatAppointmentStatus = "A_CONFIRMER" | "CONFIRME" | "TRAITE" | "ANNULE";
-export type ChatAppointmentType = "APPEL" | "AGENCE" | "VISIO" | "DEVIS" | "INSCRIPTION";
+// Vocabulaire canonique du rendez-vous unifié (source unique de vérité).
+// Les colonnes DB sont des String : ces unions servent à la validation (Zod) et au typage applicatif.
+export type AppointmentSource = "chatbot" | "manual" | "phone" | "whatsapp" | "crm";
+export type AppointmentType = "call" | "agency" | "video" | "lesson" | "quote" | "registration";
+export type AppointmentStatus =
+  | "new"
+  | "pending_confirmation"
+  | "confirmed"
+  | "scheduled"
+  | "completed"
+  | "cancelled"
+  | "no_show"
+  | "to_follow_up";
+export type AppointmentPriority = "low" | "normal" | "high" | "urgent";
+export type NotificationDeliveryStatus = "pending" | "sent" | "failed" | "skipped";
+
+// Anciennes unions (créneaux chatbot configurables) — conservées pour ChatAvailabilitySlot.
+export type ChatAppointmentSlotType = "APPEL" | "AGENCE" | "VISIO" | "DEVIS" | "INSCRIPTION";
 export type ChatTaskStatus = "A_FAIRE" | "TERMINEE" | "ANNULEE";
 export type ChatTaskType = "RELANCE" | "CONFIRMATION";
 export type ChatTaskPriority = "HAUTE" | "NORMALE" | "BASSE";
 
+// Le RDV unifié. Les champs source/type/status/priority sont des `string` (vocabulaire
+// canonique ci-dessus) pour rester compatibles avec les données existantes et permettre
+// l'évolution sans migration d'enum.
 export type ChatAppointmentRecord = {
   id: string;
   leadId: string;
@@ -516,23 +540,36 @@ export type ChatAppointmentRecord = {
   formation: string;
   objective: string;
   message?: string | null;
+  notes?: string | null;
   date: string;
   time: string;
+  requestedAt?: Date | null;
   startsAt: Date;
   endsAt: Date;
-  type: ChatAppointmentType;
-  status: ChatAppointmentStatus;
+  type: string;
+  status: string;
+  priority: string;
+  source: string;
   assignedToId?: string | null;
-  source: "chatbot";
+  studentId?: string | null;
+  formationId?: string | null;
+  instructorId?: string | null;
+  vehicleId?: string | null;
+  agencyId?: string | null;
+  createdById?: string | null;
+  updatedById?: string | null;
   consentContact: boolean;
   consentWhatsApp: boolean;
   whatsappMessage?: string | null;
-  adminEmailStatus: "pending" | "sent" | "failed" | "skipped";
-  clientEmailStatus: "pending" | "sent" | "failed" | "skipped";
-  whatsappStatus: "pending" | "sent" | "failed" | "skipped";
+  adminEmailStatus: NotificationDeliveryStatus;
+  clientEmailStatus: NotificationDeliveryStatus;
+  whatsappStatus: NotificationDeliveryStatus;
   createdAt: Date;
   updatedAt: Date;
 };
+
+// Alias sémantique : le RDV unifié EST le ChatAppointmentRecord (table ChatAppointment).
+export type AppointmentRecord = ChatAppointmentRecord;
 
 export type ChatTaskRecord = {
   id: string;
@@ -554,6 +591,10 @@ export type ChatConversationRecord = {
   appointmentId?: string | null;
   visitorName?: string | null;
   messages: { role: "user" | "assistant"; content: string; createdAt: string }[];
+  summary?: string | null;
+  intent?: string | null;
+  aiConfidence?: number | null;
+  lastMessage?: string | null;
   status: "OUVERTE" | "TRAITEE";
   createdAt: Date;
   updatedAt: Date;
@@ -564,7 +605,7 @@ export type ChatAvailabilitySlotRecord = {
   label: string;
   startsAt: Date;
   endsAt: Date;
-  type: ChatAppointmentType;
+  type: ChatAppointmentSlotType;
   agencyId?: string | null;
   assignedToId?: string | null;
   active: boolean;

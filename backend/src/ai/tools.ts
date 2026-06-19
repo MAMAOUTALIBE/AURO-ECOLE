@@ -1,15 +1,26 @@
 import { z } from "zod";
 import type { ApiConfig } from "../config/env";
 import type { Permission } from "../domain/permissions";
+import type { LeadRecord } from "../domain/types";
 import type { LodenRepository } from "../repositories/loden-repository";
 import { notifyNewLead, sendEmail } from "../shared/mailer";
 import { sendSms } from "../shared/sms";
+import { buildWhatsAppAppointmentText, buildWhatsAppUrl } from "../shared/whatsapp";
+import { selectKnowledge } from "./knowledge";
+import { LEAD_SCORE_SYSTEM, SUMMARIZE_SYSTEM } from "./prompts";
 import { qualifyLead } from "./qualify";
 import type { AiProvider, AiTool } from "./types";
 
 function euros(cents: number) {
   // "sur devis" tant que le prix public n'est pas renseigné.
   return cents > 0 ? `${Math.round(cents / 100)} €` : "sur devis";
+}
+
+/** Sépare un nom complet en prénom / nom pour structurer le prospect. */
+function splitFullName(value: string): { firstName: string; lastName: string } {
+  const parts = value.trim().split(/\s+/).filter(Boolean);
+  if (parts.length <= 1) return { firstName: parts[0] ?? value.trim(), lastName: "" };
+  return { firstName: parts[0], lastName: parts.slice(1).join(" ") };
 }
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -40,12 +51,17 @@ const leadArgs = z.object({
   email: z.string().trim().email().max(160),
   phone: z.string().trim().max(40).optional(),
   interest: z.string().trim().max(200).optional(),
+  financingType: z.enum(["CPF", "PERSONNEL", "ENTREPRISE", "OPCO", "AUTRE"]).optional(),
   message: z.string().trim().max(1000).optional()
 });
 
 const appointmentArgs = leadArgs.extend({
   desiredDate: z.string().trim().max(120).optional(),
   agency: z.string().trim().max(120).optional(),
+  formation: z.string().trim().max(160).optional()
+});
+
+const quoteRequestArgs = leadArgs.extend({
   formation: z.string().trim().max(160).optional()
 });
 
@@ -125,6 +141,29 @@ export const publicTools: ToolEntry[] = [
     def: {
       type: "function",
       function: {
+        name: "search_knowledge",
+        description:
+          "Recherche dans la base de connaissance PUBLIQUE de LODENE (formations permis B / VTC / SST / logistique, tarifs publics, CPF & financements, documents à fournir, horaires & contact, FAQ). À utiliser pour répondre précisément à une question sur l'offre LODENE, sans rien inventer.",
+        parameters: {
+          type: "object",
+          properties: { query: { type: "string", description: "Sujet ou question de l'utilisateur" } },
+          required: ["query"],
+          additionalProperties: false
+        }
+      }
+    },
+    handler: async (args) => {
+      const query = String(args.query ?? "").trim();
+      if (!query) return { results: [] };
+      // selectKnowledge ne consulte QUE les articles publics : aucune donnée interne possible.
+      const hits = selectKnowledge(query, { limit: 3 });
+      return { results: hits.map((h) => ({ titre: h.title, contenu: h.body })) };
+    }
+  },
+  {
+    def: {
+      type: "function",
+      function: {
         name: "create_lead",
         description: "Enregistre un prospect dans le CRM (à utiliser après avoir recueilli au moins le nom et l'email avec l'accord de la personne).",
         parameters: {
@@ -134,6 +173,7 @@ export const publicTools: ToolEntry[] = [
             email: { type: "string", description: "Email" },
             phone: { type: "string", description: "Téléphone (optionnel)" },
             interest: { type: "string", description: "Besoin / formation visée" },
+            financingType: { type: "string", enum: ["CPF", "PERSONNEL", "ENTREPRISE", "OPCO", "AUTRE"], description: "Financement évoqué (optionnel)" },
             message: { type: "string", description: "Précisions" }
           },
           required: ["fullName", "email"],
@@ -144,12 +184,16 @@ export const publicTools: ToolEntry[] = [
     handler: async (args, ctx) => {
       const parsed = leadArgs.safeParse(args);
       if (!parsed.success) return { ok: false, error: "Nom et email valides requis." };
+      const { firstName, lastName } = splitFullName(parsed.data.fullName);
       const lead = await ctx.repository.createLead({
         fullName: parsed.data.fullName,
+        firstName,
+        lastName,
         email: parsed.data.email,
         phone: parsed.data.phone,
         source: "assistant-ia",
         interest: parsed.data.interest,
+        financingType: parsed.data.financingType,
         notes: parsed.data.message,
         status: "PROSPECT"
       });
@@ -188,12 +232,16 @@ export const publicTools: ToolEntry[] = [
       const notes = [d.message, d.desiredDate ? `Créneau souhaité: ${d.desiredDate}` : null, d.agency ? `Agence: ${d.agency}` : null, d.formation ? `Formation: ${d.formation}` : null]
         .filter(Boolean)
         .join(" | ");
+      const { firstName, lastName } = splitFullName(d.fullName);
       const lead = await ctx.repository.createLead({
         fullName: d.fullName,
+        firstName,
+        lastName,
         email: d.email,
         phone: d.phone,
         source: "assistant-ia-rdv",
         interest: "RENDEZ-VOUS",
+        financingType: d.financingType,
         notes,
         status: "PROSPECT"
       });
@@ -207,6 +255,105 @@ export const publicTools: ToolEntry[] = [
       void qualifyLead(ctx.aiProvider, ctx.repository, lead);
       await ctx.repository.createAuditLog({ action: "ai.request_appointment", entityType: "Lead", entityId: lead.id, metadata: { desiredDate: d.desiredDate ?? null }, userId: ctx.actorUserId ?? null });
       return { ok: true, message: "Demande de rendez-vous enregistrée. Un conseiller confirmera le créneau (rien n'est définitif avant sa confirmation)." };
+    }
+  },
+  {
+    def: {
+      type: "function",
+      function: {
+        name: "generate_whatsapp_link",
+        description:
+          "Génère un lien WhatsApp prérempli pour contacter LODENE (ne révèle aucune donnée sensible). Utiliser quand la personne souhaite continuer sur WhatsApp.",
+        parameters: {
+          type: "object",
+          properties: {
+            fullName: { type: "string", description: "Nom de la personne (optionnel)" },
+            formation: { type: "string", description: "Formation concernée (optionnel)" },
+            date: { type: "string", description: "Date souhaitée (optionnel)" },
+            time: { type: "string", description: "Heure souhaitée (optionnel)" },
+            message: { type: "string", description: "Message libre prérempli (optionnel)" }
+          },
+          additionalProperties: false
+        }
+      }
+    },
+    handler: async (args, ctx) => {
+      const fullName = String(args.fullName ?? "").trim();
+      const formation = String(args.formation ?? "").trim();
+      const date = String(args.date ?? "").trim();
+      const time = String(args.time ?? "").trim();
+      const custom = String(args.message ?? "").trim();
+      const text =
+        custom ||
+        (formation && date && time && fullName
+          ? buildWhatsAppAppointmentText({ formation, date, time, fullName })
+          : `Bonjour LODENE, je souhaite des informations${formation ? ` sur la formation ${formation}` : ""}.`);
+      const company = await ctx.repository.getCompanyInfo();
+      // buildWhatsAppUrl privilégie WHATSAPP_BUSINESS_NUMBER, sinon le numéro fourni (ici, celui de LODENE).
+      const url = buildWhatsAppUrl(ctx.config, company.phone ?? "", text);
+      return { url, message: text };
+    }
+  },
+  {
+    def: {
+      type: "function",
+      function: {
+        name: "create_quote_request",
+        description:
+          "Enregistre une DEMANDE DE DEVIS dans le CRM (crée un prospect + une tâche « devis » pour l'équipe). À utiliser après avoir recueilli au moins le nom et l'email avec l'accord de la personne.",
+        parameters: {
+          type: "object",
+          properties: {
+            fullName: { type: "string" },
+            email: { type: "string" },
+            phone: { type: "string" },
+            formation: { type: "string", description: "Formation / besoin pour le devis" },
+            message: { type: "string", description: "Précisions (nombre de personnes, lieu, dates…)" }
+          },
+          required: ["fullName", "email"],
+          additionalProperties: false
+        }
+      }
+    },
+    handler: async (args, ctx) => {
+      const parsed = quoteRequestArgs.safeParse(args);
+      if (!parsed.success) return { ok: false, error: "Nom et email valides requis pour la demande de devis." };
+      const d = parsed.data;
+      const subject = d.formation ?? d.interest ?? "formation à préciser";
+      const notes = ["Demande de devis", d.formation ? `Formation: ${d.formation}` : null, d.message]
+        .filter(Boolean)
+        .join(" | ");
+      const { firstName, lastName } = splitFullName(d.fullName);
+      const lead = await ctx.repository.createLead({
+        fullName: d.fullName,
+        firstName,
+        lastName,
+        email: d.email,
+        phone: d.phone,
+        source: "assistant-ia-devis",
+        interest: d.formation ?? d.interest ?? "DEVIS",
+        financingType: d.financingType,
+        notes,
+        status: "PROSPECT"
+      });
+      await ctx.repository.createChatTask({
+        leadId: lead.id,
+        type: "RELANCE",
+        priority: "NORMALE",
+        deadline: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
+        note: `Établir un devis — ${subject}`,
+        assignedToId: ctx.actorUserId ?? null
+      });
+      void notifyNewLead(ctx.config, lead);
+      void qualifyLead(ctx.aiProvider, ctx.repository, lead);
+      await ctx.repository.createAuditLog({
+        action: "ai.create_quote_request",
+        entityType: "Lead",
+        entityId: lead.id,
+        metadata: { formation: d.formation ?? null },
+        userId: ctx.actorUserId ?? null
+      });
+      return { ok: true, message: "Demande de devis enregistrée. Un conseiller préparera le devis et reviendra vers vous." };
     }
   }
 ];
@@ -340,6 +487,296 @@ const bookAppointmentTool: ToolEntry = {
   }
 };
 
+// --- find_lead : retrouver un prospect pour pouvoir agir dessus (create_task, update_lead_status) ---
+const findLeadTool: ToolEntry = {
+  permission: "leads.read",
+  def: {
+    type: "function",
+    function: {
+      name: "find_lead",
+      description: "Recherche un prospect/lead par nom, email ou téléphone. Retourne son id, son statut et ses coordonnées.",
+      parameters: {
+        type: "object",
+        properties: { query: { type: "string", description: "Nom, email ou téléphone du prospect" } },
+        required: ["query"],
+        additionalProperties: false
+      }
+    }
+  },
+  handler: async (args, ctx) => {
+    const query = String(args.query ?? "").trim().toLowerCase();
+    if (!query) return { error: "Requête vide." };
+    const leads = await ctx.repository.listLeads();
+    return leads
+      .filter((l) => `${l.fullName} ${l.email} ${l.phone ?? ""}`.toLowerCase().includes(query))
+      .slice(0, 5)
+      .map((l) => ({
+        leadId: l.id,
+        nom: l.fullName,
+        email: l.email,
+        telephone: l.phone ?? undefined,
+        statut: l.status,
+        source: l.source ?? undefined,
+        interet: l.interest ?? undefined,
+        temperature: l.temperature ?? undefined,
+        score: l.score ?? undefined
+      }));
+  }
+};
+
+// --- create_task : créer une tâche CRM (relance / confirmation) liée à un prospect ---
+const createTaskArgs = z.object({
+  leadId: z.string().trim().min(1),
+  note: z.string().trim().min(2).max(1000),
+  type: z.enum(["RELANCE", "CONFIRMATION"]).optional(),
+  priority: z.enum(["HAUTE", "NORMALE", "BASSE"]).optional(),
+  dueInDays: z.coerce.number().int().min(0).max(120).optional(),
+  appointmentId: z.string().trim().optional()
+});
+
+const createTaskTool: ToolEntry = {
+  permission: "leads.manage",
+  def: {
+    type: "function",
+    function: {
+      name: "create_task",
+      description:
+        "Crée une tâche CRM (relance, confirmation, devis, vérification CPF…) liée à un prospect. Précise l'objet dans 'note'. Nécessite le leadId (utilise find_lead si besoin).",
+      parameters: {
+        type: "object",
+        properties: {
+          leadId: { type: "string" },
+          note: { type: "string", description: "Objet de la tâche (ex: « Vérifier l'éligibilité CPF »)" },
+          type: { type: "string", enum: ["RELANCE", "CONFIRMATION"], description: "Type (défaut RELANCE)" },
+          priority: { type: "string", enum: ["HAUTE", "NORMALE", "BASSE"], description: "Priorité (défaut NORMALE)" },
+          dueInDays: { type: "number", description: "Échéance en jours (défaut 2)" },
+          appointmentId: { type: "string", description: "RDV lié (optionnel)" }
+        },
+        required: ["leadId", "note"],
+        additionalProperties: false
+      }
+    }
+  },
+  handler: async (args, ctx) => {
+    const parsed = createTaskArgs.safeParse(args);
+    if (!parsed.success) return { ok: false, error: "leadId et note requis." };
+    const t = parsed.data;
+    const task = await ctx.repository.createChatTask({
+      leadId: t.leadId,
+      type: t.type ?? "RELANCE",
+      priority: t.priority ?? "NORMALE",
+      deadline: new Date(Date.now() + (t.dueInDays ?? 2) * 24 * 60 * 60 * 1000),
+      note: t.note,
+      appointmentId: t.appointmentId,
+      assignedToId: ctx.actorUserId ?? null
+    });
+    await ctx.repository.createAuditLog({
+      action: "ai.create_task",
+      entityType: "ChatTask",
+      entityId: task.id,
+      metadata: { leadId: t.leadId, type: task.type },
+      userId: ctx.actorUserId ?? null
+    });
+    return { ok: true, taskId: task.id, message: "Tâche créée." };
+  }
+};
+
+// --- update_lead_status : faire avancer un prospect dans le pipeline ---
+const updateLeadStatusArgs = z.object({
+  leadId: z.string().trim().min(1),
+  status: z.enum(["PROSPECT", "CONTACTE", "RELANCE", "DEVIS_ENVOYE", "INSCRIT", "PERDU"]),
+  notes: z.string().trim().max(1000).optional(),
+  nextFollowUpInDays: z.coerce.number().int().min(0).max(120).optional()
+});
+
+const updateLeadStatusTool: ToolEntry = {
+  permission: "leads.manage",
+  def: {
+    type: "function",
+    function: {
+      name: "update_lead_status",
+      description:
+        "Met à jour le statut d'un prospect (PROSPECT, CONTACTE, RELANCE, DEVIS_ENVOYE, INSCRIT, PERDU). Nécessite le leadId (utilise find_lead).",
+      parameters: {
+        type: "object",
+        properties: {
+          leadId: { type: "string" },
+          status: { type: "string", enum: ["PROSPECT", "CONTACTE", "RELANCE", "DEVIS_ENVOYE", "INSCRIT", "PERDU"] },
+          notes: { type: "string", description: "Note de suivi (optionnel)" },
+          nextFollowUpInDays: { type: "number", description: "Prochaine relance dans N jours (optionnel)" }
+        },
+        required: ["leadId", "status"],
+        additionalProperties: false
+      }
+    }
+  },
+  handler: async (args, ctx) => {
+    const parsed = updateLeadStatusArgs.safeParse(args);
+    if (!parsed.success) return { ok: false, error: "leadId et statut valides requis." };
+    const u = parsed.data;
+    const patch: Partial<LeadRecord> = { status: u.status };
+    if (u.notes) patch.notes = u.notes;
+    if (u.nextFollowUpInDays != null) patch.nextFollowUpAt = new Date(Date.now() + u.nextFollowUpInDays * 24 * 60 * 60 * 1000);
+    try {
+      const lead = await ctx.repository.updateLead(u.leadId, patch);
+      await ctx.repository.createAuditLog({
+        action: "ai.update_lead_status",
+        entityType: "Lead",
+        entityId: lead.id,
+        metadata: { status: u.status },
+        userId: ctx.actorUserId ?? null
+      });
+      return { ok: true, message: `Statut mis à jour : ${u.status}.` };
+    } catch {
+      return { ok: false, error: "Prospect introuvable." };
+    }
+  }
+};
+
+// --- score_lead : qualifier un prospect (chaud/tiède/froid) via l'IA, persistable ---
+const scoreLeadArgs = z.object({
+  leadId: z.string().trim().optional(),
+  fullName: z.string().trim().max(120).optional(),
+  interest: z.string().trim().max(200).optional(),
+  source: z.string().trim().max(120).optional(),
+  message: z.string().trim().max(2000).optional()
+});
+
+const scoreLeadTool: ToolEntry = {
+  permission: "leads.read",
+  def: {
+    type: "function",
+    function: {
+      name: "score_lead",
+      description:
+        "Évalue la température d'un prospect (chaud/tiède/froid + score 0-100 + action recommandée). Si leadId est fourni, le score est enregistré sur le prospect.",
+      parameters: {
+        type: "object",
+        properties: {
+          leadId: { type: "string", description: "Prospect à mettre à jour (optionnel)" },
+          fullName: { type: "string" },
+          interest: { type: "string", description: "Besoin / formation visée" },
+          source: { type: "string" },
+          message: { type: "string", description: "Message ou contexte du prospect" }
+        },
+        additionalProperties: false
+      }
+    }
+  },
+  handler: async (args, ctx) => {
+    if (!ctx.aiProvider?.available) return { error: "Qualification IA indisponible pour le moment." };
+    const a = scoreLeadArgs.safeParse(args).data ?? {};
+    const description =
+      [a.fullName ? `Nom: ${a.fullName}` : null, a.interest ? `Intérêt: ${a.interest}` : null, a.source ? `Source: ${a.source}` : null, a.message ? `Message: ${a.message}` : null]
+        .filter(Boolean)
+        .join("\n") || "Aucune information.";
+    const reply = await ctx.aiProvider.complete(
+      [
+        { role: "system", content: LEAD_SCORE_SYSTEM },
+        { role: "user", content: description }
+      ],
+      { temperature: 0.1, maxTokens: 200 }
+    );
+    let parsed: { temperature?: string; score?: number; raison?: string; prochaineAction?: string };
+    try {
+      parsed = JSON.parse(reply.replace(/```json|```/g, "").trim());
+    } catch {
+      parsed = { temperature: "tiede", score: 50, raison: reply.slice(0, 200), prochaineAction: "Recontacter le prospect" };
+    }
+    if (a.leadId) {
+      try {
+        await ctx.repository.updateLead(a.leadId, {
+          temperature: parsed.temperature ?? null,
+          score: typeof parsed.score === "number" ? parsed.score : null
+        });
+      } catch {
+        // le prospect peut ne plus exister : on renvoie quand même le score calculé.
+      }
+    }
+    return parsed;
+  }
+};
+
+// --- summarize_conversation : résumé d'une conversation / demande ---
+const summarizeConversationTool: ToolEntry = {
+  permission: "dashboard.read",
+  def: {
+    type: "function",
+    function: {
+      name: "summarize_conversation",
+      description: "Résume une conversation ou une demande client en quelques puces + une catégorie.",
+      parameters: {
+        type: "object",
+        properties: { text: { type: "string", description: "Texte de la conversation / demande à résumer" } },
+        required: ["text"],
+        additionalProperties: false
+      }
+    }
+  },
+  handler: async (args, ctx) => {
+    if (!ctx.aiProvider?.available) return { error: "Résumé IA indisponible pour le moment." };
+    const text = String(args.text ?? "").trim();
+    if (text.length < 5) return { error: "Texte trop court à résumer." };
+    const summary = await ctx.aiProvider.complete(
+      [
+        { role: "system", content: SUMMARIZE_SYSTEM },
+        { role: "user", content: text.slice(0, 5000) }
+      ],
+      { temperature: 0.2, maxTokens: 300 }
+    );
+    return { summary };
+  }
+};
+
+// --- send_admin_email_alert : alerter l'équipe LODENE par email ---
+const sendAdminEmailAlertArgs = z.object({
+  subject: z.string().trim().min(2).max(200),
+  body: z.string().trim().min(2).max(4000),
+  leadId: z.string().trim().optional()
+});
+
+const sendAdminEmailAlertTool: ToolEntry = {
+  permission: "leads.manage",
+  def: {
+    type: "function",
+    function: {
+      name: "send_admin_email_alert",
+      description: "Envoie une alerte par email à l'équipe LODENE (responsable). Pour signaler un prospect urgent ou une action à traiter.",
+      parameters: {
+        type: "object",
+        properties: {
+          subject: { type: "string", description: "Objet court" },
+          body: { type: "string", description: "Contenu de l'alerte" },
+          leadId: { type: "string", description: "Prospect concerné (optionnel)" }
+        },
+        required: ["subject", "body"],
+        additionalProperties: false
+      }
+    }
+  },
+  handler: async (args, ctx) => {
+    const parsed = sendAdminEmailAlertArgs.safeParse(args);
+    if (!parsed.success) return { ok: false, error: "Objet et contenu requis." };
+    const to = ctx.config.OWNER_ALERT_EMAIL || ctx.config.LODEN_NOTIFY_TO;
+    if (!to) return { ok: false, error: "Aucune adresse d'alerte n'est configurée." };
+    const status = await sendEmail(ctx.config, {
+      to,
+      subject: `[LODENE] ${parsed.data.subject}`,
+      text: parsed.data.body
+    });
+    await ctx.repository.createAuditLog({
+      action: "ai.admin_alert",
+      entityType: "Lead",
+      entityId: parsed.data.leadId ?? "n/a",
+      metadata: { status },
+      userId: ctx.actorUserId ?? null
+    });
+    return status === "sent"
+      ? { ok: true, message: "Alerte envoyée à l'équipe LODENE." }
+      : { ok: false, status, message: "Alerte non envoyée (email non configuré)." };
+  }
+};
+
 const byName = (name: string) => publicTools.find((tool) => tool.def.function.name === name)!;
 
 /**
@@ -348,11 +785,20 @@ const byName = (name: string) => publicTools.find((tool) => tool.def.function.na
  * cette liste par les permissions du rôle connecté (RBAC).
  */
 export const crmTools: ToolEntry[] = [
+  byName("search_knowledge"),
   byName("get_formations"),
   byName("get_prices"),
   byName("get_agencies"),
   byName("get_available_slots"),
+  byName("generate_whatsapp_link"),
   byName("create_lead"),
+  byName("create_quote_request"),
+  findLeadTool,
   findStudentTool,
+  createTaskTool,
+  updateLeadStatusTool,
+  scoreLeadTool,
+  summarizeConversationTool,
+  sendAdminEmailAlertTool,
   bookAppointmentTool
 ];

@@ -1,3 +1,4 @@
+import { sanitizeAiOutput } from "./safety";
 import type { ToolContext, ToolEntry } from "./tools";
 import type { AiMessage, AiProvider } from "./types";
 
@@ -25,7 +26,7 @@ export async function runAgent(
     });
 
     if (!result.toolCalls.length) {
-      return result.content?.trim() || FALLBACK;
+      return sanitizeAiOutput(result.content?.trim() || FALLBACK, opts.context.config);
     }
 
     messages.push({ role: "assistant", content: result.content, toolCalls: result.toolCalls });
@@ -45,5 +46,5 @@ export async function runAgent(
 
   // Garde-fou : on force une réponse finale sans nouvel appel d'outil.
   const final = await provider.chat({ messages, temperature: 0.4, maxTokens: 400 });
-  return final.content?.trim() || FALLBACK;
+  return sanitizeAiOutput(final.content?.trim() || FALLBACK, opts.context.config);
 }

@@ -42,6 +42,7 @@ import type {
   CreateChatAppointmentInput,
   CreateChatAvailabilitySlotInput,
   CreateChatConversationInput,
+  UpdateChatConversationInput,
   CreateChatTaskInput,
   CreateMediaInput,
   CreateStudentInput,
@@ -1091,6 +1092,21 @@ export class PrismaLodenRepository implements LodenRepository {
     }));
   }
 
+  async findLeadByEmail(email: string) {
+    if (!email.trim()) return null;
+    const row = await this.prisma.lead.findFirst({ where: { email: email.trim() }, orderBy: { createdAt: "desc" } });
+    if (!row) return null;
+    return {
+      ...row,
+      phone: row.phone ?? undefined,
+      source: row.source ?? undefined,
+      interest: row.interest ?? undefined,
+      notes: row.notes ?? undefined,
+      estimatedValueCents: row.estimatedValueCents ?? undefined,
+      nextFollowUpAt: row.nextFollowUpAt ?? undefined
+    };
+  }
+
   async createLead(input: CreateLeadInput) {
     const row = await this.prisma.lead.create({ data: { ...input, status: input.status ?? "PROSPECT" } });
     return {
@@ -1128,13 +1144,23 @@ export class PrismaLodenRepository implements LodenRepository {
     formation: string;
     objective: string;
     message: string | null;
+    notes: string | null;
     date: string;
     time: string;
+    requestedAt: Date | null;
     startsAt: Date;
     endsAt: Date;
     type: string;
     status: string;
+    priority: string;
     assignedToId: string | null;
+    studentId: string | null;
+    formationId: string | null;
+    instructorId: string | null;
+    vehicleId: string | null;
+    agencyId: string | null;
+    createdById: string | null;
+    updatedById: string | null;
     source: string;
     consentContact: boolean;
     consentWhatsApp: boolean;
@@ -1149,10 +1175,16 @@ export class PrismaLodenRepository implements LodenRepository {
       ...row,
       email: row.email ?? undefined,
       message: row.message ?? undefined,
-      type: row.type as ChatAppointmentRecord["type"],
-      status: row.status as ChatAppointmentRecord["status"],
+      notes: row.notes ?? undefined,
+      requestedAt: row.requestedAt ?? undefined,
       assignedToId: row.assignedToId ?? undefined,
-      source: "chatbot",
+      studentId: row.studentId ?? undefined,
+      formationId: row.formationId ?? undefined,
+      instructorId: row.instructorId ?? undefined,
+      vehicleId: row.vehicleId ?? undefined,
+      agencyId: row.agencyId ?? undefined,
+      createdById: row.createdById ?? undefined,
+      updatedById: row.updatedById ?? undefined,
       whatsappMessage: row.whatsappMessage ?? undefined,
       adminEmailStatus: row.adminEmailStatus as ChatAppointmentRecord["adminEmailStatus"],
       clientEmailStatus: row.clientEmailStatus as ChatAppointmentRecord["clientEmailStatus"],
@@ -1163,7 +1195,19 @@ export class PrismaLodenRepository implements LodenRepository {
   async listChatAppointments(filters?: Parameters<LodenRepository["listChatAppointments"]>[0]) {
     const rows = await this.prisma.chatAppointment.findMany({
       where: {
-        ...(filters?.status ? { status: filters.status } : {})
+        ...(filters?.status ? { status: filters.status } : {}),
+        ...(filters?.source ? { source: filters.source } : {}),
+        ...(filters?.agencyId ? { agencyId: filters.agencyId } : {}),
+        ...(filters?.instructorId ? { instructorId: filters.instructorId } : {}),
+        ...(filters?.assignedToId ? { assignedToId: filters.assignedToId } : {}),
+        ...(filters?.from || filters?.to
+          ? {
+              startsAt: {
+                ...(filters?.from ? { gte: filters.from } : {}),
+                ...(filters?.to ? { lte: filters.to } : {})
+              }
+            }
+          : {})
       },
       orderBy: { createdAt: "desc" }
     });
@@ -1179,7 +1223,9 @@ export class PrismaLodenRepository implements LodenRepository {
     const row = await this.prisma.chatAppointment.create({
       data: {
         ...input,
-        source: "chatbot",
+        source: input.source ?? "chatbot",
+        status: input.status ?? "pending_confirmation",
+        priority: input.priority ?? "normal",
         adminEmailStatus: input.adminEmailStatus ?? "pending",
         clientEmailStatus: input.clientEmailStatus ?? "pending",
         whatsappStatus: input.whatsappStatus ?? "pending"
@@ -1204,6 +1250,10 @@ export class PrismaLodenRepository implements LodenRepository {
   async updateChatAppointment(id: string, input: UpdateChatAppointmentInput) {
     const row = await this.prisma.chatAppointment.update({ where: { id }, data: input });
     return this.mapChatAppointment(row);
+  }
+
+  async deleteChatAppointment(id: string) {
+    await this.prisma.chatAppointment.delete({ where: { id } });
   }
 
   private mapChatTask(row: {
@@ -1257,6 +1307,10 @@ export class PrismaLodenRepository implements LodenRepository {
     appointmentId: string | null;
     visitorName: string | null;
     messages: unknown;
+    summary: string | null;
+    intent: string | null;
+    aiConfidence: number | null;
+    lastMessage: string | null;
     status: string;
     createdAt: Date;
     updatedAt: Date;
@@ -1282,9 +1336,32 @@ export class PrismaLodenRepository implements LodenRepository {
     return rows.map((row) => this.mapChatConversation(row));
   }
 
+  async findChatConversationById(id: string) {
+    const row = await this.prisma.chatConversation.findUnique({ where: { id } });
+    return row ? this.mapChatConversation(row) : null;
+  }
+
   async createChatConversation(input: CreateChatConversationInput) {
     const row = await this.prisma.chatConversation.create({
       data: { ...input, status: input.status ?? "OUVERTE", messages: input.messages as never }
+    });
+    return this.mapChatConversation(row);
+  }
+
+  async updateChatConversation(id: string, input: UpdateChatConversationInput) {
+    const row = await this.prisma.chatConversation.update({
+      where: { id },
+      data: {
+        ...(input.leadId !== undefined ? { leadId: input.leadId } : {}),
+        ...(input.appointmentId !== undefined ? { appointmentId: input.appointmentId } : {}),
+        ...(input.visitorName !== undefined ? { visitorName: input.visitorName } : {}),
+        ...(input.messages !== undefined ? { messages: input.messages as never } : {}),
+        ...(input.summary !== undefined ? { summary: input.summary } : {}),
+        ...(input.intent !== undefined ? { intent: input.intent } : {}),
+        ...(input.aiConfidence !== undefined ? { aiConfidence: input.aiConfidence } : {}),
+        ...(input.lastMessage !== undefined ? { lastMessage: input.lastMessage } : {}),
+        ...(input.status !== undefined ? { status: input.status } : {})
+      }
     });
     return this.mapChatConversation(row);
   }
@@ -1390,6 +1467,15 @@ export class PrismaLodenRepository implements LodenRepository {
 
   async listAuditLogs(limit = 100) {
     const rows = await this.prisma.auditLog.findMany({ orderBy: { createdAt: "desc" }, take: limit });
+    return rows.map((row) => ({ ...row, userId: row.userId ?? undefined, entityId: row.entityId ?? undefined, metadata: row.metadata }));
+  }
+
+  async listAuditLogsForEntity(entityType: string, entityId: string, limit = 100) {
+    const rows = await this.prisma.auditLog.findMany({
+      where: { entityType, entityId },
+      orderBy: { createdAt: "desc" },
+      take: limit
+    });
     return rows.map((row) => ({ ...row, userId: row.userId ?? undefined, entityId: row.entityId ?? undefined, metadata: row.metadata }));
   }
 

@@ -259,7 +259,8 @@ describe("LODENE API", () => {
 
     expect(created.body.data.lead.source).toBe("chatbot");
     expect(created.body.data.lead.temperature).toBe("chaud");
-    expect(created.body.data.appointment.status).toBe("A_CONFIRMER");
+    expect(created.body.data.appointment.status).toBe("pending_confirmation");
+    expect(created.body.data.appointment.source).toBe("chatbot");
     expect(created.body.data.appointment.formation).toBe("Permis B automatique");
     expect(created.body.data.task.priority).toBe("HAUTE");
     expect(created.body.data.whatsapp.message).toContain("Permis B automatique");

@@ -651,17 +651,22 @@ model ContactRequest {
 model Lead {
   id                  String     @id @default(cuid())
   fullName            String
+  firstName           String?
+  lastName            String?
   email               String
   phone               String?
   status              LeadStatus @default(PROSPECT)
   source              String?
   interest            String?
+  financingType       String?
   notes               String?
   estimatedValueCents Int?
   nextFollowUpAt      DateTime?
   agencyId            String?
   temperature         String?
   score               Int?
+  consentEmail        Boolean    @default(false)
+  consentWhatsapp     Boolean    @default(false)
   createdAt           DateTime   @default(now())
   updatedAt           DateTime   @updatedAt
 
@@ -671,6 +676,17 @@ model Lead {
   @@index([email])
 }
 
+// Rendez-vous unifié (source unique de vérité). Le nom de table reste
+// "ChatAppointment" pour compatibilité, mais le modèle couvre désormais TOUS les RDV
+// quelle que soit leur origine (champ `source`): chatbot, manuel, téléphone, whatsapp, crm.
+// Vocabulaire canonique (colonnes String, validées par Zod côté API) :
+//   source  : chatbot | manual | phone | whatsapp | crm
+//   type    : call | agency | video | lesson | quote | registration
+//   status  : new | pending_confirmation | confirmed | scheduled | completed | cancelled | no_show | to_follow_up
+//   priority: low | normal | high | urgent
+// Les FK (studentId/formationId/instructorId/vehicleId/assignedToId) sont des colonnes
+// scalaires : les libellés (moniteur, conseiller, formation) sont résolus côté API/CRM
+// depuis les listes existantes — pas de relations Prisma pour limiter le couplage.
 model ChatAppointment {
   id                String   @id @default(cuid())
   leadId            String
@@ -682,14 +698,24 @@ model ChatAppointment {
   formation         String
   objective         String
   message           String?
+  notes             String?
   date              String
   time              String
+  requestedAt       DateTime?
   startsAt          DateTime
   endsAt            DateTime
   type              String
-  status            String   @default("A_CONFIRMER")
-  assignedToId      String?
+  status            String   @default("pending_confirmation")
+  priority          String   @default("normal")
   source            String   @default("chatbot")
+  assignedToId      String?
+  studentId         String?
+  formationId       String?
+  instructorId      String?
+  vehicleId         String?
+  agencyId          String?
+  createdById       String?
+  updatedById       String?
   consentContact    Boolean  @default(true)
   consentWhatsApp   Boolean  @default(false)
   whatsappMessage   String?
@@ -702,6 +728,9 @@ model ChatAppointment {
   @@index([status, createdAt])
   @@index([leadId])
   @@index([startsAt])
+  @@index([source, status])
+  @@index([agencyId, startsAt])
+  @@index([instructorId, startsAt])
 }
 
 model ChatTask {
@@ -728,6 +757,10 @@ model ChatConversation {
   appointmentId String?
   visitorName   String?
   messages      Json
+  summary       String?
+  intent        String?
+  aiConfidence  Int?
+  lastMessage   String?
   status        String   @default("OUVERTE")
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt

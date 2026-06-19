@@ -298,7 +298,7 @@ export function CrmDashboard() {
     { icon: CreditCard, label: "Paiements en attente", count: stats?.payments.pending ?? 0, href: "/admin/finance", tone: "text-rose-600" },
     { icon: PiggyBank, label: "Dossiers CPF à traiter", count: stats?.cpf.pending ?? 0, href: "/admin/cpf", tone: "text-indigo-600" },
     { icon: Star, label: "Avis à modérer", count: stats?.reviews.pending ?? 0, href: "/admin/avis", tone: "text-amber-600" },
-    { icon: CalendarClock, label: "Réservations à confirmer", count: bookings.filter((b) => b.status === "EN_ATTENTE").length, href: "/admin/planning", tone: "text-sky-600" }
+    { icon: CalendarClock, label: "Réservations à confirmer", count: bookings.filter((b) => b.status === "EN_ATTENTE").length, href: "/admin/rendez-vous?view=planning", tone: "text-sky-600" }
   ];
   const openTasks = tasks.filter((t) => t.count > 0);
 
@@ -360,7 +360,7 @@ export function CrmDashboard() {
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <KpiCard icon={GraduationCap} href="/admin/eleves" label="Élèves" value={loading ? "" : nf(stats?.students.total ?? 0)} loading={loading} accent="brand" trend={loading ? undefined : inscTrend} subLabel={`${stats?.students.byStatus.EN_COURS ?? 0} en cours`} />
         <KpiCard icon={Target} href="/admin/pipeline" label="Leads" value={loading ? "" : nf(stats?.leads.total ?? 0)} loading={loading} accent="indigo" trend={loading ? undefined : leadsTrend} subLabel={`${stats?.leads.byStage.PROSPECT ?? 0} nouveaux`} />
-        <KpiCard icon={CalendarDays} href="/admin/planning" label="Leçons à venir" value={loading ? "" : nf(stats?.bookings.upcoming ?? 0)} loading={loading} accent="sky" />
+        <KpiCard icon={CalendarDays} href="/admin/rendez-vous?view=planning" label="Leçons à venir" value={loading ? "" : nf(stats?.bookings.upcoming ?? 0)} loading={loading} accent="sky" />
         <KpiCard icon={CreditCard} href="/admin/finance" label="CA encaissé" value={loading ? "" : euros(stats?.payments.paidCents ?? 0)} loading={loading} accent="emerald" trend={loading ? undefined : caTrend} />
         <KpiCard icon={FileText} href="/admin/finance" label="Paiements en attente" value={loading ? "" : nf(stats?.payments.pending ?? 0)} loading={loading} accent="amber" />
         <KpiCard icon={Award} href="/admin/examens" label="Taux de réussite" value={loading ? "" : stats?.exams.passRate === null || stats?.exams.passRate === undefined ? "—" : `${stats.exams.passRate}%`} loading={loading} accent="brand" subLabel={`${stats?.exams.upcoming ?? 0} examen(s) à venir`} />
@@ -509,7 +509,7 @@ export function CrmDashboard() {
 
         {/* Agenda */}
         <Card className="p-5">
-          <SectionHeader title="Prochaines leçons" icon={CalendarClock} action={<Link href="/admin/planning" className="text-xs font-semibold text-loden-700 hover:underline">Planning</Link>} />
+          <SectionHeader title="Prochaines leçons" icon={CalendarClock} action={<Link href="/admin/rendez-vous?view=planning" className="text-xs font-semibold text-loden-700 hover:underline">Planning</Link>} />
           <div className="mt-4">
             {loading ? (
               <div className="space-y-3">

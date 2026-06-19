@@ -1,6 +1,9 @@
 import type { MutableStore } from "../repositories/memory-loden-repository";
 import type {
   BookingRecord,
+  ChatAppointmentRecord,
+  ChatConversationRecord,
+  ChatTaskRecord,
   CpfRequestRecord,
   ExamRecord,
   InstructorRecord,
@@ -297,6 +300,161 @@ const demoLeads: LeadRecord[] = [
   { id: "demo-lead7", agencyId: AGENCY, fullName: "Paul Lemoine", email: "paul.lemoine@demo.lodene.fr", phone: "0612350007", status: "PROSPECT", source: "Flyer", interest: "Permis B automatique", notes: DEMO_NOTE, estimatedValueCents: 129000, nextFollowUpAt: inDays(3), temperature: "tiede", score: 55, createdAt: daysAgo(1), updatedAt: daysAgo(1) }
 ];
 
+// --- Rendez-vous de démonstration (Centre RDV unifié, tous canaux) ---
+// Couvre les 6 scénarios attendus, clairement marqués `demo-`.
+function fmtDate(d: Date) {
+  return d.toLocaleDateString("fr-FR", { weekday: "long", day: "2-digit", month: "long" });
+}
+function fmtTime(d: Date) {
+  return d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+}
+
+const demoAppointmentLeads: LeadRecord[] = [
+  { id: "demo-alead1", agencyId: AGENCY, fullName: "Inès Boucher", firstName: "Inès", lastName: "Boucher", email: "ines.boucher@demo.lodene.fr", phone: "0612360001", status: "PROSPECT", source: "chatbot", interest: "SST", financingType: "ENTREPRISE", consentEmail: true, consentWhatsapp: false, notes: `${DEMO_NOTE}\nNombre de salariés : 8`, estimatedValueCents: 25000, nextFollowUpAt: inDays(1), temperature: "chaud", score: 80, createdAt: daysAgo(1), updatedAt: daysAgo(1) },
+  { id: "demo-alead2", agencyId: AGENCY, fullName: "Marc Dubois", firstName: "Marc", lastName: "Dubois", email: "marc.dubois@demo.lodene.fr", phone: "0612360002", status: "CONTACTE", source: "phone", interest: "Permis B manuel", financingType: "PERSONNEL", consentEmail: true, consentWhatsapp: false, notes: DEMO_NOTE, estimatedValueCents: 119000, nextFollowUpAt: inDays(1), temperature: "chaud", score: 85, createdAt: daysAgo(2), updatedAt: daysAgo(1) },
+  { id: "demo-alead4", agencyId: AGENCY, fullName: "Karim Saidi", firstName: "Karim", lastName: "Saidi", email: "karim.saidi@demo.lodene.fr", phone: "0612360004", status: "RELANCE", source: "chatbot", interest: "VTC", financingType: "CPF", consentEmail: true, consentWhatsapp: true, notes: DEMO_NOTE, estimatedValueCents: 180000, nextFollowUpAt: daysAgo(1), temperature: "tiede", score: 65, createdAt: daysAgo(5), updatedAt: daysAgo(2) },
+  { id: "demo-alead5", agencyId: AGENCY, fullName: "Nadia Lopez", firstName: "Nadia", lastName: "Lopez", email: "nadia.lopez@demo.lodene.fr", phone: "0612360005", status: "PERDU", source: "manual", interest: "Permis B automatique", financingType: "PERSONNEL", consentEmail: false, consentWhatsapp: false, notes: DEMO_NOTE, estimatedValueCents: 129000, nextFollowUpAt: null, temperature: "froid", score: 30, createdAt: daysAgo(6), updatedAt: daysAgo(3) },
+  { id: "demo-alead6", agencyId: AGENCY, fullName: "Hugo Faure", firstName: "Hugo", lastName: "Faure", email: "hugo.faure@demo.lodene.fr", phone: "0612360006", status: "PROSPECT", source: "whatsapp", interest: "Permis B manuel", financingType: "PERSONNEL", consentEmail: true, consentWhatsapp: true, notes: DEMO_NOTE, estimatedValueCents: 119000, nextFollowUpAt: inDays(1), temperature: "chaud", score: 78, createdAt: daysAgo(0), updatedAt: daysAgo(0) }
+];
+
+const ADVISOR = "demo-u-sec1";
+function demoAppt(p: Partial<ChatAppointmentRecord> & Pick<ChatAppointmentRecord, "id" | "fullName" | "firstName" | "lastName" | "phone" | "formation" | "type" | "status" | "source" | "startsAt" | "endsAt">): ChatAppointmentRecord {
+  return {
+    leadId: "",
+    email: null,
+    objective: "Être rappelé",
+    message: null,
+    notes: DEMO_NOTE,
+    requestedAt: p.startsAt,
+    priority: "normal",
+    assignedToId: ADVISOR,
+    studentId: null,
+    formationId: null,
+    instructorId: null,
+    vehicleId: null,
+    agencyId: AGENCY,
+    createdById: null,
+    updatedById: null,
+    consentContact: true,
+    consentWhatsApp: false,
+    whatsappMessage: null,
+    adminEmailStatus: "skipped",
+    clientEmailStatus: "skipped",
+    whatsappStatus: "skipped",
+    date: fmtDate(p.startsAt),
+    time: fmtTime(p.startsAt),
+    createdAt: daysAgo(1),
+    updatedAt: daysAgo(0),
+    ...p
+  };
+}
+
+const demoAppointments: ChatAppointmentRecord[] = [
+  demoAppt({
+    id: "demo-appt1", leadId: "demo-alead1", fullName: "Inès Boucher", firstName: "Inès", lastName: "Boucher",
+    phone: "0612360001", email: "ines.boucher@demo.lodene.fr", formation: "SST", objective: "M'inscrire",
+    type: "registration", status: "pending_confirmation", priority: "high", source: "chatbot",
+    startsAt: at(2, 9), endsAt: at(2, 10), adminEmailStatus: "sent", clientEmailStatus: "sent",
+    message: "Bonjour, je voudrais m'inscrire à la formation SST pour mon entreprise."
+  }),
+  demoAppt({
+    id: "demo-appt2", leadId: "demo-alead2", fullName: "Marc Dubois", firstName: "Marc", lastName: "Dubois",
+    phone: "0612360002", email: "marc.dubois@demo.lodene.fr", formation: "Permis B manuel", objective: "M'inscrire",
+    type: "agency", status: "confirmed", priority: "normal", source: "phone",
+    startsAt: at(1, 14), endsAt: at(1, 15), adminEmailStatus: "sent", clientEmailStatus: "sent"
+  }),
+  demoAppt({
+    id: "demo-appt3", fullName: "Lucas Martin", firstName: "Lucas", lastName: "Martin",
+    phone: "0612350202", formation: "Permis B automatique", objective: "Leçon de conduite",
+    type: "lesson", status: "scheduled", priority: "normal", source: "crm",
+    startsAt: at(3, 9), endsAt: at(3, 11), studentId: "demo-stu2", instructorId: "demo-ins2", vehicleId: "demo-veh2",
+    formationId: FORM(1)
+  }),
+  demoAppt({
+    id: "demo-appt4", leadId: "demo-alead4", fullName: "Karim Saidi", firstName: "Karim", lastName: "Saidi",
+    phone: "0612360004", email: "karim.saidi@demo.lodene.fr", formation: "VTC", objective: "Obtenir un devis",
+    type: "call", status: "to_follow_up", priority: "normal", source: "chatbot",
+    startsAt: at(-1, 11), endsAt: at(-1, 12), adminEmailStatus: "sent", clientEmailStatus: "skipped"
+  }),
+  demoAppt({
+    id: "demo-appt5", leadId: "demo-alead5", fullName: "Nadia Lopez", firstName: "Nadia", lastName: "Lopez",
+    phone: "0612360005", email: "nadia.lopez@demo.lodene.fr", formation: "Permis B automatique", objective: "M'inscrire",
+    type: "agency", status: "cancelled", priority: "low", source: "manual",
+    startsAt: at(-3, 16), endsAt: at(-3, 17), notes: "Donnée de démonstration — annulé par le client."
+  }),
+  demoAppt({
+    id: "demo-appt6", leadId: "demo-alead6", fullName: "Hugo Faure", firstName: "Hugo", lastName: "Faure",
+    phone: "0612360006", email: "hugo.faure@demo.lodene.fr", formation: "Permis B manuel", objective: "Être rappelé",
+    type: "call", status: "pending_confirmation", priority: "urgent", source: "whatsapp",
+    startsAt: at(4, 10), endsAt: at(4, 11), consentWhatsApp: true, whatsappStatus: "sent",
+    whatsappMessage: "Bonjour LODENE, je confirme mon intérêt pour le permis B manuel."
+  })
+];
+
+const demoAppointmentTasks: ChatTaskRecord[] = [
+  { id: "demo-atask1", leadId: "demo-alead1", appointmentId: "demo-appt1", type: "CONFIRMATION", priority: "HAUTE", assignedToId: ADVISOR, deadline: at(1, 18), note: "Confirmer le RDV SST chatbot avec Inès Boucher.", status: "A_FAIRE", createdAt: daysAgo(1), updatedAt: daysAgo(1) },
+  { id: "demo-atask2", leadId: "demo-alead4", appointmentId: "demo-appt4", type: "RELANCE", priority: "NORMALE", assignedToId: ADVISOR, deadline: inDays(1), note: "Relancer Karim Saidi (VTC) — sans réponse.", status: "A_FAIRE", createdAt: daysAgo(1), updatedAt: daysAgo(1) },
+  { id: "demo-atask3", leadId: "demo-alead4", appointmentId: "demo-appt4", type: "RELANCE", priority: "HAUTE", assignedToId: ADVISOR, deadline: inDays(2), note: "Vérifier l'éligibilité CPF — VTC (Karim Saidi). Ne pas promettre de validation avant vérification.", status: "A_FAIRE", createdAt: daysAgo(1), updatedAt: daysAgo(1) },
+  { id: "demo-atask4", leadId: "demo-alead1", appointmentId: "demo-appt1", type: "RELANCE", priority: "HAUTE", assignedToId: ADVISOR, deadline: inDays(2), note: "Demande entreprise — 8 salariés — préparer un devis (Inès Boucher).", status: "A_FAIRE", createdAt: daysAgo(1), updatedAt: daysAgo(1) }
+];
+
+const demoAppointmentConversations: ChatConversationRecord[] = [
+  {
+    id: "demo-aconv1",
+    leadId: "demo-alead1",
+    appointmentId: "demo-appt1",
+    visitorName: "Inès Boucher",
+    messages: [
+      { role: "user", content: "Bonjour, proposez-vous la formation SST ?", createdAt: daysAgo(1).toISOString() },
+      { role: "assistant", content: "Oui, LODENE propose la formation SST. Souhaitez-vous prendre rendez-vous ?", createdAt: daysAgo(1).toISOString() },
+      { role: "user", content: "Oui, pour mon entreprise, nous sommes 8 salariés.", createdAt: daysAgo(1).toISOString() }
+    ],
+    summary: "- Demande de formation SST en intra-entreprise\n- 8 salariés à former\nCatégorie : INSCRIPTION",
+    intent: "sst",
+    aiConfidence: 70,
+    lastMessage: "Oui, pour mon entreprise, nous sommes 8 salariés.",
+    status: "OUVERTE",
+    createdAt: daysAgo(1),
+    updatedAt: daysAgo(1)
+  },
+  {
+    id: "demo-aconv2",
+    leadId: "demo-alead4",
+    appointmentId: "demo-appt4",
+    visitorName: "Karim Saidi",
+    messages: [
+      { role: "user", content: "Je veux devenir chauffeur VTC, vous préparez l'examen ?", createdAt: daysAgo(5).toISOString() },
+      { role: "assistant", content: "Oui, LODENE prépare aux épreuves de l'examen VTC (CMA). Plusieurs formules existent.", createdAt: daysAgo(5).toISOString() },
+      { role: "user", content: "Est-ce que je peux utiliser mon CPF ?", createdAt: daysAgo(5).toISOString() },
+      { role: "assistant", content: "Le CPF peut être possible selon votre éligibilité. Un conseiller LODENE pourra le confirmer.", createdAt: daysAgo(5).toISOString() }
+    ],
+    summary: "- Intérêt formation VTC (examen CMA)\n- Souhaite mobiliser son CPF (à vérifier)\nCatégorie : CPF",
+    intent: "vtc",
+    aiConfidence: 85,
+    lastMessage: "Est-ce que je peux utiliser mon CPF ?",
+    status: "OUVERTE",
+    createdAt: daysAgo(5),
+    updatedAt: daysAgo(5)
+  },
+  {
+    id: "demo-aconv3",
+    leadId: null,
+    appointmentId: null,
+    visitorName: "Visiteur anonyme",
+    messages: [
+      { role: "user", content: "Le permis B est-il finançable avec le CPF ?", createdAt: daysAgo(0).toISOString() },
+      { role: "assistant", content: "Le financement CPF peut être possible selon votre situation et l'éligibilité de votre dossier. Un conseiller LODENE peut vérifier avec vous.", createdAt: daysAgo(0).toISOString() }
+    ],
+    summary: "- Question sur le financement CPF du permis B\nCatégorie : CPF",
+    intent: "cpf_financement",
+    aiConfidence: 85,
+    lastMessage: "Le permis B est-il finançable avec le CPF ?",
+    status: "OUVERTE",
+    createdAt: daysAgo(0),
+    updatedAt: daysAgo(0)
+  }
+];
+
 // --- CMS : pages + articles de blog ---
 const demoContentEntries: ContentEntryRecord[] = [
   { id: "demo-page1", type: "PAGE", title: "À propos de LODENE", slug: "a-propos", excerpt: null, body: "LODENE est une auto-école moderne à Conflans-Sainte-Honorine. Notre équipe vous accompagne du code à la conduite avec un suivi personnalisé.", published: true, publishedAt: daysAgo(30), agencyId: null, createdAt: daysAgo(35), updatedAt: daysAgo(30) },
@@ -341,7 +499,10 @@ export function buildDemoSeed(): Partial<MutableStore> {
     contentEntries: demoContentEntries,
     cpfRequests: demoCpf,
     reviews: demoReviews,
-    leads: demoLeads,
+    leads: [...demoLeads, ...demoAppointmentLeads],
+    chatAppointments: demoAppointments,
+    chatTasks: demoAppointmentTasks,
+    chatConversations: demoAppointmentConversations,
     exams: demoExams,
     automationRules: demoAutomationRules
   };

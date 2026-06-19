@@ -2,6 +2,8 @@ import { Router } from "express";
 import rateLimit from "express-rate-limit";
 import { z } from "zod";
 import { runAgent } from "../../ai/agent";
+import { buildKnowledgeBlock } from "../../ai/knowledge";
+import { sanitizeAiOutput } from "../../ai/safety";
 import { buildCompactPublicAiPrompt, buildPublicFallbackReply } from "../../ai/public-fallback";
 import { crmTools, publicTools } from "../../ai/tools";
 import type { AiMessage, AiProvider } from "../../ai/types";
@@ -96,7 +98,7 @@ export function createAiRouter(repository: LodenRepository, config: ApiConfig, a
       return null;
     }
     try {
-      return await ai.complete(messages, options);
+      return sanitizeAiOutput(await ai.complete(messages, options), config);
     } catch (error) {
       console.error("[ai] échec:", error instanceof Error ? error.message : error);
       aiUnavailable(res);
@@ -116,6 +118,9 @@ export function createAiRouter(repository: LodenRepository, config: ApiConfig, a
         repository.getCompanyInfo()
       ]);
       const company = buildCompanyContext(companyInfo);
+      // Base de connaissance : on injecte les extraits pertinents au dernier message utilisateur.
+      const lastUserMessage = [...body.messages].reverse().find((m) => m.role === "user")?.content ?? "";
+      const knowledge = buildKnowledgeBlock(lastUserMessage, 2);
       if (!ai.available) {
         res.json({
           data: {
@@ -137,7 +142,8 @@ export function createAiRouter(repository: LodenRepository, config: ApiConfig, a
         pricingPlans,
         agencies,
         contactPhone: company.phone ?? CONTACT_PHONE,
-        company
+        company,
+        knowledge
       });
       const userMessages: AiMessage[] = body.messages.map((m) =>
         m.role === "assistant" ? { role: "assistant", content: m.content } : { role: "user", content: m.content }
@@ -153,14 +159,15 @@ export function createAiRouter(repository: LodenRepository, config: ApiConfig, a
                   pricingPlans,
                   agencies,
                   company: companyInfo,
-                  contactPhone: company.phone ?? CONTACT_PHONE
+                  contactPhone: company.phone ?? CONTACT_PHONE,
+                  knowledge
                 })
               },
               ...userMessages
             ],
             { temperature: 0.3, maxTokens: 260 }
           );
-          res.json({ data: { reply } });
+          res.json({ data: { reply: sanitizeAiOutput(reply, config) } });
           return;
         } catch (error) {
           console.error("[ai] chat compact échec:", error instanceof Error ? error.message : error);
@@ -226,6 +233,8 @@ export function createAiRouter(repository: LodenRepository, config: ApiConfig, a
         repository.getCompanyInfo()
       ]);
       const company = buildCompanyContext(companyInfo);
+      const lastUserMessage = [...body.messages].reverse().find((m) => m.role === "user")?.content ?? "";
+      const knowledge = buildKnowledgeBlock(lastUserMessage, 2);
       // RBAC : on n'expose que les outils autorisés par le rôle de l'utilisateur.
       const allowedTools = crmTools.filter((tool) => !tool.permission || hasPermission(user.role, tool.permission));
       const systemPrompt = buildCrmAgentSystemPrompt({
@@ -234,7 +243,8 @@ export function createAiRouter(repository: LodenRepository, config: ApiConfig, a
         agencies,
         contactPhone: company.phone ?? CONTACT_PHONE,
         role: user.role,
-        company
+        company,
+        knowledge
       });
       const userMessages: AiMessage[] = body.messages.map((m) =>
         m.role === "assistant" ? { role: "assistant", content: m.content } : { role: "user", content: m.content }
