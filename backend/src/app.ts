@@ -12,6 +12,7 @@ import { createAuthRouter } from "./modules/auth/auth.routes";
 import { createBookingsRouter } from "./modules/bookings/bookings.routes";
 import { createCatalogRouter } from "./modules/catalog/catalog.routes";
 import { createAppointmentsRouter, createChatAdminRouter, createChatRouter } from "./modules/chat/chat.routes";
+import { createAppointmentsAdminRouter } from "./modules/appointments/appointments.routes";
 import { createContactsRouter } from "./modules/contacts/contacts.routes";
 import { createContentRouter } from "./modules/content/content.routes";
 import { createCpfRouter } from "./modules/cpf/cpf.routes";
@@ -90,6 +91,8 @@ export function createApp(repository: LodenRepository, config: ApiConfig, deps: 
   app.use("/api/agencies", createAgenciesRouter(repository, config));
   app.use("/api/admin", createStatsRouter(repository, config));
   app.use("/api/admin", createChatAdminRouter(repository, config));
+  // Centre rendez-vous & planning unifié (source unique de vérité, tous canaux).
+  app.use("/api/admin/appointments", createAppointmentsAdminRouter(repository, config));
   app.use("/api/audit-logs", createAuditRouter(repository, config));
   app.use("/api/permissions", createPermissionsRouter(repository, config));
   app.use("/api", createCatalogRouter(repository, config));

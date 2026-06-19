@@ -72,6 +72,7 @@ import type {
   CreateChatAppointmentInput,
   CreateChatAvailabilitySlotInput,
   CreateChatConversationInput,
+  UpdateChatConversationInput,
   CreateChatTaskInput,
   CreateMediaInput,
   CreateStudentInput,
@@ -1067,6 +1068,13 @@ export class MemoryLodenRepository implements LodenRepository {
       .sort((left, right) => right.createdAt.getTime() - left.createdAt.getTime());
   }
 
+  async findLeadByEmail(email: string) {
+    const target = email.trim().toLowerCase();
+    if (!target) return null;
+    // Le plus récent d'abord (les leads sont ajoutés dans l'ordre chronologique).
+    return [...this.store.leads].reverse().find((lead) => lead.email.toLowerCase() === target) ?? null;
+  }
+
   async createLead(input: CreateLeadInput) {
     const now = new Date();
     const lead: LeadRecord = {
@@ -1087,12 +1095,25 @@ export class MemoryLodenRepository implements LodenRepository {
     return lead;
   }
 
-  async listChatAppointments(filters?: { status?: ChatAppointmentRecord["status"]; agencyId?: string }) {
+  async listChatAppointments(filters?: {
+    status?: string;
+    source?: string;
+    agencyId?: string;
+    instructorId?: string;
+    assignedToId?: string;
+    from?: Date;
+    to?: Date;
+  }) {
     return this.store.chatAppointments
       .filter(
         (appointment) =>
           (!filters?.status || appointment.status === filters.status) &&
-          (!filters?.agencyId || appointment.source === "chatbot")
+          (!filters?.source || appointment.source === filters.source) &&
+          (!filters?.agencyId || appointment.agencyId === filters.agencyId) &&
+          (!filters?.instructorId || appointment.instructorId === filters.instructorId) &&
+          (!filters?.assignedToId || appointment.assignedToId === filters.assignedToId) &&
+          (!filters?.from || appointment.startsAt.getTime() >= filters.from.getTime()) &&
+          (!filters?.to || appointment.startsAt.getTime() <= filters.to.getTime())
       )
       .slice()
       .sort((left, right) => right.createdAt.getTime() - left.createdAt.getTime());
@@ -1107,7 +1128,9 @@ export class MemoryLodenRepository implements LodenRepository {
     const appointment: ChatAppointmentRecord = {
       ...input,
       id: randomUUID(),
-      source: "chatbot",
+      source: input.source ?? "chatbot",
+      status: input.status ?? "pending_confirmation",
+      priority: input.priority ?? "normal",
       adminEmailStatus: input.adminEmailStatus ?? "pending",
       clientEmailStatus: input.clientEmailStatus ?? "pending",
       whatsappStatus: input.whatsappStatus ?? "pending",
@@ -1128,9 +1151,15 @@ export class MemoryLodenRepository implements LodenRepository {
 
   async updateChatAppointment(id: string, input: UpdateChatAppointmentInput) {
     const appointment = await this.findChatAppointmentById(id);
-    if (!appointment) throw notFound("Rendez-vous chatbot introuvable");
+    if (!appointment) throw notFound("Rendez-vous introuvable");
     Object.assign(appointment, input, { updatedAt: new Date() });
     return appointment;
+  }
+
+  async deleteChatAppointment(id: string) {
+    const index = this.store.chatAppointments.findIndex((appointment) => appointment.id === id);
+    if (index === -1) throw notFound("Rendez-vous introuvable");
+    this.store.chatAppointments.splice(index, 1);
   }
 
   async listChatTasks(filters?: { status?: ChatTaskRecord["status"]; leadId?: string; appointmentId?: string }) {
@@ -1176,6 +1205,10 @@ export class MemoryLodenRepository implements LodenRepository {
       .sort((left, right) => right.updatedAt.getTime() - left.updatedAt.getTime());
   }
 
+  async findChatConversationById(id: string) {
+    return this.store.chatConversations.find((conversation) => conversation.id === id) ?? null;
+  }
+
   async createChatConversation(input: CreateChatConversationInput) {
     const now = new Date();
     const conversation: ChatConversationRecord = {
@@ -1186,6 +1219,13 @@ export class MemoryLodenRepository implements LodenRepository {
       updatedAt: now
     };
     this.store.chatConversations.push(conversation);
+    return conversation;
+  }
+
+  async updateChatConversation(id: string, input: UpdateChatConversationInput) {
+    const conversation = this.store.chatConversations.find((item) => item.id === id);
+    if (!conversation) throw new Error("ChatConversation introuvable");
+    Object.assign(conversation, input, { updatedAt: new Date() });
     return conversation;
   }
 
@@ -1355,6 +1395,14 @@ export class MemoryLodenRepository implements LodenRepository {
 
   async listAuditLogs(limit = 100) {
     return this.store.auditLogs
+      .slice()
+      .sort((left, right) => right.createdAt.getTime() - left.createdAt.getTime())
+      .slice(0, limit);
+  }
+
+  async listAuditLogsForEntity(entityType: string, entityId: string, limit = 100) {
+    return this.store.auditLogs
+      .filter((entry) => entry.entityType === entityType && entry.entityId === entityId)
       .slice()
       .sort((left, right) => right.createdAt.getTime() - left.createdAt.getTime())
       .slice(0, limit);

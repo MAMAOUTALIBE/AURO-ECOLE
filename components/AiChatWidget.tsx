@@ -27,6 +27,7 @@ type FlowState = {
   phone: string;
   email: string;
   message: string;
+  companySize: string;
   consentContact: boolean;
   consentWhatsApp: boolean;
 };
@@ -64,6 +65,7 @@ const EMPTY_FLOW: FlowState = {
   phone: "",
   email: "",
   message: "",
+  companySize: "",
   consentContact: true,
   consentWhatsApp: false
 };
@@ -98,6 +100,7 @@ export function AiChatWidget() {
   const [loading, setLoading] = useState(false);
   const [flowError, setFlowError] = useState<string | null>(null);
   const [confirmedWhatsappUrl, setConfirmedWhatsappUrl] = useState<string | null>(null);
+  const [conversationId, setConversationId] = useState<string | undefined>(undefined);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const compactMessages = useMemo(
@@ -133,9 +136,10 @@ export function AiChatWidget() {
       const response = await fetch("/api/chat/message", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: next.filter((_, index) => index !== 0).slice(-12) })
+        body: JSON.stringify({ messages: next.filter((_, index) => index !== 0).slice(-12), conversationId })
       });
       const payload = await response.json().catch(() => null);
+      if (payload?.data?.conversationId) setConversationId(payload.data.conversationId as string);
       const reply =
         response.ok && payload?.data?.reply
           ? payload.data.reply
@@ -203,9 +207,11 @@ export function AiChatWidget() {
           phone: flow.phone,
           email: flow.email,
           message: flow.message,
+          companySize: flow.companySize ? Number(flow.companySize) : undefined,
           consentContact: flow.consentContact,
           consentWhatsApp: flow.consentWhatsApp,
-          conversation: compactMessages
+          conversation: compactMessages,
+          conversationId
         })
       });
       const payload = await response.json().catch(() => null);
@@ -287,6 +293,17 @@ export function AiChatWidget() {
             <input className="field-input" value={flow.phone} onChange={(e) => updateFlow({ phone: e.target.value })} placeholder="Téléphone *" aria-label="Téléphone" />
             <input className="field-input" type="email" value={flow.email} onChange={(e) => updateFlow({ email: e.target.value })} placeholder="Email *" aria-label="Email" />
           </div>
+          {flow.formation === "Formation entreprise" ? (
+            <input
+              className="field-input"
+              type="number"
+              min={1}
+              value={flow.companySize}
+              onChange={(e) => updateFlow({ companySize: e.target.value })}
+              placeholder="Nombre de salariés à former"
+              aria-label="Nombre de salariés"
+            />
+          ) : null}
           <textarea
             className="field-input min-h-20 resize-none"
             value={flow.message}

@@ -1,21 +1,7 @@
-import type { Metadata } from "next";
-import { Planning } from "@/components/crm/Planning";
-import { CrmPageHeader } from "@/components/crm/ui";
+import { redirect } from "next/navigation";
 
-export const metadata: Metadata = {
-  title: "Planning",
-  robots: { index: false, follow: false }
-};
-
+// Page historique fusionnée dans le Centre rendez-vous & planning (source unique de vérité).
+// Le planning (RDV + leçons agrégés) s'ouvre directement sur la vue calendrier.
 export default function AdminPlanningPage() {
-  return (
-    <>
-      <CrmPageHeader
-        eyebrow="Pédagogie"
-        title="Planning des leçons"
-        subtitle="Agenda des réservations par jour, avec moniteur, élève et statut de chaque leçon."
-      />
-      <Planning />
-    </>
-  );
+  redirect("/admin/rendez-vous?view=planning");
 }

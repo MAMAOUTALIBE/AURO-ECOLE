@@ -131,7 +131,7 @@ export function buildPublicFallbackReply(ctx: PublicFallbackContext) {
   return `Je peux t'aider à choisir entre Permis B, VTC, SST ou formations logistique & sécurité. Dis-moi ton objectif, ton délai et si tu veux utiliser un financement type CPF, puis je t'oriente vers le bon parcours.`;
 }
 
-export function buildCompactPublicAiPrompt(ctx: Omit<PublicFallbackContext, "messages">) {
+export function buildCompactPublicAiPrompt(ctx: Omit<PublicFallbackContext, "messages"> & { knowledge?: string }) {
   const companyName = ctx.company.brandName || "LODENE";
   const auto = firstBySlug(ctx.formations, "permis-b-auto-declic");
   const manual = firstBySlug(ctx.formations, "permis-b-manuel-essentiel");
@@ -143,7 +143,7 @@ export function buildCompactPublicAiPrompt(ctx: Omit<PublicFallbackContext, "mes
     .map((formation) => formation.title)
     .join(", ");
 
-  return [
+  const lines = [
     `Tu es l'assistant public de ${companyName}, auto-école et centre de formation à Conflans-Sainte-Honorine.`,
     "Réponds en français, en 2 à 5 phrases, avec un ton clair, rassurant et commercial sans être agressif.",
     "N'invente jamais un tarif, une durée, une disponibilité ou une information interne. Pour un cas précis, propose un diagnostic ou la page Contact.",
@@ -158,5 +158,9 @@ export function buildCompactPublicAiPrompt(ctx: Omit<PublicFallbackContext, "mes
     `- Logistique & sécurité : ${logistics || "chariots, gerbeur, nacelles, pont roulant"}, sur devis.`,
     "- CPF : possible selon l'éligibilité du dossier pour certaines formations permis ; à vérifier avec un conseiller.",
     `- Contact : ${compactContact(ctx.company, ctx.contactPhone)}`
-  ].join("\n");
+  ];
+  if (ctx.knowledge) {
+    lines.push("", ctx.knowledge);
+  }
+  return lines.join("\n");
 }

@@ -1,21 +1,7 @@
-import type { Metadata } from "next";
-import { ChatbotRequests } from "@/components/crm/ChatbotRequests";
-import { CrmPageHeader } from "@/components/crm/ui";
+import { redirect } from "next/navigation";
 
-export const metadata: Metadata = {
-  title: "Demandes chatbot",
-  robots: { index: false, follow: false }
-};
-
+// Page historique fusionnée dans le Centre rendez-vous & planning (source unique de vérité).
+// Les demandes chatbot y restent accessibles via le filtre source=chatbot.
 export default function AdminChatbotRequestsPage() {
-  return (
-    <>
-      <CrmPageHeader
-        eyebrow="Commercial"
-        title="Demandes chatbot"
-        subtitle="Leads, rendez-vous et relances créés depuis l'assistant LODENE."
-      />
-      <ChatbotRequests />
-    </>
-  );
+  redirect("/admin/rendez-vous?source=chatbot");
 }

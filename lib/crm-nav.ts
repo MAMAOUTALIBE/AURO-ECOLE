@@ -5,7 +5,6 @@ import {
   Building2,
   Car,
   CalendarClock,
-  CalendarDays,
   CreditCard,
   FileSignature,
   FileSpreadsheet,
@@ -68,7 +67,7 @@ export const crmNav: NavSection[] = [
     title: "Commercial",
     icon: Target,
     items: [
-      { label: "Demandes chatbot", href: "/admin/demandes-chatbot", icon: MessageSquare, status: "live" },
+      { label: "Rendez-vous & planning", href: "/admin/rendez-vous", icon: CalendarClock, status: "live" },
       { label: "Leads", href: "/admin/pipeline", icon: FolderKanban, status: "live" },
       { label: "Prospects", href: "/admin/pipeline", icon: Target, status: "live" },
       { label: "Devis", href: "/admin/devis", icon: FileSpreadsheet, status: "live" },
@@ -81,8 +80,6 @@ export const crmNav: NavSection[] = [
     items: [
       { label: "Élèves", href: "/admin/eleves", icon: Users, status: "live" },
       { label: "Moniteurs", href: "/admin/moniteurs", icon: UserCog, status: "live" },
-      { label: "Leçons", href: "/admin/planning", icon: CalendarClock, status: "live" },
-      { label: "Planning", href: "/admin/planning", icon: CalendarDays, status: "live" },
       { label: "Examens", href: "/admin/examens", icon: GraduationCap, status: "live" },
       { label: "Formations", href: "/admin/formations", icon: BookOpenCheck, status: "live" },
       { label: "Véhicules", href: "/admin/vehicules", icon: Car, status: "live" }

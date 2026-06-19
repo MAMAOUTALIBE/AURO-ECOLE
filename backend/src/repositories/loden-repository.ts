@@ -22,7 +22,6 @@ import type {
   AutomationTrigger,
   AutomationAction,
   ChatAppointmentRecord,
-  ChatAppointmentStatus,
   ChatAvailabilitySlotRecord,
   ChatConversationRecord,
   ChatTaskRecord,
@@ -222,13 +221,17 @@ export type CreateChatAppointmentInput = Omit<
   ChatAppointmentRecord,
   | "id"
   | "source"
+  | "status"
+  | "priority"
   | "adminEmailStatus"
   | "clientEmailStatus"
   | "whatsappStatus"
   | "createdAt"
   | "updatedAt"
 > & {
-  source?: "chatbot";
+  source?: string;
+  status?: string;
+  priority?: string;
   adminEmailStatus?: ChatAppointmentRecord["adminEmailStatus"];
   clientEmailStatus?: ChatAppointmentRecord["clientEmailStatus"];
   whatsappStatus?: ChatAppointmentRecord["whatsappStatus"];
@@ -242,6 +245,13 @@ export type CreateChatConversationInput = Omit<ChatConversationRecord, "id" | "s
   status?: ChatConversationRecord["status"];
 };
 
+export type UpdateChatConversationInput = Partial<
+  Pick<
+    ChatConversationRecord,
+    "leadId" | "appointmentId" | "visitorName" | "messages" | "summary" | "intent" | "aiConfidence" | "lastMessage" | "status"
+  >
+>;
+
 export type CreateChatAvailabilitySlotInput = Omit<
   ChatAvailabilitySlotRecord,
   "id" | "bookedCount" | "createdAt" | "updatedAt"
@@ -253,12 +263,36 @@ export type UpdateChatAppointmentInput = Partial<
   Pick<
     ChatAppointmentRecord,
     | "status"
+    | "type"
+    | "priority"
+    | "source"
     | "assignedToId"
+    | "studentId"
+    | "formationId"
+    | "instructorId"
+    | "vehicleId"
+    | "agencyId"
+    | "fullName"
+    | "firstName"
+    | "lastName"
+    | "phone"
+    | "email"
+    | "formation"
+    | "objective"
+    | "date"
+    | "time"
+    | "requestedAt"
+    | "startsAt"
+    | "endsAt"
     | "message"
+    | "notes"
+    | "consentContact"
+    | "consentWhatsApp"
     | "adminEmailStatus"
     | "clientEmailStatus"
     | "whatsappStatus"
     | "whatsappMessage"
+    | "updatedById"
   >
 >;
 
@@ -407,20 +441,32 @@ export interface LodenRepository {
   updateReview(id: string, input: Partial<ReviewRecord>): Promise<ReviewRecord>;
 
   listLeads(filters?: { status?: LeadStatus; agencyId?: string }): Promise<LeadRecord[]>;
+  findLeadByEmail(email: string): Promise<LeadRecord | null>;
   createLead(input: CreateLeadInput): Promise<LeadRecord>;
   updateLead(id: string, input: Partial<LeadRecord>): Promise<LeadRecord>;
 
-  listChatAppointments(filters?: { status?: ChatAppointmentStatus; agencyId?: string }): Promise<ChatAppointmentRecord[]>;
+  listChatAppointments(filters?: {
+    status?: string;
+    source?: string;
+    agencyId?: string;
+    instructorId?: string;
+    assignedToId?: string;
+    from?: Date;
+    to?: Date;
+  }): Promise<ChatAppointmentRecord[]>;
   findChatAppointmentById(id: string): Promise<ChatAppointmentRecord | null>;
   createChatAppointment(input: CreateChatAppointmentInput): Promise<ChatAppointmentRecord>;
   updateChatAppointment(id: string, input: UpdateChatAppointmentInput): Promise<ChatAppointmentRecord>;
+  deleteChatAppointment(id: string): Promise<void>;
 
   listChatTasks(filters?: { status?: ChatTaskStatus; leadId?: string; appointmentId?: string }): Promise<ChatTaskRecord[]>;
   createChatTask(input: CreateChatTaskInput): Promise<ChatTaskRecord>;
   updateChatTask(id: string, input: UpdateChatTaskInput): Promise<ChatTaskRecord>;
 
   listChatConversations(filters?: { leadId?: string; appointmentId?: string }): Promise<ChatConversationRecord[]>;
+  findChatConversationById(id: string): Promise<ChatConversationRecord | null>;
   createChatConversation(input: CreateChatConversationInput): Promise<ChatConversationRecord>;
+  updateChatConversation(id: string, input: UpdateChatConversationInput): Promise<ChatConversationRecord>;
 
   listChatAvailabilitySlots(filters?: { from?: Date; to?: Date; active?: boolean; agencyId?: string }): Promise<ChatAvailabilitySlotRecord[]>;
   createChatAvailabilitySlot(input: CreateChatAvailabilitySlotInput): Promise<ChatAvailabilitySlotRecord>;
@@ -438,4 +484,5 @@ export interface LodenRepository {
 
   createAuditLog(input: Omit<AuditLogRecord, "id" | "createdAt">): Promise<AuditLogRecord>;
   listAuditLogs(limit?: number): Promise<AuditLogRecord[]>;
+  listAuditLogsForEntity(entityType: string, entityId: string, limit?: number): Promise<AuditLogRecord[]>;
 }

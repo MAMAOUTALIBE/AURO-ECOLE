@@ -3,18 +3,20 @@ import rateLimit from "express-rate-limit";
 import { z } from "zod";
 import { buildCompactPublicAiPrompt, buildPublicFallbackReply } from "../../ai/public-fallback";
 import type { AiMessage, AiProvider } from "../../ai/types";
-import { buildPublicAgentSystemPrompt } from "../../ai/prompts";
+import { buildPublicAgentSystemPrompt, SUMMARIZE_SYSTEM } from "../../ai/prompts";
+import { classifyIntent } from "../../ai/intent";
 import { runAgent } from "../../ai/agent";
+import { sanitizeAiOutput } from "../../ai/safety";
 import { publicTools } from "../../ai/tools";
 import type { ApiConfig } from "../../config/env";
-import type { AuthenticatedRequest } from "../../http/request-context";
 import { authenticate, requirePermission } from "../../middleware/auth";
 import type { LodenRepository } from "../../repositories/loden-repository";
 import { asyncHandler } from "../../shared/async-handler";
-import { badRequest, conflict, notFound } from "../../shared/http-error";
+import { badRequest, conflict } from "../../shared/http-error";
 import { sendChatAppointmentAdminAlert, sendChatAppointmentClientConfirmation } from "../../shared/mailer";
 import { buildWhatsAppAppointmentText, buildWhatsAppUrl, sendWhatsAppMessage } from "../../shared/whatsapp";
 import { emailSchema, phoneSchema, validateBody, validateQuery } from "../../shared/validation";
+import { canonicalType } from "../appointments/appointments.vocab";
 
 const publicChatLimiter = rateLimit({
   windowMs: 60_000,
@@ -28,7 +30,8 @@ const messageSchema = z.object({
   messages: z
     .array(z.object({ role: z.enum(["user", "assistant"]), content: z.string().trim().min(1).max(2000) }))
     .min(1)
-    .max(12)
+    .max(12),
+  conversationId: z.string().trim().min(1).max(60).optional()
 });
 
 const formationSchema = z.enum([
@@ -51,29 +54,29 @@ const leadBodySchema = z.object({
   formation: formationSchema,
   objective: objectiveSchema,
   message: z.string().trim().max(1500).optional(),
+  companySize: z.coerce.number().int().min(1).max(100000).optional(),
   consentContact: z.literal(true),
   consentWhatsApp: z.boolean().default(false)
 });
 
+/** Déduit le type de financement à partir de la formation et de l'objectif déclarés. */
+function deriveFinancingType(input: { formation: string; objective: string }): string {
+  if (input.formation === "Formation entreprise") return "ENTREPRISE";
+  if (input.objective === "Utiliser mon CPF") return "CPF";
+  return "PERSONNEL";
+}
+
 const appointmentBodySchema = leadBodySchema.extend({
   slotId: z.string().trim().min(1),
   type: z.enum(["APPEL", "AGENCE", "VISIO", "DEVIS", "INSCRIPTION"]).default("APPEL"),
-  conversation: messageSchema.shape.messages.optional()
+  conversation: messageSchema.shape.messages.optional(),
+  conversationId: z.string().trim().min(1).max(60).optional()
 });
 
 const availabilityQuerySchema = z.object({
   from: z.coerce.date().optional(),
   to: z.coerce.date().optional(),
   agencyId: z.string().trim().optional()
-});
-
-const adminAppointmentQuerySchema = z.object({
-  status: z.enum(["A_CONFIRMER", "CONFIRME", "TRAITE", "ANNULE"]).optional()
-});
-
-const updateAppointmentSchema = z.object({
-  status: z.enum(["A_CONFIRMER", "CONFIRME", "TRAITE", "ANNULE"]),
-  assignedToId: z.string().trim().optional()
 });
 
 function fullName(input: { firstName: string; lastName: string }) {
@@ -102,21 +105,112 @@ function mapSlot(slot: Awaited<ReturnType<LodenRepository["listChatAvailabilityS
 }
 
 async function createLeadFromChat(repository: LodenRepository, input: z.infer<typeof leadBodySchema>) {
-  return repository.createLead({
+  const fields = {
     fullName: fullName(input),
-    email: input.email,
+    firstName: input.firstName,
+    lastName: input.lastName,
     phone: input.phone,
-    status: "PROSPECT",
-    source: "chatbot",
     interest: input.formation,
+    financingType: deriveFinancingType(input),
+    consentEmail: input.consentContact,
+    consentWhatsapp: input.consentWhatsApp,
     notes: [
       `Objectif : ${input.objective}`,
-      input.message ? `Message : ${input.message}` : null,
-      `Consentement contact : ${input.consentContact ? "oui" : "non"}`,
-      `Consentement WhatsApp : ${input.consentWhatsApp ? "oui" : "non"}`
+      input.companySize ? `Nombre de salariés : ${input.companySize}` : null,
+      input.message ? `Message : ${input.message}` : null
     ].filter(Boolean).join("\n"),
     temperature: "chaud"
-  });
+  };
+
+  // Déduplication : si un prospect existe déjà avec cet email, on le met à jour
+  // (sans toucher au statut du pipeline ni à sa source d'origine) plutôt que de
+  // créer un doublon.
+  const existing = await repository.findLeadByEmail(input.email);
+  if (existing) return repository.updateLead(existing.id, fields);
+
+  return repository.createLead({ ...fields, email: input.email, source: "chatbot", status: "PROSPECT" });
+}
+
+/**
+ * Tâche de suivi prudente selon le financement :
+ * - CPF : « vérification CPF » (jamais de promesse de validation automatique).
+ * - Entreprise : préparer un devis (priorité haute).
+ */
+async function createFinancingFollowUpTask(
+  repository: LodenRepository,
+  leadId: string,
+  input: z.infer<typeof leadBodySchema>,
+  appointmentId?: string
+) {
+  const deadline = new Date(Date.now() + 2 * 24 * 60 * 60_000);
+  if (input.objective === "Utiliser mon CPF") {
+    await repository.createChatTask({
+      leadId,
+      appointmentId,
+      type: "RELANCE",
+      priority: "HAUTE",
+      deadline,
+      note: `Vérifier l'éligibilité CPF — ${input.formation} (${fullName(input)}). Ne pas promettre de validation avant vérification.`
+    });
+  } else if (input.formation === "Formation entreprise") {
+    await repository.createChatTask({
+      leadId,
+      appointmentId,
+      type: "RELANCE",
+      priority: "HAUTE",
+      deadline,
+      note: `Demande entreprise${input.companySize ? ` — ${input.companySize} salariés` : ""} — préparer un devis (${fullName(input)}).`
+    });
+  }
+}
+
+/**
+ * Persiste la conversation publique (chaque échange). Round-trip via conversationId :
+ * crée la conversation au 1er message, la met à jour ensuite. Calcule l'intention
+ * (déterministe, sans coût IA) et le dernier message pour le suivi CRM.
+ */
+async function persistPublicConversation(
+  repository: LodenRepository,
+  params: { conversationId?: string; messages: z.infer<typeof messageSchema>["messages"]; reply: string }
+): Promise<string> {
+  const now = new Date().toISOString();
+  const stored = [
+    ...params.messages.map((m) => ({ role: m.role, content: m.content, createdAt: now })),
+    { role: "assistant" as const, content: params.reply, createdAt: now }
+  ];
+  const userText = params.messages.filter((m) => m.role === "user").map((m) => m.content).join(" ");
+  const lastUser = [...params.messages].reverse().find((m) => m.role === "user")?.content ?? "";
+  const { intent, confidence } = classifyIntent(userText);
+  const patch = { messages: stored, lastMessage: lastUser.slice(0, 300), intent, aiConfidence: confidence };
+
+  if (params.conversationId) {
+    const existing = await repository.findChatConversationById(params.conversationId);
+    if (existing) return (await repository.updateChatConversation(params.conversationId, patch)).id;
+  }
+  return (await repository.createChatConversation(patch)).id;
+}
+
+/** Génère et stocke un résumé IA de la conversation (best-effort, non bloquant). */
+async function summarizeAndStoreConversation(repository: LodenRepository, ai: AiProvider, conversationId: string): Promise<void> {
+  try {
+    if (!ai.available) return;
+    const conv = await repository.findChatConversationById(conversationId);
+    if (!conv || !conv.messages.length) return;
+    const text = conv.messages
+      .map((m) => `${m.role === "user" ? "Client" : "Assistant"}: ${m.content}`)
+      .join("\n")
+      .slice(0, 5000);
+    const summary = await ai.complete(
+      [
+        { role: "system", content: SUMMARIZE_SYSTEM },
+        { role: "user", content: text }
+      ],
+      { temperature: 0.2, maxTokens: 300 }
+    );
+    await repository.updateChatConversation(conversationId, { summary });
+  } catch (error) {
+    console.error("[chat] résumé conversation échoué:", error instanceof Error ? error.message : error);
+  }
 }
 
 async function buildPublicReply(repository: LodenRepository, config: ApiConfig, ai: AiProvider, messages: z.infer<typeof messageSchema>["messages"]) {
@@ -157,7 +251,7 @@ async function buildPublicReply(repository: LodenRepository, config: ApiConfig, 
         ],
         { temperature: 0.3, maxTokens: 260 }
       );
-      return { reply };
+      return { reply: sanitizeAiOutput(reply, config) };
     }
 
     const reply = await runAgent(ai, {
@@ -185,7 +279,17 @@ export function createChatRouter(repository: LodenRepository, config: ApiConfig,
     asyncHandler(async (req, res) => {
       const body = validateBody(messageSchema, req);
       const data = await buildPublicReply(repository, config, ai, body.messages);
-      res.json({ data });
+      let conversationId = body.conversationId;
+      try {
+        conversationId = await persistPublicConversation(repository, {
+          conversationId: body.conversationId,
+          messages: body.messages,
+          reply: data.reply
+        });
+      } catch (error) {
+        console.error("[chat] persistance conversation échouée:", error instanceof Error ? error.message : error);
+      }
+      res.json({ data: { ...data, conversationId } });
     })
   );
 
@@ -194,12 +298,13 @@ export function createChatRouter(repository: LodenRepository, config: ApiConfig,
     asyncHandler(async (req, res) => {
       const body = validateBody(leadBodySchema, req);
       const lead = await createLeadFromChat(repository, body);
+      await createFinancingFollowUpTask(repository, lead.id, body);
       await repository.createAuditLog({
         userId: null,
         action: "chatbot.lead.created",
         entityType: "Lead",
         entityId: lead.id,
-        metadata: { source: "chatbot", formation: body.formation, objective: body.objective }
+        metadata: { source: "chatbot", formation: body.formation, objective: body.objective, financingType: lead.financingType }
       });
       res.status(201).json({ data: { lead } });
     })
@@ -232,10 +337,13 @@ export function createChatRouter(repository: LodenRepository, config: ApiConfig,
         message: body.message,
         date,
         time,
+        requestedAt: new Date(),
         startsAt: slot.startsAt,
         endsAt: slot.endsAt,
-        type: slot.type || body.type,
-        status: "A_CONFIRMER",
+        type: canonicalType(slot.type || body.type),
+        status: "pending_confirmation",
+        priority: "normal",
+        source: "chatbot",
         assignedToId: slot.assignedToId,
         consentContact: body.consentContact,
         consentWhatsApp: body.consentWhatsApp,
@@ -252,15 +360,32 @@ export function createChatRouter(repository: LodenRepository, config: ApiConfig,
         deadline,
         note: `Confirmer le rendez-vous chatbot ${body.formation} avec ${name} (${body.phone}).`
       });
+      // Tâche de suivi financement (CPF prudent / devis entreprise), en plus de la confirmation.
+      await createFinancingFollowUpTask(repository, lead.id, body, appointment.id);
 
-      if (body.conversation?.length) {
-        await repository.createChatConversation({
+      // Relie la conversation publique déjà persistée (pas de doublon), sinon en crée une.
+      let conversationId: string | undefined;
+      if (body.conversationId) {
+        const existing = await repository.findChatConversationById(body.conversationId);
+        if (existing) {
+          await repository.updateChatConversation(body.conversationId, {
+            leadId: lead.id,
+            appointmentId: appointment.id,
+            visitorName: name
+          });
+          conversationId = existing.id;
+        }
+      }
+      if (!conversationId && body.conversation?.length) {
+        const created = await repository.createChatConversation({
           leadId: lead.id,
           appointmentId: appointment.id,
           visitorName: name,
           messages: body.conversation.map((message) => ({ ...message, createdAt: new Date().toISOString() }))
         });
+        conversationId = created.id;
       }
+      if (conversationId) void summarizeAndStoreConversation(repository, ai, conversationId);
 
       const emailInput = {
         leadId: lead.id,
@@ -288,8 +413,8 @@ export function createChatRouter(repository: LodenRepository, config: ApiConfig,
 
       await repository.createAuditLog({
         userId: null,
-        action: "chatbot.appointment.created",
-        entityType: "ChatAppointment",
+        action: "appointment.created",
+        entityType: "Appointment",
         entityId: appointment.id,
         metadata: { leadId: lead.id, taskId: task.id, source: "chatbot" }
       });
@@ -333,53 +458,14 @@ export function createChatAdminRouter(repository: LodenRepository, config: ApiCo
   const router = Router();
   router.use(authenticate(repository, config.JWT_SECRET));
 
+  // Leads issus du chatbot. Les rendez-vous sont désormais servis par le module
+  // unifié `appointments` (/api/admin/appointments) — source unique de vérité.
   router.get(
     "/leads",
     requirePermission("leads.read"),
     asyncHandler(async (_req, res) => {
       const leads = await repository.listLeads();
       res.json({ data: leads.filter((lead) => lead.source === "chatbot") });
-    })
-  );
-
-  router.get(
-    "/appointments",
-    requirePermission("leads.read"),
-    asyncHandler(async (req, res) => {
-      const query = validateQuery(adminAppointmentQuerySchema, req);
-      const [appointments, tasks, conversations, leads] = await Promise.all([
-        repository.listChatAppointments(query),
-        repository.listChatTasks(),
-        repository.listChatConversations(),
-        repository.listLeads()
-      ]);
-      res.json({
-        data: {
-          appointments,
-          tasks,
-          conversations,
-          leads: leads.filter((lead) => lead.source === "chatbot")
-        }
-      });
-    })
-  );
-
-  router.patch(
-    "/appointments/:id",
-    requirePermission("leads.manage"),
-    asyncHandler(async (req: AuthenticatedRequest, res) => {
-      const body = validateBody(updateAppointmentSchema, req);
-      const appointment = await repository.findChatAppointmentById(String(req.params.id));
-      if (!appointment) throw notFound("Rendez-vous chatbot introuvable");
-      const updated = await repository.updateChatAppointment(appointment.id, body);
-      await repository.createAuditLog({
-        userId: req.user?.id ?? null,
-        action: "chatbot.appointment.status",
-        entityType: "ChatAppointment",
-        entityId: updated.id,
-        metadata: { status: body.status }
-      });
-      res.json({ data: updated });
     })
   );
 
