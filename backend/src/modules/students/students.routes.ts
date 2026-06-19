@@ -78,7 +78,12 @@ const studentUpdateSchema = z.object({
   examDate: z.coerce.date().optional(),
   formationId: z.string().trim().optional(),
   agencyId: z.string().trim().optional(),
-  ...civilFields
+  ...civilFields,
+  // Champs portés par le compte User (édition depuis l'onglet Profil de la fiche).
+  firstName: z.string().trim().min(1).max(120).optional(),
+  lastName: z.string().trim().min(1).max(120).optional(),
+  phone: z.string().trim().max(30).optional(),
+  address: z.string().trim().max(300).optional()
 });
 
 export function createStudentsRouter(repository: LodenRepository, config: ApiConfig) {
@@ -185,8 +190,18 @@ export function createStudentsRouter(repository: LodenRepository, config: ApiCon
       if (!existing) throw notFound("Élève introuvable");
       await assertAgencyAccess(repository, req as AuthenticatedRequest, existing.agencyId);
       const body = validateBody(studentUpdateSchema, req);
-      const student = await repository.updateStudent(id, body);
-      res.json({ data: student });
+      const { firstName, lastName, phone, address, ...studentFields } = body;
+      if (firstName !== undefined || lastName !== undefined || phone !== undefined || address !== undefined) {
+        await repository.updateUser(existing.userId, {
+          ...(firstName !== undefined ? { firstName } : {}),
+          ...(lastName !== undefined ? { lastName } : {}),
+          ...(phone !== undefined ? { phone } : {}),
+          ...(address !== undefined ? { address } : {})
+        });
+      }
+      const student = await repository.updateStudent(id, studentFields);
+      const user = await repository.findUserById(existing.userId);
+      res.json({ data: { ...student, user: user ? publicUser(user) : null } });
     })
   );
 
