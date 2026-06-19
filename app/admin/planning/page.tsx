@@ -1,7 +1,21 @@
-import { redirect } from "next/navigation";
+import type { Metadata } from "next";
+import { ResourcePlanning } from "@/components/crm/planning/ResourcePlanning";
+import { CrmPageHeader } from "@/components/crm/ui";
 
-// Page historique fusionnée dans le Centre rendez-vous & planning (source unique de vérité).
-// Le planning (RDV + leçons agrégés) s'ouvre directement sur la vue calendrier.
+export const metadata: Metadata = {
+  title: "Planning",
+  robots: { index: false, follow: false }
+};
+
 export default function AdminPlanningPage() {
-  redirect("/admin/rendez-vous?view=planning");
+  return (
+    <>
+      <CrmPageHeader
+        eyebrow="Pédagogie"
+        title="Planning"
+        subtitle="Vue par moniteur : leçons et rendez-vous de la journée, en créneaux horaires."
+      />
+      <ResourcePlanning />
+    </>
+  );
 }
