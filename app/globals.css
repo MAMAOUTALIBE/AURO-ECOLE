@@ -44,7 +44,9 @@ textarea {
 }
 
 .container-pad {
-  @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
+  /* Largeur du contenu : 1280px (≤xl), puis élargie sur grands écrans pour éviter
+     les marges vides (1408px en 2xl ≥1536px, 1728px en 3xl ≥1920px). */
+  @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 2xl:max-w-[88rem] 2xl:px-10 3xl:max-w-[108rem] 3xl:px-12;
 }
 
 .premium-panel {
