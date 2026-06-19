@@ -20,6 +20,7 @@
     "db:seed": "tsx prisma/seed.ts",
     "db:seed-availability": "tsx prisma/seed-availability.ts",
     "db:seed-demo": "tsx prisma/seed-demo.ts",
+    "db:import-students": "tsx prisma/import-students.ts",
     "db:clean-demo": "tsx prisma/clean-demo.ts",
     "deploy:build": "npm run prisma:generate && npm run api:build && npm run build",
     "deploy:check": "npm run lint && npm run typecheck && npm run api:typecheck && npm run api:test && npm run api:build && npm run prisma:generate && npm run build",
