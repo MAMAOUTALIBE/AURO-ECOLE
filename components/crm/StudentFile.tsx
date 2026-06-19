@@ -2,12 +2,23 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Save } from "lucide-react";
+import {
+  ArrowLeft,
+  Save,
+  Phone,
+  Mail,
+  MessageCircle,
+  KeyRound,
+  Copy,
+  CalendarPlus,
+  GraduationCap
+} from "lucide-react";
 import { FILE_STATUS_LABELS } from "@/components/crm/StudentsList";
 
-type UserLite = { firstName: string; lastName: string; email: string; phone?: string | null; address?: string | null };
+type UserLite = { id?: string; firstName: string; lastName: string; email: string; phone?: string | null; address?: string | null };
 type StudentDetail = {
   id: string;
+  userId?: string;
   agencyId?: string | null;
   formationId?: string | null;
   fileStatus: string;
@@ -35,12 +46,15 @@ type Invoice = { id: string; number?: string | null; totalCents: number; status:
 type Quote = { id: string; number?: string | null; totalCents: number; status: string; createdAt: string };
 type Installment = { id: string; amountCents: number; dueDate?: string | null; status: string };
 type Contract = { id: string; number?: string | null; status: string; createdAt: string };
+type Payment = { id: string; amountCents: number; status: string; kind: string; paidAt?: string | null; createdAt: string };
+type Exam = { id: string; type: string; scheduledAt: string; center?: string | null; result: string; score?: number | null; attempt: number };
 
-type Tab = "profil" | "formation" | "documents" | "comptabilite" | "consommations" | "contrats" | "planning";
+type Tab = "profil" | "formation" | "documents" | "examens" | "comptabilite" | "consommations" | "contrats" | "planning";
 const TABS: { key: Tab; label: string }[] = [
   { key: "profil", label: "Profil" },
   { key: "formation", label: "Formation" },
   { key: "documents", label: "Documents" },
+  { key: "examens", label: "Examens" },
   { key: "comptabilite", label: "Comptabilité" },
   { key: "consommations", label: "Consommations" },
   { key: "contrats", label: "Contrats" },
@@ -57,6 +71,9 @@ const DOCUMENT_TYPES = [
   "Autre"
 ];
 
+const EXAM_TYPE_LABELS: Record<string, string> = { CODE: "Code", CONDUITE: "Conduite" };
+const EXAM_RESULT_LABELS: Record<string, string> = { EN_ATTENTE: "En attente", REUSSI: "Réussi", ECHOUE: "Échoué", ABSENT: "Absent" };
+
 const euros = (cents: number) => new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format((cents ?? 0) / 100);
 const toDateInput = (value?: string | null) => (value ? value.slice(0, 10) : "");
 function fmtDate(value?: string | null) {
@@ -64,12 +81,34 @@ function fmtDate(value?: string | null) {
   const d = new Date(value);
   return Number.isNaN(d.getTime()) ? "—" : d.toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit", year: "numeric" });
 }
+function fmtTime(value: string) {
+  return new Date(value).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+}
+function fmtDateTime(value?: string | null) {
+  if (!value) return "—";
+  return `${fmtDate(value)} · ${fmtTime(value)}`;
+}
 function age(value?: string | null) {
   if (!value) return null;
   const d = new Date(value);
   if (Number.isNaN(d.getTime())) return null;
   const diff = Date.now() - d.getTime();
   return Math.floor(diff / (365.25 * 86_400_000));
+}
+function badgeTone(status: string) {
+  const s = (status ?? "").toUpperCase();
+  if (/(PAYE|PAYEE|REUSSI|VALID|SIGNE|ACTIF|TERMINE|REALIS|HONORE)/.test(s)) return "bg-emerald-50 text-emerald-700";
+  if (/(ECHEC|ECHOUE|ANNUL|REFUS|RETARD|IMPAYE|ABSENT)/.test(s)) return "bg-rose-50 text-rose-700";
+  if (/(ATTENTE|BROUILLON|EN_COURS|PARTIEL|ENVOYE|EMISE|PLANIFIE)/.test(s)) return "bg-amber-50 text-amber-700";
+  return "bg-loden-50 text-loden-700";
+}
+function waNumber(phone?: string | null) {
+  if (!phone) return null;
+  let digits = phone.replace(/[^\d+]/g, "");
+  if (digits.startsWith("+")) digits = digits.slice(1);
+  else if (digits.startsWith("00")) digits = digits.slice(2);
+  else if (digits.startsWith("0")) digits = `33${digits.slice(1)}`;
+  return digits.length >= 8 ? digits : null;
 }
 
 export function StudentFile({ studentId }: { studentId: string }) {
@@ -83,8 +122,12 @@ export function StudentFile({ studentId }: { studentId: string }) {
   const [quotes, setQuotes] = useState<Quote[]>([]);
   const [installments, setInstallments] = useState<Installment[]>([]);
   const [contracts, setContracts] = useState<Contract[]>([]);
+  const [payments, setPayments] = useState<Payment[]>([]);
+  const [exams, setExams] = useState<Exam[]>([]);
   const [docForm, setDocForm] = useState({ type: DOCUMENT_TYPES[0], url: "" });
+  const [examForm, setExamForm] = useState({ type: "CONDUITE", scheduledAt: "", center: "" });
   const [status, setStatus] = useState<{ tone: "success" | "error"; text: string } | null>(null);
+  const [resetInfo, setResetInfo] = useState<{ tempPassword: string; email: string } | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [tab, setTab] = useState<Tab>("profil");
@@ -102,7 +145,7 @@ export function StudentFile({ studentId }: { studentId: string }) {
         return;
       }
       const userId = studentPayload.data.user?.id ?? studentPayload.data.userId;
-      const [ag, fo, sk, doc, bk, inv, qt, inst, ct] = await Promise.all([
+      const [ag, fo, sk, doc, bk, inv, qt, inst, ct, pay, ex] = await Promise.all([
         list("/api/agencies"),
         list("/api/formations"),
         list(`/api/students/${studentId}/skills`),
@@ -111,7 +154,9 @@ export function StudentFile({ studentId }: { studentId: string }) {
         userId ? list(`/api/invoices?clientUserId=${userId}`) : Promise.resolve(null),
         userId ? list(`/api/quotes?clientUserId=${userId}`) : Promise.resolve(null),
         list(`/api/installments?studentId=${studentId}`),
-        userId ? list(`/api/contracts?clientUserId=${userId}`) : Promise.resolve(null)
+        userId ? list(`/api/contracts?clientUserId=${userId}`) : Promise.resolve(null),
+        userId ? list(`/api/payments?userId=${userId}`) : Promise.resolve(null),
+        list(`/api/exams?studentId=${studentId}`)
       ]);
       if (cancelled) return;
       if (Array.isArray(ag?.data)) setAgencies(ag.data.map((a: { id: string; name: string }) => ({ id: a.id, label: a.name })));
@@ -123,6 +168,8 @@ export function StudentFile({ studentId }: { studentId: string }) {
       if (Array.isArray(qt?.data)) setQuotes(qt.data as Quote[]);
       if (Array.isArray(inst?.data)) setInstallments(inst.data as Installment[]);
       if (Array.isArray(ct?.data)) setContracts(ct.data as Contract[]);
+      if (Array.isArray(pay?.data)) setPayments(pay.data as Payment[]);
+      if (Array.isArray(ex?.data)) setExams(ex.data as Exam[]);
       setLoading(false);
     })();
     return () => {
@@ -135,6 +182,35 @@ export function StudentFile({ studentId }: { studentId: string }) {
 
   const formationLabel = useMemo(() => formations.find((f) => f.id === student?.formationId)?.label, [formations, student?.formationId]);
   const agencyLabel = useMemo(() => agencies.find((a) => a.id === student?.agencyId)?.label, [agencies, student?.agencyId]);
+
+  // --- Indicateurs financiers & d'activité dérivés ---
+  const finance = useMemo(() => {
+    const billed = invoices.filter((i) => !/ANNUL/i.test(i.status)).reduce((s, i) => s + (i.totalCents ?? 0), 0);
+    const collected = payments.filter((p) => /^PAYE$/i.test(p.status)).reduce((s, p) => s + (p.amountCents ?? 0), 0);
+    const dueInstallments = installments.filter((i) => !/PAYE/i.test(i.status)).reduce((s, i) => s + (i.amountCents ?? 0), 0);
+    return { billed, collected, balance: billed - collected, dueInstallments };
+  }, [invoices, payments, installments]);
+
+  const lessons = useMemo(() => {
+    const now = Date.now();
+    const cancelled = bookings.filter((b) => /ANNUL/i.test(b.status));
+    const upcoming = bookings
+      .filter((b) => !/ANNUL/i.test(b.status) && new Date(b.startsAt).getTime() >= now)
+      .sort((a, b) => new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime());
+    const past = bookings
+      .filter((b) => !/ANNUL/i.test(b.status) && new Date(b.startsAt).getTime() < now)
+      .sort((a, b) => new Date(b.startsAt).getTime() - new Date(a.startsAt).getTime());
+    return { upcoming, past, cancelled, next: upcoming[0] ?? null };
+  }, [bookings]);
+
+  const nextExam = useMemo(() => {
+    const now = Date.now();
+    return [...exams]
+      .filter((e) => new Date(e.scheduledAt).getTime() >= now && e.result === "EN_ATTENTE")
+      .sort((a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime())[0] ?? null;
+  }, [exams]);
+
+  const hoursPct = student && student.purchasedHours ? Math.min(100, Math.round((student.consumedHours / student.purchasedHours) * 100)) : 0;
 
   const save = async (fields: Record<string, unknown>) => {
     setSaving(true);
@@ -239,6 +315,61 @@ export function StudentFile({ studentId }: { studentId: string }) {
   };
   const safeHref = (url: string) => (/^(https?:\/\/|\/)/i.test(url.trim()) ? url : "#");
 
+  // --- Examens ---
+  const addExam = async () => {
+    if (!examForm.scheduledAt) {
+      setStatus({ tone: "error", text: "Renseigne la date de l'examen." });
+      return;
+    }
+    try {
+      const response = await fetch(`/api/exams`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          studentId,
+          type: examForm.type,
+          scheduledAt: new Date(examForm.scheduledAt).toISOString(),
+          ...(examForm.center.trim() ? { center: examForm.center.trim() } : {}),
+          ...(student?.agencyId ? { agencyId: student.agencyId } : {})
+        })
+      });
+      const payload = await response.json().catch(() => null);
+      if (!response.ok) throw new Error(payload?.error?.message ?? "Ajout impossible.");
+      setExams((c) => [payload.data as Exam, ...c]);
+      setExamForm({ type: "CONDUITE", scheduledAt: "", center: "" });
+      setStatus({ tone: "success", text: "Examen planifié." });
+    } catch (error) {
+      setStatus({ tone: "error", text: error instanceof Error ? error.message : "Ajout impossible." });
+    }
+  };
+  const patchExam = async (exam: Exam, fields: Record<string, unknown>) => {
+    const response = await fetch(`/api/exams/${exam.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(fields)
+    });
+    if (response.ok) {
+      const payload = await response.json();
+      setExams((c) => c.map((e) => (e.id === exam.id ? (payload.data as Exam) : e)));
+    } else {
+      setStatus({ tone: "error", text: "Mise à jour de l'examen impossible." });
+    }
+  };
+
+  // --- Réinitialisation du mot de passe (action bureau) ---
+  const resetPassword = async () => {
+    if (!window.confirm("Générer un nouveau mot de passe pour cet élève ? L'ancien sera invalidé.")) return;
+    setStatus(null);
+    try {
+      const response = await fetch(`/api/students/${studentId}/reset-password`, { method: "POST" });
+      const payload = await response.json().catch(() => null);
+      if (!response.ok) throw new Error(payload?.error?.message ?? "Réinitialisation impossible.");
+      setResetInfo(payload.data as { tempPassword: string; email: string });
+    } catch (error) {
+      setStatus({ tone: "error", text: error instanceof Error ? error.message : "Réinitialisation impossible." });
+    }
+  };
+
   if (loading) return <p className="text-sm text-loden-muted">Chargement du dossier…</p>;
   if (!student) {
     return (
@@ -252,26 +383,61 @@ export function StudentFile({ studentId }: { studentId: string }) {
   const u = student.user;
   const fullName = u ? `${u.firstName} ${u.lastName}` : "Élève";
   const ageY = age(student.birthDate);
+  const wa = waNumber(u?.phone);
 
   return (
     <div className="grid gap-5">
       <Link href="/admin/eleves" className="focus-ring inline-flex w-fit items-center gap-2 text-sm font-semibold text-loden-700"><ArrowLeft className="h-4 w-4" /> Retour aux apprenants</Link>
 
-      {/* Bandeau résumé */}
+      {/* Bandeau résumé + actions rapides */}
       <div className="rounded-3xl border border-slate-200 bg-loden-pearl/50 p-6 shadow-soft">
-        <div className="flex flex-wrap items-center justify-between gap-4">
+        <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="flex items-center gap-4">
-            <span className="flex h-14 w-14 items-center justify-center rounded-full bg-loden-100 text-lg font-bold text-loden-700">
+            <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-loden-100 text-lg font-bold text-loden-700">
               {(u?.firstName?.[0] ?? "") + (u?.lastName?.[0] ?? "")}
             </span>
-            <div>
-              <h2 className="text-2xl font-bold text-loden-ink">{fullName}</h2>
-              <p className="text-sm text-loden-muted">{u?.email}</p>
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <h2 className="text-2xl font-bold text-loden-ink">{fullName}</h2>
+                <span className={`rounded-full px-3 py-0.5 text-xs font-semibold ${badgeTone(student.fileStatus)}`}>{FILE_STATUS_LABELS[student.fileStatus] ?? student.fileStatus}</span>
+              </div>
+              <p className="truncate text-sm text-loden-muted">{u?.email}</p>
             </div>
           </div>
-          {formationLabel ? <span className="rounded-xl border border-loden-200 px-4 py-2 text-sm font-semibold text-loden-700">{formationLabel}</span> : null}
+          <div className="flex flex-wrap items-center gap-2">
+            {u?.phone ? <ActionLink href={`tel:${u.phone}`} icon={<Phone className="h-4 w-4" aria-hidden="true" />} label="Appeler" /> : null}
+            {u?.email ? <ActionLink href={`mailto:${u.email}`} icon={<Mail className="h-4 w-4" aria-hidden="true" />} label="Email" /> : null}
+            {wa ? <ActionLink href={`https://wa.me/${wa}`} external icon={<MessageCircle className="h-4 w-4" aria-hidden="true" />} label="WhatsApp" /> : null}
+            <button type="button" onClick={resetPassword} className="focus-ring inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-loden-ink transition hover:bg-loden-50">
+              <KeyRound className="h-4 w-4" aria-hidden="true" /> Réinitialiser le mot de passe
+            </button>
+            {formationLabel ? <span className="rounded-xl border border-loden-200 px-3 py-1.5 text-xs font-semibold text-loden-700">{formationLabel}</span> : null}
+          </div>
         </div>
-        <div className="mt-5 grid grid-cols-2 gap-x-6 gap-y-3 text-sm sm:grid-cols-3 lg:grid-cols-4">
+
+        {resetInfo ? (
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-4">
+            <div className="text-sm text-amber-900">
+              <p className="font-semibold">Mot de passe temporaire pour {resetInfo.email}</p>
+              <p className="mt-1">Communiquez-le à l&apos;élève — il ne sera plus affiché : <code className="rounded bg-white px-2 py-0.5 font-mono text-base font-bold text-loden-ink">{resetInfo.tempPassword}</code></p>
+            </div>
+            <div className="flex items-center gap-2">
+              <button type="button" onClick={() => navigator.clipboard?.writeText(resetInfo.tempPassword)} className="focus-ring inline-flex items-center gap-1.5 rounded-full bg-loden-700 px-3 py-1.5 text-xs font-semibold text-white hover:bg-loden-800"><Copy className="h-4 w-4" aria-hidden="true" /> Copier</button>
+              <button type="button" onClick={() => setResetInfo(null)} className="focus-ring rounded-full border border-amber-300 px-3 py-1.5 text-xs font-semibold text-amber-800 hover:bg-amber-100">Fermer</button>
+            </div>
+          </div>
+        ) : null}
+
+        {/* KPI rapides */}
+        <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+          <Kpi label="Solde dû" value={euros(finance.balance)} tone={finance.balance > 0 ? "danger" : "ok"} />
+          <KpiBar label="Progression" pct={student.progressPercent} value={`${student.progressPercent}%`} />
+          <KpiBar label="Heures" pct={hoursPct} value={`${student.consumedHours}/${student.purchasedHours} h`} />
+          <Kpi label="Prochaine leçon" value={lessons.next ? fmtDateTime(lessons.next.startsAt) : "—"} />
+          <Kpi label="Prochain examen" value={nextExam ? `${EXAM_TYPE_LABELS[nextExam.type] ?? nextExam.type} · ${fmtDate(nextExam.scheduledAt)}` : "—"} />
+        </div>
+
+        <div className="mt-5 grid grid-cols-2 gap-x-6 gap-y-3 border-t border-slate-200/70 pt-4 text-sm sm:grid-cols-3 lg:grid-cols-4">
           <Info label="NEPH" value={student.neph || "—"} />
           <Info label="Date de naissance" value={`${fmtDate(student.birthDate)}${ageY != null ? ` (${ageY} ans)` : ""}`} />
           <Info label="Date d'inscription" value={fmtDate(student.registeredAt)} />
@@ -279,7 +445,7 @@ export function StudentFile({ studentId }: { studentId: string }) {
           <Info label="Financement" value={student.financingType || "—"} />
           <Info label="Téléphone" value={u?.phone || "—"} />
           <Info label="Filière" value={student.filiere || "—"} />
-          <Info label="Statut" value={FILE_STATUS_LABELS[student.fileStatus] ?? student.fileStatus} />
+          <Info label="Lieu de naissance" value={student.birthPlace || "—"} />
         </div>
       </div>
 
@@ -406,10 +572,55 @@ export function StudentFile({ studentId }: { studentId: string }) {
           </div>
         ) : null}
 
+        {tab === "examens" ? (
+          <div className="grid gap-5">
+            <h3 className="text-lg font-semibold text-loden-ink">Examens</h3>
+            <div className="grid gap-3 sm:grid-cols-[auto_1fr_1fr_auto] sm:items-end">
+              <Field label="Type">
+                <select className="field-input" value={examForm.type} onChange={(e) => setExamForm((f) => ({ ...f, type: e.target.value }))}>
+                  <option value="CODE">Code</option>
+                  <option value="CONDUITE">Conduite</option>
+                </select>
+              </Field>
+              <Field label="Date & heure"><input type="datetime-local" className="field-input" value={examForm.scheduledAt} onChange={(e) => setExamForm((f) => ({ ...f, scheduledAt: e.target.value }))} /></Field>
+              <Field label="Centre"><input className="field-input" placeholder="Centre d'examen" value={examForm.center} onChange={(e) => setExamForm((f) => ({ ...f, center: e.target.value }))} /></Field>
+              <button type="button" onClick={addExam} className="focus-ring inline-flex h-11 items-center justify-center gap-2 rounded-full bg-loden-700 px-5 text-sm font-semibold text-white transition hover:bg-loden-800"><CalendarPlus className="h-4 w-4" aria-hidden="true" /> Planifier</button>
+            </div>
+            <div className="grid gap-2">
+              {[...exams].sort((a, b) => new Date(b.scheduledAt).getTime() - new Date(a.scheduledAt).getTime()).map((exam) => (
+                <div key={exam.id} className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-100 bg-loden-pearl/50 p-3">
+                  <div className="flex items-center gap-3">
+                    <span className="flex h-9 w-9 items-center justify-center rounded-full bg-loden-100 text-loden-700"><GraduationCap className="h-4 w-4" aria-hidden="true" /></span>
+                    <div>
+                      <p className="text-sm font-semibold text-loden-ink">{EXAM_TYPE_LABELS[exam.type] ?? exam.type}{exam.attempt > 1 ? ` · tentative ${exam.attempt}` : ""}</p>
+                      <p className="text-xs text-loden-muted">{fmtDateTime(exam.scheduledAt)}{exam.center ? ` · ${exam.center}` : ""}</p>
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className={`rounded-full px-3 py-1 text-xs font-semibold ${badgeTone(exam.result)}`}>{EXAM_RESULT_LABELS[exam.result] ?? exam.result}</span>
+                    <select className="field-input h-9 w-36 py-1 text-xs" value={exam.result} onChange={(e) => patchExam(exam, { result: e.target.value })} aria-label="Résultat">
+                      {Object.entries(EXAM_RESULT_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+                    </select>
+                    <input type="number" min={0} max={100} className="field-input h-9 w-20 py-1 text-xs" placeholder="Score" defaultValue={exam.score ?? ""} onBlur={(e) => { const v = e.target.value === "" ? undefined : Number(e.target.value); if (v !== (exam.score ?? undefined)) patchExam(exam, { score: v }); }} aria-label="Score" />
+                  </div>
+                </div>
+              ))}
+              {exams.length === 0 ? <p className="text-sm text-loden-muted">Aucun examen planifié.</p> : null}
+            </div>
+          </div>
+        ) : null}
+
         {tab === "comptabilite" ? (
           <div className="grid gap-5">
             <h3 className="text-lg font-semibold text-loden-ink">Comptabilité</h3>
+            <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+              <Stat label="Facturé" value={euros(finance.billed)} />
+              <Stat label="Encaissé" value={euros(finance.collected)} />
+              <Stat label="Solde dû" value={euros(finance.balance)} tone={finance.balance > 0 ? "danger" : "ok"} />
+              <Stat label="Échéances à venir" value={euros(finance.dueInstallments)} />
+            </div>
             <ListBlock title={`Factures (${invoices.length})`} href="/admin/factures" items={invoices.map((i) => ({ id: i.id, left: i.number || "Brouillon", mid: fmtDate(i.createdAt), right: euros(i.totalCents), badge: i.status }))} empty="Aucune facture." />
+            <ListBlock title={`Paiements (${payments.length})`} href="/admin/finance" items={payments.map((p) => ({ id: p.id, left: p.kind, mid: fmtDate(p.paidAt || p.createdAt), right: euros(p.amountCents), badge: p.status }))} empty="Aucun paiement." />
             <ListBlock title={`Devis (${quotes.length})`} href="/admin/devis" items={quotes.map((q) => ({ id: q.id, left: q.number || "Brouillon", mid: fmtDate(q.createdAt), right: euros(q.totalCents), badge: q.status }))} empty="Aucun devis." />
             <ListBlock title={`Échéances (${installments.length})`} href="/admin/finance" items={installments.map((i) => ({ id: i.id, left: fmtDate(i.dueDate), mid: "", right: euros(i.amountCents), badge: i.status }))} empty="Aucune échéance." />
           </div>
@@ -418,13 +629,22 @@ export function StudentFile({ studentId }: { studentId: string }) {
         {tab === "consommations" ? (
           <div className="grid gap-4">
             <h3 className="text-lg font-semibold text-loden-ink">Consommations</h3>
-            <div className="grid gap-3 sm:grid-cols-3">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
               <Stat label="Heures achetées" value={`${student.purchasedHours} h`} />
               <Stat label="Heures consommées" value={`${student.consumedHours} h`} />
-              <Stat label="Leçons planifiées" value={String(bookings.length)} />
+              <Stat label="Heures restantes" value={`${Math.max(0, student.purchasedHours - student.consumedHours)} h`} tone={student.purchasedHours - student.consumedHours <= 0 ? "danger" : "ok"} />
+              <Stat label="Leçons à venir" value={String(lessons.upcoming.length)} />
             </div>
-            <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
-              <div className="h-full rounded-full bg-loden-500" style={{ width: `${student.purchasedHours ? Math.min(100, Math.round((student.consumedHours / student.purchasedHours) * 100)) : 0}%` }} />
+            <div>
+              <div className="mb-1 flex justify-between text-xs font-semibold text-loden-muted"><span>Heures utilisées</span><span>{hoursPct}%</span></div>
+              <div className="h-2.5 w-full overflow-hidden rounded-full bg-slate-100">
+                <div className={`h-full rounded-full ${hoursPct >= 100 ? "bg-rose-500" : "bg-loden-500"}`} style={{ width: `${hoursPct}%` }} />
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-2 text-xs font-semibold">
+              <span className="rounded-full bg-emerald-50 px-3 py-1 text-emerald-700">{lessons.past.length} réalisées</span>
+              <span className="rounded-full bg-amber-50 px-3 py-1 text-amber-700">{lessons.upcoming.length} à venir</span>
+              <span className="rounded-full bg-rose-50 px-3 py-1 text-rose-700">{lessons.cancelled.length} annulées</span>
             </div>
           </div>
         ) : null}
@@ -437,20 +657,45 @@ export function StudentFile({ studentId }: { studentId: string }) {
         ) : null}
 
         {tab === "planning" ? (
-          <div className="grid gap-4">
-            <h3 className="text-lg font-semibold text-loden-ink">Planning — leçons</h3>
-            <div className="grid gap-2">
-              {[...bookings].sort((a, b) => new Date(b.startsAt).getTime() - new Date(a.startsAt).getTime()).map((b) => (
-                <div key={b.id} className="flex items-center justify-between gap-3 rounded-2xl border border-slate-100 bg-loden-pearl/50 p-3">
-                  <span className="text-sm font-medium text-loden-ink">{fmtDate(b.startsAt)} · {new Date(b.startsAt).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}–{new Date(b.endsAt).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}</span>
-                  <span className="rounded-full bg-loden-50 px-3 py-1 text-xs font-semibold text-loden-700">{b.status}</span>
-                </div>
-              ))}
-              {bookings.length === 0 ? <p className="text-sm text-loden-muted">Aucune leçon planifiée.</p> : null}
+          <div className="grid gap-5">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-loden-ink">Planning — leçons</h3>
+              <Link href="/admin/rendez-vous?view=planning" className="text-sm font-semibold text-loden-700 hover:underline">Ouvrir le planning →</Link>
             </div>
-            <Link href="/admin/rendez-vous?view=planning" className="text-sm font-semibold text-loden-700 hover:underline">Ouvrir le planning →</Link>
+            <LessonGroup title={`À venir (${lessons.upcoming.length})`} items={lessons.upcoming} empty="Aucune leçon à venir." />
+            <LessonGroup title={`Historique (${lessons.past.length})`} items={lessons.past} empty="Aucune leçon passée." />
           </div>
         ) : null}
+      </div>
+    </div>
+  );
+}
+
+function ActionLink({ href, icon, label, external = false }: { href: string; icon: React.ReactNode; label: string; external?: boolean }) {
+  return (
+    <a href={href} {...(external ? { target: "_blank", rel: "noreferrer" } : {})} className="focus-ring inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-loden-ink transition hover:bg-loden-50">
+      {icon} {label}
+    </a>
+  );
+}
+
+function Kpi({ label, value, tone }: { label: string; value: string; tone?: "ok" | "danger" }) {
+  return (
+    <div className="rounded-2xl border border-slate-100 bg-white p-3">
+      <p className="text-xs uppercase tracking-wide text-loden-muted">{label}</p>
+      <p className={`mt-1 truncate text-base font-bold ${tone === "danger" ? "text-rose-600" : tone === "ok" ? "text-emerald-600" : "text-loden-ink"}`} title={value}>{value}</p>
+    </div>
+  );
+}
+
+function KpiBar({ label, pct, value }: { label: string; pct: number; value: string }) {
+  const safe = Math.max(0, Math.min(100, pct));
+  return (
+    <div className="rounded-2xl border border-slate-100 bg-white p-3">
+      <p className="text-xs uppercase tracking-wide text-loden-muted">{label}</p>
+      <p className="mt-1 text-base font-bold text-loden-ink">{value}</p>
+      <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
+        <div className={`h-full rounded-full ${safe >= 100 ? "bg-rose-500" : "bg-loden-500"}`} style={{ width: `${safe}%` }} />
       </div>
     </div>
   );
@@ -465,11 +710,11 @@ function Info({ label, value }: { label: string; value: string }) {
   );
 }
 
-function Stat({ label, value }: { label: string; value: string }) {
+function Stat({ label, value, tone }: { label: string; value: string; tone?: "ok" | "danger" }) {
   return (
     <div className="rounded-2xl border border-slate-100 bg-loden-pearl/50 p-4">
       <p className="text-xs uppercase tracking-wide text-loden-muted">{label}</p>
-      <p className="mt-1 text-xl font-bold text-loden-ink">{value}</p>
+      <p className={`mt-1 text-xl font-bold ${tone === "danger" ? "text-rose-600" : tone === "ok" ? "text-emerald-600" : "text-loden-ink"}`}>{value}</p>
     </div>
   );
 }
@@ -491,6 +736,23 @@ function SaveButton({ onClick, saving }: { onClick: () => void; saving: boolean 
   );
 }
 
+function LessonGroup({ title, items, empty }: { title: string; items: Booking[]; empty: string }) {
+  return (
+    <div>
+      <h4 className="text-sm font-semibold text-loden-ink">{title}</h4>
+      <div className="mt-2 grid gap-2">
+        {items.map((b) => (
+          <div key={b.id} className="flex items-center justify-between gap-3 rounded-2xl border border-slate-100 bg-loden-pearl/50 p-3">
+            <span className="text-sm font-medium text-loden-ink">{fmtDate(b.startsAt)} · {fmtTime(b.startsAt)}–{fmtTime(b.endsAt)}</span>
+            <span className={`rounded-full px-3 py-1 text-xs font-semibold ${badgeTone(b.status)}`}>{b.status}</span>
+          </div>
+        ))}
+        {items.length === 0 ? <p className="text-sm text-loden-muted">{empty}</p> : null}
+      </div>
+    </div>
+  );
+}
+
 function ListBlock({ title, href, items, empty }: { title: string; href: string; items: { id: string; left: string; mid: string; right: string; badge: string }[]; empty: string }) {
   return (
     <div>
@@ -505,7 +767,7 @@ function ListBlock({ title, href, items, empty }: { title: string; href: string;
             <span className="text-loden-muted">{it.mid}</span>
             <span className="flex items-center gap-2">
               {it.right ? <span className="font-semibold text-loden-ink">{it.right}</span> : null}
-              <span className="rounded-full bg-loden-50 px-2.5 py-0.5 text-xs font-semibold text-loden-700">{it.badge}</span>
+              <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${badgeTone(it.badge)}`}>{it.badge}</span>
             </span>
           </div>
         ))}
