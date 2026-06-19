@@ -728,11 +728,21 @@ export class MemoryLodenRepository implements LodenRepository {
     const student: StudentRecord = {
       id: randomUUID(),
       userId: input.userId,
+      agencyId: input.agencyId,
       formationId: input.formationId,
       progressPercent: 0,
       purchasedHours: input.purchasedHours ?? 0,
       consumedHours: 0,
-      fileStatus: "NOUVEAU",
+      fileStatus: input.fileStatus ?? "NOUVEAU",
+      internalNotes: input.internalNotes,
+      civility: input.civility,
+      birthName: input.birthName,
+      birthDate: input.birthDate,
+      birthPlace: input.birthPlace,
+      neph: input.neph,
+      filiere: input.filiere,
+      financingType: input.financingType,
+      registeredAt: input.registeredAt,
       createdAt: now,
       updatedAt: now
     };

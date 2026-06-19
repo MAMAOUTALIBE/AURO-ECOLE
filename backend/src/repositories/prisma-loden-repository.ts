@@ -780,7 +780,18 @@ export class PrismaLodenRepository implements LodenRepository {
       data: {
         userId: input.userId,
         formationId: input.formationId,
-        purchasedHours: input.purchasedHours ?? 0
+        purchasedHours: input.purchasedHours ?? 0,
+        agencyId: input.agencyId ?? undefined,
+        internalNotes: input.internalNotes ?? undefined,
+        civility: input.civility ?? undefined,
+        birthName: input.birthName ?? undefined,
+        birthDate: input.birthDate ?? undefined,
+        birthPlace: input.birthPlace ?? undefined,
+        neph: input.neph ?? undefined,
+        filiere: input.filiere ?? undefined,
+        financingType: input.financingType ?? undefined,
+        registeredAt: input.registeredAt ?? undefined,
+        ...(input.fileStatus ? { fileStatus: input.fileStatus as never } : {})
       }
     });
   }

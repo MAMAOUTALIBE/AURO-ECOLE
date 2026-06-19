@@ -155,6 +155,14 @@ export type StudentRecord = {
   examDate?: Date | null;
   fileStatus: string;
   internalNotes?: string | null;
+  civility?: string | null;
+  birthName?: string | null;
+  birthDate?: Date | null;
+  birthPlace?: string | null;
+  neph?: string | null;
+  filiere?: string | null;
+  financingType?: string | null;
+  registeredAt?: Date | null;
   createdAt: Date;
   updatedAt: Date;
 };

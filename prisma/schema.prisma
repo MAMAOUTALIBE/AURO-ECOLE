@@ -415,6 +415,15 @@ model Student {
   examDate           DateTime?
   fileStatus         StudentFileStatus @default(NOUVEAU)
   internalNotes      String?
+  // État civil & gestion auto-école (style Kréno2) — structuré pour liste/filtres/fiche.
+  civility           String?
+  birthName          String?
+  birthDate          DateTime?
+  birthPlace         String?
+  neph               String?
+  filiere            String?
+  financingType      String?
+  registeredAt       DateTime?
   createdAt          DateTime          @default(now())
   updatedAt          DateTime          @updatedAt
 

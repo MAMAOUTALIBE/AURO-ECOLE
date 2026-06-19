@@ -48,8 +48,26 @@ const studentCreateSchema = z.object({
   phone: phoneSchema,
   formationId: z.string().trim().optional(),
   agencyId: z.string().trim().optional(),
-  purchasedHours: z.number().int().nonnegative().optional()
+  purchasedHours: z.number().int().nonnegative().optional(),
+  civility: z.string().trim().max(10).optional(),
+  birthName: z.string().trim().max(120).optional(),
+  birthDate: z.coerce.date().optional(),
+  birthPlace: z.string().trim().max(120).optional(),
+  neph: z.string().trim().max(40).optional(),
+  filiere: z.string().trim().max(60).optional(),
+  financingType: z.string().trim().max(40).optional()
 });
+
+const civilFields = {
+  civility: z.string().trim().max(10).optional(),
+  birthName: z.string().trim().max(120).optional(),
+  birthDate: z.coerce.date().optional(),
+  birthPlace: z.string().trim().max(120).optional(),
+  neph: z.string().trim().max(40).optional(),
+  filiere: z.string().trim().max(60).optional(),
+  financingType: z.string().trim().max(40).optional(),
+  registeredAt: z.coerce.date().optional()
+};
 
 const studentUpdateSchema = z.object({
   fileStatus: fileStatusEnum.optional(),
@@ -59,7 +77,8 @@ const studentUpdateSchema = z.object({
   consumedHours: z.number().int().nonnegative().optional(),
   examDate: z.coerce.date().optional(),
   formationId: z.string().trim().optional(),
-  agencyId: z.string().trim().optional()
+  agencyId: z.string().trim().optional(),
+  ...civilFields
 });
 
 export function createStudentsRouter(repository: LodenRepository, config: ApiConfig) {
@@ -118,7 +137,15 @@ export function createStudentsRouter(repository: LodenRepository, config: ApiCon
       const created = await repository.createStudent({
         userId: user.id,
         formationId: body.formationId,
-        purchasedHours: body.purchasedHours
+        purchasedHours: body.purchasedHours,
+        civility: body.civility,
+        birthName: body.birthName,
+        birthDate: body.birthDate,
+        birthPlace: body.birthPlace,
+        neph: body.neph,
+        filiere: body.filiere,
+        financingType: body.financingType,
+        registeredAt: new Date()
       });
       const student = body.agencyId
         ? await repository.updateStudent(created.id, { agencyId: body.agencyId })

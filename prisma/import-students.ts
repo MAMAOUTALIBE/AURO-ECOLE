@@ -55,6 +55,14 @@ function parseCsv(content: string): Record<string, string>[] {
   });
 }
 
+function parseFrDate(value?: string): Date | null {
+  const m = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec((value ?? "").trim());
+  if (!m) return null;
+  // Minuit UTC pour éviter tout décalage de fuseau (date de naissance/inscription fixe).
+  const d = new Date(Date.UTC(Number(m[3]), Number(m[2]) - 1, Number(m[1])));
+  return Number.isNaN(d.getTime()) ? null : d;
+}
+
 function buildAddress(r: Record<string, string>): string | null {
   const street = [r["Numéro de voie"], r["Type de voie"], r["Nom de voie"], r["Complément"]].filter(Boolean).join(" ").trim();
   const city = [r["Code postal"], r["Ville"]].filter(Boolean).join(" ").trim();
@@ -103,6 +111,7 @@ async function main() {
 
   let students = 0;
   let leads = 0;
+  let updated = 0;
   let skipped = 0;
   let errors = 0;
 
@@ -138,20 +147,32 @@ async function main() {
       }
 
       if (existingUserEmails.has(email)) {
-        skipped += 1;
+        // Backfill : l'élève existe déjà → on complète les champs structurés manquants depuis le CSV.
+        const existingUser = await prisma.user.findUnique({ where: { email } });
+        const existingStudent = existingUser ? await prisma.student.findUnique({ where: { userId: existingUser.id } }) : null;
+        if (existingStudent) {
+          const patch: Record<string, unknown> = {};
+          if (!existingStudent.birthName && r["Nom"]) patch.birthName = r["Nom"];
+          if (!existingStudent.birthDate && parseFrDate(r["Date de naissance"])) patch.birthDate = parseFrDate(r["Date de naissance"]);
+          if (!existingStudent.birthPlace && r["Lieu de naissance"]) patch.birthPlace = r["Lieu de naissance"];
+          if (!existingStudent.neph && r["Numéro NEPH"]) patch.neph = r["Numéro NEPH"];
+          if (!existingStudent.filiere && r["Filière"]) patch.filiere = r["Filière"];
+          if (!existingStudent.registeredAt && parseFrDate(r["Date d'inscription apprenant"])) patch.registeredAt = parseFrDate(r["Date d'inscription apprenant"]);
+          if (!existingStudent.formationId) {
+            const fid = mapFormationId(r["Formation"]);
+            if (fid) patch.formationId = fid;
+          }
+          if (!existingUser?.address) {
+            const addr = buildAddress(r);
+            if (addr) await prisma.user.update({ where: { id: existingUser!.id }, data: { address: addr } });
+          }
+          if (Object.keys(patch).length) {
+            await prisma.student.update({ where: { id: existingStudent.id }, data: patch });
+            updated += 1;
+          } else skipped += 1;
+        } else skipped += 1;
         continue;
       }
-      const notes = [
-        "Importé depuis l'export apprenants.",
-        r["Numéro NEPH"] ? `NEPH : ${r["Numéro NEPH"]}` : null,
-        r["Date de naissance"] ? `Né(e) le ${r["Date de naissance"]}${r["Lieu de naissance"] ? ` à ${r["Lieu de naissance"]}` : ""}` : null,
-        r["Filière"] ? `Filière : ${r["Filière"]}` : null,
-        `Formation déclarée : ${r["Formation"] || "—"}`,
-        r["Date d'inscription apprenant"] ? `Inscrit le ${r["Date d'inscription apprenant"]}` : null
-      ]
-        .filter(Boolean)
-        .join("\n");
-
       const user = await prisma.user.create({
         data: {
           firstName,
@@ -170,7 +191,14 @@ async function main() {
           formationId: mapFormationId(r["Formation"]),
           fileStatus: "EN_COURS",
           agencyId: agency?.id ?? null,
-          internalNotes: notes
+          // État civil structuré (style Kréno2)
+          birthName: r["Nom"] || null,
+          birthDate: parseFrDate(r["Date de naissance"]),
+          birthPlace: r["Lieu de naissance"] || null,
+          neph: r["Numéro NEPH"] || null,
+          filiere: r["Filière"] || null,
+          registeredAt: parseFrDate(r["Date d'inscription apprenant"]),
+          internalNotes: `Importé depuis l'export apprenants. Formation déclarée : ${r["Formation"] || "—"}.`
         }
       });
       existingUserEmails.add(email);
@@ -181,7 +209,7 @@ async function main() {
     }
   }
 
-  console.log(`[import] Terminé — élèves créés: ${students}, prospects/leads: ${leads}, ignorés (déjà présents): ${skipped}, erreurs: ${errors}`);
+  console.log(`[import] Terminé — élèves créés: ${students}, complétés (backfill): ${updated}, prospects/leads: ${leads}, ignorés: ${skipped}, erreurs: ${errors}`);
 }
 
 main()
