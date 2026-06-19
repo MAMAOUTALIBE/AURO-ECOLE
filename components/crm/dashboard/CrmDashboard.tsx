@@ -19,7 +19,8 @@ import {
   Star,
   Target,
   UserPlus,
-  Users
+  Users,
+  Zap
 } from "lucide-react";
 import { ACTIVE_AGENCY_KEY } from "@/components/AgencySwitcher";
 import { Badge, Card, EmptyState, KpiCard, SectionHeader, Skeleton } from "@/components/crm/ui";
@@ -44,6 +45,21 @@ type Stats = {
   cpf: { pending: number };
   reviews: { pending: number };
   exams: { total: number; upcoming: number; passRate: number | null };
+};
+type Cockpit = {
+  kpis: {
+    conversationsToday: number;
+    conversationsOpen: number;
+    rdvPendingConfirmation: number;
+    rdvToday: number;
+    rdvToFollowUp: number;
+    hotLeads: number;
+    tasksOverdue: number;
+    tasksDueToday: number;
+  };
+  funnel: { chatbotLeads: number; rdv: number; inscrits: number; leadToRdvRate: number | null; rdvToInscritRate: number | null };
+  toProcess: { type: string; label: string; detail: string; href: string; priority: "urgent" | "high" | "normal" }[];
+  relanceSuggestions: unknown[];
 };
 type Lead = { id: string; fullName: string; status: string; source?: string | null; interest?: string | null; createdAt: string };
 type Payment = { id: string; amountCents: number; status: string; createdAt: string; paidAt?: string | null };
@@ -105,6 +121,7 @@ export function CrmDashboard() {
   const [serviceDown, setServiceDown] = useState(false);
   const [firstName, setFirstName] = useState("");
   const [stats, setStats] = useState<Stats | null>(null);
+  const [cockpit, setCockpit] = useState<Cockpit | null>(null);
   const [leads, setLeads] = useState<Lead[]>([]);
   const [payments, setPayments] = useState<Payment[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -157,9 +174,10 @@ export function CrmDashboard() {
 
     (async () => {
       try {
-        const [meRes, statsData, leadsRes, paymentsRes, reviewsRes, bookingsRes, studentsRes] = await Promise.all([
+        const [meRes, statsData, cockpitRes, leadsRes, paymentsRes, reviewsRes, bookingsRes, studentsRes] = await Promise.all([
           fetch(`/api/auth/me`).then((r) => (r.ok ? r.json() : null)).catch(() => null),
           fetchStats(),
+          fetch(`/api/admin/cockpit${q}`).then((r) => (r.ok ? r.json() : null)).catch(() => null),
           list(`/api/leads${q}`),
           list(`/api/payments${q}`),
           list(`/api/reviews?includeUnpublished=true`),
@@ -169,6 +187,7 @@ export function CrmDashboard() {
         if (cancelled) return;
         if (meRes?.user?.firstName) setFirstName(meRes.user.firstName as string);
         if (statsData) setStats(statsData);
+        if (cockpitRes?.data) setCockpit(cockpitRes.data as Cockpit);
         setLeads(leadsRes);
         setPayments(paymentsRes);
         setReviews(reviewsRes);
@@ -355,6 +374,33 @@ export function CrmDashboard() {
           ))}
         </div>
       </div>
+
+      {/* ZONE 0 — COPILOTE : priorités opérationnelles du jour */}
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <KpiCard icon={CalendarClock} href="/admin/rendez-vous?source=chatbot" label="RDV à confirmer" value={loading ? "" : nf(cockpit?.kpis.rdvPendingConfirmation ?? 0)} loading={loading} accent="amber" subLabel={`${cockpit?.kpis.rdvToday ?? 0} aujourd'hui`} />
+        <KpiCard icon={Bot} href="/admin/rendez-vous?source=chatbot" label="Conversations du jour" value={loading ? "" : nf(cockpit?.kpis.conversationsToday ?? 0)} loading={loading} accent="sky" subLabel={`${cockpit?.kpis.conversationsOpen ?? 0} ouvertes`} />
+        <KpiCard icon={Target} href="/admin/relances" label="Prospects chauds" value={loading ? "" : nf(cockpit?.kpis.hotLeads ?? 0)} loading={loading} accent="rose" />
+        <KpiCard icon={Inbox} href="/admin/relances" label="Tâches en retard" value={loading ? "" : nf(cockpit?.kpis.tasksOverdue ?? 0)} loading={loading} accent="indigo" subLabel={`${cockpit?.kpis.tasksDueToday ?? 0} pour aujourd'hui`} />
+      </div>
+
+      {!loading && (cockpit?.toProcess.length ?? 0) > 0 ? (
+        <Card className="p-5">
+          <SectionHeader title="À traiter maintenant" subtitle="File priorisée par le copilote : RDV à confirmer, relances, conversations." icon={Zap} action={<Link href="/admin/relances" className="text-xs font-semibold text-loden-700 hover:underline">Relances</Link>} />
+          <ul className="mt-4 grid gap-2 md:grid-cols-2">
+            {cockpit!.toProcess.map((it, i) => (
+              <li key={`${it.type}-${i}`}>
+                <Link href={it.href} className="flex items-center gap-3 rounded-xl border border-slate-200/70 px-3 py-2.5 transition hover:border-loden-200 hover:bg-loden-50/40">
+                  <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${it.priority === "urgent" ? "bg-rose-500" : it.priority === "high" ? "bg-amber-500" : "bg-sky-400"}`} aria-hidden="true" />
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-sm font-medium text-loden-ink">{it.label}</span>
+                    <span className="block truncate text-xs text-loden-muted">{it.detail}</span>
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </Card>
+      ) : null}
 
       {/* ZONE 1 — KPIs (cartes compactes : 1 col mobile · 2 tablette · 4 desktop) */}
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
