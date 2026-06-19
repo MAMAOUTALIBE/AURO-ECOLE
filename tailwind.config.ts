@@ -8,6 +8,10 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      // Point de rupture pour les très grands écrans (au-delà du 2xl=1536px de Tailwind).
+      screens: {
+        "3xl": "1920px"
+      },
       colors: {
         loden: {
           50: "#ecfeff",
