@@ -25,7 +25,8 @@ const paymentStatusEnum = z.enum(["EN_ATTENTE", "PAYE", "ECHOUE", "REMBOURSE", "
 
 const listQuerySchema = z.object({
   status: paymentStatusEnum.optional(),
-  agencyId: z.string().trim().optional()
+  agencyId: z.string().trim().optional(),
+  userId: z.string().trim().optional()
 });
 
 const recordSchema = z.object({

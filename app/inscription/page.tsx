@@ -7,7 +7,8 @@ import { StudentRegistrationForm } from "@/components/StudentRegistrationForm";
 
 export const metadata: Metadata = {
   title: "Inscription",
-  description: "Créer son compte élève LODENE et démarrer une formation permis avec suivi personnalisé."
+  description: "Créer son compte élève LODENE et démarrer une formation permis avec suivi personnalisé.",
+  alternates: { canonical: "/inscription" }
 };
 
 export default function InscriptionPage() {

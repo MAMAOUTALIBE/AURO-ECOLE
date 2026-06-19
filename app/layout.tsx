@@ -6,6 +6,7 @@ import { HeaderTop } from "@/components/HeaderTop";
 import { SiteChrome } from "@/components/SiteChrome";
 import { companyInfo, contactInfo, socialLinks } from "@/data/site";
 import { safeJsonLd } from "@/lib/json-ld";
+import { SITE_URL, SITE_NAME, OG_IMAGE, absoluteUrl } from "@/lib/seo";
 import {
   defaultNavCtas,
   defaultNavPrimary,
@@ -16,7 +17,7 @@ import {
 import "./globals.css";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://loden-autoecole.fr"),
+  metadataBase: new URL(SITE_URL),
   title: {
     default: "LODENE Auto-École | Permis nouvelle génération",
     template: "%s | LODENE Auto-École"
@@ -34,8 +35,8 @@ export const metadata: Metadata = {
   openGraph: {
     title: "LODENE Auto-École",
     description: "Passe ton permis avec une auto-école premium, flexible et rassurante.",
-    url: "https://loden-autoecole.fr",
-    siteName: "LODENE Auto-École",
+    url: SITE_URL,
+    siteName: SITE_NAME,
     images: [
       {
         url: "/loden-hero.jpg",
@@ -47,11 +48,22 @@ export const metadata: Metadata = {
     locale: "fr_FR",
     type: "website"
   },
+  twitter: {
+    card: "summary_large_image",
+    title: "LODENE Auto-École",
+    description: "Passe ton permis avec une auto-école premium, flexible et rassurante.",
+    images: ["/loden-hero.jpg"]
+  },
   icons: {
     icon: "/favicon.svg",
     shortcut: "/favicon.svg",
     apple: "/favicon.svg"
   },
+  // Vérification Google Search Console : renseigner NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION
+  // (le code fourni par GSC) puis redéployer — la balise meta est alors injectée.
+  ...(process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION
+    ? { verification: { google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION } }
+    : {}),
   manifest: "/manifest.webmanifest"
 };
 
@@ -67,9 +79,11 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
   const organizationSchema = {
     "@context": "https://schema.org",
     "@type": ["LocalBusiness", "DrivingSchool"],
-    name: "LODENE Auto-École",
-    url: "https://loden-autoecole.fr",
-    image: "https://loden-autoecole.fr/loden-hero.jpg",
+    "@id": `${SITE_URL}/#organization`,
+    name: SITE_NAME,
+    url: SITE_URL,
+    image: OG_IMAGE,
+    logo: absoluteUrl("/favicon.svg"),
     ...(contactInfo.phone ? { telephone: contactInfo.phone } : {}),
     ...(contactInfo.email ? { email: contactInfo.email } : {}),
     address: {

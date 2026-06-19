@@ -13,6 +13,16 @@ import { conflict, notFound } from "../../shared/http-error";
 import { publicUser } from "../../http/request-context";
 import { emailSchema, phoneSchema, validateBody, validateQuery } from "../../shared/validation";
 
+// Mot de passe temporaire lisible (communicable au téléphone) mais à forte entropie :
+// préfixe de marque + 10 caractères tirés d'un alphabet sans caractères ambigus (0/O/1/l/I).
+function generateTempPassword() {
+  const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
+  const bytes = randomBytes(10);
+  let out = "";
+  for (let i = 0; i < bytes.length; i += 1) out += alphabet[bytes[i] % alphabet.length];
+  return `Loden-${out}`;
+}
+
 const fileStatusEnum = z.enum([
   "NOUVEAU",
   "INCOMPLET",
@@ -202,6 +212,32 @@ export function createStudentsRouter(repository: LodenRepository, config: ApiCon
       const student = await repository.updateStudent(id, studentFields);
       const user = await repository.findUserById(existing.userId);
       res.json({ data: { ...student, user: user ? publicUser(user) : null } });
+    })
+  );
+
+  // Réinitialise le mot de passe de l'élève : génère un mot de passe temporaire,
+  // le renvoie UNE fois au staff (le bureau le communique à l'élève). Jamais journalisé.
+  router.post(
+    "/:id/reset-password",
+    authenticate(repository, config.JWT_SECRET),
+    requirePermission("students.manage"),
+    asyncHandler(async (req, res) => {
+      const id = String(req.params.id);
+      const student = await repository.findStudentById(id);
+      if (!student) throw notFound("Élève introuvable");
+      await assertAgencyAccess(repository, req as AuthenticatedRequest, student.agencyId);
+      const user = await repository.findUserById(student.userId);
+      if (!user) throw notFound("Compte introuvable");
+      const tempPassword = generateTempPassword();
+      const passwordHash = await bcrypt.hash(tempPassword, 12);
+      await repository.updateUser(user.id, { passwordHash });
+      void repository.createAuditLog({
+        userId: (req as AuthenticatedRequest).user?.id ?? null,
+        action: "student.reset_password",
+        entityType: "Student",
+        entityId: student.id
+      });
+      res.json({ data: { tempPassword, email: user.email } });
     })
   );
 

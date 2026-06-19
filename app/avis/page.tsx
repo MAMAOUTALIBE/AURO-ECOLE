@@ -6,10 +6,12 @@ import { ReviewsGrid } from "@/components/ReviewsGrid";
 import { SectionHeader } from "@/components/SectionHeader";
 import { testimonials } from "@/data/site";
 import { safeJsonLd } from "@/lib/json-ld";
+import { SITE_NAME, SITE_URL, absoluteUrl } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: "Avis",
-  description: "Retours d'expérience des élèves de LODENE Auto-École."
+  description: "Retours d'expérience des élèves de LODENE Auto-École.",
+  alternates: { canonical: "/avis" }
 };
 
 export default function AvisPage() {
@@ -17,8 +19,9 @@ export default function AvisPage() {
   const reviewSchema = {
     "@context": "https://schema.org",
     "@type": "DrivingSchool",
-    name: "LODENE Auto-École",
-    url: "https://loden-autoecole.fr/avis",
+    "@id": `${SITE_URL}/#organization`,
+    name: SITE_NAME,
+    url: absoluteUrl("/avis"),
     ...(testimonials.length > 0
       ? {
           review: testimonials.map((testimonial) => ({

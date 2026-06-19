@@ -7,7 +7,8 @@ import { formatDateFr, getPublishedContent } from "@/lib/content";
 
 export const metadata: Metadata = {
   title: "Blog",
-  description: "Conseils LODENE Auto-École pour choisir sa formation, financer son permis et préparer le code."
+  description: "Conseils LODENE Auto-École pour choisir sa formation, financer son permis et préparer le code.",
+  alternates: { canonical: "/blog" }
 };
 
 // Cartes de repli (affichées tant qu'aucun article n'est publié dans le CMS).

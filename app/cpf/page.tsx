@@ -8,7 +8,8 @@ import { getFaqEntries } from "@/lib/faq";
 
 export const metadata: Metadata = {
   title: "CPF et financement",
-  description: "Financer son permis avec le CPF, paiement en plusieurs fois, aides régionales et accompagnement administratif LODENE."
+  description: "Financer son permis avec le CPF, paiement en plusieurs fois, aides régionales et accompagnement administratif LODENE.",
+  alternates: { canonical: "/cpf" }
 };
 
 export default async function CpfPage() {

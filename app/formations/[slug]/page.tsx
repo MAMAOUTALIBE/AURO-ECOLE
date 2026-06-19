@@ -7,6 +7,7 @@ import { ArrowRight, BadgeCheck, CalendarCheck, CheckCircle2, Clock3, ShieldChec
 import { formations, productLineLabels } from "@/data/site";
 import { formatCurrency } from "@/lib/utils";
 import { safeJsonLd } from "@/lib/json-ld";
+import { SITE_NAME, SITE_URL, absoluteUrl } from "@/lib/seo";
 
 type PageProps = {
   params: Promise<{ slug: string }>;
@@ -26,9 +27,18 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     };
   }
 
+  const description = `${formation.description} Durée : ${formation.duration}. Tarif sur devis personnalisé.`;
+  const path = `/formations/${formation.slug}`;
   return {
     title: `${formation.title} à Conflans-Sainte-Honorine`,
-    description: `${formation.description} Durée : ${formation.duration}. Tarif sur devis personnalisé.`
+    description,
+    alternates: { canonical: path },
+    openGraph: {
+      title: `${formation.title} | LODENE Auto-École`,
+      description,
+      url: path,
+      type: "article"
+    }
   };
 }
 
@@ -50,8 +60,9 @@ export default async function FormationDetailPage({ params }: PageProps) {
     description: formation.description,
     provider: {
       "@type": ["LocalBusiness", "DrivingSchool"],
-      name: "LODENE Auto-École",
-      sameAs: "https://loden-autoecole.fr"
+      "@id": `${SITE_URL}/#organization`,
+      name: SITE_NAME,
+      sameAs: SITE_URL
     },
     // Pas de prix officiel confirmé -> on n'émet pas d'Offer chiffrée (tarif sur devis).
     ...(formation.price > 0
@@ -61,7 +72,7 @@ export default async function FormationDetailPage({ params }: PageProps) {
             price: formation.price,
             priceCurrency: "EUR",
             availability: "https://schema.org/InStock",
-            url: `https://loden-autoecole.fr/formations/${formation.slug}`
+            url: absoluteUrl(`/formations/${formation.slug}`)
           }
         }
       : {})

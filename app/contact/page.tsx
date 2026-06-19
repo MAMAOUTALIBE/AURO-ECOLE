@@ -8,7 +8,8 @@ import { contactInfo } from "@/data/site";
 
 export const metadata: Metadata = {
   title: "Contact",
-  description: "Contacter LODENE Auto-École, demander une inscription, écrire ou trouver le point de rendez-vous à Conflans-Sainte-Honorine."
+  description: "Contacter LODENE Auto-École, demander une inscription, écrire ou trouver le point de rendez-vous à Conflans-Sainte-Honorine.",
+  alternates: { canonical: "/contact" }
 };
 
 type ContactTile = { icon: LucideIcon; label: string; value: string; href?: string };

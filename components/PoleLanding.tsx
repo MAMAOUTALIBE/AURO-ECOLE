@@ -5,6 +5,7 @@ import { PageHero } from "@/components/PageHero";
 import { SectionHeader } from "@/components/SectionHeader";
 import { formations, poleLandings, productLineLabels } from "@/data/site";
 import { safeJsonLd } from "@/lib/json-ld";
+import { SITE_NAME, SITE_URL, absoluteUrl } from "@/lib/seo";
 
 // Page d'atterrissage d'un pôle professionnel (VTC / CACES) : hero, atouts,
 // catalogue filtré du pôle et appel au devis. Server component (SSG, bon pour le SEO).
@@ -23,11 +24,11 @@ export function PoleLanding({ pole }: { pole: "VTC" | "SST" | "LOGISTIQUE_SECURI
         "@type": "Course",
         name: formation.title,
         description: formation.description,
-        url: `https://loden-autoecole.fr/formations/${formation.slug}`,
+        url: absoluteUrl(`/formations/${formation.slug}`),
         provider: {
           "@type": ["LocalBusiness", "DrivingSchool"],
-          name: "LODENE Auto-École",
-          sameAs: "https://loden-autoecole.fr"
+          name: SITE_NAME,
+          sameAs: SITE_URL
         },
         offers: { "@type": "Offer", price: formation.price, priceCurrency: "EUR" }
       }

@@ -6,7 +6,8 @@ import { SectionHeader } from "@/components/SectionHeader";
 
 export const metadata: Metadata = {
   title: "À propos",
-  description: "Découvrez l'histoire, la mission, les valeurs et l'équipe de LODENE Auto-École."
+  description: "Découvrez l'histoire, la mission, les valeurs et l'équipe de LODENE Auto-École.",
+  alternates: { canonical: "/a-propos" }
 };
 
 export default function AboutPage() {

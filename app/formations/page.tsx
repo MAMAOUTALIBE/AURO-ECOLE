@@ -4,7 +4,8 @@ import { PageHero } from "@/components/PageHero";
 
 export const metadata: Metadata = {
   title: "Formations",
-  description: "Permis B manuel, automatique, accéléré, conduite accompagnée, code en ligne et perfectionnement avec LODENE."
+  description: "Permis B manuel, automatique, accéléré, conduite accompagnée, code en ligne et perfectionnement avec LODENE.",
+  alternates: { canonical: "/formations" }
 };
 
 export default function FormationsPage() {
