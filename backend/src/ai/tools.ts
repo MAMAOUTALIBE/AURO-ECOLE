@@ -2,6 +2,7 @@ import { z } from "zod";
 import type { ApiConfig } from "../config/env";
 import type { Permission } from "../domain/permissions";
 import type { LeadRecord } from "../domain/types";
+import { bookChatAppointment, listAppointmentSlots } from "../modules/chat/chat-booking";
 import type { LodenRepository } from "../repositories/loden-repository";
 import { notifyNewLead, sendEmail } from "../shared/mailer";
 import { sendSms } from "../shared/sms";
@@ -63,6 +64,18 @@ const appointmentArgs = leadArgs.extend({
 
 const quoteRequestArgs = leadArgs.extend({
   formation: z.string().trim().max(160).optional()
+});
+
+const bookSlotArgs = z.object({
+  slotId: z.string().trim().min(1),
+  fullName: z.string().trim().min(2).max(120),
+  email: z.string().trim().email().max(160),
+  phone: z.string().trim().min(6).max(40),
+  formation: z.string().trim().max(160).optional(),
+  objective: z.string().trim().max(160).optional(),
+  message: z.string().trim().max(1000).optional(),
+  consentContact: z.boolean().optional(),
+  consentWhatsApp: z.boolean().optional()
 });
 
 /**
@@ -354,6 +367,74 @@ export const publicTools: ToolEntry[] = [
         userId: ctx.actorUserId ?? null
       });
       return { ok: true, message: "Demande de devis enregistrée. Un conseiller préparera le devis et reviendra vers vous." };
+    }
+  },
+  {
+    def: {
+      type: "function",
+      function: {
+        name: "get_appointment_slots",
+        description:
+          "Liste les créneaux de rendez-vous RÉELLEMENT disponibles (id, date, heure, type). À appeler AVANT book_appointment_slot pour proposer des créneaux concrets à la personne.",
+        parameters: { type: "object", properties: {}, additionalProperties: false }
+      }
+    },
+    handler: async (_args, ctx) => {
+      const slots = await listAppointmentSlots(ctx.repository);
+      return { slots: slots.slice(0, 8) };
+    }
+  },
+  {
+    def: {
+      type: "function",
+      function: {
+        name: "book_appointment_slot",
+        description:
+          "Réserve un créneau de rendez-vous (DEMANDE, confirmée ensuite par un conseiller). Nécessite un slotId obtenu via get_appointment_slots, + nom complet, email, téléphone, et l'accord explicite de la personne. Crée le prospect + le RDV + alerte l'équipe et renvoie un lien WhatsApp.",
+        parameters: {
+          type: "object",
+          properties: {
+            slotId: { type: "string", description: "Identifiant du créneau (via get_appointment_slots)" },
+            fullName: { type: "string", description: "Nom complet" },
+            email: { type: "string" },
+            phone: { type: "string" },
+            formation: { type: "string", description: "Formation concernée" },
+            objective: { type: "string", description: "Objectif du RDV (ex: M'inscrire, Obtenir un devis)" },
+            message: { type: "string" },
+            consentContact: { type: "boolean", description: "La personne accepte d'être contactée" },
+            consentWhatsApp: { type: "boolean", description: "La personne accepte WhatsApp" }
+          },
+          required: ["slotId", "fullName", "email", "phone"],
+          additionalProperties: false
+        }
+      }
+    },
+    handler: async (args, ctx) => {
+      const parsed = bookSlotArgs.safeParse(args);
+      if (!parsed.success) return { ok: false, error: "slotId, nom complet, email et téléphone valides requis." };
+      const d = parsed.data;
+      const { firstName, lastName } = splitFullName(d.fullName);
+      try {
+        const result = await bookChatAppointment(ctx.repository, ctx.config, ctx.aiProvider, {
+          slotId: d.slotId,
+          firstName,
+          lastName,
+          email: d.email,
+          phone: d.phone,
+          formation: d.formation ?? "À préciser",
+          objective: d.objective ?? "Être rappelé",
+          message: d.message,
+          consentContact: d.consentContact ?? true,
+          consentWhatsApp: d.consentWhatsApp ?? false
+        });
+        return {
+          ok: true,
+          message: `Rendez-vous demandé pour le ${result.appointment.date} à ${result.appointment.time}. Un conseiller LODENE confirmera le créneau.`,
+          whatsappUrl: result.whatsapp.url
+        };
+      } catch (error) {
+        return { ok: false, error: error instanceof Error ? error.message : "Réservation impossible. Proposez un autre créneau." };
+      }
     }
   }
 ];
@@ -784,6 +865,20 @@ const byName = (name: string) => publicTools.find((tool) => tool.def.function.na
  * création de prospect + recherche élève + réservation réelle. Le routeur filtre
  * cette liste par les permissions du rôle connecté (RBAC).
  */
+/**
+ * Outils de l'agent PUBLIC conversationnel : sous-ensemble FOCALISÉ pour limiter
+ * la taille du prompt (coût/tokens) tout en couvrant les actions clés : connaissance,
+ * proposition + réservation de créneau, lead, devis, WhatsApp. La liste complète des
+ * formations/tarifs passe par search_knowledge plutôt que d'alourdir chaque requête.
+ */
+export const publicAgentTools: ToolEntry[] = [
+  byName("search_knowledge"),
+  byName("book_appointment_slot"),
+  byName("create_lead"),
+  byName("create_quote_request"),
+  byName("generate_whatsapp_link")
+];
+
 export const crmTools: ToolEntry[] = [
   byName("search_knowledge"),
   byName("get_formations"),
@@ -791,6 +886,8 @@ export const crmTools: ToolEntry[] = [
   byName("get_agencies"),
   byName("get_available_slots"),
   byName("generate_whatsapp_link"),
+  byName("get_appointment_slots"),
+  byName("book_appointment_slot"),
   byName("create_lead"),
   byName("create_quote_request"),
   findLeadTool,
