@@ -24,6 +24,56 @@ function splitFullName(value: string): { firstName: string; lastName: string } {
   return { firstName: parts[0], lastName: parts.slice(1).join(" ") };
 }
 
+function normalizeText(value: string): string {
+  return value.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").trim();
+}
+
+// Détecte les valeurs d'exemple que le modèle pourrait inventer au lieu de demander
+// les vraies coordonnées (« Prénom Nom », « John Doe », « votre nom »…). Garde-fou
+// déterministe : on ne crée jamais de lead/RDV avec une identité factice.
+const PLACEHOLDER_NAMES = new Set([
+  "prenom nom", "nom prenom", "prenom", "nom", "votre nom", "votre prenom", "nom complet",
+  "nom et prenom", "prenom et nom", "nom du client", "prenom du client", "le client", "client",
+  "jean dupont", "john doe", "jane doe", "marie martin", "test test", "test", "essai",
+  "exemple", "example", "anonyme", "inconnu", "na", "n/a", "xxx", "aaa", "abc"
+]);
+const PLACEHOLDER_NAME_TOKENS = new Set(["prenom", "firstname", "lastname", "exemple", "example", "placeholder", "xxx"]);
+
+function looksLikePlaceholderName(value: string): boolean {
+  const n = normalizeText(value);
+  if (n.length < 2) return true;
+  if (PLACEHOLDER_NAMES.has(n)) return true;
+  if (/^<.*>$/.test(n) || /\[.*\]/.test(n)) return true; // <nom>, [prénom]
+  if (n.includes("votre nom") || n.includes("votre prenom")) return true;
+  return n.split(/\s+/).some((token) => PLACEHOLDER_NAME_TOKENS.has(token));
+}
+
+const PLACEHOLDER_EMAIL_LOCAL = new Set([
+  "exemple", "example", "votre", "nom", "prenom", "email", "user", "client", "monemail", "votremail", "votreemail"
+]);
+
+function looksLikePlaceholderEmail(value: string): boolean {
+  const n = normalizeText(value);
+  const [local, domain = ""] = n.split("@");
+  if (!local || !domain) return false;
+  if (PLACEHOLDER_EMAIL_LOCAL.has(local)) return true;
+  // Domaines manifestement factices qu'un vrai prospect n'utilise pas (on laisse
+  // passer l'anglais example.com, convention de test/RFC, mais pas exemple.fr).
+  return /^(email|domaine|domain|votremail|exemple|votre)\./.test(domain);
+}
+
+/** Garde-fou partagé : refuse une identité factice avant toute création (lead/devis/RDV). */
+function rejectPlaceholderIdentity(fullName: string, email?: string): { ok: false; error: string } | null {
+  if (looksLikePlaceholderName(fullName) || (email ? looksLikePlaceholderEmail(email) : false)) {
+    return {
+      ok: false,
+      error:
+        "Coordonnées non valides : demande à la personne son VRAI nom complet et son email avant toute création. N'utilise jamais de valeurs d'exemple (« Prénom Nom », « exemple@email.fr »)."
+    };
+  }
+  return null;
+}
+
 const CATEGORY_LABELS: Record<string, string> = {
   AUTO_ECOLE: "Auto-école / Permis B",
   VTC: "VTC",
@@ -197,6 +247,8 @@ export const publicTools: ToolEntry[] = [
     handler: async (args, ctx) => {
       const parsed = leadArgs.safeParse(args);
       if (!parsed.success) return { ok: false, error: "Nom et email valides requis." };
+      const placeholder = rejectPlaceholderIdentity(parsed.data.fullName, parsed.data.email);
+      if (placeholder) return placeholder;
       const { firstName, lastName } = splitFullName(parsed.data.fullName);
       const lead = await ctx.repository.createLead({
         fullName: parsed.data.fullName,
@@ -242,6 +294,8 @@ export const publicTools: ToolEntry[] = [
       const parsed = appointmentArgs.safeParse(args);
       if (!parsed.success) return { ok: false, error: "Nom et email valides requis pour la demande de rendez-vous." };
       const d = parsed.data;
+      const placeholder = rejectPlaceholderIdentity(d.fullName, d.email);
+      if (placeholder) return placeholder;
       const notes = [d.message, d.desiredDate ? `Créneau souhaité: ${d.desiredDate}` : null, d.agency ? `Agence: ${d.agency}` : null, d.formation ? `Formation: ${d.formation}` : null]
         .filter(Boolean)
         .join(" | ");
@@ -291,14 +345,16 @@ export const publicTools: ToolEntry[] = [
       }
     },
     handler: async (args, ctx) => {
-      const fullName = String(args.fullName ?? "").trim();
+      const rawName = String(args.fullName ?? "").trim();
+      // On ignore un nom factice (« Prénom Nom ») plutôt que de l'écrire dans le message.
+      const fullName = looksLikePlaceholderName(rawName) ? "" : rawName;
       const formation = String(args.formation ?? "").trim();
       const date = String(args.date ?? "").trim();
       const time = String(args.time ?? "").trim();
       const custom = String(args.message ?? "").trim();
       const text =
         custom ||
-        (formation && date && time && fullName
+        (formation && date && time
           ? buildWhatsAppAppointmentText({ formation, date, time, fullName })
           : `Bonjour LODENE, je souhaite des informations${formation ? ` sur la formation ${formation}` : ""}.`);
       const company = await ctx.repository.getCompanyInfo();
@@ -332,6 +388,8 @@ export const publicTools: ToolEntry[] = [
       const parsed = quoteRequestArgs.safeParse(args);
       if (!parsed.success) return { ok: false, error: "Nom et email valides requis pour la demande de devis." };
       const d = parsed.data;
+      const placeholder = rejectPlaceholderIdentity(d.fullName, d.email);
+      if (placeholder) return placeholder;
       const subject = d.formation ?? d.interest ?? "formation à préciser";
       const notes = ["Demande de devis", d.formation ? `Formation: ${d.formation}` : null, d.message]
         .filter(Boolean)
@@ -413,6 +471,13 @@ export const publicTools: ToolEntry[] = [
       const parsed = bookSlotArgs.safeParse(args);
       if (!parsed.success) return { ok: false, error: "slotId, nom complet, email et téléphone valides requis." };
       const d = parsed.data;
+      if (looksLikePlaceholderName(d.fullName) || looksLikePlaceholderEmail(d.email)) {
+        return {
+          ok: false,
+          error:
+            "Coordonnées non valides : demande à la personne son VRAI nom complet, son email et son téléphone avant de réserver. N'utilise jamais de valeurs d'exemple (« Prénom Nom », « exemple@email.fr »)."
+        };
+      }
       const { firstName, lastName } = splitFullName(d.fullName);
       try {
         const result = await bookChatAppointment(ctx.repository, ctx.config, ctx.aiProvider, {

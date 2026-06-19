@@ -14,8 +14,11 @@ function normalizePhone(phone: string) {
   return digits;
 }
 
-export function buildWhatsAppAppointmentText(input: { formation: string; date: string; time: string; fullName: string }) {
-  return `Bonjour LODENE, je souhaite confirmer mon rendez-vous pour ${input.formation} le ${input.date} à ${input.time}. Mon nom est ${input.fullName}.`;
+export function buildWhatsAppAppointmentText(input: { formation: string; date: string; time: string; fullName?: string }) {
+  const base = `Bonjour LODENE, je souhaite confirmer mon rendez-vous pour ${input.formation} le ${input.date} à ${input.time}.`;
+  const name = input.fullName?.trim();
+  // On n'ajoute « Mon nom est … » que si un vrai nom est fourni (jamais un placeholder).
+  return name ? `${base} Mon nom est ${name}.` : base;
 }
 
 export function buildWhatsAppUrl(config: ApiConfig, phone: string, text: string) {

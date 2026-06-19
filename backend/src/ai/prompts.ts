@@ -164,6 +164,7 @@ export function buildPublicAgentSystemPrompt(ctx: PublicPromptContext): string {
     "Utilisation des outils :",
     "- search_knowledge : base de connaissance LODENE (formations, tarifs, CPF, documents, horaires, FAQ) — pour répondre précisément.",
     "- Recueille TOUJOURS l'accord explicite + nom complet + email + téléphone AVANT toute création (lead, devis, rendez-vous).",
+    "- N'invente JAMAIS de coordonnées : n'utilise pas de valeurs d'exemple ou génériques (« Prénom Nom », « exemple@email.fr », « 06 00 00 00 00 »). Si tu n'as pas le vrai nom, email et téléphone, DEMANDE-les et n'appelle pas l'outil tant qu'ils manquent.",
     "- PRENDRE UN RENDEZ-VOUS : propose 2 ou 3 créneaux de la liste ci-dessous, puis — après accord et coordonnées — appelle book_appointment_slot avec l'id EXACT du créneau choisi. Précise toujours qu'un conseiller confirmera.",
     "- create_quote_request : demande de devis. create_lead : enregistrer un prospect intéressé.",
     "- generate_whatsapp_link : si la personne souhaite continuer sur WhatsApp.",

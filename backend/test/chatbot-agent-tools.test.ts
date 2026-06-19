@@ -63,6 +63,32 @@ describe("outils de réservation conversationnelle", () => {
     expect(res.error).toBeTruthy();
   });
 
+  it("book_appointment_slot refuse une identité factice (« Prénom Nom ») sans créer de RDV", async () => {
+    const slots = (await tool("get_appointment_slots").handler({}, ctx)) as { slots: { id: string }[] };
+    const slotId = slots.slots[0].id;
+
+    const res = (await tool("book_appointment_slot").handler(
+      { slotId, fullName: "Prénom Nom", email: "prenom.nom@example.com", phone: "0612345678", formation: "Permis B" },
+      ctx
+    )) as { ok: boolean; error?: string };
+    expect(res.ok).toBe(false);
+    expect(res.error).toMatch(/vrai nom|exemple/i);
+
+    // Aucun lead ni RDV ne doit avoir été créé.
+    expect((await repository.listLeads()).length).toBe(0);
+    expect((await repository.listChatAppointments()).length).toBe(0);
+  });
+
+  it("generate_whatsapp_link ignore un nom factice dans le texte prérempli", async () => {
+    const res = (await tool("generate_whatsapp_link").handler(
+      { fullName: "Prénom Nom", formation: "Permis B", date: "samedi 20 juin", time: "10:00" },
+      ctx
+    )) as { url: string; message: string };
+    expect(res.message).not.toMatch(/Prénom Nom/);
+    expect(res.message).not.toMatch(/Mon nom est/);
+    expect(res.message).toContain("Permis B");
+  });
+
   it("get_appointment_slots et book_appointment_slot sont publics (sans permission)", () => {
     expect(tool("get_appointment_slots").permission).toBeUndefined();
     expect(tool("book_appointment_slot").permission).toBeUndefined();
