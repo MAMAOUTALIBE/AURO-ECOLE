@@ -4,8 +4,9 @@ import { z } from "zod";
 import { runAgent } from "../../ai/agent";
 import { buildKnowledgeBlock } from "../../ai/knowledge";
 import { sanitizeAiOutput } from "../../ai/safety";
-import { buildCompactPublicAiPrompt, buildPublicFallbackReply } from "../../ai/public-fallback";
-import { crmTools, publicTools } from "../../ai/tools";
+import { buildPublicFallbackReply } from "../../ai/public-fallback";
+import { crmTools, publicAgentTools } from "../../ai/tools";
+import { listAppointmentSlots } from "../chat/chat-booking";
 import type { AiMessage, AiProvider } from "../../ai/types";
 import {
   LEAD_SCORE_SYSTEM,
@@ -137,62 +138,26 @@ export function createAiRouter(repository: LodenRepository, config: ApiConfig, a
         });
         return;
       }
+      const availableSlots = await listAppointmentSlots(repository);
       const systemPrompt = buildPublicAgentSystemPrompt({
         formations,
         pricingPlans,
         agencies,
         contactPhone: company.phone ?? CONTACT_PHONE,
         company,
-        knowledge
+        knowledge,
+        availableSlots
       });
       const userMessages: AiMessage[] = body.messages.map((m) =>
         m.role === "assistant" ? { role: "assistant", content: m.content } : { role: "user", content: m.content }
       );
-      if (ai.name === "groq") {
-        try {
-          const reply = await ai.complete(
-            [
-              {
-                role: "system",
-                content: buildCompactPublicAiPrompt({
-                  formations,
-                  pricingPlans,
-                  agencies,
-                  company: companyInfo,
-                  contactPhone: company.phone ?? CONTACT_PHONE,
-                  knowledge
-                })
-              },
-              ...userMessages
-            ],
-            { temperature: 0.3, maxTokens: 260 }
-          );
-          res.json({ data: { reply: sanitizeAiOutput(reply, config) } });
-          return;
-        } catch (error) {
-          console.error("[ai] chat compact échec:", error instanceof Error ? error.message : error);
-          res.json({
-            data: {
-              reply: buildPublicFallbackReply({
-                messages: body.messages,
-                formations,
-                pricingPlans,
-                agencies,
-                company: companyInfo,
-                contactPhone: company.phone ?? CONTACT_PHONE
-              }),
-              mode: "fallback"
-            }
-          });
-          return;
-        }
-      }
       try {
         const reply = await runAgent(ai, {
           systemPrompt,
           userMessages,
-          tools: publicTools,
-          context: { repository, config, scope: "public", aiProvider: ai }
+          tools: publicAgentTools,
+          context: { repository, config, scope: "public", aiProvider: ai },
+          maxSteps: 3
         });
         res.json({ data: { reply } });
       } catch (error) {

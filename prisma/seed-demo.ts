@@ -39,16 +39,16 @@ function demoOnly(rows: unknown[] | undefined): Record<string, unknown>[] {
   return ((rows ?? []) as Record<string, unknown>[]).filter((r) => typeof r?.id === "string" && (r.id as string).startsWith("demo-"));
 }
 
-type Delegate = { createMany: (a: { data: unknown[]; skipDuplicates: boolean }) => Promise<{ count: number }> };
+type Delegate = { createMany(args: { data: unknown[]; skipDuplicates: boolean }): Promise<{ count: number }> };
 
-async function insert(name: string, modelName: string, delegate: Delegate, rows: unknown[] | undefined) {
+async function insert(name: string, modelName: string, delegate: unknown, rows: unknown[] | undefined) {
   const fields = scalarFields(modelName);
   const data = demoOnly(rows).map((r) => pick(r, fields));
   if (!data.length) {
     console.log(`- ${name}: rien à insérer`);
     return;
   }
-  const res = await delegate.createMany({ data, skipDuplicates: true });
+  const res = await (delegate as Delegate).createMany({ data, skipDuplicates: true });
   console.log(`- ${name}: +${res.count}/${data.length}`);
 }
 

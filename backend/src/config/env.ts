@@ -41,7 +41,8 @@ const envSchema = z.object({
   WHATSAPP_TEMPLATE_APPOINTMENT_CONFIRMATION: z.string().optional(),
   // IA (optionnel). Sans GROQ_API_KEY, l'IA renvoie un message clair (désactivée).
   AI_PROVIDER: z.string().default("groq"),
-  AI_MODEL: z.string().default("llama-3.1-8b-instant"),
+  // 70B requis pour un tool-calling fiable (le 8B formate mal les appels d'outils).
+  AI_MODEL: z.string().default("llama-3.3-70b-versatile"),
   GROQ_API_KEY: z.string().optional(),
   // SMS (optionnel). Sans SMS_API_KEY, les SMS passent en log.
   SMS_API_KEY: z.string().optional(),
