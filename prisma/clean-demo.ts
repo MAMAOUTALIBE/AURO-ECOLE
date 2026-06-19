@@ -1,47 +1,45 @@
 import { PrismaClient } from "@prisma/client";
 
-// Supprime TOUTES les données de démonstration (à lancer avant la mise en production).
-// - Données CRM démo : enregistrements dont l'id commence par "demo-crm-".
-// - Élèves démo : comptes dont l'email se termine par "@lodene-demo.fr" (cascade).
-// Les données réelles (catalogue officiel, société, vrais comptes) ne sont PAS touchées.
-// Lancer : npm run db:clean-demo   (ou npx tsx --env-file=.env prisma/clean-demo.ts)
+// Supprime TOUTES les données de démonstration insérées par `npm run db:seed-demo`
+// (enregistrements dont l'id commence par "demo-"). Les données réelles (catalogue
+// officiel, société, vrais comptes, créneaux "auto-") ne sont PAS touchées.
+// Ordre = enfants avant parents (intégrité des clés étrangères).
+// Lancer : npm run db:clean-demo
 
 const prisma = new PrismaClient();
+const demo = { id: { startsWith: "demo-" } } as const;
 
 async function main() {
-  const idFilter = { id: { startsWith: "demo-crm-" } } as const;
+  const counts: Record<string, number> = {};
+  const del = async (label: string, fn: () => Promise<{ count: number }>) => {
+    counts[label] = (await fn()).count;
+  };
 
-  // Ordre dépendances (enfants avant parents).
-  const booking = await prisma.booking.deleteMany({ where: idFilter });
-  const exam = await prisma.exam.deleteMany({ where: idFilter });
-  const payment = await prisma.payment.deleteMany({ where: idFilter });
-  const invoice = await prisma.invoice.deleteMany({ where: idFilter });
-  const quote = await prisma.quote.deleteMany({ where: idFilter });
-  const contract = await prisma.contract.deleteMany({ where: idFilter });
-  const cpf = await prisma.cpfRequest.deleteMany({ where: idFilter });
-  const review = await prisma.review.deleteMany({ where: idFilter });
-  const lead = await prisma.lead.deleteMany({ where: idFilter });
-  const instructor = await prisma.instructor.deleteMany({ where: idFilter });
-  const monUsers = await prisma.user.deleteMany({ where: { id: { startsWith: "demo-crm-mon-u-" } } });
-
-  // Élèves de démonstration (User -> Student -> bookings en cascade).
-  const demoStudents = await prisma.user.deleteMany({ where: { email: { endsWith: "@lodene-demo.fr" } } });
+  // Enfants / sans contrainte FK d'abord
+  await del("chatTasks", () => prisma.chatTask.deleteMany({ where: demo }));
+  await del("chatConversations", () => prisma.chatConversation.deleteMany({ where: demo }));
+  await del("chatAppointments", () => prisma.chatAppointment.deleteMany({ where: demo }));
+  await del("bookings", () => prisma.booking.deleteMany({ where: demo }));
+  await del("exams", () => prisma.exam.deleteMany({ where: demo }));
+  await del("payments", () => prisma.payment.deleteMany({ where: demo }));
+  await del("invoices", () => prisma.invoice.deleteMany({ where: demo }));
+  await del("quotes", () => prisma.quote.deleteMany({ where: demo }));
+  await del("contracts", () => prisma.contract.deleteMany({ where: demo }));
+  await del("cpfRequests", () => prisma.cpfRequest.deleteMany({ where: demo }));
+  await del("reviews", () => prisma.review.deleteMany({ where: demo }));
+  await del("leads", () => prisma.lead.deleteMany({ where: demo }));
+  // Parents
+  await del("students", () => prisma.student.deleteMany({ where: demo }));
+  await del("instructors", () => prisma.instructor.deleteMany({ where: demo }));
+  await del("vehicles", () => prisma.vehicle.deleteMany({ where: demo }));
+  await del("automationRules", () => prisma.automationRule.deleteMany({ where: demo }));
+  await del("contentEntries", () => prisma.contentEntry.deleteMany({ where: demo }));
+  await del("agencyMemberships", () => prisma.agencyMembership.deleteMany({ where: demo }));
+  await del("users", () => prisma.user.deleteMany({ where: demo }));
+  await del("agencies", () => prisma.agency.deleteMany({ where: demo }));
 
   console.log("Données de démonstration supprimées :");
-  console.table({
-    bookings: booking.count,
-    exams: exam.count,
-    payments: payment.count,
-    invoices: invoice.count,
-    quotes: quote.count,
-    contracts: contract.count,
-    cpfRequests: cpf.count,
-    reviews: review.count,
-    leads: lead.count,
-    moniteursDemo: instructor.count,
-    comptesMoniteursDemo: monUsers.count,
-    elevesDemo: demoStudents.count
-  });
+  console.table(counts);
 }
 
 main()
