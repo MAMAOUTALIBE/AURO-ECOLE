@@ -179,6 +179,17 @@ export type CreateStudentInput = {
   userId: string;
   formationId?: string | null;
   purchasedHours?: number;
+  agencyId?: string | null;
+  fileStatus?: string;
+  internalNotes?: string | null;
+  civility?: string | null;
+  birthName?: string | null;
+  birthDate?: Date | null;
+  birthPlace?: string | null;
+  neph?: string | null;
+  filiere?: string | null;
+  financingType?: string | null;
+  registeredAt?: Date | null;
 };
 
 export type CreateInstructorInput = {
