@@ -17,15 +17,15 @@ function Brand({ collapsed }: { collapsed?: boolean }) {
       <span
         className={cn(
           "flex shrink-0 items-center justify-center bg-white shadow-soft",
-          collapsed ? "h-10 w-10 rounded-xl p-1" : "h-12 w-40 overflow-hidden rounded-2xl px-2"
+          collapsed ? "h-10 w-10 rounded-xl p-1" : "h-16 w-48 overflow-hidden rounded-2xl px-2"
         )}
       >
         <Image
-          src={collapsed ? "/lodene-logo.svg" : "/lodene-logo-wordmark.png"}
+          src={collapsed ? "/lodene-logo.png" : "/lodene-logo-wordmark.png"}
           alt=""
-          width={collapsed ? 72 : 330}
-          height={collapsed ? 72 : 115}
-          className={collapsed ? "h-8 w-8" : "h-10 w-auto"}
+          width={collapsed ? 512 : 1320}
+          height={collapsed ? 512 : 660}
+          className={collapsed ? "h-8 w-8" : "h-14 w-auto"}
         />
       </span>
     </Link>

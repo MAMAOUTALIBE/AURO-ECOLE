@@ -42,9 +42,9 @@ export function Footer() {
               <Image
                 src="/lodene-logo-wordmark.png"
                 alt="LODENE Formation"
-                width={330}
-                height={115}
-                className="h-14 w-auto max-w-[240px]"
+                width={1320}
+                height={660}
+                className="h-20 w-auto max-w-[260px]"
               />
             </Link>
             <p className="mt-4 max-w-xs text-[15px] leading-6 text-loden-muted">
@@ -167,9 +167,9 @@ export function Footer() {
             <Image
               src="/lodene-logo-wordmark.png"
               alt="LODENE Formation"
-              width={330}
-              height={115}
-              className="h-16 w-auto"
+              width={1320}
+              height={660}
+              className="h-24 w-auto"
             />
           </Link>
           <p className="mt-5 max-w-sm text-sm leading-6 text-loden-muted">

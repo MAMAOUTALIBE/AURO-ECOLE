@@ -56,10 +56,10 @@ function Logo() {
       <Image
         src="/lodene-logo-wordmark.png"
         alt="LODENE"
-        width={330}
-        height={115}
+        width={1320}
+        height={660}
         priority
-        className="h-11 w-auto sm:h-12"
+        className="h-16 w-auto sm:h-20"
       />
     </Link>
   );
@@ -71,10 +71,10 @@ function MobileLogo() {
       <Image
         src="/lodene-logo-wordmark.png"
         alt="LODENE"
-        width={330}
-        height={115}
+        width={1320}
+        height={660}
         priority
-        className="h-12 w-auto max-w-[11rem] min-[375px]:h-14 min-[375px]:max-w-[12.5rem]"
+        className="h-[4.5rem] w-auto max-w-[9.5rem] min-[375px]:h-20 min-[375px]:max-w-[10.5rem]"
       />
     </Link>
   );
