@@ -50,16 +50,16 @@ function Logo() {
   return (
     <Link
       href="/"
-      className="focus-ring flex shrink-0 items-center rounded-full"
+      className="focus-ring flex shrink-0 items-center rounded-[1.35rem] bg-white px-3 py-1.5 shadow-[0_10px_28px_rgba(20,33,38,0.14)]"
       aria-label="LODENE - Accueil"
     >
       <Image
-        src="/lodene-logo.svg"
+        src="/lodene-logo-wordmark.png"
         alt="LODENE"
-        width={112}
-        height={112}
+        width={330}
+        height={115}
         priority
-        className="h-14 w-14 drop-shadow-[0_10px_24px_rgba(20,33,38,0.22)] sm:h-16 sm:w-16"
+        className="h-11 w-auto sm:h-12"
       />
     </Link>
   );
@@ -69,12 +69,12 @@ function MobileLogo() {
   return (
     <Link href="/" className="focus-ring flex min-w-0 shrink-0 rounded-full" aria-label="LODENE - Accueil">
       <Image
-        src="/lodene-logo.svg"
+        src="/lodene-logo-wordmark.png"
         alt="LODENE"
-        width={128}
-        height={128}
+        width={330}
+        height={115}
         priority
-        className="h-16 w-16 drop-shadow-[0_10px_24px_rgba(20,33,38,0.16)] min-[375px]:h-[4.5rem] min-[375px]:w-[4.5rem]"
+        className="h-12 w-auto max-w-[11rem] min-[375px]:h-14 min-[375px]:max-w-[12.5rem]"
       />
     </Link>
   );

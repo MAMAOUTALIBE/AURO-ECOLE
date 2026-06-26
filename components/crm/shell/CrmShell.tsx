@@ -13,16 +13,21 @@ const COLLAPSE_KEY = "loden_crm_sidebar_collapsed";
 /** Logo LODENE pour le shell CRM. */
 function Brand({ collapsed }: { collapsed?: boolean }) {
   return (
-    <Link href="/admin" className="focus-ring flex items-center gap-2.5 rounded-xl" aria-label="LODENE CRM — Tableau de bord">
-      <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl">
-        <Image src="/lodene-logo.svg" alt="" width={72} height={72} className="h-12 w-12 drop-shadow-[0_8px_18px_rgba(0,0,0,0.18)]" />
+    <Link href="/admin" className="focus-ring flex items-center rounded-xl" aria-label="LODENE CRM — Tableau de bord">
+      <span
+        className={cn(
+          "flex shrink-0 items-center justify-center bg-white shadow-soft",
+          collapsed ? "h-10 w-10 rounded-xl p-1" : "h-12 w-40 overflow-hidden rounded-2xl px-2"
+        )}
+      >
+        <Image
+          src={collapsed ? "/lodene-logo.svg" : "/lodene-logo-wordmark.png"}
+          alt=""
+          width={collapsed ? 72 : 330}
+          height={collapsed ? 72 : 115}
+          className={collapsed ? "h-8 w-8" : "h-10 w-auto"}
+        />
       </span>
-      {!collapsed ? (
-        <span className="leading-none">
-          <span className="block text-base font-extrabold tracking-tight text-white">LODENE</span>
-          <span className="block text-[10px] font-semibold uppercase tracking-[0.2em] text-red-200">CRM</span>
-        </span>
-      ) : null}
     </Link>
   );
 }

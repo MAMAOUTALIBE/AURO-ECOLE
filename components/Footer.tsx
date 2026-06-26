@@ -19,11 +19,11 @@ export function Footer() {
         <div>
           <Link href="/" className="focus-ring inline-flex rounded-2xl" aria-label="LODENE - Accueil">
             <Image
-              src="/lodene-logo.svg"
+              src="/lodene-logo-wordmark.png"
               alt="LODENE"
-              width={128}
-              height={128}
-              className="h-24 w-24"
+              width={330}
+              height={115}
+              className="h-16 w-auto"
             />
           </Link>
           <p className="mt-5 max-w-sm text-sm leading-6 text-loden-muted">
