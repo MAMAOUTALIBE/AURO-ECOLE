@@ -14,11 +14,11 @@ function TickerGroup({ hidden }: { hidden?: boolean }) {
   return (
     <div className="flex shrink-0 items-center gap-8 pr-8" aria-hidden={hidden}>
       {tickerItems.map((item, index) => (
-        <span key={index} className="flex items-center gap-2 text-white/90">
+        <span key={index} className="flex items-center gap-2 text-loden-muted">
           {item.highlight ? (
-            <CalendarClock className="h-4 w-4 shrink-0 text-white" aria-hidden="true" />
+            <CalendarClock className="h-4 w-4 shrink-0 text-loden-700" aria-hidden="true" />
           ) : (
-            <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-white/50" aria-hidden="true" />
+            <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-loden-300" aria-hidden="true" />
           )}
           <span className="whitespace-nowrap">{item.label}</span>
         </span>
@@ -29,7 +29,7 @@ function TickerGroup({ hidden }: { hidden?: boolean }) {
 
 export function HeaderTop() {
   return (
-    <div className="hidden border-b border-loden-600 bg-loden-700 text-sm text-white lg:block">
+    <div className="hidden border-b border-loden-100 bg-white/95 text-sm text-loden-ink backdrop-blur-xl lg:block">
       <div className="container-pad flex h-10 items-center gap-6">
         <div className="marquee min-w-0 flex-1" role="marquee" aria-label="Informations LODENE">
           <div className="marquee-track">
@@ -42,7 +42,7 @@ export function HeaderTop() {
           {socialChannels.map(({ label, href, Icon }) => (
             <a
               key={label}
-              className="focus-ring flex h-6 w-6 items-center justify-center rounded-full bg-white shadow-sm ring-1 ring-white/40 transition hover:scale-110 hover:shadow-md"
+              className="focus-ring flex h-6 w-6 items-center justify-center rounded-full bg-loden-50 text-loden-700 shadow-sm ring-1 ring-loden-100 transition hover:scale-110 hover:shadow-md"
               href={href}
               target="_blank"
               rel="noreferrer"

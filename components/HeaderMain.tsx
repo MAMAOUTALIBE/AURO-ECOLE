@@ -50,7 +50,7 @@ function Logo() {
   return (
     <Link
       href="/"
-      className="focus-ring flex shrink-0 items-center rounded-[1.35rem] bg-white px-3 py-1.5 shadow-[0_10px_28px_rgba(20,33,38,0.14)]"
+      className="focus-ring flex shrink-0 items-center rounded-[1.45rem] px-2 py-1"
       aria-label="LODENE - Accueil"
     >
       <Image
@@ -102,12 +102,12 @@ function PillLink({
       className={cn(
         "focus-ring inline-flex min-h-11 items-center justify-center gap-2 rounded-full border px-3.5 py-2 text-sm font-semibold transition",
         variant === "default" &&
-          "border-white/45 bg-white/18 text-white shadow-[0_8px_24px_rgba(20,33,38,0.08)] backdrop-blur hover:border-white/80 hover:bg-white/30",
+          "border-transparent bg-transparent text-loden-ink hover:border-loden-100 hover:bg-loden-fog hover:text-loden-800",
         variant === "outline" &&
-          "border-white bg-white text-loden-800 shadow-[0_8px_24px_rgba(20,33,38,0.10)] hover:bg-loden-50",
+          "border-loden-200 bg-white text-loden-800 shadow-[0_8px_24px_rgba(20,33,38,0.08)] hover:border-loden-300 hover:bg-loden-50",
         variant === "solid" &&
-          "border-loden-900 bg-loden-900 text-white shadow-soft hover:border-loden-800 hover:bg-loden-800",
-        active && variant === "default" && "border-white/90 bg-white/32 text-white"
+          "border-loden-700 bg-loden-700 text-white shadow-soft hover:border-loden-800 hover:bg-loden-800",
+        active && variant === "default" && "border-loden-200 bg-loden-petrol text-loden-800"
       )}
     >
       <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
@@ -147,8 +147,8 @@ function DropdownPill({
       <Link
         href={item.href}
         className={cn(
-          "focus-ring inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-white/45 bg-white/18 px-3.5 py-2 text-sm font-semibold text-white shadow-[0_8px_24px_rgba(20,33,38,0.08)] backdrop-blur transition hover:border-white/80 hover:bg-white/30",
-          active && "border-white/90 bg-white/32"
+          "focus-ring inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-transparent bg-transparent px-3.5 py-2 text-sm font-semibold text-loden-ink transition hover:border-loden-100 hover:bg-loden-fog hover:text-loden-800",
+          active && "border-loden-200 bg-loden-petrol text-loden-800"
         )}
       >
         <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
@@ -165,7 +165,7 @@ function DropdownPill({
         className="absolute left-1/2 top-full z-[70] w-72 -translate-x-1/2 pt-3"
         style={{ display: open ? "block" : "none" }}
       >
-        <div className="rounded-[2rem] border border-white/25 bg-loden-700 p-2 shadow-[0_28px_90px_rgba(20,33,38,0.24)] ring-1 ring-loden-500/40">
+        <div className="rounded-[1.75rem] border border-loden-100 bg-white p-2 shadow-[0_28px_90px_rgba(20,33,38,0.16)] ring-1 ring-white">
           {children.map((child) => {
             const ItemIcon = resolveSiteIcon(child.icon);
 
@@ -173,9 +173,9 @@ function DropdownPill({
               <Link
                 key={child.id}
                 href={child.href}
-                className="focus-ring flex items-center gap-3 rounded-2xl px-3 py-3 text-sm font-semibold text-white transition hover:bg-white/14 hover:text-white"
+                className="focus-ring flex items-center gap-3 rounded-2xl px-3 py-3 text-sm font-semibold text-loden-ink transition hover:bg-loden-50 hover:text-loden-800"
               >
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-loden-800 shadow-soft">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-loden-100 text-loden-700 shadow-soft">
                   <ItemIcon className="h-4 w-4" aria-hidden="true" />
                 </span>
                 {child.label}
@@ -198,7 +198,7 @@ export function HeaderMain({ nav, ctas }: { nav?: NavPrimary; ctas?: NavCtas }) 
   const dropdowns = items.filter((item) => (item.children ?? []).some((child) => child.active));
 
   return (
-    <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-xl md:bg-loden-pearl/90 md:py-3">
+    <header className="sticky top-0 z-40 border-b border-slate-100 bg-white/95 backdrop-blur-xl md:border-0 md:bg-transparent md:py-4">
       <div className="container-pad">
         <div className="flex min-h-[5.25rem] items-center justify-between gap-3 md:hidden">
           <MobileLogo />
@@ -216,7 +216,7 @@ export function HeaderMain({ nav, ctas }: { nav?: NavPrimary; ctas?: NavCtas }) 
           </div>
         </div>
 
-        <div className="hidden min-h-14 items-center justify-between gap-2 rounded-[1.4rem] border border-white/35 bg-loden-700 px-2.5 py-2 shadow-premium ring-1 ring-loden-500/40 md:flex sm:min-h-16 sm:gap-3 sm:rounded-full sm:px-3">
+        <div className="hidden min-h-14 items-center justify-between gap-2 rounded-[1.65rem] border border-loden-200 bg-white px-2.5 py-2 shadow-[0_18px_55px_rgba(20,33,38,0.12)] ring-1 ring-white md:flex sm:min-h-16 sm:gap-3 sm:rounded-[2rem] sm:px-3">
           <Logo />
 
           <nav className="hidden items-center gap-1 xl:flex" aria-label="Navigation principale">
@@ -259,7 +259,7 @@ export function HeaderMain({ nav, ctas }: { nav?: NavPrimary; ctas?: NavCtas }) 
           <div className="flex shrink-0 items-center gap-2 xl:hidden">
             <Link
               href="/inscription"
-              className="focus-ring inline-flex h-11 w-11 items-center justify-center gap-2 rounded-full border border-white bg-white text-sm font-semibold text-loden-800 shadow-[0_8px_24px_rgba(20,33,38,0.10)] sm:h-12 sm:w-auto sm:px-4 sm:py-2"
+              className="focus-ring inline-flex h-11 w-11 items-center justify-center gap-2 rounded-full border border-loden-200 bg-loden-50 text-sm font-semibold text-loden-800 shadow-[0_8px_24px_rgba(20,33,38,0.08)] hover:bg-loden-100 sm:h-12 sm:w-auto sm:px-4 sm:py-2"
               aria-label="Inscription"
             >
               <Sparkles className="h-4 w-4" aria-hidden="true" />
@@ -268,7 +268,7 @@ export function HeaderMain({ nav, ctas }: { nav?: NavPrimary; ctas?: NavCtas }) 
             <button
               type="button"
               onClick={() => setMenuOpen((value) => !value)}
-              className="focus-ring inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/60 bg-white/18 text-white shadow-[0_8px_24px_rgba(20,33,38,0.08)] transition hover:bg-white/30 sm:h-12 sm:w-12"
+              className="focus-ring inline-flex h-11 w-11 items-center justify-center rounded-full border border-loden-200 bg-white text-loden-800 shadow-[0_8px_24px_rgba(20,33,38,0.08)] transition hover:bg-loden-50 sm:h-12 sm:w-12"
               aria-label={menuOpen ? "Fermer le menu" : "Ouvrir le menu"}
               aria-expanded={menuOpen}
             >
