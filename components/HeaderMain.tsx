@@ -198,7 +198,7 @@ export function HeaderMain({ nav, ctas }: { nav?: NavPrimary; ctas?: NavCtas }) 
   const dropdowns = items.filter((item) => (item.children ?? []).some((child) => child.active));
 
   return (
-    <header className="sticky top-0 z-40 border-b border-slate-100 bg-white/95 backdrop-blur-xl md:border-0 md:bg-transparent md:py-4">
+    <header className="sticky top-0 z-40 border-b border-[#f97316]/20 bg-white/95 backdrop-blur-xl md:border-0 md:bg-transparent md:py-4">
       <div className="container-pad">
         <div className="flex min-h-[5.25rem] items-center justify-between gap-3 md:hidden">
           <MobileLogo />
@@ -207,7 +207,7 @@ export function HeaderMain({ nav, ctas }: { nav?: NavPrimary; ctas?: NavCtas }) 
             <button
               type="button"
               onClick={() => setMenuOpen((value) => !value)}
-              className="focus-ring inline-flex h-12 w-12 items-center justify-center rounded-full border border-slate-200 bg-white text-loden-ink shadow-[0_10px_28px_rgba(20,33,38,0.08)] transition hover:border-loden-200 hover:bg-loden-50"
+              className="focus-ring inline-flex h-12 w-12 items-center justify-center rounded-full border border-[#f97316]/25 bg-white text-loden-ink shadow-[0_10px_28px_rgba(20,33,38,0.08)] transition hover:border-[#f97316]/40 hover:bg-loden-50"
               aria-label={menuOpen ? "Fermer le menu" : "Ouvrir le menu"}
               aria-expanded={menuOpen}
             >
@@ -216,7 +216,7 @@ export function HeaderMain({ nav, ctas }: { nav?: NavPrimary; ctas?: NavCtas }) 
           </div>
         </div>
 
-        <div className="hidden min-h-14 items-center justify-between gap-2 rounded-[1.65rem] border border-loden-200 bg-white px-2.5 py-2 shadow-[0_18px_55px_rgba(20,33,38,0.12)] ring-1 ring-white md:flex sm:min-h-16 sm:gap-3 sm:rounded-[2rem] sm:px-3">
+        <div className="hidden min-h-14 items-center justify-between gap-2 rounded-[1.65rem] border border-[#f97316]/30 bg-white px-2.5 py-2 shadow-[0_18px_55px_rgba(20,33,38,0.12),0_0_0_1px_rgba(249,115,22,0.08)] ring-1 ring-white md:flex sm:min-h-16 sm:gap-3 sm:rounded-[2rem] sm:px-3">
           <Logo />
 
           <nav className="hidden items-center gap-1 xl:flex" aria-label="Navigation principale">
