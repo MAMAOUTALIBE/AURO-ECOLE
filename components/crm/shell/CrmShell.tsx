@@ -14,8 +14,8 @@ const COLLAPSE_KEY = "loden_crm_sidebar_collapsed";
 function Brand({ collapsed }: { collapsed?: boolean }) {
   return (
     <Link href="/admin" className="focus-ring flex items-center gap-2.5 rounded-xl" aria-label="LODENE CRM — Tableau de bord">
-      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white p-1 shadow-soft">
-        <Image src="/lodene-logo.png" alt="" width={64} height={64} className="h-8 w-8" />
+      <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl">
+        <Image src="/lodene-logo.svg" alt="" width={72} height={72} className="h-12 w-12 drop-shadow-[0_8px_18px_rgba(0,0,0,0.18)]" />
       </span>
       {!collapsed ? (
         <span className="leading-none">
