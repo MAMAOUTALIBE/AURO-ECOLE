@@ -43,19 +43,19 @@ export default function ContactPage() {
         cta="Envoyer une demande"
         ctaHref="#demande"
       />
-      <section id="demande" className="bg-white py-14 sm:py-20">
+      <section id="demande" className="bg-white py-10 md:py-14 xl:py-20">
         <div className="container-pad grid gap-8 lg:grid-cols-[0.9fr_1.1fr]">
-          <div className="grid gap-4">
+          <div className="order-2 grid gap-3 sm:gap-4 lg:order-1">
             {buildContactTiles().map((item) => {
               const Icon = item.icon;
               const content = (
-                <div className="flex items-center gap-4 rounded-3xl border border-slate-200 bg-loden-pearl p-5 shadow-soft">
-                  <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-loden-700 shadow-soft">
-                    <Icon className="h-6 w-6" />
+                <div className="flex items-center gap-3 rounded-3xl border border-slate-200 bg-loden-pearl p-4 shadow-soft sm:gap-4 sm:p-5">
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white text-loden-700 shadow-soft sm:h-12 sm:w-12">
+                    <Icon className="h-5 w-5 sm:h-6 sm:w-6" />
                   </span>
-                  <div>
+                  <div className="min-w-0">
                     <p className="text-sm font-semibold uppercase tracking-[0.12em] text-loden-700">{item.label}</p>
-                    <p className="mt-1 font-semibold text-loden-ink">{item.value}</p>
+                    <p className="mt-1 break-words font-semibold text-loden-ink">{item.value}</p>
                   </div>
                 </div>
               );
@@ -69,9 +69,11 @@ export default function ContactPage() {
             })}
             <LocalMapPanel />
           </div>
-          <Suspense fallback={<div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-premium">Chargement du formulaire...</div>}>
-            <ContactForm />
-          </Suspense>
+          <div className="order-1 lg:order-2">
+            <Suspense fallback={<div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-premium">Chargement du formulaire...</div>}>
+              <ContactForm />
+            </Suspense>
+          </div>
         </div>
       </section>
     </main>

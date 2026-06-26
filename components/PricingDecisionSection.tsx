@@ -42,7 +42,7 @@ const financingOptions = [
 
 export function PricingDecisionSection() {
   return (
-    <section className="bg-white py-14 sm:py-20">
+    <section className="bg-white py-10 md:py-14 xl:py-20">
       <div className="container-pad">
         <div className="grid gap-8 lg:grid-cols-[0.85fr_1.15fr] lg:items-start">
           <div>
@@ -51,7 +51,7 @@ export function PricingDecisionSection() {
               title="Quel pack correspond à ton objectif ?"
               text="Les tarifs deviennent plus simples quand ils sont reliés à ton niveau, ton urgence et ton financement."
             />
-            <div className="mt-8 rounded-3xl border border-slate-200 bg-loden-pearl p-5 shadow-soft">
+            <div className="mt-6 rounded-3xl border border-slate-200 bg-loden-pearl p-4 shadow-soft md:mt-8 md:p-5">
               <div className="flex items-center gap-3">
                 <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-loden-700 shadow-soft">
                   <CreditCard className="h-5 w-5" aria-hidden="true" />
@@ -83,7 +83,7 @@ export function PricingDecisionSection() {
             {recommendations.map((item) => {
               const Icon = item.icon;
               return (
-                <article key={item.profile} className="rounded-3xl border border-slate-200 bg-loden-pearl p-6 shadow-soft">
+                <article key={item.profile} className="rounded-3xl border border-slate-200 bg-loden-pearl p-4 shadow-soft md:p-6">
                   <Icon className="h-6 w-6 text-loden-700" aria-hidden="true" />
                   <p className="mt-5 text-sm font-semibold uppercase tracking-[0.12em] text-loden-muted">{item.profile}</p>
                   <h3 className="mt-2 text-xl font-semibold text-loden-ink">{item.plan}</h3>

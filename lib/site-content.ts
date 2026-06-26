@@ -93,7 +93,6 @@ export const defaultNavPrimary: NavPrimary = {
 
 export const defaultNavCtas: NavCtas = {
   items: [
-    { id: "espace-eleve", label: "Espace Élève", href: "/espace-eleve", active: true, icon: "UserRound", variant: "outline" },
     { id: "inscription", label: "Inscription", href: "/inscription", active: true, icon: "Sparkles", variant: "solid" }
   ]
 };

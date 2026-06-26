@@ -72,17 +72,17 @@ export default function HomePage() {
     <main>
       <HeroSection />
 
-      <section className="bg-white py-10 sm:py-12">
+      <section className="bg-white py-8 sm:py-12">
         <div className="container-pad">
           <HomeFormationsCarousel formations={formations} />
         </div>
       </section>
 
-      <section className="bg-loden-pearl py-10 sm:py-12">
+      <section className="bg-loden-pearl py-8 sm:py-12">
         <div className="container-pad">
           <div className="max-w-2xl">
             <p className="text-sm font-semibold uppercase text-loden-700">Pourquoi choisir LODENE ?</p>
-            <h2 className="mt-3 text-3xl font-semibold leading-tight text-loden-ink sm:text-4xl">
+            <h2 className="mt-3 text-2xl font-semibold leading-tight text-loden-ink sm:text-4xl">
               Un parcours simple, encadré et orienté résultat
             </h2>
           </div>
@@ -91,11 +91,11 @@ export default function HomePage() {
               const Icon = advantage.icon;
               return (
                 <MotionReveal key={advantage.title} delay={index * 0.04}>
-                  <article className="h-full rounded-[1.5rem] border border-slate-200 bg-white p-5 shadow-soft">
-                    <span className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-loden-50 text-loden-700">
+                  <article className="h-full rounded-3xl border border-slate-200 bg-white p-4 shadow-soft sm:rounded-[1.5rem] sm:p-5">
+                    <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-loden-50 text-loden-700 sm:h-11 sm:w-11">
                       <Icon className="h-5 w-5" aria-hidden="true" />
                     </span>
-                    <h3 className="mt-4 text-lg font-semibold text-loden-ink">{advantage.title}</h3>
+                    <h3 className="mt-3 text-lg font-semibold text-loden-ink sm:mt-4">{advantage.title}</h3>
                     <p className="mt-2 text-sm leading-6 text-loden-muted">{advantage.text}</p>
                   </article>
                 </MotionReveal>
@@ -105,12 +105,12 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="bg-white py-10">
+      <section className="bg-white py-8 sm:py-10">
         <div className="container-pad">
-          <div className="rounded-[2rem] bg-loden-900 p-6 text-white shadow-premium sm:p-8 lg:flex lg:items-center lg:justify-between lg:gap-8">
+          <div className="rounded-3xl bg-loden-900 p-5 text-white shadow-premium sm:rounded-[2rem] sm:p-8 lg:flex lg:items-center lg:justify-between lg:gap-8">
             <div className="max-w-2xl">
               <p className="text-sm font-semibold uppercase text-loden-100">Diagnostic</p>
-              <h2 className="mt-3 text-3xl font-semibold leading-tight">Pas sûr de la bonne formation ?</h2>
+              <h2 className="mt-3 text-2xl font-semibold leading-tight sm:text-3xl">Pas sûr de la bonne formation ?</h2>
               <p className="mt-3 text-base leading-7 text-white/80">
                 Réponds à quelques questions, on t&apos;oriente vers le bon parcours.
               </p>
@@ -118,14 +118,14 @@ export default function HomePage() {
             <div className="mt-5 flex flex-col gap-3 sm:flex-row lg:mt-0">
               <Link
                 href="/contact"
-                className="focus-ring inline-flex items-center justify-center gap-2 rounded-full bg-white px-6 py-3.5 font-semibold text-loden-ink shadow-soft transition hover:bg-loden-50"
+                className="focus-ring inline-flex w-full items-center justify-center gap-2 rounded-full bg-white px-6 py-3.5 font-semibold text-loden-ink shadow-soft transition hover:bg-loden-50 sm:w-auto"
               >
                 Demander mon diagnostic
                 <ArrowRight className="h-5 w-5" aria-hidden="true" />
               </Link>
               <a
                 href={whatsappHref()}
-                className="focus-ring inline-flex items-center justify-center gap-2 rounded-full border border-white/30 px-6 py-3.5 font-semibold text-white transition hover:bg-white/10"
+                className="focus-ring inline-flex w-full items-center justify-center gap-2 rounded-full border border-white/30 px-6 py-3.5 font-semibold text-white transition hover:bg-white/10 sm:w-auto"
               >
                 <MessageCircle className="h-5 w-5" aria-hidden="true" />
                 WhatsApp
@@ -135,18 +135,18 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="bg-white pb-10 sm:pb-12">
+      <section className="bg-white pb-8 sm:pb-12">
         <div className="container-pad">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <p className="text-sm font-semibold uppercase text-loden-700">Tarifs de départ</p>
-              <h2 className="mt-3 text-3xl font-semibold leading-tight text-loden-ink sm:text-4xl">
+              <h2 className="mt-3 text-2xl font-semibold leading-tight text-loden-ink sm:text-4xl">
                 Trois repères pour décider vite
               </h2>
             </div>
             <Link
               href="/tarifs"
-              className="focus-ring inline-flex items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-loden-ink shadow-soft transition hover:border-loden-200 hover:text-loden-700"
+              className="focus-ring inline-flex w-full items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-loden-ink shadow-soft transition hover:border-loden-200 hover:text-loden-700 sm:w-auto"
             >
               Voir tous les tarifs
               <ArrowRight className="h-4 w-4" aria-hidden="true" />
@@ -155,9 +155,9 @@ export default function HomePage() {
           <div className="mt-6 grid gap-4 md:grid-cols-3">
             {priceHighlights.map((item, index) => (
               <MotionReveal key={item.label} delay={index * 0.04}>
-                <article className="rounded-[1.5rem] border border-slate-200 bg-loden-pearl p-6 shadow-soft">
+                <article className="rounded-3xl border border-slate-200 bg-loden-pearl p-4 shadow-soft sm:rounded-[1.5rem] sm:p-6">
                   <p className="text-sm font-semibold text-loden-muted">{item.label}</p>
-                  <p className="mt-3 text-3xl font-semibold text-loden-ink">dès {formatCurrency(item.price)}</p>
+                  <p className="mt-3 text-2xl font-semibold text-loden-ink sm:text-3xl">dès {formatCurrency(item.price)}</p>
                 </article>
               </MotionReveal>
             ))}
@@ -165,12 +165,12 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="bg-loden-pearl py-10 sm:py-12">
+      <section className="bg-loden-pearl py-8 sm:py-12">
         <div className="container-pad">
-          <div className="grid gap-6 rounded-[2rem] border border-slate-200 bg-white p-6 shadow-soft sm:p-8 lg:grid-cols-[1fr_auto] lg:items-center">
+          <div className="grid gap-6 rounded-3xl border border-slate-200 bg-white p-4 shadow-soft sm:rounded-[2rem] sm:p-8 lg:grid-cols-[1fr_auto] lg:items-center">
             <div>
               <p className="text-sm font-semibold uppercase text-loden-700">Agence LODENE</p>
-              <h2 className="mt-3 text-3xl font-semibold leading-tight text-loden-ink">
+              <h2 className="mt-3 text-2xl font-semibold leading-tight text-loden-ink sm:text-3xl">
                 Conflans-Sainte-Honorine
               </h2>
               <div className="mt-5 grid gap-3 text-sm leading-6 text-loden-muted sm:grid-cols-2">
@@ -194,7 +194,7 @@ export default function HomePage() {
             </div>
             <Link
               href="/contact"
-              className="focus-ring inline-flex items-center justify-center gap-2 rounded-full bg-loden-700 px-6 py-3.5 font-semibold text-white shadow-soft transition hover:bg-loden-800"
+              className="focus-ring inline-flex w-full items-center justify-center gap-2 rounded-full bg-loden-700 px-6 py-3.5 font-semibold text-white shadow-soft transition hover:bg-loden-800 sm:w-auto"
             >
               Nous contacter
               <ArrowRight className="h-5 w-5" aria-hidden="true" />

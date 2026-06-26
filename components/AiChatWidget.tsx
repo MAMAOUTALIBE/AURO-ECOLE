@@ -391,7 +391,7 @@ export function AiChatWidget() {
   return (
     <>
       {open ? (
-        <div className="fixed inset-x-3 bottom-24 z-40 flex h-[min(78vh,34rem)] flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-premium sm:left-auto sm:right-5 sm:w-[24rem]">
+        <div className="fixed inset-x-3 bottom-24 z-40 hidden h-[min(74vh,34rem)] flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-premium xl:left-auto xl:right-5 xl:flex xl:h-[min(78vh,34rem)] xl:w-[24rem]">
           <div className="flex items-center justify-between gap-3 bg-loden-700 px-4 py-3 text-white">
             <div className="flex min-w-0 items-center gap-2">
               <Sparkles className="h-5 w-5 shrink-0" aria-hidden="true" />
@@ -484,7 +484,7 @@ export function AiChatWidget() {
         </div>
       ) : null}
 
-      <div className="fixed bottom-5 right-5 z-30 flex max-w-[calc(100vw-2.5rem)] items-center gap-2">
+      <div className="fixed bottom-5 right-5 z-30 hidden max-w-[calc(100vw-2.5rem)] items-center gap-2 xl:flex">
         <a
           href={whatsappHref()}
           target="_blank"

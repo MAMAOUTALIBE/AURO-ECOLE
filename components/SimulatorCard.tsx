@@ -12,17 +12,17 @@ export function SimulatorCard() {
   const [financing, setFinancing] = useState(simulatorOptions.financing[0].value);
 
   return (
-    <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-premium">
+    <div className="rounded-3xl border border-slate-200 bg-white p-4 shadow-premium md:rounded-[1.75rem] md:p-6">
       <div className="flex items-center gap-3">
         <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-loden-50 text-loden-700">
           <Calculator className="h-6 w-6" />
         </span>
         <div>
-          <h3 className="text-xl font-semibold text-loden-ink">Préparer ma demande de devis</h3>
+          <h3 className="text-lg font-semibold text-loden-ink md:text-xl">Préparer ma demande de devis</h3>
           <p className="text-sm text-loden-muted">Précise ton besoin : on te transmet un devis personnalisé.</p>
         </div>
       </div>
-      <div className="mt-6 grid gap-5">
+      <div className="mt-5 grid gap-5 md:mt-6">
         <label className="grid gap-2">
           <span className="text-sm font-semibold text-loden-ink">Formation</span>
           <select
@@ -76,13 +76,13 @@ export function SimulatorCard() {
           <FileText className="h-4 w-4" />
           Tarif
         </p>
-        <p className="mt-2 text-4xl font-semibold">Sur devis</p>
+        <p className="mt-2 text-3xl font-semibold md:text-4xl">Sur devis</p>
         <p className="mt-2 text-sm text-white/70">
           Le tarif est établi sur devis personnalisé, selon le diagnostic initial et le planning choisi.
         </p>
         <Link
           href="/contact#demande"
-          className="focus-ring mt-4 inline-flex items-center justify-center rounded-full bg-white px-5 py-3 text-sm font-semibold text-loden-ink transition hover:bg-loden-pearl"
+          className="focus-ring mt-4 inline-flex w-full items-center justify-center rounded-full bg-white px-5 py-3 text-sm font-semibold text-loden-ink transition hover:bg-loden-pearl sm:w-auto"
         >
           Demander mon devis
         </Link>

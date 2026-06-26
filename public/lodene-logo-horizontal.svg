@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 180" role="img" aria-labelledby="title desc">
+  <title id="title">LODENE</title>
+  <desc id="desc">Logo horizontal LODENE adapté pour les en-têtes du site.</desc>
+  <defs>
+    <linearGradient id="green" x1="18" y1="18" x2="164" y2="164" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#009b74"/>
+      <stop offset="0.55" stop-color="#08aeb8"/>
+      <stop offset="1" stop-color="#70d18c"/>
+    </linearGradient>
+    <linearGradient id="dark" x1="42" y1="35" x2="140" y2="150" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#083f48"/>
+      <stop offset="1" stop-color="#05262d"/>
+    </linearGradient>
+  </defs>
+
+  <circle cx="90" cy="90" r="78" fill="url(#green)"/>
+  <circle cx="90" cy="90" r="68" fill="#ffffff"/>
+  <circle cx="90" cy="90" r="58" fill="url(#dark)"/>
+  <path d="M51 77c8-28 29-46 39-46s31 18 39 46h-15c-7-18-21-29-24-29s-17 11-24 29H51Z" fill="url(#green)"/>
+  <path d="M48 88c0-7 5-12 12-13 21-2 41-2 61 0 7 1 12 6 12 13v13c0 8-6 14-14 14h-17c-6 0-11 2-15 7l-6 6c-6 6-16 6-22 0l-6-6c-4-5-9-7-15-7H62c-8 0-14-6-14-14V88Z" fill="url(#green)"/>
+  <circle cx="90" cy="91" r="9" fill="#062f37"/>
+  <rect x="31" y="80" width="118" height="42" rx="12" fill="url(#green)"/>
+  <text x="90" y="109" text-anchor="middle" font-family="Inter, Montserrat, Arial, sans-serif" font-size="27" font-weight="900" letter-spacing="2" fill="#ffffff">LODENE</text>
+  <path d="M65 143c18-20 43-32 73-38-22 13-37 29-48 51-9-2-17-6-25-13Z" fill="#ffffff"/>
+  <path d="M101 145c10-18 23-30 39-40-11 16-20 32-26 49-5-2-9-5-13-9Z" fill="#70d18c"/>
+
+  <text x="198" y="113" font-family="Inter, Montserrat, Arial, sans-serif" font-size="72" font-weight="900" letter-spacing="7" fill="#142126">LODENE</text>
+</svg>

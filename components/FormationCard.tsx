@@ -78,11 +78,11 @@ export function FormationCard({ formation }: { formation: Formation }) {
     <Link
       href={`/formations/${formation.slug}`}
       aria-label={`Voir la formation ${formation.title}`}
-      className="focus-ring group block h-full rounded-[1.75rem]"
+      className="focus-ring group block h-full rounded-3xl sm:rounded-[1.75rem]"
     >
-      <article className="flex h-full flex-col overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white shadow-soft transition duration-300 group-hover:-translate-y-1.5 group-hover:border-loden-200 group-hover:shadow-premium">
+      <article className="flex h-full flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-soft transition duration-300 group-hover:-translate-y-1.5 group-hover:border-loden-200 group-hover:shadow-premium sm:rounded-[1.75rem]">
         {/* En-tête photo réaliste par formation */}
-        <div className="relative h-40 overflow-hidden" style={{ backgroundImage: visual.gradient }}>
+        <div className="relative h-32 overflow-hidden sm:h-40" style={{ backgroundImage: visual.gradient }}>
           <Image
             src={headerImage.src}
             alt={headerImage.alt}
@@ -95,7 +95,7 @@ export function FormationCard({ formation }: { formation: Formation }) {
           />
           {/* Voile sombre en haut pour la lisibilité des badges */}
           <div className="absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-black/25 to-transparent" aria-hidden="true" />
-          <div className="absolute left-4 top-4 flex flex-wrap gap-2">
+          <div className="absolute left-3 top-3 flex flex-wrap gap-2 sm:left-4 sm:top-4">
             <span className="rounded-full bg-white/20 px-3 py-1 text-xs font-semibold text-white ring-1 ring-white/40 backdrop-blur">
               {badgeLabel}
             </span>
@@ -103,20 +103,20 @@ export function FormationCard({ formation }: { formation: Formation }) {
               <span className="rounded-full bg-white px-3 py-1 text-xs font-bold text-loden-700 shadow-soft">CPF</span>
             ) : null}
           </div>
-          <span className="absolute bottom-4 left-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-white/95 text-loden-700 shadow-soft">
-            <Icon className="h-6 w-6" aria-hidden="true" />
+          <span className="absolute bottom-3 left-3 flex h-10 w-10 items-center justify-center rounded-2xl bg-white/95 text-loden-700 shadow-soft sm:bottom-4 sm:left-4 sm:h-12 sm:w-12">
+            <Icon className="h-5 w-5 sm:h-6 sm:w-6" aria-hidden="true" />
           </span>
         </div>
 
         {/* Corps */}
-        <div className="flex flex-1 flex-col p-6">
-          <h3 className="text-xl font-semibold leading-tight text-loden-ink">{formation.title}</h3>
+        <div className="flex flex-1 flex-col p-4 sm:p-6">
+          <h3 className="text-lg font-semibold leading-tight text-loden-ink sm:text-xl">{formation.title}</h3>
           {formation.subtitle ? (
             <p className="mt-1 text-sm font-semibold text-loden-600">{formation.subtitle}</p>
           ) : null}
-          <p className="mt-3 flex-1 text-sm leading-6 text-loden-muted">{formation.description}</p>
+          <p className="mt-2 line-clamp-2 flex-1 text-sm leading-6 text-loden-muted sm:mt-3 sm:line-clamp-none">{formation.description}</p>
 
-          <div className="mt-5 flex flex-wrap gap-2">
+          <div className="mt-5 hidden flex-wrap gap-2 sm:flex">
             {formation.tags.slice(0, 3).map((tag) => (
               <span key={tag} className="rounded-full bg-loden-fog px-3 py-1 text-xs font-medium text-loden-muted">
                 {tag}
@@ -124,7 +124,7 @@ export function FormationCard({ formation }: { formation: Formation }) {
             ))}
           </div>
 
-          <div className="mt-6 flex items-end justify-between border-t border-slate-100 pt-5">
+          <div className="mt-4 flex items-end justify-between border-t border-slate-100 pt-4 sm:mt-6 sm:pt-5">
             <div className="text-sm">
               <span className="flex items-center gap-2 font-semibold text-loden-ink">
                 <Clock3 className="h-4 w-4 text-loden-500" aria-hidden="true" />
@@ -135,8 +135,8 @@ export function FormationCard({ formation }: { formation: Formation }) {
                 {formation.price > 0 ? `Dès ${formatCurrency(formation.price)}` : "Sur devis"}
               </span>
             </div>
-            <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-loden-700 text-white shadow-soft transition group-hover:translate-x-0.5 group-hover:bg-loden-800">
-              <ArrowRight className="h-5 w-5" aria-hidden="true" />
+            <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-loden-700 text-white shadow-soft transition group-hover:translate-x-0.5 group-hover:bg-loden-800 sm:h-11 sm:w-11">
+              <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true" />
             </span>
           </div>
         </div>

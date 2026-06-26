@@ -23,7 +23,7 @@ export function PricingCard({ plan, featured = false }: { plan: PricingPlan; fea
 
   return (
     <article
-      className={`group relative flex h-full flex-col overflow-hidden rounded-[1.75rem] border p-6 shadow-soft transition duration-300 hover:-translate-y-1.5 hover:shadow-premium ${
+      className={`group relative flex h-full flex-col overflow-hidden rounded-3xl border p-4 shadow-soft transition duration-300 hover:-translate-y-1.5 hover:shadow-premium md:p-6 ${
         featured ? "border-transparent bg-loden-ink text-white ring-2 ring-loden-500/60" : "border-slate-200 bg-white text-loden-ink hover:border-loden-200"
       }`}
     >
@@ -46,12 +46,12 @@ export function PricingCard({ plan, featured = false }: { plan: PricingPlan; fea
 
       <div className="relative mt-3">
         <p className="text-sm opacity-70">À partir de</p>
-        <p className="mt-1 text-4xl font-semibold tracking-tight">
+        <p className="mt-1 text-3xl font-semibold tracking-tight md:text-4xl">
           {plan.price === 0 ? "Sur devis" : formatCurrency(plan.price)}
         </p>
       </div>
 
-      <ul className="relative mt-6 grid flex-1 gap-3 text-sm">
+      <ul className="relative mt-5 grid flex-1 gap-3 text-sm md:mt-6">
         {plan.features.map((feature) => (
           <li key={feature} className="flex gap-3">
             <Check className={`mt-0.5 h-4 w-4 shrink-0 ${featured ? "text-loden-200" : "text-loden-500"}`} aria-hidden="true" />
@@ -62,7 +62,7 @@ export function PricingCard({ plan, featured = false }: { plan: PricingPlan; fea
 
       <Link
         href={ctaHref}
-        className={`focus-ring relative mt-7 inline-flex items-center justify-center gap-2 rounded-full px-5 py-3 text-sm font-semibold transition ${
+        className={`focus-ring relative mt-6 inline-flex items-center justify-center gap-2 rounded-full px-5 py-3 text-sm font-semibold transition md:mt-7 ${
           featured ? "bg-white text-loden-ink hover:bg-loden-50" : "bg-loden-700 text-white hover:bg-loden-800"
         }`}
       >

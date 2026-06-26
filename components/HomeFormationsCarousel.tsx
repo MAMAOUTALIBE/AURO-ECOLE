@@ -86,7 +86,7 @@ export function HomeFormationsCarousel({ formations }: { formations: Formation[]
       <div className="flex items-end justify-between gap-4">
         <div>
           <p className="text-sm font-semibold uppercase text-loden-700">Formations principales</p>
-          <h2 className="mt-3 text-3xl font-semibold leading-tight text-loden-ink sm:text-4xl">
+          <h2 className="mt-3 text-2xl font-semibold leading-tight text-loden-ink sm:text-4xl">
             Les parcours les plus demandés
           </h2>
         </div>
@@ -127,10 +127,10 @@ export function HomeFormationsCarousel({ formations }: { formations: Formation[]
             <article
               key={formation.slug}
               data-carousel-card
-              className="group flex min-w-0 shrink-0 basis-full snap-start overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white shadow-soft transition duration-300 hover:-translate-y-1 hover:border-loden-200 hover:shadow-premium md:basis-[calc((100%_-_1.5rem)_/_2)] xl:basis-[calc((100%_-_3rem)_/_3)]"
+              className="group flex min-w-0 shrink-0 basis-[88%] snap-start overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-soft transition duration-300 hover:-translate-y-1 hover:border-loden-200 hover:shadow-premium sm:basis-full sm:rounded-[1.75rem] md:basis-[calc((100%_-_1.5rem)_/_2)] xl:basis-[calc((100%_-_3rem)_/_3)]"
             >
-              <Link href={`/formations/${formation.slug}`} className="focus-ring flex h-full w-full flex-col rounded-[1.75rem]">
-                <div className="relative h-48 overflow-hidden bg-loden-900">
+              <Link href={`/formations/${formation.slug}`} className="focus-ring flex h-full w-full flex-col rounded-3xl sm:rounded-[1.75rem]">
+                <div className="relative h-36 overflow-hidden bg-loden-900 sm:h-48">
                   <Image
                     src={image.src}
                     alt={image.alt}
@@ -147,9 +147,9 @@ export function HomeFormationsCarousel({ formations }: { formations: Formation[]
                   </span>
                 </div>
 
-                <div className="flex flex-1 flex-col p-6">
-                  <h3 className="text-xl font-semibold leading-tight text-loden-ink">{labels.title}</h3>
-                  <p className="mt-3 line-clamp-2 text-sm leading-6 text-loden-muted">{labels.description}</p>
+                <div className="flex flex-1 flex-col p-4 sm:p-6">
+                  <h3 className="text-lg font-semibold leading-tight text-loden-ink sm:text-xl">{labels.title}</h3>
+                  <p className="mt-2 line-clamp-2 text-sm leading-6 text-loden-muted sm:mt-3">{labels.description}</p>
 
                   <div className="mt-5 grid gap-2 text-sm text-loden-muted">
                     <span className="inline-flex items-center gap-2">
@@ -162,13 +162,13 @@ export function HomeFormationsCarousel({ formations }: { formations: Formation[]
                     </span>
                   </div>
 
-                  <div className="mt-5 flex items-center justify-between border-t border-slate-100 pt-4">
+                  <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-4 sm:mt-5">
                     <span className="inline-flex items-center gap-2 text-sm font-semibold text-loden-700">
                       <Sparkles className="h-4 w-4" aria-hidden="true" />
                       Découvrir
                     </span>
-                    <span className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-loden-700 text-white shadow-soft transition group-hover:translate-x-0.5 group-hover:bg-loden-800">
-                      <ArrowRight className="h-5 w-5" aria-hidden="true" />
+                    <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-loden-700 text-white shadow-soft transition group-hover:translate-x-0.5 group-hover:bg-loden-800 sm:h-11 sm:w-11">
+                      <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true" />
                     </span>
                   </div>
                 </div>

@@ -812,7 +812,6 @@ export const initialSiteSettings: SiteSettingRecord[] = [
     updatedAt: SITE_SETTINGS_DEFAULT_DATE,
     value: {
       items: [
-        { id: "espace-eleve", label: "Espace Élève", href: "/espace-eleve", active: true, icon: "UserRound", variant: "outline" },
         { id: "inscription", label: "Inscription", href: "/inscription", active: true, icon: "Sparkles", variant: "solid" }
       ]
     }

@@ -13,7 +13,7 @@ export default function AdminNavigationPage() {
       <CrmPageHeader
         eyebrow="Site public"
         title="Menu & navigation"
-        subtitle="Liens du menu, sous-menus, ordre d’affichage et boutons (Espace Élève, Inscription)."
+        subtitle="Liens du menu, sous-menus, ordre d’affichage et boutons d’action."
       />
       <NavEditor />
     </>

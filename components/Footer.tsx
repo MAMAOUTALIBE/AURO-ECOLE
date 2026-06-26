@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Facebook, Instagram, Link2, Mail, MapPin, Phone } from "lucide-react";
 import { contactInfo, legalLinks, localSeoPages, navItems, socialLinks } from "@/data/site";
 
@@ -13,18 +14,18 @@ export function Footer() {
   const directionsHref = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(contactInfo.mapQuery)}`;
 
   return (
-    <footer className="border-t border-slate-200 bg-white">
+    <footer className="border-t border-slate-200 bg-white pb-24 sm:pb-0">
       <div className="container-pad grid gap-10 py-12 lg:grid-cols-[1.2fr_0.8fr_0.8fr_1fr]">
         <div>
-          <div className="flex items-center gap-3">
-            <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-loden-700 text-lg font-bold text-white">
-              L
-            </span>
-            <div>
-              <p className="text-lg font-semibold text-loden-ink">LODENE Auto-École</p>
-              <p className="text-sm text-loden-muted">Permis nouvelle génération</p>
-            </div>
-          </div>
+          <Link href="/" className="focus-ring inline-flex rounded-2xl" aria-label="LODENE - Accueil">
+            <Image
+              src="/lodene-logo.png"
+              alt="LODENE"
+              width={128}
+              height={128}
+              className="h-20 w-20"
+            />
+          </Link>
           <p className="mt-5 max-w-sm text-sm leading-6 text-loden-muted">
             Une auto-école lumineuse, digitale et exigeante pour apprendre à conduire avec confiance.
           </p>

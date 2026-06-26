@@ -21,9 +21,9 @@ export default function InscriptionPage() {
         cta="Parler à un conseiller"
         ctaHref="/contact"
       />
-      <section className="bg-white py-14 sm:py-20">
+      <section className="bg-white py-10 md:py-14 xl:py-20">
         <div className="container-pad grid items-start gap-8 lg:grid-cols-[0.9fr_1.1fr]">
-          <div>
+          <div className="order-2 lg:order-1">
             <SectionHeader
               eyebrow="Compte élève"
               title="Une inscription prête pour le futur espace élève"
@@ -38,9 +38,11 @@ export default function InscriptionPage() {
               ))}
             </div>
           </div>
-          <Suspense fallback={<div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-premium">Chargement du formulaire...</div>}>
-            <StudentRegistrationForm />
-          </Suspense>
+          <div className="order-1 lg:order-2">
+            <Suspense fallback={<div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-premium">Chargement du formulaire...</div>}>
+              <StudentRegistrationForm />
+            </Suspense>
+          </div>
         </div>
       </section>
     </main>

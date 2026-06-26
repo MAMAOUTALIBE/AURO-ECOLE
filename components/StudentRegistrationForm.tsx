@@ -105,14 +105,14 @@ export function StudentRegistrationForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="rounded-3xl border border-slate-200 bg-white p-6 shadow-premium" noValidate>
-      <div className="flex items-start gap-3 border-b border-slate-200 pb-5">
+    <form onSubmit={handleSubmit(onSubmit)} className="rounded-3xl border border-slate-200 bg-white p-4 shadow-premium sm:p-6" noValidate>
+      <div className="flex items-start gap-3 border-b border-slate-200 pb-4 sm:pb-5">
         <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-loden-50 text-loden-700">
           <LockKeyhole className="h-5 w-5" />
         </span>
         <div>
-          <h2 className="text-2xl font-semibold text-loden-ink">Créer mon espace élève</h2>
-          <p className="mt-2 text-sm leading-6 text-loden-muted">
+          <h2 className="text-xl font-semibold text-loden-ink sm:text-2xl">Créer mon espace élève</h2>
+          <p className="mt-1 text-sm leading-6 text-loden-muted sm:mt-2">
             L&apos;inscription crée ton profil élève et prépare ton futur suivi de progression.
           </p>
         </div>

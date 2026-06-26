@@ -50,12 +50,12 @@ export function PoleLanding({ pole }: { pole: "VTC" | "SST" | "LOGISTIQUE_SECURI
         ctaHref={`/contact?pole=${pole}#demande`}
       />
 
-      <section className="bg-white py-14 sm:py-20">
+      <section className="bg-white py-10 md:py-14 xl:py-20">
         <div className="container-pad">
-          <p className="mx-auto max-w-3xl text-center text-lg leading-8 text-loden-muted">{content.intro}</p>
-          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <p className="mx-auto max-w-3xl text-center text-base leading-7 text-loden-muted md:text-lg md:leading-8">{content.intro}</p>
+          <div className="mt-7 grid gap-4 sm:grid-cols-2 lg:grid-cols-4 xl:mt-10">
             {content.benefits.map((benefit) => (
-              <div key={benefit.title} className="rounded-3xl border border-slate-200 bg-loden-pearl p-5 shadow-soft">
+              <div key={benefit.title} className="rounded-3xl border border-slate-200 bg-loden-pearl p-4 shadow-soft md:p-5">
                 <CheckCircle2 className="h-6 w-6 text-loden-600" aria-hidden="true" />
                 <h3 className="mt-3 text-lg font-semibold text-loden-ink">{benefit.title}</h3>
                 <p className="mt-2 text-sm leading-6 text-loden-muted">{benefit.text}</p>
@@ -65,7 +65,7 @@ export function PoleLanding({ pole }: { pole: "VTC" | "SST" | "LOGISTIQUE_SECURI
         </div>
       </section>
 
-      <section className="bg-loden-pearl py-14 sm:py-20">
+      <section className="bg-loden-pearl py-10 md:py-14 xl:py-20">
         <div className="container-pad">
           <SectionHeader
             eyebrow="Nos formations"
@@ -73,22 +73,22 @@ export function PoleLanding({ pole }: { pole: "VTC" | "SST" | "LOGISTIQUE_SECURI
             text="Choisis ta certification : financement CPF, entreprise ou OPCO selon ta situation."
             align="center"
           />
-          <div className="mt-9 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+          <div className="mt-7 grid gap-5 md:grid-cols-2 xl:mt-9 xl:grid-cols-3">
             {poleFormations.map((formation) => (
               <FormationCard key={formation.slug} formation={formation} />
             ))}
           </div>
 
-          <div className="mt-12 flex flex-col items-start gap-5 rounded-3xl bg-loden-800 p-8 text-white sm:flex-row sm:items-center sm:justify-between">
+          <div className="mt-8 flex flex-col items-start gap-5 rounded-3xl bg-loden-800 p-5 text-white sm:flex-row sm:items-center sm:justify-between md:p-8 xl:mt-12">
             <div>
-              <h2 className="text-2xl font-semibold">Un projet en entreprise ou un financement OPCO ?</h2>
+              <h2 className="text-xl font-semibold md:text-2xl">Un projet en entreprise ou un financement OPCO ?</h2>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-white/85">
                 Demande un devis personnalisé : nous adaptons les sessions à tes effectifs et au financement.
               </p>
             </div>
             <Link
               href={`/contact?pole=${pole}#demande`}
-              className="focus-ring inline-flex shrink-0 items-center justify-center gap-2 rounded-full bg-white px-6 py-4 font-semibold text-loden-800 transition hover:bg-loden-pearl"
+              className="focus-ring inline-flex w-full shrink-0 items-center justify-center gap-2 rounded-full bg-white px-6 py-3.5 font-semibold text-loden-800 transition hover:bg-loden-pearl sm:w-auto md:py-4"
             >
               Demander un devis
               <ArrowRight className="h-5 w-5" aria-hidden="true" />

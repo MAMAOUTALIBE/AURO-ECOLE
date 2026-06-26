@@ -57,6 +57,7 @@ The routes under `app/api/**/route.ts` are **thin proxies, not real handlers**. 
   - **content** router (`content.routes.ts`) is mounted at *both* `/api/faq` and `/api/content` (the latter serves `/api/content/company` = the `CompanyInfo` singleton).
   - **cms** router (`cms.routes.ts`) mounts at `/api/content-entries` (generic key/section `ContentEntry` records).
   - **stats** and **chat-admin** both mount under `/api/admin`.
+  - **appointments** mounts twice: `/api/admin/appointments` (admin) and `/api/appointments` (public). This is the **unified RDV center** — the `ChatAppointment` table is the single source of truth for all appointments; the `/admin/rendez-vous` page consumes it and the older booking pages redirect there.
 - All data access goes through the `LodenRepository` interface ([backend/src/repositories/loden-repository.ts](backend/src/repositories/loden-repository.ts)). Two implementations:
   - `MemoryLodenRepository` — in-memory, seeded from `backend/src/data/initial-data.ts` (demo data mirroring the frontend mocks).
   - `PrismaLodenRepository` — PostgreSQL via Prisma.
@@ -69,7 +70,7 @@ Local memory admin login: `admin@loden-autoecole.fr` / `admin-password`.
 
 ### CRM admin (`/admin`)
 
-The CRM is the operational cockpit. [middleware.ts](middleware.ts) protects `/admin/*` (redirects to `/connexion` without a valid `loden_session` cookie + admin-capable role; the API enforces the real RBAC). Pages span operations (`/admin` cockpit KPIs, `/admin/pipeline`, `/admin/planning`, `/admin/examens`, `/admin/eleves` + `/admin/eleves/[id]`, `/admin/moniteurs`, `/admin/vehicules`, `/admin/agences`), finance (`/admin/finance`, `/admin/factures`, `/admin/devis`, `/admin/contrats`, `/admin/relances`, `/admin/cpf`), growth (`/admin/avis`, `/admin/reporting`, `/admin/rapports`), automation/AI (`/admin/workflows`, `/admin/automatisations`, `/admin/assistant`, `/admin/demandes-chatbot`), CMS (`/admin/site/*`, `/admin/pages`, `/admin/blog`, `/admin/medias`, `/admin/formations`), and admin (`/admin/utilisateurs`, `/admin/permissions`, `/admin/journaux`, `/admin/parametres`). CRM-specific UI lives in `components/crm/` (nav defined in [lib/crm-nav.ts](lib/crm-nav.ts)); the agency selector ([components/AgencySwitcher.tsx](components/AgencySwitcher.tsx)) persists the active agency in localStorage and reloads on change. Design vision & status: [docs/crm-blueprint.md](docs/crm-blueprint.md); deploy steps: [docs/crm-deployment.md](docs/crm-deployment.md).
+The CRM is the operational cockpit. [middleware.ts](middleware.ts) protects `/admin/*` (redirects to `/connexion` without a valid `loden_session` cookie + admin-capable role; the API enforces the real RBAC). Pages span operations (`/admin` cockpit KPIs, `/admin/pipeline`, `/admin/planning`, `/admin/rendez-vous` (unified RDV center), `/admin/examens`, `/admin/eleves` + `/admin/eleves/[id]`, `/admin/moniteurs`, `/admin/vehicules`, `/admin/agences`), finance (`/admin/finance`, `/admin/factures`, `/admin/devis`, `/admin/contrats`, `/admin/relances`, `/admin/cpf`), growth (`/admin/avis`, `/admin/reporting`, `/admin/rapports`), automation/AI (`/admin/workflows`, `/admin/automatisations`, `/admin/assistant`, `/admin/demandes-chatbot`), CMS (`/admin/site/*`, `/admin/pages`, `/admin/blog`, `/admin/medias`, `/admin/formations`), and admin (`/admin/utilisateurs`, `/admin/permissions`, `/admin/journaux`, `/admin/parametres`). CRM-specific UI lives in `components/crm/` (nav defined in [lib/crm-nav.ts](lib/crm-nav.ts)); the agency selector ([components/AgencySwitcher.tsx](components/AgencySwitcher.tsx)) persists the active agency in localStorage and reloads on change. Design vision & status: [docs/crm-blueprint.md](docs/crm-blueprint.md); deploy steps: [docs/crm-deployment.md](docs/crm-deployment.md).
 
 ### AI layer is provider-agnostic and lives behind `backend/src/ai/`
 
@@ -89,6 +90,10 @@ When editing CMS content, **keep `lib/site-content.ts` defaults in sync with `ba
 - [data/site.ts](data/site.ts) is the canonical mock content (nav, formations, pricing, instructors, reviews, copy). Pages render from it as the **fallback** when the backend public endpoints are unavailable.
 - API responses use integer **cents** and backend enum values (`MANUEL`, `AUTOMATIQUE`…). The `lib/*-mappers.ts` files (`catalog-`, `social-`, `invoice-`, `quote-`, `contract-`) convert API DTOs into the frontend display shapes (euros, French labels). Always map API data through these before rendering — don't render raw API payloads.
 - `data/crm.ts` backs the admin/CRM dashboard views.
+
+### SEO: one canonical URL drives everything
+
+[lib/seo.ts](lib/seo.ts) exports `SITE_URL` — the single source of the canonical domain (`NEXT_PUBLIC_SITE_URL`, default `https://lodene.org`). `absoluteUrl()` and `OG_IMAGE` derive from it; the dynamic [app/sitemap.ts](app/sitemap.ts) and [app/robots.ts](app/robots.ts) (which blocks private/tunnel routes), plus canonicals and Open Graph in page metadata, all flow from `SITE_URL`. To switch the canonical domain, set `NEXT_PUBLIC_SITE_URL` — no other code change. Structured data is emitted via `safeJsonLd()` in [lib/json-ld.ts](lib/json-ld.ts), which escapes `<`/`>`/`&` so API-sourced content (reviews, FAQ) can't break out of the `<script type="application/ld+json">` tag (XSS guard) — always serialize JSON-LD through it, never raw `JSON.stringify`.
 
 ### Config & environment
 

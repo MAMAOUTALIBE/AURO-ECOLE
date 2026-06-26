@@ -25,6 +25,21 @@ function move<T>(arr: T[], from: number, to: number): T[] {
   return next;
 }
 
+function hrefPath(href: string) {
+  const path = href.split("#")[0].split("?")[0] || "/";
+  return path === "/" ? path : path.replace(/\/+$/, "");
+}
+
+function withoutStudentAccountLinks<T extends NavChild>(items: T[]): T[] {
+  return items.filter((item) => hrefPath(item.href) !== "/espace-eleve");
+}
+
+function withoutStudentAccountNavItems(items: NavItem[]): NavItem[] {
+  return withoutStudentAccountLinks(items).map((item) =>
+    item.children ? { ...item, children: withoutStudentAccountLinks(item.children) } : item
+  );
+}
+
 function ActiveToggle({ active, onChange }: { active: boolean; onChange: (active: boolean) => void }) {
   return (
     <label className="inline-flex shrink-0 items-center gap-1 text-xs font-semibold text-loden-muted">
@@ -40,8 +55,8 @@ export function NavEditor() {
 
   if (primary.loading || ctas.loading) return <p className="text-sm text-loden-muted">Chargement…</p>;
 
-  const items = primary.value.items;
-  const setItems = (next: NavItem[]) => primary.setValue({ items: next });
+  const items = withoutStudentAccountNavItems(primary.value.items);
+  const setItems = (next: NavItem[]) => primary.setValue({ items: withoutStudentAccountNavItems(next) });
   const patchItem = (index: number, next: Partial<NavItem>) =>
     setItems(items.map((item, i) => (i === index ? { ...item, ...next } : item)));
 
@@ -51,8 +66,8 @@ export function NavEditor() {
     setChildren(itemIndex, children);
   };
 
-  const ctaItems = ctas.value.items;
-  const setCtaItems = (next: NavCta[]) => ctas.setValue({ items: next });
+  const ctaItems = withoutStudentAccountLinks(ctas.value.items);
+  const setCtaItems = (next: NavCta[]) => ctas.setValue({ items: withoutStudentAccountLinks(next) });
   const patchCta = (index: number, next: Partial<NavCta>) =>
     setCtaItems(ctaItems.map((item, i) => (i === index ? { ...item, ...next } : item)));
 
@@ -144,7 +159,7 @@ export function NavEditor() {
       {/* ---- Boutons CTA ---- */}
       <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-soft">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-loden-ink">Boutons (Espace Élève, Inscription…) ({ctaItems.length})</h2>
+          <h2 className="text-lg font-semibold text-loden-ink">Boutons (Inscription…) ({ctaItems.length})</h2>
           <button
             type="button"
             onClick={() => setCtaItems([...ctaItems, { id: newId("cta"), label: "Nouveau bouton", href: "/", active: true, icon: "Sparkles", variant: "outline" }])}

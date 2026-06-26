@@ -3,6 +3,7 @@ import { AiChatWidget } from "@/components/AiChatWidget";
 import { Footer } from "@/components/Footer";
 import { HeaderMain } from "@/components/HeaderMain";
 import { HeaderTop } from "@/components/HeaderTop";
+import { MobileActionBar } from "@/components/MobileActionBar";
 import { SiteChrome } from "@/components/SiteChrome";
 import { companyInfo, contactInfo, socialLinks } from "@/data/site";
 import { safeJsonLd } from "@/lib/json-ld";
@@ -55,9 +56,9 @@ export const metadata: Metadata = {
     images: ["/loden-hero.jpg"]
   },
   icons: {
-    icon: "/favicon.svg",
-    shortcut: "/favicon.svg",
-    apple: "/favicon.svg"
+    icon: "/favicon.png",
+    shortcut: "/favicon.png",
+    apple: "/lodene-logo.png"
   },
   // Vérification Google Search Console : renseigner NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION
   // (le code fourni par GSC) puis redéployer — la balise meta est alors injectée.
@@ -83,7 +84,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
     name: SITE_NAME,
     url: SITE_URL,
     image: OG_IMAGE,
-    logo: absoluteUrl("/favicon.svg"),
+    logo: absoluteUrl("/lodene-logo.png"),
     ...(contactInfo.phone ? { telephone: contactInfo.phone } : {}),
     ...(contactInfo.email ? { email: contactInfo.email } : {}),
     address: {
@@ -117,6 +118,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
             <>
               <Footer />
               <AiChatWidget />
+              <MobileActionBar />
             </>
           }
         >

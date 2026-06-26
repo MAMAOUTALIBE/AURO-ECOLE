@@ -36,14 +36,14 @@ export function ReviewsGrid() {
 
   if (reviews.length === 0) {
     return (
-      <p className="mt-9 rounded-3xl border border-slate-200 bg-loden-pearl p-6 text-center text-sm text-loden-muted">
+      <p className="mt-7 rounded-3xl border border-slate-200 bg-loden-pearl p-5 text-center text-sm text-loden-muted md:mt-9 md:p-6">
         Aucun avis publié pour le moment.
       </p>
     );
   }
 
   return (
-    <div className="mt-9 grid gap-5 md:grid-cols-3">
+    <div className="mt-7 grid gap-5 md:mt-9 md:grid-cols-2 xl:grid-cols-3">
       {reviews.map((testimonial, index) => (
         <TestimonialCard key={`${testimonial.name}-${index}`} testimonial={testimonial} />
       ))}

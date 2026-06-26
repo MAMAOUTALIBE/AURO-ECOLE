@@ -62,40 +62,40 @@ export function FormationExplorer() {
   }, [activeFilter, activePole, query, sourceFormations]);
 
   return (
-    <section className="bg-white py-14 sm:py-20">
+    <section className="bg-white py-10 md:py-14 xl:py-20">
       <div className="container-pad">
-        <div className="rounded-[1.75rem] border border-slate-200 bg-loden-pearl p-4 sm:p-5">
+        <div className="rounded-3xl border border-slate-200 bg-loden-pearl p-3 sm:rounded-[1.75rem] sm:p-5 lg:p-6">
           <div className="flex items-center gap-3 rounded-2xl bg-white px-4 py-3 shadow-soft">
             <Search className="h-5 w-5 text-loden-500" aria-hidden="true" />
             <input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               className="min-w-0 flex-1 bg-transparent outline-none placeholder:text-loden-muted"
-              placeholder="Rechercher une formation, un financement, un objectif..."
+              placeholder="Rechercher une formation..."
               aria-label="Recherche avancée des formations"
             />
           </div>
-          <div className="mt-4 flex flex-wrap gap-2" role="group" aria-label="Filtrer par pôle">
+          <div className="-mx-3 mt-4 flex gap-2 overflow-x-auto px-3 pb-1 [scrollbar-width:none] sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0 sm:pb-0 [&::-webkit-scrollbar]:hidden" role="group" aria-label="Filtrer par pôle">
             {poles.map((pole) => (
               <button
                 key={pole.key}
                 type="button"
                 onClick={() => setActivePole(pole.key)}
                 aria-pressed={activePole === pole.key}
-                className={`focus-ring rounded-full border px-4 py-2 text-sm font-semibold transition ${activePole === pole.key ? "border-loden-900 bg-loden-900 text-white" : "border-slate-200 bg-white text-loden-ink hover:border-loden-300"}`}
+                className={`focus-ring shrink-0 rounded-full border px-4 py-2 text-sm font-semibold transition ${activePole === pole.key ? "border-loden-900 bg-loden-900 text-white" : "border-slate-200 bg-white text-loden-ink hover:border-loden-300"}`}
               >
                 {pole.label}
               </button>
             ))}
           </div>
-          <div className="mt-3 flex flex-wrap gap-2" role="group" aria-label="Filtrer par type">
+          <div className="-mx-3 mt-3 flex gap-2 overflow-x-auto px-3 pb-1 [scrollbar-width:none] sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0 sm:pb-0 [&::-webkit-scrollbar]:hidden" role="group" aria-label="Filtrer par type">
             {["Toutes", ...filters].map((filter) => (
               <button
                 key={filter}
                 type="button"
                 onClick={() => setActiveFilter(filter)}
                 aria-pressed={activeFilter === filter}
-                className={`focus-ring rounded-full border px-4 py-2 text-sm font-semibold transition ${activeFilter === filter ? "border-loden-700 bg-loden-700 text-white" : "border-slate-200 bg-white text-loden-muted hover:border-loden-200"}`}
+                className={`focus-ring shrink-0 rounded-full border px-4 py-2 text-sm font-semibold transition ${activeFilter === filter ? "border-loden-700 bg-loden-700 text-white" : "border-slate-200 bg-white text-loden-muted hover:border-loden-200"}`}
               >
                 {filter}
               </button>
@@ -103,7 +103,7 @@ export function FormationExplorer() {
           </div>
         </div>
         {visibleFormations.length > 0 ? (
-          <div className="mt-8 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+          <div className="mt-8 grid gap-5 md:grid-cols-2 xl:grid-cols-3 2xl:gap-6">
             {visibleFormations.map((formation) => (
               <FormationCard key={formation.slug} formation={formation} />
             ))}

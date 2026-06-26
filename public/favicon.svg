@@ -1,4 +1,20 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <rect width="64" height="64" rx="18" fill="#08AEB8"/>
-  <path d="M20 16h10v24h16v8H20V16Z" fill="#FFFFFF"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="LODENE">
+  <defs>
+    <linearGradient id="g" x1="8" y1="8" x2="56" y2="56" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#009b74"/>
+      <stop offset="0.55" stop-color="#08aeb8"/>
+      <stop offset="1" stop-color="#70d18c"/>
+    </linearGradient>
+    <linearGradient id="d" x1="15" y1="12" x2="50" y2="54" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#083f48"/>
+      <stop offset="1" stop-color="#05262d"/>
+    </linearGradient>
+  </defs>
+  <circle cx="32" cy="32" r="30" fill="url(#g)"/>
+  <circle cx="32" cy="32" r="25" fill="#fff"/>
+  <circle cx="32" cy="32" r="21" fill="url(#d)"/>
+  <path d="M18 30c3-11 11-18 14-18s11 7 14 18h-6c-3-7-7-11-8-11s-5 4-8 11h-6Z" fill="url(#g)"/>
+  <rect x="12" y="29" width="40" height="16" rx="5" fill="url(#g)"/>
+  <text x="32" y="41" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="11" font-weight="900" letter-spacing="1" fill="#fff">LOD</text>
+  <path d="M24 52c7-7 16-12 27-14-8 5-14 11-18 19-3-1-6-2-9-5Z" fill="#fff"/>
 </svg>

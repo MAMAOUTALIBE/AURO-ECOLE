@@ -53,7 +53,7 @@ export function ContactForm() {
     ? `Demande de devis — formation ${pole}${formationTitle ? ` (${formationTitle})` : ""}. Merci de me recontacter avec les modalités et le financement.`
     : formationTitle
       ? `Je souhaite un devis pour la formation : ${formationTitle}.`
-      : "";
+      : "Je souhaite être rappelé pour choisir une formation LODENE.";
 
   const [sent, setSent] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -118,14 +118,14 @@ export function ContactForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-premium" noValidate>
-      <div className="flex items-start gap-3 border-b border-slate-200 pb-5">
+    <form onSubmit={handleSubmit(onSubmit)} className="rounded-3xl border border-slate-200 bg-white p-4 shadow-premium sm:rounded-[1.75rem] sm:p-6" noValidate>
+      <div className="flex items-start gap-3 border-b border-slate-200 pb-4 sm:pb-5">
         <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-loden-50 text-loden-700">
           <ClipboardCheck className="h-5 w-5" />
         </span>
         <div>
-          <h2 className="text-2xl font-semibold text-loden-ink">Diagnostic & devis</h2>
-          <p className="mt-2 text-sm leading-6 text-loden-muted">
+          <h2 className="text-xl font-semibold text-loden-ink sm:text-2xl">Diagnostic & devis</h2>
+          <p className="mt-1 text-sm leading-6 text-loden-muted sm:mt-2">
             Les réponses permettent à LODENE de te rappeler avec le bon parcours, le bon financement et un planning réaliste.
           </p>
         </div>
@@ -135,14 +135,11 @@ export function ContactForm() {
         <Field label="Nom" error={errors.name?.message}>
           <input {...register("name")} className="field-input" placeholder="Ton nom" autoComplete="name" />
         </Field>
-        <Field label="Email" error={errors.email?.message}>
-          <input {...register("email")} className="field-input" placeholder="prenom@email.fr" autoComplete="email" />
-        </Field>
         <Field label="Téléphone" error={errors.phone?.message}>
           <input {...register("phone")} {...phoneInputProps} className="field-input" />
         </Field>
-        <Field label="Entreprise / financeur (optionnel)" error={errors.company?.message}>
-          <input {...register("company")} className="field-input" placeholder="Société, OPCO, Pôle emploi…" autoComplete="organization" />
+        <Field label="Email" error={errors.email?.message}>
+          <input {...register("email")} className="field-input" placeholder="prenom@email.fr" autoComplete="email" />
         </Field>
         <Field label="Besoin" error={errors.need?.message}>
           <select {...register("need")} className="field-input">
@@ -155,9 +152,12 @@ export function ContactForm() {
             <option>Remise à niveau</option>
           </select>
         </Field>
+        <Field label="Entreprise / financeur (optionnel)" error={errors.company?.message} className="hidden sm:grid">
+          <input {...register("company")} className="field-input" placeholder="Société, OPCO, Pôle emploi…" autoComplete="organization" />
+        </Field>
       </div>
 
-      <div className="mt-4 grid gap-4 sm:grid-cols-2">
+      <div className="mt-4 hidden gap-4 sm:grid sm:grid-cols-2">
         <Field label="Financement" error={errors.financing?.message}>
           <select {...register("financing")} className="field-input">
             <option>À définir</option>
@@ -193,7 +193,7 @@ export function ContactForm() {
         </Field>
       </div>
 
-      <Field label="Message" error={errors.message?.message} className="mt-4">
+      <Field label="Message" error={errors.message?.message} className="mt-4 hidden sm:grid">
         <textarea {...register("message")} className="field-input min-h-32 resize-y" placeholder="Objectif, contraintes, date d'examen visée, solde CPF approximatif..." />
       </Field>
       <button
@@ -202,7 +202,12 @@ export function ContactForm() {
         className="focus-ring mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full bg-loden-700 px-6 py-4 font-semibold text-white transition hover:bg-loden-800 disabled:cursor-not-allowed disabled:opacity-70"
       >
         <Send className="h-5 w-5" />
-        {isSubmitting ? "Envoi..." : "Envoyer ma demande"}
+        {isSubmitting ? "Envoi..." : (
+          <>
+            <span className="sm:hidden">Être rappelé</span>
+            <span className="hidden sm:inline">Envoyer ma demande</span>
+          </>
+        )}
       </button>
       {sent ? (
         <p className="mt-4 rounded-2xl bg-loden-50 p-4 text-sm font-medium text-loden-800" role="status">

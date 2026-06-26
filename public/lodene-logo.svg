@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-labelledby="title desc">
+  <title id="title">LODENE</title>
+  <desc id="desc">Logo rond LODENE avec volant, route et symbole de formation.</desc>
+  <defs>
+    <linearGradient id="lodene-green" x1="132" y1="137" x2="881" y2="884" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#00a47c"/>
+      <stop offset="0.55" stop-color="#08aeb8"/>
+      <stop offset="1" stop-color="#72d38b"/>
+    </linearGradient>
+    <linearGradient id="lodene-dark" x1="218" y1="176" x2="810" y2="862" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#083f48"/>
+      <stop offset="1" stop-color="#05262d"/>
+    </linearGradient>
+    <linearGradient id="lodene-banner" x1="90" y1="416" x2="935" y2="604" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#009b74"/>
+      <stop offset="0.48" stop-color="#08aeb8"/>
+      <stop offset="1" stop-color="#007d67"/>
+    </linearGradient>
+  </defs>
+
+  <circle cx="512" cy="512" r="430" fill="url(#lodene-green)"/>
+  <circle cx="512" cy="512" r="395" fill="#ffffff"/>
+  <circle cx="512" cy="512" r="365" fill="url(#lodene-dark)"/>
+
+  <path d="M248 404c28-144 137-241 264-241s236 97 264 241h-63c-28-109-108-178-201-178s-173 69-201 178h-63Z" fill="url(#lodene-green)"/>
+  <path d="M358 364c21-72 80-116 154-116s133 44 154 116c6 20-2 31-23 29-43-5-88-8-131-8s-88 3-131 8c-21 2-29-9-23-29Z" fill="#062f37"/>
+  <path d="M317 411c-12 1-21 11-21 23v42c0 17 13 30 30 30h58c18 0 34 8 46 21l41 43c23 25 61 25 84 0l41-43c12-13 28-21 46-21h56c17 0 30-13 30-30v-42c0-12-9-22-21-23-57-7-126-11-194-11-69 0-137 4-196 11Z" fill="url(#lodene-green)"/>
+  <circle cx="512" cy="464" r="34" fill="#062f37"/>
+
+  <rect x="78" y="405" width="868" height="226" rx="38" fill="url(#lodene-banner)"/>
+  <text x="512" y="557" text-anchor="middle" font-family="Inter, Montserrat, Arial, sans-serif" font-size="170" font-weight="900" letter-spacing="14" fill="#ffffff">LODENE</text>
+
+  <path d="M287 679h100v79h-49v-36h-51v-43Z" fill="none" stroke="#65d092" stroke-width="12"/>
+  <circle cx="264" cy="688" r="18" fill="#65d092"/>
+  <path d="M240 716c0-16 11-28 27-28h11c16 0 28 12 28 28v74h-66v-74Z" fill="#65d092"/>
+  <path d="M308 719h56M308 751h56" stroke="#65d092" stroke-width="12" stroke-linecap="round"/>
+  <circle cx="320" cy="812" r="19" fill="#65d092"/>
+  <circle cx="371" cy="812" r="19" fill="#65d092"/>
+  <circle cx="422" cy="812" r="19" fill="#65d092"/>
+  <path d="M294 840c0-19 15-34 34-34h0c19 0 34 15 34 34v13h-68v-13ZM345 840c0-19 15-34 34-34h0c19 0 34 15 34 34v13h-68v-13ZM396 840c0-19 15-34 34-34h0c19 0 34 15 34 34v13h-68v-13Z" fill="#65d092"/>
+
+  <path d="M452 878c92-132 224-217 400-265-128 82-214 174-273 292-43-2-85-11-127-27Z" fill="#ffffff"/>
+  <path d="M631 879c52-105 123-179 221-245-71 81-124 168-158 265-21-4-42-10-63-20Z" fill="#65d092"/>
+  <path d="M147 655a365 365 0 0 0 730 0h-67a303 303 0 0 1-596 0h-67Z" fill="none" stroke="#ffffff" stroke-width="18"/>
+</svg>

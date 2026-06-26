@@ -80,14 +80,14 @@ export function CpfRequestForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="rounded-3xl border border-slate-200 bg-white p-6 shadow-premium" noValidate>
-      <div className="flex items-start gap-3 border-b border-slate-200 pb-5">
+    <form onSubmit={handleSubmit(onSubmit)} className="rounded-3xl border border-slate-200 bg-white p-4 shadow-premium md:p-6" noValidate>
+      <div className="flex items-start gap-3 border-b border-slate-200 pb-4 md:pb-5">
         <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-loden-50 text-loden-700">
           <FileCheck2 className="h-5 w-5" />
         </span>
         <div>
-          <h2 className="text-2xl font-semibold text-loden-ink">Vérifier mon financement</h2>
-          <p className="mt-2 text-sm leading-6 text-loden-muted">
+          <h2 className="text-xl font-semibold text-loden-ink md:text-2xl">Vérifier mon financement</h2>
+          <p className="mt-1 text-sm leading-6 text-loden-muted md:mt-2">
             Un conseiller analyse ton solde CPF et prépare le meilleur parcours possible.
           </p>
         </div>

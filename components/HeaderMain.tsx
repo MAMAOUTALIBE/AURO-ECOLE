@@ -1,9 +1,10 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { LucideIcon } from "lucide-react";
-import { ChevronDown, Menu, UserRound, X } from "lucide-react";
+import { ChevronDown, Menu, Sparkles, X } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import {
@@ -17,7 +18,8 @@ import {
 import { resolveSiteIcon } from "@/lib/site-icons";
 
 function hrefPath(href: string) {
-  return href.split("#")[0] || "/";
+  const path = href.split("#")[0].split("?")[0] || "/";
+  return path === "/" ? path : path.replace(/\/+$/, "");
 }
 
 function matchPath(pathname: string, href: string) {
@@ -31,20 +33,49 @@ function isItemActive(pathname: string, item: NavItem) {
   return (item.children ?? []).some((child) => child.active && matchPath(pathname, child.href));
 }
 
+function isStudentAccountHref(href: string) {
+  return hrefPath(href) === "/espace-eleve";
+}
+
+function publicNavItems(nav: NavPrimary): NavItem[] {
+  return nav.items
+    .filter((item) => item.active && !isStudentAccountHref(item.href))
+    .map((item) => ({
+      ...item,
+      children: item.children?.filter((child) => child.active && !isStudentAccountHref(child.href))
+    }));
+}
+
 function Logo() {
   return (
-    <Link href="/" className="focus-ring flex shrink-0 items-center gap-3 rounded-full pr-2">
-      <span
-        aria-hidden="true"
-        className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white text-lg font-bold text-loden-800 shadow-soft"
-      >
-        L
-      </span>
-      <span className="shrink-0">
-        <span className="block whitespace-nowrap text-lg font-extrabold tracking-[0.08em] text-white drop-shadow-sm sm:text-xl">
-          LODENE
-        </span>
-      </span>
+    <Link
+      href="/"
+      className="focus-ring flex shrink-0 items-center rounded-full bg-white px-2 py-1 shadow-[0_10px_28px_rgba(20,33,38,0.12)]"
+      aria-label="LODENE - Accueil"
+    >
+      <Image
+        src="/lodene-logo.png"
+        alt="LODENE"
+        width={96}
+        height={96}
+        priority
+        className="h-11 w-11 sm:h-12 sm:w-12"
+      />
+    </Link>
+  );
+}
+
+function MobileLogo() {
+  return (
+    <Link href="/" className="focus-ring flex min-w-0 shrink-0 rounded-full" aria-label="LODENE - Accueil">
+      <Image
+        src="/lodene-logo.png"
+        alt="LODENE"
+        width={112}
+        height={112}
+        priority
+        className="h-12 w-12 min-[375px]:h-14 min-[375px]:w-14"
+      />
     </Link>
   );
 }
@@ -162,14 +193,30 @@ export function HeaderMain({ nav, ctas }: { nav?: NavPrimary; ctas?: NavCtas }) 
   const [menuOpen, setMenuOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
 
-  const items = (nav ?? defaultNavPrimary).items.filter((item) => item.active);
-  const ctaItems: NavCta[] = (ctas ?? defaultNavCtas).items.filter((item) => item.active);
+  const items = publicNavItems(nav ?? defaultNavPrimary);
+  const ctaItems: NavCta[] = (ctas ?? defaultNavCtas).items.filter((item) => item.active && !isStudentAccountHref(item.href));
   const dropdowns = items.filter((item) => (item.children ?? []).some((child) => child.active));
 
   return (
-    <header className="sticky top-0 z-40 bg-loden-pearl/85 py-3 backdrop-blur-xl">
+    <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-xl md:bg-loden-pearl/90 md:py-3">
       <div className="container-pad">
-        <div className="flex min-h-16 items-center justify-between gap-3 rounded-full border border-white/35 bg-loden-700 px-3 py-2 shadow-premium ring-1 ring-loden-500/40">
+        <div className="flex min-h-[5.25rem] items-center justify-between gap-3 md:hidden">
+          <MobileLogo />
+
+          <div className="flex shrink-0 items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setMenuOpen((value) => !value)}
+              className="focus-ring inline-flex h-12 w-12 items-center justify-center rounded-full border border-slate-200 bg-white text-loden-ink shadow-[0_10px_28px_rgba(20,33,38,0.08)] transition hover:border-loden-200 hover:bg-loden-50"
+              aria-label={menuOpen ? "Fermer le menu" : "Ouvrir le menu"}
+              aria-expanded={menuOpen}
+            >
+              {menuOpen ? <X className="h-5 w-5" aria-hidden="true" /> : <Menu className="h-5 w-5" aria-hidden="true" />}
+            </button>
+          </div>
+        </div>
+
+        <div className="hidden min-h-14 items-center justify-between gap-2 rounded-[1.4rem] border border-white/35 bg-loden-700 px-2.5 py-2 shadow-premium ring-1 ring-loden-500/40 md:flex sm:min-h-16 sm:gap-3 sm:rounded-full sm:px-3">
           <Logo />
 
           <nav className="hidden items-center gap-1 xl:flex" aria-label="Navigation principale">
@@ -211,17 +258,17 @@ export function HeaderMain({ nav, ctas }: { nav?: NavPrimary; ctas?: NavCtas }) 
 
           <div className="flex shrink-0 items-center gap-2 xl:hidden">
             <Link
-              href="/espace-eleve"
-              className="focus-ring hidden h-12 w-12 items-center justify-center gap-2 rounded-full border border-white bg-white text-sm font-semibold text-loden-800 shadow-[0_8px_24px_rgba(20,33,38,0.10)] min-[375px]:inline-flex sm:w-auto sm:px-4 sm:py-2"
-              aria-label="Espace Élève"
+              href="/inscription"
+              className="focus-ring inline-flex h-11 w-11 items-center justify-center gap-2 rounded-full border border-white bg-white text-sm font-semibold text-loden-800 shadow-[0_8px_24px_rgba(20,33,38,0.10)] sm:h-12 sm:w-auto sm:px-4 sm:py-2"
+              aria-label="Inscription"
             >
-              <UserRound className="h-4 w-4" aria-hidden="true" />
-              <span className="hidden whitespace-nowrap sm:inline">Espace Élève</span>
+              <Sparkles className="h-4 w-4" aria-hidden="true" />
+              <span className="hidden whitespace-nowrap sm:inline">Inscription</span>
             </Link>
             <button
               type="button"
               onClick={() => setMenuOpen((value) => !value)}
-              className="focus-ring inline-flex h-12 w-12 items-center justify-center rounded-full border border-white/60 bg-white/18 text-white shadow-[0_8px_24px_rgba(20,33,38,0.08)] transition hover:bg-white/30"
+              className="focus-ring inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/60 bg-white/18 text-white shadow-[0_8px_24px_rgba(20,33,38,0.08)] transition hover:bg-white/30 sm:h-12 sm:w-12"
               aria-label={menuOpen ? "Fermer le menu" : "Ouvrir le menu"}
               aria-expanded={menuOpen}
             >
@@ -231,7 +278,7 @@ export function HeaderMain({ nav, ctas }: { nav?: NavPrimary; ctas?: NavCtas }) 
         </div>
 
         {menuOpen ? (
-          <div className="mt-3 rounded-[2rem] border border-slate-200/80 bg-white p-3 shadow-premium xl:hidden">
+          <div className="mt-1 max-h-[calc(100dvh-5.5rem)] overflow-y-auto rounded-[1.5rem] border border-slate-200/80 bg-white p-2.5 shadow-premium xl:hidden md:mt-3 sm:rounded-[2rem] sm:p-3">
             <nav className="grid gap-2" aria-label="Navigation mobile">
               {dropdowns.map((dropdown) => {
                 const Icon = resolveSiteIcon(dropdown.icon);

@@ -11,9 +11,15 @@ export default function manifest(): MetadataRoute.Manifest {
     theme_color: "#08AEB8",
     icons: [
       {
-        src: "/favicon.svg",
-        sizes: "64x64",
-        type: "image/svg+xml",
+        src: "/lodene-logo.png",
+        sizes: "512x512",
+        type: "image/png",
+        purpose: "any"
+      },
+      {
+        src: "/favicon.png",
+        sizes: "96x96",
+        type: "image/png",
         purpose: "any"
       }
     ]
