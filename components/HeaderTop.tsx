@@ -29,8 +29,8 @@ function TickerGroup({ hidden }: { hidden?: boolean }) {
 
 export function HeaderTop() {
   return (
-    <div className="hidden border-b border-[#f97316]/20 bg-white/95 text-sm text-loden-ink backdrop-blur-xl lg:block">
-      <div className="container-pad flex h-10 items-center gap-6">
+    <div className="hidden border-b border-[#f97316]/35 bg-white/95 text-sm text-loden-ink shadow-[0_8px_22px_rgba(249,115,22,0.10)] backdrop-blur-xl lg:block">
+      <div className="container-pad flex h-14 items-center gap-6">
         <div className="marquee min-w-0 flex-1" role="marquee" aria-label="Informations LODENE">
           <div className="marquee-track">
             <TickerGroup />
