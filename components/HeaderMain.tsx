@@ -216,10 +216,10 @@ export function HeaderMain({ nav, ctas }: { nav?: NavPrimary; ctas?: NavCtas }) 
           </div>
         </div>
 
-        <div className="hidden min-h-14 items-center justify-between gap-2 rounded-none border border-[#f97316]/55 bg-white px-5 py-2 shadow-[0_18px_55px_rgba(20,33,38,0.10),0_0_0_1px_rgba(249,115,22,0.18),0_0_32px_rgba(249,115,22,0.18)] ring-1 ring-white md:flex sm:min-h-16 sm:gap-3 sm:px-8">
+        <div className="hidden min-h-14 items-center gap-3 rounded-none border border-[#f97316]/55 bg-white px-5 py-2 shadow-[0_18px_55px_rgba(20,33,38,0.10),0_0_0_1px_rgba(249,115,22,0.18),0_0_32px_rgba(249,115,22,0.18)] ring-1 ring-white md:flex sm:min-h-16 sm:gap-5 sm:px-8">
           <Logo />
 
-          <nav className="hidden items-center gap-1 xl:flex" aria-label="Navigation principale">
+          <nav className="hidden flex-1 items-center justify-center gap-1 xl:flex" aria-label="Navigation principale">
             {items.map((item) => {
               const hasChildren = (item.children ?? []).some((child) => child.active);
               if (hasChildren) {
@@ -244,6 +244,9 @@ export function HeaderMain({ nav, ctas }: { nav?: NavPrimary; ctas?: NavCtas }) 
                 />
               );
             })}
+          </nav>
+
+          <div className="hidden shrink-0 items-center gap-2 xl:flex">
             {ctaItems.map((cta) => (
               <PillLink
                 key={cta.id}
@@ -254,7 +257,7 @@ export function HeaderMain({ nav, ctas }: { nav?: NavPrimary; ctas?: NavCtas }) 
                 variant={cta.variant === "solid" ? "solid" : "outline"}
               />
             ))}
-          </nav>
+          </div>
 
           <div className="flex shrink-0 items-center gap-2 xl:hidden">
             <Link
