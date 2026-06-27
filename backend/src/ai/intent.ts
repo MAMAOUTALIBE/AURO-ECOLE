@@ -5,13 +5,16 @@
 export type IntentResult = { intent: string; confidence: number };
 
 const INTENT_RULES: { intent: string; keywords: string[] }[] = [
+  { intent: "reclamation", keywords: ["reclamation", "plainte", "mecontent", "pas content", "probleme", "urgent", "urgence", "annuler", "annulation", "remboursement", "litige"] },
+  { intent: "cpf_financement", keywords: ["cpf", "financement", "financer", "opco", "aide", "labaz", "compte formation"] },
   { intent: "permis_b", keywords: ["permis", "conduire", "conduite", "boite", "automatique", "manuel", "code", "conduite accompagnee", "aac"] },
   { intent: "vtc", keywords: ["vtc", "chauffeur", "cma", "carte pro", "carte professionnelle"] },
   { intent: "sst", keywords: ["sst", "secour", "sauveteur", "secourisme"] },
   { intent: "logistique", keywords: ["caces", "chariot", "nacelle", "gerbeur", "pont roulant", "echafaudage", "logistique", "r489", "r485", "r486", "r484", "r457"] },
-  { intent: "cpf_financement", keywords: ["cpf", "financement", "financer", "opco", "aide", "labaz", "compte formation"] },
   { intent: "devis", keywords: ["devis", "tarif", "prix", "combien", "cout", "coute"] },
   { intent: "rendez_vous", keywords: ["rendez", "rdv", "reserver", "creneau", "rappel", "rappeler", "rendez-vous"] },
+  { intent: "documents", keywords: ["documents", "pieces", "piece", "justificatif", "photo", "identite", "domicile", "ants", "neph"] },
+  { intent: "inscription", keywords: ["inscription", "inscrire", "m inscrire", "commencer", "demarrer", "debuter"] },
   { intent: "contact", keywords: ["adresse", "horaire", "telephone", "ou etes", "ou se trouve", "contact", "email"] },
   { intent: "entreprise", keywords: ["entreprise", "salaries", "salarie", "intra", "inter-entreprise", "collaborateurs"] }
 ];

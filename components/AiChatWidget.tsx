@@ -6,6 +6,14 @@ import { contactInfo } from "@/data/site";
 import { cn } from "@/lib/utils";
 
 type Message = { role: "user" | "assistant"; content: string };
+type ChatSuggestion = {
+  id: string;
+  label: string;
+  kind: "flow" | "message" | "whatsapp";
+  formation?: string;
+  objective?: string;
+  message?: string;
+};
 type FlowStep = "formation" | "objective" | "contact" | "slot" | "done";
 type AppointmentSlot = {
   id: string;
@@ -49,14 +57,12 @@ const FORMATIONS = [
 
 const OBJECTIVES = ["M'inscrire", "Obtenir un devis", "Utiliser mon CPF", "Poser une question", "Être rappelé"];
 
-const QUICK_ACTIONS = [
-  { label: "Passer le permis B", formation: "Permis B automatique" },
-  { label: "Formation VTC", formation: "VTC" },
-  { label: "Formation SST", formation: "SST" },
-  { label: "Formation entreprise", formation: "Formation entreprise" },
-  { label: "Demander un devis", objective: "Obtenir un devis" },
-  { label: "Prendre rendez-vous", objective: "Être rappelé" }
-] as const;
+const DEFAULT_SUGGESTIONS: ChatSuggestion[] = [
+  { id: "permis-b", label: "Permis B", kind: "flow", formation: "Permis B automatique", objective: "M'inscrire" },
+  { id: "cpf", label: "Vérifier CPF", kind: "flow", objective: "Utiliser mon CPF" },
+  { id: "quote", label: "Demander un devis", kind: "flow", objective: "Obtenir un devis" },
+  { id: "appointment", label: "Prendre RDV", kind: "flow", objective: "Être rappelé" }
+];
 
 const EMPTY_FLOW: FlowState = {
   step: "formation",
@@ -91,11 +97,24 @@ function optionButtonClass(active?: boolean) {
   );
 }
 
+function normalizeSuggestions(value: unknown): ChatSuggestion[] {
+  if (!Array.isArray(value)) return DEFAULT_SUGGESTIONS;
+  const suggestions = value
+    .filter((item): item is ChatSuggestion => {
+      if (!item || typeof item !== "object") return false;
+      const candidate = item as Partial<ChatSuggestion>;
+      return Boolean(candidate.id && candidate.label && candidate.kind && ["flow", "message", "whatsapp"].includes(candidate.kind));
+    })
+    .slice(0, 4);
+  return suggestions.length ? suggestions : DEFAULT_SUGGESTIONS;
+}
+
 export function AiChatWidget() {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([GREETING]);
   const [input, setInput] = useState("");
   const [flow, setFlow] = useState<FlowState | null>(null);
+  const [suggestions, setSuggestions] = useState<ChatSuggestion[]>(DEFAULT_SUGGESTIONS);
   const [slots, setSlots] = useState<AppointmentSlot[]>([]);
   const [loading, setLoading] = useState(false);
   const [flowError, setFlowError] = useState<string | null>(null);
@@ -125,8 +144,8 @@ export function AiChatWidget() {
     pushAssistant("Très bien. Je vais vous orienter en quelques étapes, puis proposer un créneau avec un conseiller LODENE.");
   };
 
-  const send = async () => {
-    const text = input.trim();
+  const sendMessage = async (value: string) => {
+    const text = value.trim();
     if (!text || loading) return;
     const next = [...messages, { role: "user" as const, content: text }];
     setMessages(next);
@@ -140,6 +159,7 @@ export function AiChatWidget() {
       });
       const payload = await response.json().catch(() => null);
       if (payload?.data?.conversationId) setConversationId(payload.data.conversationId as string);
+      setSuggestions(normalizeSuggestions(payload?.data?.suggestions));
       const reply =
         response.ok && payload?.data?.reply
           ? payload.data.reply
@@ -150,6 +170,25 @@ export function AiChatWidget() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const send = async () => {
+    await sendMessage(input);
+  };
+
+  const applySuggestion = (suggestion: ChatSuggestion) => {
+    if (loading) return;
+    if (suggestion.kind === "message") {
+      void sendMessage(suggestion.message || suggestion.label);
+      return;
+    }
+    if (suggestion.kind === "whatsapp") {
+      pushUser(suggestion.label);
+      window.open(whatsappHref(), "_blank", "noopener,noreferrer");
+      return;
+    }
+    pushUser(suggestion.label);
+    startFlow({ formation: suggestion.formation, objective: suggestion.objective });
   };
 
   const loadAvailability = async (nextFlow: FlowState) => {
@@ -391,7 +430,7 @@ export function AiChatWidget() {
   return (
     <>
       {open ? (
-        <div className="fixed inset-x-3 bottom-24 z-40 hidden h-[min(74vh,34rem)] flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-premium xl:left-auto xl:right-5 xl:flex xl:h-[min(78vh,34rem)] xl:w-[24rem]">
+        <div className="fixed inset-x-3 bottom-24 z-40 flex h-[min(78svh,35rem)] flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-premium sm:bottom-24 md:left-auto md:right-5 md:w-[24rem]">
           <div className="flex items-center justify-between gap-3 bg-loden-700 px-4 py-3 text-white">
             <div className="flex min-w-0 items-center gap-2">
               <Sparkles className="h-5 w-5 shrink-0" aria-hidden="true" />
@@ -422,17 +461,12 @@ export function AiChatWidget() {
             {!flow ? (
               <div className="grid gap-2 rounded-2xl border border-slate-200 bg-white p-3 shadow-soft">
                 <div className="grid grid-cols-2 gap-2">
-                  {QUICK_ACTIONS.map((action) => (
+                  {suggestions.map((action) => (
                     <button
-                      key={action.label}
+                      key={action.id}
                       type="button"
-                      onClick={() => {
-                        pushUser(action.label);
-                        startFlow({
-                          formation: "formation" in action ? action.formation : undefined,
-                          objective: "objective" in action ? action.objective : undefined
-                        });
-                      }}
+                      onClick={() => applySuggestion(action)}
+                      disabled={loading}
                       className={optionButtonClass()}
                     >
                       {action.label}
@@ -484,7 +518,7 @@ export function AiChatWidget() {
         </div>
       ) : null}
 
-      <div className="fixed bottom-5 right-5 z-30 hidden max-w-[calc(100vw-2.5rem)] items-center gap-2 xl:flex">
+      <div className="fixed bottom-4 right-4 z-30 flex max-w-[calc(100vw-2rem)] items-center gap-2 sm:bottom-5 sm:right-5">
         <a
           href={whatsappHref()}
           target="_blank"

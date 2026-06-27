@@ -72,6 +72,10 @@ function cheapest(formations: FormationRecord[], productLine: FormationRecord["p
     .sort((a, b) => a.priceCents - b.priceCents)[0];
 }
 
+function withNextAction(answer: string, action = "Prochaine étape : choisissez un bouton ci-dessous pour un devis, un rendez-vous ou WhatsApp.") {
+  return `${answer}\n\n${action}`;
+}
+
 export function buildPublicFallbackReply(ctx: PublicFallbackContext) {
   const raw = lastUserMessage(ctx.messages);
   const text = normalize(raw);
@@ -88,47 +92,47 @@ export function buildPublicFallbackReply(ctx: PublicFallbackContext) {
 
   if (hasAny(text, ["prix", "tarif", "combien", "cout", "coût", "payer", "devis"])) {
     if (hasAny(text, ["vtc", "chauffeur"])) {
-      return `${companyName} propose la formation VTC ${vtc ? priceLabel(vtc) : "dès 399 € TTC"}, avec plusieurs niveaux de préparation. Pour choisir la bonne formule, le plus simple est de demander un diagnostic ou un devis.`;
+      return withNextAction(`${companyName} propose la formation VTC ${vtc ? priceLabel(vtc) : "dès 399 € TTC"}, avec plusieurs niveaux de préparation. Pour choisir la bonne formule, le plus simple est de demander un diagnostic ou un devis.`);
     }
     if (hasAny(text, ["sst", "secour", "securite travail", "sécurité travail"])) {
       const initial = sstInitial ? `${sstInitial.title} : ${priceLabel(sstInitial)}` : "SST Initial : dès 120 € HT";
       const mac = macSst ? `${macSst.title} : ${priceLabel(macSst)}` : "MAC SST : dès 75 € HT";
-      return `${initial}. ${mac}. Les sessions intra-entreprise se préparent sur devis selon le groupe et le lieu.`;
+      return withNextAction(`${initial}. ${mac}. Les sessions intra-entreprise se préparent sur devis selon le groupe et le lieu.`);
     }
-    return `Les repères principaux : Permis B automatique ${auto ? priceLabel(auto) : "dès 924 € TTC"}, Permis B manuel ${manual ? priceLabel(manual) : "dès 1 344 € TTC"}, Formation VTC ${vtc ? priceLabel(vtc) : "dès 399 € TTC"}. Pour les formations sur mesure, on prépare un devis.`;
+    return withNextAction(`Les repères principaux : Permis B automatique ${auto ? priceLabel(auto) : "dès 924 € TTC"}, Permis B manuel ${manual ? priceLabel(manual) : "dès 1 344 € TTC"}, Formation VTC ${vtc ? priceLabel(vtc) : "dès 399 € TTC"}. Pour les formations sur mesure, on prépare un devis.`);
   }
 
   if (hasAny(text, ["cpf", "financement", "financer", "compte formation", "opco", "aide"])) {
-    return `Le CPF peut être possible selon l'éligibilité du dossier, notamment sur certaines formations permis. ${companyName} peut vérifier ton besoin, ton financement et le reste à charge avant l'inscription.`;
+    return withNextAction(`Le CPF peut être possible selon l'éligibilité du dossier, notamment sur certaines formations permis. ${companyName} peut vérifier ton besoin, ton financement et le reste à charge avant l'inscription.`, "Prochaine étape : cliquez sur « Vérifier CPF » pour être accompagné par un conseiller.");
   }
 
   if (hasAny(text, ["vtc", "chauffeur", "carte pro", "cma"])) {
     const list = shortFormationList(ctx.formations, "VTC", 3);
-    return `Pour le VTC, ${companyName} prépare aux épreuves CMA et à la carte professionnelle. ${list ? `${list}.` : "Les formules démarrent à 399 € TTC."} Demande un diagnostic pour choisir entre distanciel, coaching ou formule complète.`;
+    return withNextAction(`Pour le VTC, ${companyName} prépare aux épreuves CMA et à la carte professionnelle. ${list ? `${list}.` : "Les formules démarrent à 399 € TTC."} Demande un diagnostic pour choisir entre distanciel, coaching ou formule complète.`);
   }
 
   if (hasAny(text, ["sst", "secour", "sauveteur", "travail"])) {
-    return `${companyName} propose le SST Initial (${sstInitial?.durationLabel ?? "14 h / 2 jours"}) et le MAC SST (${macSst?.durationLabel ?? "7 h / 1 jour"}). C'est adapté aux salariés et aux entreprises, en inter ou intra-entreprise.`;
+    return withNextAction(`${companyName} propose le SST Initial (${sstInitial?.durationLabel ?? "14 h / 2 jours"}) et le MAC SST (${macSst?.durationLabel ?? "7 h / 1 jour"}). C'est adapté aux salariés et aux entreprises, en inter ou intra-entreprise.`);
   }
 
   if (hasAny(text, ["caces", "logistique", "chariot", "nacelle", "gerbeur", "echafaudage", "échafaudage", "pont roulant"])) {
     const list = shortFormationList(ctx.formations, "LOGISTIQUE_SECURITE", 3);
-    return `Les formations logistique & sécurité sont construites sur devis, souvent sur site client. ${list ? `${list}.` : "Chariots, gerbeur, nacelles, pont roulant et échafaudage sont proposés selon le besoin."}`;
+    return withNextAction(`Les formations logistique & sécurité sont construites sur devis, souvent sur site client. ${list ? `${list}.` : "Chariots, gerbeur, nacelles, pont roulant et échafaudage sont proposés selon le besoin."}`);
   }
 
   if (hasAny(text, ["permis", "conduire", "boite", "boîte", "manuel", "automatique", "auto ecole", "auto-école"])) {
-    return `Pour le permis B, ${companyName} propose notamment la boîte automatique ${auto ? priceLabel(auto) : "dès 924 € TTC"} et la boîte manuelle ${manual ? priceLabel(manual) : "dès 1 344 € TTC"}. Si tu hésites, demande un diagnostic : on t'oriente selon ton niveau, ton budget et ton planning.`;
+    return withNextAction(`Pour le permis B, ${companyName} propose notamment la boîte automatique ${auto ? priceLabel(auto) : "dès 924 € TTC"} et la boîte manuelle ${manual ? priceLabel(manual) : "dès 1 344 € TTC"}. Si tu hésites, demande un diagnostic : on t'oriente selon ton niveau, ton budget et ton planning.`);
   }
 
   if (hasAny(text, ["contact", "telephone", "téléphone", "adresse", "horaire", "email", "mail", "whatsapp", "ou etes", "où êtes"])) {
-    return contact || `${companyName} est à Conflans-Sainte-Honorine. Passe par la page Contact pour nous joindre rapidement.`;
+    return withNextAction(contact || `${companyName} est à Conflans-Sainte-Honorine. Passe par la page Contact pour nous joindre rapidement.`, "Prochaine étape : cliquez sur WhatsApp ou demandez un rappel.");
   }
 
   if (hasAny(text, ["inscription", "inscrire", "rendez", "rdv", "diagnostic", "rappel"])) {
-    return `Tu peux demander un diagnostic ou t'inscrire en ligne. Un conseiller ${companyName} t'aide à choisir la formation, vérifier le financement et construire un planning réaliste. ${contactCta}`;
+    return withNextAction(`Tu peux demander un diagnostic ou t'inscrire en ligne. Un conseiller ${companyName} t'aide à choisir la formation, vérifier le financement et construire un planning réaliste. ${contactCta}`, "Prochaine étape : choisissez « Prendre RDV » ou « M'inscrire ».");
   }
 
-  return `Je peux t'aider à choisir entre Permis B, VTC, SST ou formations logistique & sécurité. Dis-moi ton objectif, ton délai et si tu veux utiliser un financement type CPF, puis je t'oriente vers le bon parcours.`;
+  return withNextAction(`Je peux t'aider à choisir entre Permis B, VTC, SST ou formations logistique & sécurité. Dis-moi ton objectif, ton délai et si tu veux utiliser un financement type CPF, puis je t'oriente vers le bon parcours.`, "Prochaine étape : choisissez une formation ou demandez un rendez-vous.");
 }
 
 export function buildCompactPublicAiPrompt(ctx: Omit<PublicFallbackContext, "messages"> & { knowledge?: string }) {

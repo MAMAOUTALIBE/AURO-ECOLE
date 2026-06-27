@@ -26,6 +26,10 @@ describe("classifyIntent (déterministe)", () => {
   it("détecte le VTC", () => {
     expect(classifyIntent("formation chauffeur vtc").intent).toBe("vtc");
   });
+  it("détecte les documents et les réclamations", () => {
+    expect(classifyIntent("quels documents fournir pour mon dossier ?").intent).toBe("documents");
+    expect(classifyIntent("j'ai un problème urgent avec mon rendez-vous").intent).toBe("reclamation");
+  });
   it("renvoie 'autre' avec confiance nulle si rien ne matche", () => {
     const r = classifyIntent("bonjour comment allez-vous");
     expect(r.intent).toBe("autre");
@@ -43,13 +47,62 @@ describe("persistance des conversations publiques (/api/chat/message)", () => {
     expect(res.status).toBe(200);
     const conversationId = res.body.data.conversationId as string;
     expect(conversationId).toBeTruthy();
+    expect(res.body.data.intent).toBe("permis_b");
+    expect(res.body.data.confidence).toBeGreaterThan(0);
+    expect(res.body.data.summary).toContain("Permis B");
+    expect(res.body.data.suggestions.some((suggestion: { label: string }) => suggestion.label === "Permis auto")).toBe(true);
 
     const conv = await repository.findChatConversationById(conversationId);
     expect(conv).toBeTruthy();
     expect(conv!.intent).toBe("permis_b");
+    expect(conv!.summary).toContain("Intention détectée");
     expect(conv!.lastMessage?.toLowerCase()).toContain("permis");
     // user + réponse assistant
     expect(conv!.messages.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it("renvoie des suggestions CPF actionnables sans provider IA", async () => {
+    const { app } = build();
+    const res = await request(app)
+      .post("/api/chat/message")
+      .send({ messages: [{ role: "user", content: "Je veux savoir si je peux utiliser mon CPF" }] });
+
+    expect(res.status).toBe(200);
+    expect(res.body.data.intent).toBe("cpf_financement");
+    expect(res.body.data.suggestions).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ label: "Vérifier CPF", kind: "flow", objective: "Utiliser mon CPF" })
+      ])
+    );
+  });
+
+  it("permet au CRM de marquer une conversation traitée puis ouverte", async () => {
+    const { app, repository } = build();
+    const created = await request(app)
+      .post("/api/chat/message")
+      .send({ messages: [{ role: "user", content: "Je veux être rappelé pour un devis" }] });
+    const conversationId = created.body.data.conversationId as string;
+
+    const login = await request(app)
+      .post("/api/auth/login")
+      .send({ email: "admin@loden-autoecole.fr", password: "admin-password" })
+      .expect(200);
+    const token = login.body.token as string;
+
+    const treated = await request(app)
+      .patch(`/api/admin/chat-conversations/${conversationId}`)
+      .set("Authorization", `Bearer ${token}`)
+      .send({ status: "TRAITEE" })
+      .expect(200);
+    expect(treated.body.data.status).toBe("TRAITEE");
+    expect((await repository.findChatConversationById(conversationId))?.status).toBe("TRAITEE");
+
+    const reopened = await request(app)
+      .patch(`/api/admin/chat-conversations/${conversationId}`)
+      .set("Authorization", `Bearer ${token}`)
+      .send({ status: "OUVERTE" })
+      .expect(200);
+    expect(reopened.body.data.status).toBe("OUVERTE");
   });
 
   it("réutilise la conversation existante via conversationId (aucun doublon)", async () => {

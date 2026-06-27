@@ -5,6 +5,7 @@ import { runAgent } from "../../ai/agent";
 import { buildKnowledgeBlock } from "../../ai/knowledge";
 import { sanitizeAiOutput } from "../../ai/safety";
 import { buildPublicFallbackReply } from "../../ai/public-fallback";
+import { buildChatGuidance } from "../../ai/conversation-guidance";
 import { crmTools, publicAgentTools } from "../../ai/tools";
 import { listAppointmentSlots } from "../chat/chat-booking";
 import type { AiMessage, AiProvider } from "../../ai/types";
@@ -123,16 +124,18 @@ export function createAiRouter(repository: LodenRepository, config: ApiConfig, a
       const lastUserMessage = [...body.messages].reverse().find((m) => m.role === "user")?.content ?? "";
       const knowledge = buildKnowledgeBlock(lastUserMessage, 2);
       if (!ai.available) {
+        const reply = buildPublicFallbackReply({
+          messages: body.messages,
+          formations,
+          pricingPlans,
+          agencies,
+          company: companyInfo,
+          contactPhone: company.phone ?? CONTACT_PHONE
+        });
         res.json({
           data: {
-            reply: buildPublicFallbackReply({
-              messages: body.messages,
-              formations,
-              pricingPlans,
-              agencies,
-              company: companyInfo,
-              contactPhone: company.phone ?? CONTACT_PHONE
-            }),
+            reply,
+            ...buildChatGuidance(body.messages, reply),
             mode: "fallback"
           }
         });
@@ -159,19 +162,21 @@ export function createAiRouter(repository: LodenRepository, config: ApiConfig, a
           context: { repository, config, scope: "public", aiProvider: ai },
           maxSteps: 3
         });
-        res.json({ data: { reply } });
+        res.json({ data: { reply, ...buildChatGuidance(body.messages, reply) } });
       } catch (error) {
         console.error("[ai] chat échec:", error instanceof Error ? error.message : error);
+        const reply = buildPublicFallbackReply({
+          messages: body.messages,
+          formations,
+          pricingPlans,
+          agencies,
+          company: companyInfo,
+          contactPhone: company.phone ?? CONTACT_PHONE
+        });
         res.json({
           data: {
-            reply: buildPublicFallbackReply({
-              messages: body.messages,
-              formations,
-              pricingPlans,
-              agencies,
-              company: companyInfo,
-              contactPhone: company.phone ?? CONTACT_PHONE
-            }),
+            reply,
+            ...buildChatGuidance(body.messages, reply),
             mode: "fallback"
           }
         });

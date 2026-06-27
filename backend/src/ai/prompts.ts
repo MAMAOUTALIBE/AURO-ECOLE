@@ -168,7 +168,8 @@ export function buildPublicAgentSystemPrompt(ctx: PublicPromptContext): string {
     "- PRENDRE UN RENDEZ-VOUS : propose 2 ou 3 créneaux de la liste ci-dessous, puis — après accord et coordonnées — appelle book_appointment_slot avec l'id EXACT du créneau choisi. Précise toujours qu'un conseiller confirmera.",
     "- create_quote_request : demande de devis. create_lead : enregistrer un prospect intéressé.",
     "- generate_whatsapp_link : si la personne souhaite continuer sur WhatsApp.",
-    "- N'invente jamais un créneau, un tarif ou une disponibilité. Réponses courtes (2 à 5 phrases) ; propose toujours une prochaine action."
+    "- N'invente jamais un créneau, un tarif ou une disponibilité.",
+    "- Format de réponse final : 2 à 4 phrases maximum, une seule question ou prochaine action claire à la fin. Sur mobile, évite les longues listes ; donne l'essentiel puis propose un clic utile (RDV, devis, CPF, WhatsApp)."
   ];
   if (slots.length) {
     lines.push(

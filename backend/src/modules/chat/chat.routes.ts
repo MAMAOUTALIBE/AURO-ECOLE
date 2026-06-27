@@ -3,15 +3,17 @@ import rateLimit from "express-rate-limit";
 import { z } from "zod";
 import { buildPublicFallbackReply } from "../../ai/public-fallback";
 import type { AiMessage, AiProvider } from "../../ai/types";
+import { buildChatGuidance } from "../../ai/conversation-guidance";
 import { buildPublicAgentSystemPrompt } from "../../ai/prompts";
 import { buildKnowledgeBlock } from "../../ai/knowledge";
-import { classifyIntent } from "../../ai/intent";
 import { runAgent } from "../../ai/agent";
 import { publicAgentTools } from "../../ai/tools";
 import type { ApiConfig } from "../../config/env";
 import { authenticate, requirePermission } from "../../middleware/auth";
+import type { AuthenticatedRequest } from "../../http/request-context";
 import type { LodenRepository } from "../../repositories/loden-repository";
 import { asyncHandler } from "../../shared/async-handler";
+import { notFound } from "../../shared/http-error";
 import { emailSchema, phoneSchema, validateBody, validateQuery } from "../../shared/validation";
 import { bookChatAppointment, createFinancingFollowUpTask, createLeadFromChat, displayDate, displayTime, listAppointmentSlots } from "./chat-booking";
 
@@ -63,6 +65,10 @@ const appointmentBodySchema = leadBodySchema.extend({
   conversationId: z.string().trim().min(1).max(60).optional()
 });
 
+const conversationStatusSchema = z.object({
+  status: z.enum(["OUVERTE", "TRAITEE"])
+});
+
 const availabilityQuerySchema = z.object({
   from: z.coerce.date().optional(),
   to: z.coerce.date().optional(),
@@ -90,22 +96,31 @@ function mapSlot(slot: Awaited<ReturnType<LodenRepository["listChatAvailabilityS
 async function persistPublicConversation(
   repository: LodenRepository,
   params: { conversationId?: string; messages: z.infer<typeof messageSchema>["messages"]; reply: string }
-): Promise<string> {
+): Promise<{ conversationId: string; intent: string; confidence: number; summary: string; suggestions: ReturnType<typeof buildChatGuidance>["suggestions"] }> {
   const now = new Date().toISOString();
   const stored = [
     ...params.messages.map((m) => ({ role: m.role, content: m.content, createdAt: now })),
     { role: "assistant" as const, content: params.reply, createdAt: now }
   ];
-  const userText = params.messages.filter((m) => m.role === "user").map((m) => m.content).join(" ");
   const lastUser = [...params.messages].reverse().find((m) => m.role === "user")?.content ?? "";
-  const { intent, confidence } = classifyIntent(userText);
-  const patch = { messages: stored, lastMessage: lastUser.slice(0, 300), intent, aiConfidence: confidence };
+  const guidance = buildChatGuidance(params.messages, params.reply);
+  const patch = {
+    messages: stored,
+    lastMessage: lastUser.slice(0, 300),
+    intent: guidance.intent,
+    aiConfidence: guidance.confidence,
+    summary: guidance.summary
+  };
 
   if (params.conversationId) {
     const existing = await repository.findChatConversationById(params.conversationId);
-    if (existing) return (await repository.updateChatConversation(params.conversationId, patch)).id;
+    if (existing) {
+      const updated = await repository.updateChatConversation(params.conversationId, patch);
+      return { conversationId: updated.id, ...guidance };
+    }
   }
-  return (await repository.createChatConversation(patch)).id;
+  const created = await repository.createChatConversation(patch);
+  return { conversationId: created.id, ...guidance };
 }
 
 async function buildPublicReply(repository: LodenRepository, config: ApiConfig, ai: AiProvider, messages: z.infer<typeof messageSchema>["messages"]) {
@@ -167,9 +182,9 @@ export function createChatRouter(repository: LodenRepository, config: ApiConfig,
     asyncHandler(async (req, res) => {
       const body = validateBody(messageSchema, req);
       const data = await buildPublicReply(repository, config, ai, body.messages);
-      let conversationId = body.conversationId;
+      let guidance: Awaited<ReturnType<typeof persistPublicConversation>> | undefined;
       try {
-        conversationId = await persistPublicConversation(repository, {
+        guidance = await persistPublicConversation(repository, {
           conversationId: body.conversationId,
           messages: body.messages,
           reply: data.reply
@@ -177,7 +192,13 @@ export function createChatRouter(repository: LodenRepository, config: ApiConfig,
       } catch (error) {
         console.error("[chat] persistance conversation échouée:", error instanceof Error ? error.message : error);
       }
-      res.json({ data: { ...data, conversationId } });
+      res.json({
+        data: {
+          ...data,
+          ...(guidance ?? buildChatGuidance(body.messages, data.reply)),
+          conversationId: guidance?.conversationId ?? body.conversationId
+        }
+      });
     })
   );
 
@@ -239,6 +260,25 @@ export function createChatAdminRouter(repository: LodenRepository, config: ApiCo
     asyncHandler(async (_req, res) => {
       const leads = await repository.listLeads();
       res.json({ data: leads.filter((lead) => lead.source === "chatbot") });
+    })
+  );
+
+  router.patch(
+    "/chat-conversations/:id",
+    requirePermission("leads.read"),
+    asyncHandler(async (req: AuthenticatedRequest, res) => {
+      const body = validateBody(conversationStatusSchema, req);
+      const conversation = await repository.findChatConversationById(String(req.params.id));
+      if (!conversation) throw notFound("Conversation introuvable");
+      const updated = await repository.updateChatConversation(conversation.id, { status: body.status });
+      await repository.createAuditLog({
+        userId: req.user?.id ?? null,
+        action: "chatbot.conversation.status_updated",
+        entityType: "ChatConversation",
+        entityId: conversation.id,
+        metadata: { status: body.status }
+      });
+      res.json({ data: updated });
     })
   );
 
