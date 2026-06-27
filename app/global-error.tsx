@@ -20,12 +20,12 @@ export default function GlobalError({ error, reset }: { error: Error & { digest?
           color: "#142126",
           fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif",
           textAlign: "center",
-          padding: "2rem"
+          padding: "1.25rem"
         }}
       >
-        <div>
-          <h1 style={{ fontSize: "2rem", margin: 0 }}>Une erreur critique est survenue</h1>
-          <p style={{ marginTop: "1rem", color: "#64747a" }}>
+        <div style={{ maxWidth: "28rem" }}>
+          <h1 style={{ fontSize: "clamp(1.5rem, 8vw, 2rem)", lineHeight: 1.1, margin: 0 }}>Une erreur critique est survenue</h1>
+          <p style={{ marginTop: "1rem", color: "#64747a", lineHeight: 1.6 }}>
             Veuillez réessayer dans un instant.
           </p>
           <button

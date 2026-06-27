@@ -44,7 +44,7 @@ export function ForgotPasswordForm() {
 
   if (sent) {
     return (
-      <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-premium" role="status">
+      <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-premium sm:rounded-3xl sm:p-6" role="status">
         <div className="flex items-center gap-3">
           <span className="grid h-11 w-11 place-items-center rounded-full bg-loden-pearl text-loden-700">
             <MailCheck className="h-6 w-6" />
@@ -68,12 +68,12 @@ export function ForgotPasswordForm() {
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="rounded-3xl border border-slate-200 bg-white p-6 shadow-premium"
+      className="rounded-2xl border border-slate-200 bg-white p-4 shadow-premium sm:rounded-3xl sm:p-6"
       noValidate
     >
       <div className="border-b border-slate-200 pb-5">
-        <h2 className="text-2xl font-semibold text-loden-ink">Mot de passe oublié</h2>
-        <p className="mt-2 text-sm leading-6 text-loden-muted">
+        <h2 className="text-xl font-semibold text-loden-ink sm:text-2xl">Mot de passe oublié</h2>
+        <p className="mt-2 hidden text-sm leading-6 text-loden-muted sm:block">
           Saisis l&apos;email de ton compte : on t&apos;envoie un lien sécurisé pour en choisir un nouveau.
         </p>
       </div>

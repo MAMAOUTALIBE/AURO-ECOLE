@@ -87,6 +87,15 @@ export function createCatalogRouter(repository: LodenRepository, config: ApiConf
     })
   );
 
+  router.delete(
+    "/formations/:id",
+    ...adminOnly,
+    asyncHandler(async (req, res) => {
+      await repository.deleteFormation(String(req.params.id));
+      res.status(204).end();
+    })
+  );
+
   router.get(
     "/pricing-plans",
     asyncHandler(async (req, res) => {

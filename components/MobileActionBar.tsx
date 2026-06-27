@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { MessageCircle, Phone, Sparkles } from "lucide-react";
 import { contactInfo } from "@/data/site";
 
@@ -10,14 +9,11 @@ function normalizePhone(source: string) {
 }
 
 export function MobileActionBar() {
-  const pathname = usePathname();
   const phoneHref = contactInfo.phone ? `tel:${normalizePhone(contactInfo.phone)}` : null;
   const whatsappHref = contactInfo.whatsapp ? `https://wa.me/${contactInfo.whatsapp}` : null;
 
-  if (pathname === "/") return null;
-
   return (
-    <div className="fixed inset-x-0 bottom-0 z-50 border-t border-slate-200 bg-white/95 px-3 pb-[calc(0.65rem+env(safe-area-inset-bottom))] pt-2 shadow-[0_-16px_45px_rgba(20,33,38,0.12)] backdrop-blur-xl sm:hidden">
+    <div className="fixed inset-x-0 bottom-0 z-50 border-t border-slate-200 bg-white/95 px-3 pb-[calc(0.55rem+env(safe-area-inset-bottom))] pt-2 shadow-[0_-16px_45px_rgba(20,33,38,0.12)] backdrop-blur-xl sm:hidden">
       <div className="grid grid-cols-3 gap-2">
         {phoneHref ? (
           <a

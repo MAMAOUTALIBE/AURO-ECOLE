@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { Prisma, PrismaClient } from "@prisma/client";
 import type {
   BookingRecord,
   ChatAppointmentRecord,
@@ -21,7 +21,7 @@ import type {
   SiteSettingRecord
 } from "../domain/types";
 import { computeInvoiceTotals } from "../domain/invoice-totals";
-import { conflict } from "../shared/http-error";
+import { conflict, notFound } from "../shared/http-error";
 import { initialCompanyInfo } from "../data/initial-data";
 import { MemoryLodenRepository } from "./memory-loden-repository";
 import type {
@@ -915,6 +915,31 @@ export class PrismaLodenRepository implements LodenRepository {
 
   async updateFormation(id: string, input: Partial<FormationRecord>) {
     return this.prisma.formation.update({ where: { id }, data: input as never }) as Promise<FormationRecord>;
+  }
+
+  async deleteFormation(id: string) {
+    const existing = await this.prisma.formation.findUnique({ where: { id } });
+    if (!existing) throw notFound("Formation introuvable");
+
+    const [students, pricingPlans, bookings, cpfRequests] = await this.prisma.$transaction([
+      this.prisma.student.count({ where: { formationId: id } }),
+      this.prisma.pricingPlan.count({ where: { formationId: id } }),
+      this.prisma.booking.count({ where: { formationId: id } }),
+      this.prisma.cpfRequest.count({ where: { formationId: id } })
+    ]);
+
+    if (students + pricingPlans + bookings + cpfRequests > 0) {
+      throw conflict("Cette formation est déjà utilisée. Désactive-la plutôt pour conserver l'historique.");
+    }
+
+    try {
+      await this.prisma.formation.delete({ where: { id } });
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2003") {
+        throw conflict("Cette formation est déjà utilisée. Désactive-la plutôt pour conserver l'historique.");
+      }
+      throw error;
+    }
   }
 
   async listPricingPlans(includeInactive = false) {

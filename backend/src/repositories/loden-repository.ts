@@ -417,6 +417,7 @@ export interface LodenRepository {
   findFormationBySlug(slug: string): Promise<FormationRecord | null>;
   createFormation(input: CreateFormationInput): Promise<FormationRecord>;
   updateFormation(id: string, input: Partial<FormationRecord>): Promise<FormationRecord>;
+  deleteFormation(id: string): Promise<void>;
 
   listPricingPlans(includeInactive?: boolean): Promise<PricingPlanRecord[]>;
   findPricingPlanById(id: string): Promise<PricingPlanRecord | null>;

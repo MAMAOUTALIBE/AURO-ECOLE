@@ -56,20 +56,20 @@ const privacySections = [
 export default function PrivacyPage() {
   return (
     <main className="bg-loden-pearl">
-      <section className="container-pad py-14 sm:py-20">
+      <section className="container-pad py-8 sm:py-20">
         <div className="max-w-3xl">
           <p className="text-sm font-semibold uppercase tracking-[0.14em] text-loden-700">Données personnelles</p>
-          <h1 className="mt-4 text-4xl font-semibold leading-tight text-loden-ink sm:text-5xl">
+          <h1 className="mt-3 text-2xl font-semibold leading-tight text-loden-ink sm:mt-4 sm:text-5xl">
             Politique de confidentialité
           </h1>
-          <p className="mt-5 text-lg leading-8 text-loden-muted">
+          <p className="mt-4 hidden text-sm leading-6 text-loden-muted sm:mt-5 sm:block sm:text-lg sm:leading-8">
             Cette page explique quelles données peuvent être traitées par LODENE Auto-École et comment exercer tes droits.
           </p>
         </div>
-        <div className="mt-10 grid gap-5">
+        <div className="mt-6 grid gap-4 sm:mt-10 sm:gap-5">
           {privacySections.map((section) => (
-            <article key={section.title} className="rounded-3xl border border-slate-200 bg-white p-6 shadow-soft">
-              <h2 className="text-2xl font-semibold text-loden-ink">{section.title}</h2>
+            <article key={section.title} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-soft sm:rounded-3xl sm:p-6">
+              <h2 className="text-xl font-semibold text-loden-ink sm:text-2xl">{section.title}</h2>
               <div className="mt-4 grid gap-2 text-sm leading-6 text-loden-muted">
                 {section.content.map((line) => (
                   <p key={line}>{line}</p>

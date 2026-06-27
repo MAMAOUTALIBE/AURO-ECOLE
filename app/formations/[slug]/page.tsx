@@ -99,9 +99,9 @@ export default async function FormationDetailPage({ params }: PageProps) {
         suppressHydrationWarning
         dangerouslySetInnerHTML={{ __html: safeJsonLd(courseSchema) }}
       />
-      <section className="bg-loden-pearl py-10 md:py-14 xl:py-20">
+      <section className="bg-loden-pearl py-7 md:py-14 xl:py-20">
         <div className="container-pad grid gap-8 lg:grid-cols-[1fr_0.75fr] lg:items-start">
-          <div className="relative h-36 overflow-hidden rounded-3xl shadow-soft sm:h-52 lg:col-span-2 xl:h-60">
+          <div className="relative h-32 overflow-hidden rounded-2xl shadow-soft sm:h-52 sm:rounded-3xl lg:col-span-2 xl:h-60">
             <Image
               src={headerImage.src}
               alt={headerImage.alt}
@@ -117,13 +117,13 @@ export default async function FormationDetailPage({ params }: PageProps) {
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-loden-700 sm:text-sm">
               {eyebrow}
             </p>
-            <h1 className="mt-3 text-3xl font-semibold leading-tight text-loden-ink md:mt-4 md:text-5xl xl:text-6xl">
+            <h1 className="mt-3 text-2xl font-semibold leading-tight text-loden-ink md:mt-4 md:text-5xl xl:text-6xl">
               {formation.title}
             </h1>
-            <p className="mt-4 max-w-3xl text-base leading-7 text-loden-muted md:mt-5 md:text-lg md:leading-8">{formation.description}</p>
+            <p className="mt-3 max-w-3xl text-sm leading-6 text-loden-muted md:mt-5 md:text-lg md:leading-8">{formation.description}</p>
             <div className="mt-5 flex flex-wrap gap-2 sm:mt-6">
-              {formation.tags.map((tag) => (
-                <span key={tag} className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-loden-700 shadow-soft">
+              {formation.tags.map((tag, index) => (
+                <span key={tag} className={`rounded-full bg-white px-4 py-2 text-sm font-semibold text-loden-700 shadow-soft ${index > 2 ? "hidden sm:inline-flex" : ""}`}>
                   {tag}
                 </span>
               ))}
@@ -144,7 +144,7 @@ export default async function FormationDetailPage({ params }: PageProps) {
               </Link>
             </div>
           </div>
-          <aside className="rounded-3xl border border-slate-200 bg-white p-4 shadow-soft sm:p-6">
+          <aside className="rounded-2xl border border-slate-200 bg-white p-4 shadow-soft sm:rounded-3xl sm:p-6">
             <p className="text-sm font-semibold uppercase tracking-[0.14em] text-loden-700">Résumé</p>
             <div className="mt-4 grid gap-4 sm:mt-5">
               <div className="flex items-start gap-3">
@@ -173,14 +173,14 @@ export default async function FormationDetailPage({ params }: PageProps) {
         </div>
       </section>
 
-      <section className="bg-white py-10 md:py-14 xl:py-20">
+      <section className="bg-white py-8 md:py-14 xl:py-20">
         <div className="container-pad grid gap-8 lg:grid-cols-2">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.14em] text-loden-700">Programme</p>
             <h2 className="mt-3 text-2xl font-semibold text-loden-ink sm:text-3xl">Un parcours cadré de bout en bout</h2>
             <div className="mt-5 grid gap-3 sm:mt-7 sm:gap-4">
               {programSteps.map((step, index) => (
-                <div key={step} className="flex gap-3 rounded-3xl border border-slate-200 bg-loden-pearl p-4 sm:gap-4 sm:p-5">
+                <div key={step} className="flex gap-3 rounded-2xl border border-slate-200 bg-loden-pearl p-4 sm:gap-4 sm:rounded-3xl sm:p-5">
                   <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-white font-semibold text-loden-700 shadow-soft">
                     {index + 1}
                   </span>
@@ -199,13 +199,13 @@ export default async function FormationDetailPage({ params }: PageProps) {
             <h2 className="mt-3 text-2xl font-semibold text-loden-ink sm:text-3xl">Des conditions lisibles avant de commencer</h2>
             <div className="mt-5 grid gap-3 sm:mt-7 sm:gap-4">
               {guarantees.map((item) => (
-                <div key={item} className="flex items-start gap-3 rounded-3xl border border-slate-200 bg-white p-4 shadow-soft sm:p-5">
+                <div key={item} className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-soft sm:rounded-3xl sm:p-5">
                   <CheckCircle2 className="mt-1 h-5 w-5 shrink-0 text-loden-600" />
                   <p className="text-sm font-medium leading-6 text-loden-muted">{item}</p>
                 </div>
               ))}
             </div>
-            <div className="mt-6 rounded-3xl bg-loden-800 p-5 text-white sm:p-6">
+            <div className="mt-6 rounded-2xl bg-loden-800 p-4 text-white sm:rounded-3xl sm:p-6">
               <CalendarCheck className="h-7 w-7" />
               <h3 className="mt-4 text-xl font-semibold sm:text-2xl">Besoin d&apos;un planning précis ?</h3>
               <p className="mt-3 text-sm leading-6 text-white/85">

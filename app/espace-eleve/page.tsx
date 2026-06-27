@@ -13,11 +13,11 @@ export default function EspaceElevePage() {
       <PageHero
         eyebrow="Espace élève"
         title="Ton parcours permis centralisé"
-        text="Un premier tableau de bord connecté au backend pour préparer la progression, les réservations et les documents."
+        text="Retrouve ton dossier, tes prochaines actions et les informations utiles pour avancer."
         cta="Créer un compte"
         ctaHref="/inscription"
       />
-      <section className="bg-loden-pearl py-14 sm:py-20">
+      <section className="bg-loden-pearl py-8 sm:py-20">
         <div className="container-pad">
           <StudentDashboard />
         </div>

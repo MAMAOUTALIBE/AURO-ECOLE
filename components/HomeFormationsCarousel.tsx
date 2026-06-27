@@ -56,6 +56,7 @@ function labelFor(formation: Formation) {
 export function HomeFormationsCarousel({ formations }: { formations: Formation[] }) {
   const trackRef = useRef<HTMLDivElement>(null);
   const orderedFormations = useMemo(() => orderedHomeFormations(formations), [formations]);
+  const featuredFormations = orderedFormations.slice(0, 6);
   const [activeIndex, setActiveIndex] = useState(0);
 
   function scroll(direction: "previous" | "next") {
@@ -116,7 +117,7 @@ export function HomeFormationsCarousel({ formations }: { formations: Formation[]
         className="mt-6 flex snap-x snap-mandatory gap-5 overflow-x-auto scroll-smooth pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         aria-label="Carousel des formations LODENE"
       >
-        {orderedFormations.map((formation) => {
+        {featuredFormations.map((formation) => {
           const image = formation.imageUrl
             ? { src: formation.imageUrl, alt: formation.subtitle ?? formation.title, objectPosition: "50% 50%" }
             : formationImageMeta(formation.slug, formation.productLine);
@@ -127,9 +128,9 @@ export function HomeFormationsCarousel({ formations }: { formations: Formation[]
             <article
               key={formation.slug}
               data-carousel-card
-              className="group flex min-w-0 shrink-0 basis-[88%] snap-start overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-soft transition duration-300 hover:-translate-y-1 hover:border-loden-200 hover:shadow-premium sm:basis-full sm:rounded-[1.75rem] md:basis-[calc((100%_-_1.5rem)_/_2)] xl:basis-[calc((100%_-_3rem)_/_3)]"
+              className="group flex min-w-0 shrink-0 basis-[88%] snap-start overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-soft transition duration-300 hover:-translate-y-1 hover:border-loden-200 hover:shadow-premium sm:basis-full sm:rounded-[1.75rem] md:basis-[calc((100%_-_1.5rem)_/_2)] xl:basis-[calc((100%_-_3rem)_/_3)]"
             >
-              <Link href={`/formations/${formation.slug}`} className="focus-ring flex h-full w-full flex-col rounded-3xl sm:rounded-[1.75rem]">
+              <Link href={`/formations/${formation.slug}`} className="focus-ring flex h-full w-full flex-col rounded-2xl sm:rounded-[1.75rem]">
                 <div className="relative h-36 overflow-hidden bg-loden-900 sm:h-48">
                   <Image
                     src={image.src}
@@ -181,12 +182,12 @@ export function HomeFormationsCarousel({ formations }: { formations: Formation[]
       <div className="mt-1 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
           <span className="text-sm font-semibold text-loden-muted">
-            {Math.min(activeIndex + 1, orderedFormations.length)} / {orderedFormations.length}
+            {Math.min(activeIndex + 1, featuredFormations.length)} / {featuredFormations.length}
           </span>
           <div className="h-1.5 w-28 overflow-hidden rounded-full bg-loden-100" aria-hidden="true">
             <span
               className="block h-full rounded-full bg-loden-700 transition-all"
-              style={{ width: `${((Math.min(activeIndex + 1, orderedFormations.length)) / orderedFormations.length) * 100}%` }}
+              style={{ width: `${((Math.min(activeIndex + 1, featuredFormations.length)) / featuredFormations.length) * 100}%` }}
             />
           </div>
         </div>

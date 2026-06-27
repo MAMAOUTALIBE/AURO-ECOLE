@@ -60,6 +60,27 @@ const priceHighlights = [
   { label: "Formation VTC", price: 399 }
 ];
 
+const mobileShortcuts = [
+  {
+    icon: CalendarCheck,
+    title: "Passer mon permis",
+    text: "Comparer auto, manuel ou accéléré.",
+    href: "/formations"
+  },
+  {
+    icon: WalletCards,
+    title: "Financer ma formation",
+    text: "CPF, aides ou paiement en plusieurs fois.",
+    href: "/financement"
+  },
+  {
+    icon: MessageCircle,
+    title: "Parler à un conseiller",
+    text: "Réponse rapide par appel ou WhatsApp.",
+    href: "/contact#demande"
+  }
+];
+
 function whatsappHref() {
   if (contactInfo.whatsapp) return `https://wa.me/${contactInfo.whatsapp}`;
   const digits = contactInfo.phone.replace(/\D/g, "");
@@ -71,6 +92,35 @@ export default function HomePage() {
   return (
     <main>
       <HeroSection />
+
+      <section className="bg-white py-6 md:hidden">
+        <div className="container-pad">
+          <p className="text-xs font-bold uppercase tracking-[0.12em] text-loden-700">Je veux...</p>
+          <div className="mt-3 grid gap-3">
+            {mobileShortcuts.map((item) => {
+              const Icon = item.icon;
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="focus-ring flex items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-loden-pearl p-4 shadow-soft"
+                >
+                  <span className="flex min-w-0 items-center gap-3">
+                    <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-white text-loden-700 shadow-soft">
+                      <Icon className="h-5 w-5" aria-hidden="true" />
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block font-bold leading-tight text-loden-ink">{item.title}</span>
+                      <span className="mt-1 block text-sm leading-5 text-loden-muted">{item.text}</span>
+                    </span>
+                  </span>
+                  <ArrowRight className="h-5 w-5 shrink-0 text-loden-700" aria-hidden="true" />
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      </section>
 
       <section className="bg-white py-8 sm:py-12">
         <div className="container-pad">
@@ -91,7 +141,7 @@ export default function HomePage() {
               const Icon = advantage.icon;
               return (
                 <MotionReveal key={advantage.title} delay={index * 0.04}>
-                  <article className="h-full rounded-3xl border border-slate-200 bg-white p-4 shadow-soft sm:rounded-[1.5rem] sm:p-5">
+                  <article className="h-full rounded-2xl border border-slate-200 bg-white p-4 shadow-soft sm:rounded-[1.5rem] sm:p-5">
                     <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-loden-50 text-loden-700 sm:h-11 sm:w-11">
                       <Icon className="h-5 w-5" aria-hidden="true" />
                     </span>
@@ -107,7 +157,7 @@ export default function HomePage() {
 
       <section className="bg-white py-8 sm:py-10">
         <div className="container-pad">
-          <div className="rounded-3xl bg-loden-900 p-5 text-white shadow-premium sm:rounded-[2rem] sm:p-8 lg:flex lg:items-center lg:justify-between lg:gap-8">
+          <div className="rounded-2xl bg-loden-900 p-5 text-white shadow-premium sm:rounded-[2rem] sm:p-8 lg:flex lg:items-center lg:justify-between lg:gap-8">
             <div className="max-w-2xl">
               <p className="text-sm font-semibold uppercase text-loden-100">Diagnostic</p>
               <h2 className="mt-3 text-2xl font-semibold leading-tight sm:text-3xl">Pas sûr de la bonne formation ?</h2>
@@ -155,7 +205,7 @@ export default function HomePage() {
           <div className="mt-6 grid gap-4 md:grid-cols-3">
             {priceHighlights.map((item, index) => (
               <MotionReveal key={item.label} delay={index * 0.04}>
-                <article className="rounded-3xl border border-slate-200 bg-loden-pearl p-4 shadow-soft sm:rounded-[1.5rem] sm:p-6">
+                <article className="rounded-2xl border border-slate-200 bg-loden-pearl p-4 shadow-soft sm:rounded-[1.5rem] sm:p-6">
                   <p className="text-sm font-semibold text-loden-muted">{item.label}</p>
                   <p className="mt-3 text-2xl font-semibold text-loden-ink sm:text-3xl">dès {formatCurrency(item.price)}</p>
                 </article>
@@ -167,7 +217,7 @@ export default function HomePage() {
 
       <section className="bg-loden-pearl py-8 sm:py-12">
         <div className="container-pad">
-          <div className="grid gap-6 rounded-3xl border border-slate-200 bg-white p-4 shadow-soft sm:rounded-[2rem] sm:p-8 lg:grid-cols-[1fr_auto] lg:items-center">
+          <div className="grid gap-5 rounded-2xl border border-slate-200 bg-white p-4 shadow-soft sm:gap-6 sm:rounded-[2rem] sm:p-8 lg:grid-cols-[1fr_auto] lg:items-center">
             <div>
               <p className="text-sm font-semibold uppercase text-loden-700">Agence LODENE</p>
               <h2 className="mt-3 text-2xl font-semibold leading-tight text-loden-ink sm:text-3xl">

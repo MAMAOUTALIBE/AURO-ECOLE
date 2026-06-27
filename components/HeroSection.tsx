@@ -21,7 +21,7 @@ export async function HeroSection() {
   return (
     <>
       <h1 className="sr-only">LODENE auto-école et centre de formation à Conflans</h1>
-      <section className="relative h-[calc(100svh-5.25rem)] min-h-[34rem] overflow-hidden bg-loden-900 md:hidden">
+      <section className="relative h-[calc(100svh-4rem)] min-h-[34rem] overflow-hidden bg-loden-900 md:hidden">
         {hero.image ? (
           <Image
             src={hero.image}
@@ -34,15 +34,21 @@ export async function HeroSection() {
         ) : null}
         <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-black/25 to-transparent" aria-hidden="true" />
         <div
-          className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(8,24,30,0.02)_24%,rgba(8,24,30,0.35)_58%,rgba(8,24,30,0.9)_100%)]"
+          className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(8,24,30,0.04)_18%,rgba(8,24,30,0.3)_48%,rgba(8,24,30,0.9)_100%)]"
           aria-hidden="true"
         />
 
-        <div className="absolute inset-x-0 bottom-0 z-10 px-6 pb-[calc(1.35rem+env(safe-area-inset-bottom))]">
-          <p className="max-w-[20rem] text-[15px] font-semibold leading-6 text-white/90 drop-shadow-[0_2px_10px_rgba(0,0,0,0.35)]">
+        <div className="absolute inset-x-0 bottom-0 z-10 px-5 pb-[calc(6.1rem+env(safe-area-inset-bottom))]">
+          <p className="inline-flex rounded-full border border-white/25 bg-white/15 px-3 py-1.5 text-xs font-bold text-white backdrop-blur-md">
             Auto-école & centre de formation à Conflans
           </p>
-          <div className="mt-5 grid grid-cols-[1.08fr_1fr_1fr] gap-1.5 min-[375px]:gap-2">
+          <p className="mt-4 max-w-[18rem] text-3xl font-extrabold leading-tight text-white drop-shadow-[0_2px_14px_rgba(0,0,0,0.35)]">
+            Permis, CPF, formations pro.
+          </p>
+          <p className="mt-3 max-w-[19rem] text-sm font-semibold leading-6 text-white/90 drop-shadow-[0_2px_10px_rgba(0,0,0,0.35)]">
+            Un conseiller t&apos;oriente vite vers le bon parcours.
+          </p>
+          <div className="mt-5 grid grid-cols-[1.1fr_1fr_1fr] gap-1.5 min-[375px]:gap-2">
             <Link
               href="/inscription"
               className="focus-ring inline-flex min-h-12 min-w-0 items-center justify-center gap-1 rounded-full bg-loden-600 px-2 text-[0.72rem] font-extrabold text-white shadow-[0_18px_45px_rgba(0,134,148,0.35)] transition hover:bg-loden-700 min-[375px]:gap-2 min-[375px]:px-3 min-[375px]:text-sm"
@@ -66,6 +72,17 @@ export async function HeroSection() {
               <MessageCircle className="h-3.5 w-3.5 shrink-0 min-[375px]:h-4 min-[375px]:w-4" aria-hidden="true" />
               <span className="whitespace-nowrap">WhatsApp</span>
             </a>
+          </div>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {badges.slice(0, 3).map((badge) => {
+              const Icon = badge.icon;
+              return (
+                <span key={badge.label} className="inline-flex items-center gap-1.5 rounded-full bg-white/90 px-3 py-1.5 text-xs font-bold text-loden-ink shadow-soft">
+                  <Icon className="h-3.5 w-3.5 text-loden-700" aria-hidden="true" />
+                  {badge.label}
+                </span>
+              );
+            })}
           </div>
         </div>
       </section>

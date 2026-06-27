@@ -31,7 +31,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
   // Garde-fou : lien ouvert sans token.
   if (!token) {
     return (
-      <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-premium" role="alert">
+      <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-premium sm:rounded-3xl sm:p-6" role="alert">
         <h2 className="text-xl font-semibold text-loden-ink">Lien invalide</h2>
         <p className="mt-3 text-sm leading-6 text-loden-muted">
           Ce lien de réinitialisation est incomplet ou a expiré. Demande un nouveau lien pour continuer.
@@ -69,7 +69,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
 
   if (done) {
     return (
-      <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-premium" role="status">
+      <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-premium sm:rounded-3xl sm:p-6" role="status">
         <div className="flex items-center gap-3">
           <span className="grid h-11 w-11 place-items-center rounded-full bg-loden-pearl text-loden-700">
             <CheckCircle2 className="h-6 w-6" />
@@ -92,12 +92,12 @@ export function ResetPasswordForm({ token }: { token: string }) {
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="rounded-3xl border border-slate-200 bg-white p-6 shadow-premium"
+      className="rounded-2xl border border-slate-200 bg-white p-4 shadow-premium sm:rounded-3xl sm:p-6"
       noValidate
     >
       <div className="border-b border-slate-200 pb-5">
-        <h2 className="text-2xl font-semibold text-loden-ink">Nouveau mot de passe</h2>
-        <p className="mt-2 text-sm leading-6 text-loden-muted">
+        <h2 className="text-xl font-semibold text-loden-ink sm:text-2xl">Nouveau mot de passe</h2>
+        <p className="mt-2 hidden text-sm leading-6 text-loden-muted sm:block">
           Choisis un mot de passe d&apos;au moins 10 caractères. Ce lien est à usage unique.
         </p>
       </div>

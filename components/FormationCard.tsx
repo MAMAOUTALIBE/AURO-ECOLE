@@ -78,9 +78,9 @@ export function FormationCard({ formation }: { formation: Formation }) {
     <Link
       href={`/formations/${formation.slug}`}
       aria-label={`Voir la formation ${formation.title}`}
-      className="focus-ring group block h-full rounded-3xl sm:rounded-[1.75rem]"
+      className="focus-ring group block h-full rounded-2xl sm:rounded-[1.75rem]"
     >
-      <article className="flex h-full flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-soft transition duration-300 group-hover:-translate-y-1.5 group-hover:border-loden-200 group-hover:shadow-premium sm:rounded-[1.75rem]">
+      <article className="flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-soft transition duration-300 group-hover:-translate-y-1.5 group-hover:border-loden-200 group-hover:shadow-premium sm:rounded-[1.75rem]">
         {/* En-tête photo réaliste par formation */}
         <div className="relative h-32 overflow-hidden sm:h-40" style={{ backgroundImage: visual.gradient }}>
           <Image

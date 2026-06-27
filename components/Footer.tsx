@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowRight, Facebook, Instagram, Link2, Mail, MapPin, Phone } from "lucide-react";
+import { ArrowRight, Facebook, Instagram, Link2, Mail, MapPin, MessageCircle, Phone } from "lucide-react";
 import { contactInfo, legalLinks, localSeoPages, navItems, socialLinks } from "@/data/site";
 
 function socialIcon(label: string) {
@@ -27,74 +27,63 @@ function MobileFooterLink({ href, label }: { href: string; label: string }) {
 export function Footer() {
   const directionsHref = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(contactInfo.mapQuery)}`;
   const phoneHref = contactInfo.phone ? `tel:${contactInfo.phone.replaceAll(" ", "")}` : "";
-  const localGuideLinks = [
-    ...localSeoPages,
-    { href: "/cpf", label: "CPF permis" },
-    { href: "/tarifs", label: "Tarifs" }
+  const whatsappHref = contactInfo.whatsapp ? `https://wa.me/${contactInfo.whatsapp}` : "/contact";
+  const mobileEssentialLinks = [
+    { href: "/formations", label: "Formations" },
+    { href: "/tarifs", label: "Tarifs" },
+    { href: "/financement", label: "Financement" },
+    { href: "/faq", label: "FAQ" }
   ];
 
   return (
     <footer className="border-t border-slate-200 bg-loden-petrol/70 pb-24 md:bg-white md:pb-0">
-      <div className="container-pad py-7 md:hidden">
-        <div className="overflow-hidden rounded-[28px] border border-white/80 bg-white shadow-soft">
-          <div className="px-5 pb-5 pt-6">
+      <div className="container-pad py-6 md:hidden">
+        <div className="overflow-hidden rounded-[1.35rem] border border-white/80 bg-white shadow-soft">
+          <div className="px-5 pb-5 pt-5">
             <Link href="/" className="focus-ring inline-flex rounded-2xl" aria-label="LODENE - Accueil">
               <Image
                 src="/lodene-logo-wordmark.png"
                 alt="LODENE Formation"
                 width={1320}
                 height={660}
-                className="h-20 w-auto max-w-[260px]"
+                className="h-16 w-auto max-w-[210px]"
               />
             </Link>
-            <p className="mt-4 max-w-xs text-[15px] leading-6 text-loden-muted">
-              Auto-école & centre de formation à Conflans.
+            <p className="mt-3 max-w-xs text-sm leading-6 text-loden-muted">
+              Permis B, CPF et formations professionnelles à Conflans.
             </p>
             <div className="mt-5 grid grid-cols-3 gap-2">
-              <Link
-                className="focus-ring flex min-h-[52px] items-center justify-center gap-1.5 rounded-full bg-loden-700 px-2 text-center text-sm font-bold text-white shadow-soft transition hover:bg-loden-800"
-                href="/inscription"
-              >
-                <span>S&apos;inscrire</span>
-                <ArrowRight className="h-4 w-4 shrink-0" aria-hidden="true" />
-              </Link>
               {contactInfo.phone ? (
                 <a
-                  className="focus-ring flex min-h-[52px] items-center justify-center gap-1.5 rounded-full border border-loden-100 bg-loden-50 px-2 text-center text-sm font-bold text-loden-800 transition hover:bg-loden-100"
+                  className="focus-ring flex min-h-[52px] items-center justify-center gap-1.5 rounded-2xl border border-loden-100 bg-loden-50 px-2 text-center text-xs font-bold text-loden-800 transition hover:bg-loden-100"
                   href={phoneHref}
                 >
                   <Phone className="h-4 w-4 shrink-0" aria-hidden="true" />
                   <span>Appeler</span>
                 </a>
               ) : null}
-              <Link
-                className="focus-ring flex min-h-[52px] items-center justify-center gap-1.5 rounded-full border border-loden-100 bg-loden-50 px-2 text-center text-sm font-bold text-loden-800 transition hover:bg-loden-100"
-                href="/contact"
+              <a
+                className="focus-ring flex min-h-[52px] items-center justify-center gap-1.5 rounded-2xl bg-[#25D366] px-2 text-center text-xs font-bold text-white transition hover:bg-[#1fbd58]"
+                href={whatsappHref}
               >
-                <Mail className="h-4 w-4 shrink-0" aria-hidden="true" />
-                <span>Écrire</span>
+                <MessageCircle className="h-4 w-4 shrink-0" aria-hidden="true" />
+                <span>WhatsApp</span>
+              </a>
+              <Link
+                className="focus-ring flex min-h-[52px] items-center justify-center gap-1.5 rounded-2xl bg-loden-700 px-2 text-center text-xs font-bold text-white shadow-soft transition hover:bg-loden-800"
+                href="/inscription"
+              >
+                <span>S&apos;inscrire</span>
+                <ArrowRight className="h-4 w-4 shrink-0" aria-hidden="true" />
               </Link>
             </div>
           </div>
 
           <div className="border-y border-slate-100 bg-loden-fog/70 px-5 py-5">
-            <p className="text-base font-bold text-loden-ink">Navigation</p>
+            <p className="text-base font-bold text-loden-ink">Liens utiles</p>
             <nav className="mt-3" aria-label="Navigation secondaire mobile">
-              <ul className="grid gap-2">
-                {navItems.map((item) => (
-                  <li key={item.href}>
-                    <MobileFooterLink href={item.href} label={item.label} />
-                  </li>
-                ))}
-              </ul>
-            </nav>
-          </div>
-
-          <div className="px-5 py-5">
-            <p className="text-base font-bold text-loden-ink">Guides locaux</p>
-            <nav className="mt-3" aria-label="Guides locaux mobile">
-              <ul className="grid gap-2">
-                {localGuideLinks.map((item) => (
+              <ul className="grid grid-cols-2 gap-2">
+                {mobileEssentialLinks.map((item) => (
                   <li key={item.href}>
                     <MobileFooterLink href={item.href} label={item.label} />
                   </li>
@@ -130,7 +119,7 @@ export function Footer() {
             </div>
             <div className="mt-5 grid grid-cols-2 gap-2">
               <a
-                className="focus-ring flex min-h-[50px] items-center justify-center gap-2 rounded-full border border-loden-100 bg-loden-50 px-3 text-sm font-bold text-loden-800 transition hover:bg-loden-100"
+                className="focus-ring flex min-h-[50px] items-center justify-center gap-2 rounded-2xl border border-loden-100 bg-loden-50 px-3 text-sm font-bold text-loden-800 transition hover:bg-loden-100"
                 href={directionsHref}
                 target="_blank"
                 rel="noreferrer"
@@ -139,7 +128,7 @@ export function Footer() {
                 <ArrowRight className="h-4 w-4" aria-hidden="true" />
               </a>
               <Link
-                className="focus-ring flex min-h-[50px] items-center justify-center gap-2 rounded-full bg-loden-700 px-3 text-sm font-bold text-white shadow-soft transition hover:bg-loden-800"
+                className="focus-ring flex min-h-[50px] items-center justify-center gap-2 rounded-2xl bg-loden-700 px-3 text-sm font-bold text-white shadow-soft transition hover:bg-loden-800"
                 href="/contact"
               >
                 Nous écrire

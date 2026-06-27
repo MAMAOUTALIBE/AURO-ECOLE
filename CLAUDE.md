@@ -33,6 +33,9 @@ npx vitest run --config backend/vitest.config.ts -t "test name substring"
 npm run prisma:generate
 npm run db:migrate:deploy   # prisma migrate deploy
 npm run db:seed             # tsx prisma/seed.ts
+npm run db:seed-availability # tsx prisma/seed-availability.ts — booking slots
+npm run db:seed-demo        # tsx prisma/seed-demo.ts — demo dataset (ids "demo-")
+npm run db:import-students  # tsx prisma/import-students.ts — bulk student import
 npm run db:clean-demo       # tsx prisma/clean-demo.ts — purge demo rows (ids "demo-")
 
 # Aggregate gates
@@ -109,7 +112,9 @@ Single source of truth: [prisma/schema.prisma](prisma/schema.prisma) (PostgreSQL
 
 ## Deployment
 
-Target is Hostinger VPS via **PM2** ([ecosystem.config.cjs](ecosystem.config.cjs)): two processes — `loden-api` (`dist/backend/main.js`, :4000) and `loden-web` (`next start`, :3000, with `LODEN_API_URL=http://127.0.0.1:4000`). nginx reverse-proxy config in `deploy/hostinger-nginx.conf`. Full runbook: [docs/hostinger-deployment.md](docs/hostinger-deployment.md). Backend architecture & endpoint reference: [docs/backend-architecture.md](docs/backend-architecture.md).
+Primary target is Hostinger VPS via **PM2** ([ecosystem.config.cjs](ecosystem.config.cjs)): two processes — `loden-api` (`dist/backend/main.js`, :4000) and `loden-web` (`next start`, :3000, with `LODEN_API_URL=http://127.0.0.1:4000`). nginx reverse-proxy config in `deploy/hostinger-nginx.conf`. Full runbook: [docs/hostinger-deployment.md](docs/hostinger-deployment.md). Backend architecture & endpoint reference: [docs/backend-architecture.md](docs/backend-architecture.md).
+
+Two alternative one-config deploy targets exist (both run the same `npm run deploy:build`, then start both processes — `JWT_SECRET` must be identical across API and web since the `/admin` middleware verifies what the API signs): **Railway** ([railway.toml](railway.toml) + [railway-start.sh](railway-start.sh), single service, Next on public `$PORT` proxying to internal API :4000) and **Render** ([render.yaml](render.yaml) blueprint: `loden-api` + `loden-web` + a Postgres DB, with a shared `loden-secrets` env group).
 
 ## Conventions
 

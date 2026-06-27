@@ -83,9 +83,9 @@ function buildCalendarDays(availabilities: Availability[]): CalendarDay[] {
       }
 
       return {
-      day: formatDayLabel(date),
-      date: date.slice(8, 10),
-      slots: Array.from(uniqueSlots.values())
+        day: formatDayLabel(date),
+        date: date.slice(8, 10),
+        slots: Array.from(uniqueSlots.values())
       };
     })
     .filter((day) => day.slots.length > 0)
@@ -188,17 +188,17 @@ export function BookingCalendar() {
   };
 
   return (
-    <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-premium">
+    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-premium sm:rounded-[1.75rem] sm:p-6">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h3 className="text-xl font-semibold text-loden-ink">Réserver une leçon</h3>
-          <p className="mt-1 text-sm text-loden-muted">Créneaux disponibles synchronisés avec le planning LODENE.</p>
+          <h3 className="text-lg font-semibold text-loden-ink sm:text-xl">Réserver une leçon</h3>
+          <p className="mt-1 hidden text-sm text-loden-muted sm:block">Créneaux disponibles synchronisés avec le planning LODENE.</p>
         </div>
-        <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-loden-50 text-loden-700">
-          <CalendarCheck className="h-6 w-6" />
+        <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-loden-50 text-loden-700 sm:h-12 sm:w-12">
+          <CalendarCheck className="h-5 w-5 sm:h-6 sm:w-6" />
         </span>
       </div>
-      <div className="mt-6 grid grid-cols-5 gap-2">
+      <div className="mt-5 grid grid-cols-5 gap-1.5 sm:mt-6 sm:gap-2">
         {availableDays.map((item, index) => (
           <button
             type="button"
@@ -208,10 +208,10 @@ export function BookingCalendar() {
               setSelectedSlot(item.slots[0].label);
               setBookingMessage(null);
             }}
-            className={`focus-ring rounded-2xl border p-3 text-center transition ${selectedDay === index ? "border-loden-400 bg-loden-50 text-loden-800" : "border-slate-200 text-loden-muted hover:border-loden-200"}`}
+            className={`focus-ring rounded-2xl border px-2 py-2.5 text-center transition sm:p-3 ${selectedDay === index ? "border-loden-400 bg-loden-50 text-loden-800" : "border-slate-200 text-loden-muted hover:border-loden-200"}`}
           >
             <span className="block text-xs font-semibold uppercase">{item.day}</span>
-            <span className="mt-1 block text-xl font-semibold">{item.date}</span>
+            <span className="mt-1 block text-lg font-semibold sm:text-xl">{item.date}</span>
           </button>
         ))}
       </div>

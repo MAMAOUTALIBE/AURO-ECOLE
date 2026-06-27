@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Search } from "lucide-react";
+import Link from "next/link";
+import { ArrowRight, MessageCircle, Search } from "lucide-react";
 import { formations, productLineLabels, type Formation, type ProductLine } from "@/data/site";
 import { FormationCard } from "@/components/FormationCard";
 import { mapApiFormation } from "@/lib/catalog-mappers";
@@ -62,9 +63,24 @@ export function FormationExplorer() {
   }, [activeFilter, activePole, query, sourceFormations]);
 
   return (
-    <section className="bg-white py-10 md:py-14 xl:py-20">
+    <section className="bg-white py-8 md:py-14 xl:py-20">
       <div className="container-pad">
-        <div className="rounded-3xl border border-slate-200 bg-loden-pearl p-3 sm:rounded-[1.75rem] sm:p-5 lg:p-6">
+        <div className="mb-4 grid gap-3 md:hidden">
+          <Link
+            href="/contact#demande"
+            className="focus-ring flex items-center justify-between gap-4 rounded-2xl bg-loden-800 p-4 text-white shadow-soft"
+          >
+            <span>
+              <span className="block text-sm font-bold">Pas sûr de la bonne formation ?</span>
+              <span className="mt-1 block text-xs leading-5 text-white/80">Un conseiller t&apos;oriente avant inscription.</span>
+            </span>
+            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-white/15">
+              <MessageCircle className="h-5 w-5" aria-hidden="true" />
+            </span>
+          </Link>
+        </div>
+
+        <div className="rounded-2xl border border-slate-200 bg-loden-pearl p-3 sm:rounded-[1.75rem] sm:p-5 lg:p-6">
           <div className="flex items-center gap-3 rounded-2xl bg-white px-4 py-3 shadow-soft">
             <Search className="h-5 w-5 text-loden-500" aria-hidden="true" />
             <input
@@ -103,16 +119,23 @@ export function FormationExplorer() {
           </div>
         </div>
         {visibleFormations.length > 0 ? (
-          <div className="mt-8 grid gap-5 md:grid-cols-2 xl:grid-cols-3 2xl:gap-6">
+          <div className="mt-6 grid gap-4 md:mt-8 md:grid-cols-2 md:gap-5 xl:grid-cols-3 2xl:gap-6">
             {visibleFormations.map((formation) => (
               <FormationCard key={formation.slug} formation={formation} />
             ))}
           </div>
         ) : (
-          <p className="mt-8 rounded-3xl border border-slate-200 bg-loden-pearl p-6 text-center text-sm font-medium text-loden-muted">
+          <p className="mt-6 rounded-2xl border border-slate-200 bg-loden-pearl p-4 text-center text-sm font-medium text-loden-muted sm:mt-8 sm:rounded-3xl sm:p-6">
             Aucune formation ne correspond à ces filtres. Essaie un autre pôle ou réinitialise la recherche.
           </p>
         )}
+        <Link
+          href="/contact#demande"
+          className="focus-ring mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full bg-loden-700 px-5 py-3.5 text-sm font-bold text-white shadow-soft md:hidden"
+        >
+          Être rappelé pour choisir
+          <ArrowRight className="h-4 w-4" aria-hidden="true" />
+        </Link>
       </div>
     </section>
   );

@@ -104,13 +104,13 @@ export function InstructorDashboard() {
         </button>
       </Panel>
 
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-3 sm:grid-cols-3 sm:gap-4">
         <Metric icon={UserRound} label="Rôle" value="Formateur" />
         <Metric icon={CalendarCheck} label="Leçons à venir" value={`${upcomingBookings.length}`} />
         <Metric icon={GraduationCap} label="Examens à venir" value={`${upcomingExams.length}`} />
       </div>
 
-      <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-soft lg:col-span-2">
+      <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-soft sm:rounded-3xl sm:p-6 lg:col-span-2">
         <h3 className="flex items-center gap-2 text-xl font-semibold text-loden-ink">
           <CalendarCheck className="h-5 w-5 text-loden-700" aria-hidden="true" />
           Planning des leçons
@@ -131,7 +131,7 @@ export function InstructorDashboard() {
         )}
       </section>
 
-      <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-soft lg:col-span-2">
+      <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-soft sm:rounded-3xl sm:p-6 lg:col-span-2">
         <h3 className="flex items-center gap-2 text-xl font-semibold text-loden-ink">
           <ClipboardList className="h-5 w-5 text-loden-700" aria-hidden="true" />
           Examens à venir
@@ -165,8 +165,8 @@ function humanize(value: string) {
 
 function Panel({ title, text, children }: { title: string; text: string; children?: React.ReactNode }) {
   return (
-    <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-premium">
-      <h2 className="text-2xl font-semibold text-loden-ink">{title}</h2>
+    <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-premium sm:rounded-3xl sm:p-6">
+      <h2 className="text-xl font-semibold text-loden-ink sm:text-2xl">{title}</h2>
       <p className="mt-3 text-sm leading-6 text-loden-muted">{text}</p>
       {children}
     </section>
@@ -175,10 +175,10 @@ function Panel({ title, text, children }: { title: string; text: string; childre
 
 function Metric({ icon: Icon, label, value }: { icon: typeof UserRound; label: string; value: string }) {
   return (
-    <article className="rounded-3xl border border-slate-200 bg-white p-6 shadow-soft">
+    <article className="rounded-2xl border border-slate-200 bg-white p-4 shadow-soft sm:rounded-3xl sm:p-6">
       <Icon className="h-6 w-6 text-loden-700" />
-      <p className="mt-5 text-sm font-semibold uppercase tracking-[0.12em] text-loden-muted">{label}</p>
-      <p className="mt-2 break-words text-2xl font-semibold text-loden-ink">{value}</p>
+      <p className="mt-4 text-xs font-semibold uppercase tracking-[0.12em] text-loden-muted sm:mt-5 sm:text-sm">{label}</p>
+      <p className="mt-2 break-words text-xl font-semibold text-loden-ink sm:text-2xl">{value}</p>
     </article>
   );
 }

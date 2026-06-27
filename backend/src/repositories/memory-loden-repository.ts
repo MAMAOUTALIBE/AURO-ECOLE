@@ -871,6 +871,23 @@ export class MemoryLodenRepository implements LodenRepository {
     return formation;
   }
 
+  async deleteFormation(id: string) {
+    const formation = await this.findFormationById(id);
+    if (!formation) throw notFound("Formation introuvable");
+
+    const isReferenced =
+      this.store.students.some((student) => student.formationId === id) ||
+      this.store.pricingPlans.some((plan) => plan.formationId === id) ||
+      this.store.bookings.some((booking) => booking.formationId === id) ||
+      this.store.cpfRequests.some((request) => request.formationId === id);
+
+    if (isReferenced) {
+      throw conflict("Cette formation est déjà utilisée. Désactive-la plutôt pour conserver l'historique.");
+    }
+
+    this.store.formations = this.store.formations.filter((item) => item.id !== id);
+  }
+
   async listPricingPlans(includeInactive = false) {
     return this.store.pricingPlans.filter((plan) => includeInactive || plan.active);
   }

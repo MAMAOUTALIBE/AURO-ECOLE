@@ -35,7 +35,7 @@ export function SectionHeader({
       ) : null}
       <h2
         className={cn(
-          "text-3xl font-semibold leading-tight sm:text-4xl",
+          "text-2xl font-semibold leading-tight sm:text-4xl",
           tone === "light" ? "text-white" : "text-loden-ink"
         )}
       >
@@ -44,7 +44,7 @@ export function SectionHeader({
       {text ? (
         <p
           className={cn(
-            "mt-4 text-base leading-7 sm:text-lg",
+            "mt-3 text-sm leading-6 sm:mt-4 sm:text-lg sm:leading-7",
             tone === "light" ? "text-white/80" : "text-loden-muted"
           )}
         >

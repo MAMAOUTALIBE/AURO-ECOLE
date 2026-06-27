@@ -25,12 +25,12 @@ export default async function VerifierEmailPage({
         cta="Retour à la connexion"
         ctaHref="/connexion"
       />
-      <section className="bg-white py-14 sm:py-20">
+      <section className="bg-white py-8 sm:py-20">
         <div className="container-pad grid items-start gap-8 lg:grid-cols-[0.9fr_1.1fr]">
           <SectionHeader
             eyebrow="Sécurité du compte"
             title="Une adresse vérifiée pour sécuriser ton suivi"
-            text="La vérification de ton email nous permet de te recontacter en toute sécurité et de protéger l'accès à ton espace."
+            text="Cette étape protège l'accès à ton espace et confirme ton adresse de contact."
           />
           <VerifyEmailClient token={token?.trim() ?? ""} />
         </div>

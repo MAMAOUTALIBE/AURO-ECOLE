@@ -80,14 +80,14 @@ export function CpfRequestForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="rounded-3xl border border-slate-200 bg-white p-4 shadow-premium md:p-6" noValidate>
+    <form onSubmit={handleSubmit(onSubmit)} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-premium sm:rounded-3xl md:p-6" noValidate>
       <div className="flex items-start gap-3 border-b border-slate-200 pb-4 md:pb-5">
         <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-loden-50 text-loden-700">
           <FileCheck2 className="h-5 w-5" />
         </span>
         <div>
           <h2 className="text-xl font-semibold text-loden-ink md:text-2xl">Vérifier mon financement</h2>
-          <p className="mt-1 text-sm leading-6 text-loden-muted md:mt-2">
+          <p className="mt-1 hidden text-sm leading-6 text-loden-muted sm:block md:mt-2">
             Un conseiller analyse ton solde CPF et prépare le meilleur parcours possible.
           </p>
         </div>
@@ -114,11 +114,11 @@ export function CpfRequestForm() {
         </Field>
       </div>
 
-      <Field label="Montant CPF estimé en euros" error={errors.requestedAmount?.message} className="mt-4">
+      <Field label="Montant CPF estimé en euros" error={errors.requestedAmount?.message} className="mt-4 hidden sm:grid">
         <input {...register("requestedAmount")} className="field-input" inputMode="numeric" placeholder="Ex. 1200" />
       </Field>
 
-      <Field label="Précisions" error={errors.note?.message} className="mt-4">
+      <Field label="Précisions" error={errors.note?.message} className="mt-4 hidden sm:grid">
         <textarea
           {...register("note")}
           className="field-input min-h-28 resize-y"
@@ -129,7 +129,7 @@ export function CpfRequestForm() {
       <button
         type="submit"
         disabled={isSubmitting}
-        className="focus-ring mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full bg-loden-700 px-6 py-4 font-semibold text-white transition hover:bg-loden-800 disabled:cursor-not-allowed disabled:opacity-70"
+        className="focus-ring mt-5 inline-flex w-full items-center justify-center gap-2 rounded-full bg-loden-700 px-6 py-3.5 font-semibold text-white transition hover:bg-loden-800 disabled:cursor-not-allowed disabled:opacity-70 sm:mt-6 sm:py-4"
       >
         <Send className="h-5 w-5" />
         {isSubmitting ? "Analyse en cours..." : "Envoyer ma demande CPF"}

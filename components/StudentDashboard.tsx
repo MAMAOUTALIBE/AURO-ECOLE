@@ -151,7 +151,7 @@ export function StudentDashboard() {
         </button>
       </Panel>
 
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid gap-3 sm:grid-cols-2 sm:gap-4">
         <Metric icon={UserRound} label="Profil" value={state.user.role === "ELEVE" ? "Élève" : state.user.role} />
         <Metric icon={GraduationCap} label="Formation" value={student?.formationId ?? "À confirmer"} />
         <Metric icon={CalendarCheck} label="Heures restantes" value={`${remainingHours} h`} />
@@ -159,7 +159,7 @@ export function StudentDashboard() {
         <Metric icon={CreditCard} label="Paiements" value={`${payments.length}`} />
       </div>
 
-      <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-soft lg:col-span-2">
+      <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-soft sm:rounded-3xl sm:p-6 lg:col-span-2">
         <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
           <div>
             <h3 className="text-xl font-semibold text-loden-ink">Progression pédagogique</h3>
@@ -185,7 +185,7 @@ export function StudentDashboard() {
         </div>
       </section>
 
-      <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-soft lg:col-span-2">
+      <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-soft sm:rounded-3xl sm:p-6 lg:col-span-2">
         <h3 className="text-xl font-semibold text-loden-ink">Réservations</h3>
         {nextBooking ? (
           <p className="mt-3 text-sm leading-6 text-loden-muted">
@@ -197,7 +197,7 @@ export function StudentDashboard() {
           </p>
         )}
       </section>
-      <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-soft lg:col-span-2">
+      <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-soft sm:rounded-3xl sm:p-6 lg:col-span-2">
         <h3 className="text-xl font-semibold text-loden-ink">Paiements</h3>
         {latestPayment ? (
           <p className="mt-3 text-sm leading-6 text-loden-muted">
@@ -214,7 +214,7 @@ export function StudentDashboard() {
       </section>
 
       <section className="grid gap-4 lg:col-span-2 lg:grid-cols-[1fr_1fr]">
-        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-soft">
+        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-soft sm:rounded-3xl sm:p-6">
           <h3 className="text-xl font-semibold text-loden-ink">Documents à préparer</h3>
           <div className="mt-5 grid gap-3">
             {["Pièce d'identité", "Justificatif de domicile", "Photo signature numérique", "Attestation ASSR ou JDC"].map((item, index) => (
@@ -229,7 +229,7 @@ export function StudentDashboard() {
             ))}
           </div>
         </div>
-        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-soft">
+        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-soft sm:rounded-3xl sm:p-6">
           <h3 className="text-xl font-semibold text-loden-ink">Accès rapides</h3>
           <div className="mt-5 grid gap-3">
             <QuickAction href="/#reservation" icon={CalendarCheck} label="Réserver une leçon" />
@@ -269,8 +269,8 @@ function getNextAction(student: Student | null, nextBooking: Booking | undefined
 
 function Panel({ title, text, children }: { title: string; text: string; children?: React.ReactNode }) {
   return (
-    <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-premium">
-      <h2 className="text-2xl font-semibold text-loden-ink">{title}</h2>
+    <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-premium sm:rounded-3xl sm:p-6">
+      <h2 className="text-xl font-semibold text-loden-ink sm:text-2xl">{title}</h2>
       <p className="mt-3 text-sm leading-6 text-loden-muted">{text}</p>
       {children}
     </section>
@@ -279,10 +279,10 @@ function Panel({ title, text, children }: { title: string; text: string; childre
 
 function Metric({ icon: Icon, label, value }: { icon: typeof UserRound; label: string; value: string }) {
   return (
-    <article className="rounded-3xl border border-slate-200 bg-white p-6 shadow-soft">
+    <article className="rounded-2xl border border-slate-200 bg-white p-4 shadow-soft sm:rounded-3xl sm:p-6">
       <Icon className="h-6 w-6 text-loden-700" />
-      <p className="mt-5 text-sm font-semibold uppercase tracking-[0.12em] text-loden-muted">{label}</p>
-      <p className="mt-2 break-words text-2xl font-semibold text-loden-ink">{value}</p>
+      <p className="mt-4 text-xs font-semibold uppercase tracking-[0.12em] text-loden-muted sm:mt-5 sm:text-sm">{label}</p>
+      <p className="mt-2 break-words text-xl font-semibold text-loden-ink sm:text-2xl">{value}</p>
     </article>
   );
 }

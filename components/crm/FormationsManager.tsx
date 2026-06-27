@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { GraduationCap, ImagePlus, Lock, Pencil, Plus, X } from "lucide-react";
+import { GraduationCap, ImagePlus, Lock, Pencil, Plus, Trash2, X } from "lucide-react";
 import { Badge, Card, EmptyState, SectionHeader, Skeleton } from "@/components/crm/ui";
 import { MediaPickerModal } from "@/components/crm/site/MediaPickerModal";
 
@@ -199,6 +199,27 @@ export function FormationsManager() {
     }
   };
 
+  const remove = async (f: Formation) => {
+    const confirmed = window.confirm(
+      `Supprimer définitivement la formation "${f.title}" ?\n\nSi elle est déjà liée à des élèves, devis ou réservations, la suppression sera refusée.`
+    );
+    if (!confirmed) return;
+
+    setBusy(true);
+    setError(null);
+    try {
+      const response = await fetch(`/api/formations/${f.id}`, { method: "DELETE" });
+      const body = response.status === 204 ? null : await response.json().catch(() => null);
+      if (!response.ok) throw new Error(body?.error?.message ?? "Suppression impossible.");
+      if (editingId === f.id) cancel();
+      setItems((cur) => cur.filter((item) => item.id !== f.id));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Suppression impossible.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <MediaPickerModal open={pickerOpen} onClose={() => setPickerOpen(false)} onSelect={(media) => setForm((prev) => ({ ...prev, imageUrl: media.url }))} />
@@ -336,6 +357,15 @@ export function FormationsManager() {
                     <button type="button" onClick={() => startEdit(f)} className="focus-ring rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-loden-700 hover:bg-loden-50">Modifier</button>
                     <button type="button" onClick={() => toggleActive(f)} className="focus-ring rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-loden-muted hover:bg-slate-50">
                       {f.active ? "Désactiver" : "Activer"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => remove(f)}
+                      disabled={busy}
+                      className="focus-ring inline-flex items-center gap-1 rounded-lg border border-rose-200 px-3 py-1.5 text-xs font-semibold text-rose-700 hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+                      Supprimer
                     </button>
                   </div>
                 </Card>

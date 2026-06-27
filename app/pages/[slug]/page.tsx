@@ -21,14 +21,14 @@ export default async function CmsPage({ params }: { params: Promise<{ slug: stri
 
   return (
     <main className="bg-white">
-      <section className="container-pad py-12 sm:py-16">
+      <section className="container-pad py-8 sm:py-16">
         <div className="mx-auto max-w-3xl">
-          <h1 className="text-3xl font-bold tracking-tight text-loden-ink sm:text-4xl">{entry.title}</h1>
+          <h1 className="text-2xl font-bold leading-tight text-loden-ink sm:text-4xl">{entry.title}</h1>
           {entry.coverImageUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={entry.coverImageUrl} alt={entry.title} className="mt-6 aspect-[16/9] w-full rounded-3xl border border-slate-200 object-cover" />
+            <img src={entry.coverImageUrl} alt={entry.title} className="mt-5 aspect-[16/9] w-full rounded-2xl border border-slate-200 object-cover sm:mt-6 sm:rounded-3xl" />
           ) : null}
-          <div className="mt-6 space-y-4 text-base leading-7 text-loden-ink">
+          <div className="mt-5 space-y-4 text-[15px] leading-7 text-loden-ink sm:mt-6 sm:text-base">
             {paragraphs.map((paragraph, index) => (
               <p key={index}>{paragraph}</p>
             ))}

@@ -12,14 +12,14 @@ export function SimulatorCard() {
   const [financing, setFinancing] = useState(simulatorOptions.financing[0].value);
 
   return (
-    <div className="rounded-3xl border border-slate-200 bg-white p-4 shadow-premium md:rounded-[1.75rem] md:p-6">
+    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-premium md:rounded-[1.75rem] md:p-6">
       <div className="flex items-center gap-3">
         <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-loden-50 text-loden-700">
           <Calculator className="h-6 w-6" />
         </span>
         <div>
           <h3 className="text-lg font-semibold text-loden-ink md:text-xl">Préparer ma demande de devis</h3>
-          <p className="text-sm text-loden-muted">Précise ton besoin : on te transmet un devis personnalisé.</p>
+          <p className="hidden text-sm text-loden-muted sm:block">Précise ton besoin : on te transmet un devis personnalisé.</p>
         </div>
       </div>
       <div className="mt-5 grid gap-5 md:mt-6">
@@ -71,13 +71,13 @@ export function SimulatorCard() {
           </div>
         </fieldset>
       </div>
-      <div className="mt-6 rounded-3xl bg-loden-ink p-5 text-white">
+      <div className="mt-5 rounded-2xl bg-loden-ink p-4 text-white sm:mt-6 sm:rounded-3xl sm:p-5">
         <p className="flex items-center gap-2 text-sm text-white/75">
           <FileText className="h-4 w-4" />
           Tarif
         </p>
-        <p className="mt-2 text-3xl font-semibold md:text-4xl">Sur devis</p>
-        <p className="mt-2 text-sm text-white/70">
+        <p className="mt-2 text-2xl font-semibold md:text-4xl">Sur devis</p>
+        <p className="mt-2 hidden text-sm text-white/70 sm:block">
           Le tarif est établi sur devis personnalisé, selon le diagnostic initial et le planning choisi.
         </p>
         <Link

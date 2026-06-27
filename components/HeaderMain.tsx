@@ -4,9 +4,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { LucideIcon } from "lucide-react";
-import { ChevronDown, Menu, Sparkles, X } from "lucide-react";
+import { ArrowRight, BookOpenCheck, ChevronDown, CreditCard, GraduationCap, Menu, MessageCircle, Phone, Sparkles, UserRound, X } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { contactInfo } from "@/data/site";
 import {
   defaultNavCtas,
   defaultNavPrimary,
@@ -67,14 +68,14 @@ function Logo() {
 
 function MobileLogo() {
   return (
-    <Link href="/" className="focus-ring flex min-w-0 shrink-0 rounded-full" aria-label="LODENE - Accueil">
+    <Link href="/" className="focus-ring flex min-w-0 shrink-0 rounded-2xl" aria-label="LODENE - Accueil">
       <Image
         src="/lodene-logo-wordmark.png"
         alt="LODENE"
         width={1320}
         height={660}
         priority
-        className="h-[4.5rem] w-auto max-w-[9.5rem] min-[375px]:h-20 min-[375px]:max-w-[10.5rem]"
+        className="h-14 w-auto max-w-[8.75rem] min-[375px]:max-w-[9.5rem]"
       />
     </Link>
   );
@@ -195,19 +196,37 @@ export function HeaderMain({ nav, ctas }: { nav?: NavPrimary; ctas?: NavCtas }) 
 
   const items = publicNavItems(nav ?? defaultNavPrimary);
   const ctaItems: NavCta[] = (ctas ?? defaultNavCtas).items.filter((item) => item.active && !isStudentAccountHref(item.href));
-  const dropdowns = items.filter((item) => (item.children ?? []).some((child) => child.active));
+  const formationItem = items.find((item) => item.id === "formations");
+  const keyFormationLinks = (formationItem?.children ?? [])
+    .filter((child) => ["permis-b-manuel", "permis-b-auto", "vtc", "sst", "toutes"].includes(child.id))
+    .slice(0, 5);
+  const phoneHref = contactInfo.phone ? `tel:${contactInfo.phone.replaceAll(" ", "")}` : "/contact";
+  const whatsappHref = contactInfo.whatsapp ? `https://wa.me/${contactInfo.whatsapp}` : "/contact";
+  const mobileMainLinks = [
+    { href: "/formations", label: "Formations", icon: GraduationCap },
+    { href: "/tarifs", label: "Tarifs", icon: CreditCard },
+    { href: "/financement", label: "Financement", icon: BookOpenCheck },
+    { href: "/contact", label: "Contact", icon: MessageCircle },
+    { href: "/connexion", label: "Connexion", icon: UserRound }
+  ];
 
   return (
-    <header className="sticky top-0 z-40 border-b border-[#f97316]/35 bg-white/95 shadow-[0_8px_22px_rgba(249,115,22,0.10)] backdrop-blur-xl md:border-0 md:bg-transparent md:pb-2 md:pt-0 md:shadow-none">
+    <header className="sticky top-0 z-40 border-b border-slate-200/80 bg-white/95 shadow-[0_8px_26px_rgba(20,33,38,0.08)] backdrop-blur-xl md:border-0 md:bg-transparent md:pb-2 md:pt-0 md:shadow-none">
       <div className="w-full px-4 md:px-0">
-        <div className="flex min-h-[5.25rem] items-center justify-between gap-3 md:hidden">
+        <div className="flex min-h-16 items-center justify-between gap-3 md:hidden">
           <MobileLogo />
 
           <div className="flex shrink-0 items-center gap-2">
+            <Link
+              href="/inscription"
+              className="focus-ring inline-flex min-h-11 items-center justify-center rounded-full bg-loden-700 px-4 text-sm font-bold text-white shadow-soft"
+            >
+              S&apos;inscrire
+            </Link>
             <button
               type="button"
               onClick={() => setMenuOpen((value) => !value)}
-              className="focus-ring inline-flex h-12 w-12 items-center justify-center rounded-full border border-[#f97316]/45 bg-white text-loden-ink shadow-[0_10px_28px_rgba(20,33,38,0.06),0_0_18px_rgba(249,115,22,0.16)] transition hover:border-[#f97316]/60 hover:bg-loden-50"
+              className="focus-ring inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white text-loden-ink shadow-soft transition hover:border-loden-200 hover:bg-loden-50"
               aria-label={menuOpen ? "Fermer le menu" : "Ouvrir le menu"}
               aria-expanded={menuOpen}
             >
@@ -281,65 +300,86 @@ export function HeaderMain({ nav, ctas }: { nav?: NavPrimary; ctas?: NavCtas }) 
         </div>
 
         {menuOpen ? (
-          <div className="mt-1 max-h-[calc(100dvh-5.5rem)] overflow-y-auto rounded-[1.5rem] border border-slate-200/80 bg-white p-2.5 shadow-premium xl:hidden md:mt-3 sm:rounded-[2rem] sm:p-3">
-            <nav className="grid gap-2" aria-label="Navigation mobile">
-              {dropdowns.map((dropdown) => {
-                const Icon = resolveSiteIcon(dropdown.icon);
-                const children = (dropdown.children ?? []).filter((child) => child.active);
+          <div className="mt-2 max-h-[calc(100dvh-4.75rem)] overflow-y-auto rounded-[1.35rem] border border-slate-200/80 bg-white p-3 shadow-premium xl:hidden md:mt-3 sm:rounded-[1.75rem]">
+            <nav className="grid gap-4" aria-label="Navigation mobile">
+              <div className="grid grid-cols-3 gap-2">
+                <a
+                  href={phoneHref}
+                  onClick={() => setMenuOpen(false)}
+                  className="focus-ring inline-flex min-h-14 flex-col items-center justify-center gap-1 rounded-2xl bg-loden-fog px-2 text-xs font-bold text-loden-ink"
+                >
+                  <Phone className="h-4 w-4 text-loden-700" aria-hidden="true" />
+                  Appeler
+                </a>
+                <a
+                  href={whatsappHref}
+                  onClick={() => setMenuOpen(false)}
+                  className="focus-ring inline-flex min-h-14 flex-col items-center justify-center gap-1 rounded-2xl bg-[#25D366] px-2 text-xs font-bold text-white"
+                >
+                  <MessageCircle className="h-4 w-4" aria-hidden="true" />
+                  WhatsApp
+                </a>
+                <Link
+                  href="/inscription"
+                  onClick={() => setMenuOpen(false)}
+                  className="focus-ring inline-flex min-h-14 flex-col items-center justify-center gap-1 rounded-2xl bg-loden-700 px-2 text-xs font-bold text-white"
+                >
+                  <Sparkles className="h-4 w-4" aria-hidden="true" />
+                  Inscription
+                </Link>
+              </div>
 
-                return (
-                  <div key={dropdown.id} className="rounded-3xl bg-loden-fog p-2">
-                    <Link
-                      href={dropdown.href}
-                      onClick={() => setMenuOpen(false)}
-                      className="flex items-center gap-2 px-2 py-2 text-sm font-bold uppercase tracking-[0.12em] text-loden-700"
-                    >
-                      <Icon className="h-4 w-4" aria-hidden="true" />
-                      {dropdown.label}
-                    </Link>
-                    <div className="grid gap-1 sm:grid-cols-2">
-                      {children.map((child) => (
-                        <PillLink
+              <div>
+                <p className="px-1 text-xs font-bold uppercase tracking-[0.12em] text-loden-700">Aller à l&apos;essentiel</p>
+                <div className="mt-2 grid gap-2">
+                  {mobileMainLinks.map((item) => {
+                    const Icon = item.icon;
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        onClick={() => setMenuOpen(false)}
+                        className={cn(
+                          "focus-ring flex min-h-12 items-center justify-between gap-3 rounded-2xl border px-4 text-sm font-bold transition",
+                          matchPath(pathname, item.href)
+                            ? "border-loden-200 bg-loden-50 text-loden-800"
+                            : "border-slate-200 bg-white text-loden-ink hover:border-loden-200 hover:bg-loden-50"
+                        )}
+                      >
+                        <span className="flex items-center gap-3">
+                          <Icon className="h-4 w-4 text-loden-700" aria-hidden="true" />
+                          {item.label}
+                        </span>
+                        <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-loden-100 text-loden-700">
+                          <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+                        </span>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {keyFormationLinks.length > 0 ? (
+                <div className="rounded-2xl bg-loden-fog p-3">
+                  <p className="text-xs font-bold uppercase tracking-[0.12em] text-loden-700">Choix rapides</p>
+                  <div className="mt-2 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                    {keyFormationLinks.map((child) => {
+                      const Icon = resolveSiteIcon(child.icon);
+                      return (
+                        <Link
                           key={child.id}
                           href={child.href}
-                          label={child.label}
-                          icon={resolveSiteIcon(child.icon)}
-                          variant="outline"
                           onClick={() => setMenuOpen(false)}
-                        />
-                      ))}
-                    </div>
+                          className="focus-ring inline-flex shrink-0 items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-loden-ink shadow-sm"
+                        >
+                          <Icon className="h-3.5 w-3.5 text-loden-700" aria-hidden="true" />
+                          {child.label}
+                        </Link>
+                      );
+                    })}
                   </div>
-                );
-              })}
-
-              <div className="grid gap-2 pt-1 sm:grid-cols-2">
-                {items
-                  .filter((item) => !(item.children ?? []).some((child) => child.active))
-                  .map((item) => (
-                    <PillLink
-                      key={item.id}
-                      href={item.href}
-                      label={item.label}
-                      icon={resolveSiteIcon(item.icon)}
-                      variant="outline"
-                      onClick={() => setMenuOpen(false)}
-                    />
-                  ))}
-              </div>
-
-              <div className="grid gap-2 pt-1 sm:grid-cols-2">
-                {ctaItems.map((cta) => (
-                  <PillLink
-                    key={cta.id}
-                    href={cta.href}
-                    label={cta.label}
-                    icon={resolveSiteIcon(cta.icon)}
-                    variant={cta.variant === "solid" ? "solid" : "outline"}
-                    onClick={() => setMenuOpen(false)}
-                  />
-                ))}
-              </div>
+                </div>
+              ) : null}
             </nav>
           </div>
         ) : null}

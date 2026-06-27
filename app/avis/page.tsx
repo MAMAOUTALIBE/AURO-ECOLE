@@ -64,7 +64,7 @@ export default function AvisPage() {
         title="Les retours de nos élèves"
         text="Cette page présentera les avis vérifiés des élèves de LODENE. Nous ne publions aucun témoignage fictif."
       />
-      <section className="bg-white py-14 sm:py-20">
+      <section className="bg-white py-8 sm:py-20">
         <div className="container-pad">
           <SectionHeader
             eyebrow="Témoignages"
@@ -75,14 +75,14 @@ export default function AvisPage() {
           <ReviewsGrid />
         </div>
       </section>
-      <section className="bg-loden-800 py-14 text-white sm:py-20">
+      <section className="bg-loden-800 py-8 text-white sm:py-20">
         <div className="container-pad grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.14em] text-white/75">Transparence</p>
-            <h2 className="mt-3 text-3xl font-semibold leading-tight sm:text-4xl">
+            <h2 className="mt-3 text-2xl font-semibold leading-tight sm:text-4xl">
               Les avis servent aussi à améliorer la formation
             </h2>
-            <p className="mt-4 text-base leading-7 text-white/75">
+            <p className="mt-4 hidden text-base leading-7 text-white/75 sm:block">
               LODENE ne traite pas les avis comme une vitrine figée. Les retours élèves nourrissent le suivi qualité,
               les ajustements de planning et l&apos;accompagnement des moniteurs.
             </p>
@@ -106,10 +106,10 @@ export default function AvisPage() {
             {qualitySignals.map((signal) => {
               const Icon = signal.icon;
               return (
-                <article key={signal.title} className="rounded-3xl border border-white/15 bg-white/10 p-6">
+                <article key={signal.title} className="rounded-2xl border border-white/15 bg-white/10 p-4 sm:rounded-3xl sm:p-6">
                   <Icon className="h-7 w-7 text-loden-200" />
                   <h3 className="mt-4 text-xl font-semibold">{signal.title}</h3>
-                  <p className="mt-3 text-sm leading-6 text-white/75">{signal.text}</p>
+                  <p className="mt-3 hidden text-sm leading-6 text-white/75 sm:block">{signal.text}</p>
                 </article>
               );
             })}

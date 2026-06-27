@@ -19,12 +19,12 @@ export default function MotDePasseOubliePage() {
         cta="Retour à la connexion"
         ctaHref="/connexion"
       />
-      <section className="bg-white py-14 sm:py-20">
+      <section className="bg-white py-8 sm:py-20">
         <div className="container-pad grid items-start gap-8 lg:grid-cols-[0.9fr_1.1fr]">
           <SectionHeader
             eyebrow="Récupération d'accès"
             title="Un lien sécurisé, valable une heure"
-            text="Saisis l'adresse email de ton compte. Si elle correspond à un compte existant, tu recevras un lien à usage unique pour définir un nouveau mot de passe."
+            text="Saisis ton email. Si un compte existe, tu reçois un lien pour choisir un nouveau mot de passe."
           />
           <ForgotPasswordForm />
         </div>

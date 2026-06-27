@@ -26,12 +26,12 @@ export default function FaqPage() {
         title="Les réponses utiles avant de vous engager"
         text="Une question qui n'apparaît pas ici ? Contactez un conseiller, nous vous répondons rapidement."
       />
-      <section className="bg-loden-pearl py-14 sm:py-20">
+      <section className="bg-loden-pearl py-8 sm:py-20">
         <div className="container-pad">
-          <div className="flex flex-col items-start gap-5 rounded-3xl bg-loden-800 p-8 text-white sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col items-start gap-5 rounded-2xl bg-loden-800 p-5 text-white sm:flex-row sm:items-center sm:justify-between sm:rounded-3xl sm:p-8">
             <div>
               <h2 className="text-2xl font-semibold">Besoin d&apos;une réponse personnalisée ?</h2>
-              <p className="mt-2 max-w-2xl text-sm leading-6 text-white/85">
+              <p className="mt-2 hidden max-w-2xl text-sm leading-6 text-white/85 sm:block">
                 Notre équipe vous oriente vers la bonne formation et vérifie votre financement.
               </p>
             </div>

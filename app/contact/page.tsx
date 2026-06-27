@@ -43,13 +43,13 @@ export default function ContactPage() {
         cta="Envoyer une demande"
         ctaHref="#demande"
       />
-      <section id="demande" className="bg-white py-10 md:py-14 xl:py-20">
+      <section id="demande" className="bg-white py-8 md:py-14 xl:py-20">
         <div className="container-pad grid gap-8 lg:grid-cols-[0.9fr_1.1fr]">
           <div className="order-2 grid gap-3 sm:gap-4 lg:order-1">
             {buildContactTiles().map((item) => {
               const Icon = item.icon;
               const content = (
-                <div className="flex items-center gap-3 rounded-3xl border border-slate-200 bg-loden-pearl p-4 shadow-soft sm:gap-4 sm:p-5">
+                <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-loden-pearl p-4 shadow-soft sm:gap-4 sm:rounded-3xl sm:p-5">
                   <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white text-loden-700 shadow-soft sm:h-12 sm:w-12">
                     <Icon className="h-5 w-5 sm:h-6 sm:w-6" />
                   </span>
@@ -70,7 +70,7 @@ export default function ContactPage() {
             <LocalMapPanel />
           </div>
           <div className="order-1 lg:order-2">
-            <Suspense fallback={<div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-premium">Chargement du formulaire...</div>}>
+            <Suspense fallback={<div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-premium sm:rounded-[1.75rem] sm:p-6">Chargement du formulaire...</div>}>
               <ContactForm />
             </Suspense>
           </div>

@@ -54,10 +54,10 @@ export function LoginForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="rounded-3xl border border-slate-200 bg-white p-6 shadow-premium" noValidate>
-      <div className="border-b border-slate-200 pb-5">
-        <h2 className="text-2xl font-semibold text-loden-ink">Connexion élève</h2>
-        <p className="mt-2 text-sm leading-6 text-loden-muted">
+    <form onSubmit={handleSubmit(onSubmit)} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-premium sm:rounded-3xl sm:p-6" noValidate>
+      <div className="border-b border-slate-200 pb-4 sm:pb-5">
+        <h2 className="text-xl font-semibold text-loden-ink sm:text-2xl">Connexion élève</h2>
+        <p className="mt-2 hidden text-sm leading-6 text-loden-muted sm:block">
           Accède à ton profil, ta formation et ton futur planning LODENE.
         </p>
       </div>
@@ -89,7 +89,7 @@ export function LoginForm() {
       <button
         type="submit"
         disabled={isSubmitting}
-        className="focus-ring mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full bg-loden-700 px-6 py-4 font-semibold text-white transition hover:bg-loden-800 disabled:cursor-not-allowed disabled:opacity-70"
+        className="focus-ring mt-5 inline-flex w-full items-center justify-center gap-2 rounded-full bg-loden-700 px-6 py-3.5 font-semibold text-white transition hover:bg-loden-800 disabled:cursor-not-allowed disabled:opacity-70 sm:mt-6 sm:py-4"
       >
         <LogIn className="h-5 w-5" />
         {isSubmitting ? "Connexion..." : "Accéder à mon espace"}

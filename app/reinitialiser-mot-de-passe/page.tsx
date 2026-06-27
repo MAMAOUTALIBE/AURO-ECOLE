@@ -25,7 +25,7 @@ export default async function ReinitialiserMotDePassePage({
         cta="Retour à la connexion"
         ctaHref="/connexion"
       />
-      <section className="bg-white py-14 sm:py-20">
+      <section className="bg-white py-8 sm:py-20">
         <div className="container-pad grid items-start gap-8 lg:grid-cols-[0.9fr_1.1fr]">
           <SectionHeader
             eyebrow="Sécurité du compte"

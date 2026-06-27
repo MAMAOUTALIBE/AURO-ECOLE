@@ -37,29 +37,29 @@ export default function AutoEcoleCpfParisPage() {
         cta="Vérifier mon CPF"
         ctaHref="#demande-cpf"
       />
-      <section className="bg-white py-14 sm:py-20">
+      <section className="bg-white py-8 sm:py-20">
         <div className="container-pad grid gap-8 lg:grid-cols-[0.9fr_1.1fr]">
           <SectionHeader
             eyebrow="Accompagnement CPF"
             title="Un dossier clair avant engagement"
             text="Le financement CPF doit rassurer, pas compliquer l'inscription. LODENE centralise le diagnostic, le devis et les prochaines étapes administratives."
           />
-          <div className="grid gap-4 sm:grid-cols-3">
+          <div className="grid gap-3 sm:grid-cols-3 sm:gap-4">
             <Step icon={FileCheck2} title="Diagnostic" text="Solde, formation et pièces nécessaires." />
             <Step icon={WalletCards} title="Reste à charge" text="Estimation claire avant inscription." />
             <Step icon={CalendarCheck} title="Planning" text="Créneaux adaptés après validation." />
           </div>
         </div>
       </section>
-      <section id="demande-cpf" className="bg-loden-pearl py-14 sm:py-20">
+      <section id="demande-cpf" className="bg-loden-pearl py-8 sm:py-20">
         <div className="container-pad grid items-start gap-8 lg:grid-cols-[0.9fr_1.1fr]">
           <div>
             <SectionHeader
               eyebrow="Demande rapide"
               title="Demande une analyse CPF"
-              text="Transmets les informations utiles pour que l'équipe prépare une réponse exploitable : formation, montant estimé, disponibilité et situation."
+              text="Envoie les informations essentielles. L'équipe revient avec une réponse claire."
             />
-            <Link className="focus-ring mt-8 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-5 py-3 font-semibold text-loden-ink shadow-soft hover:bg-loden-50" href="/tarifs">
+            <Link className="focus-ring mt-5 inline-flex w-full items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-5 py-3 font-semibold text-loden-ink shadow-soft hover:bg-loden-50 sm:mt-8 sm:w-auto" href="/tarifs">
               Comparer les tarifs
               <ArrowRight className="h-5 w-5" aria-hidden="true" />
             </Link>
@@ -67,19 +67,19 @@ export default function AutoEcoleCpfParisPage() {
           <CpfRequestForm />
         </div>
       </section>
-      <section className="bg-white py-14 sm:py-20">
+      <section className="bg-white py-8 sm:py-20">
         <div className="container-pad">
           <SectionHeader
             eyebrow="Questions CPF"
             title="Les points à vérifier avant de démarrer"
             text="Ces réponses cadrent les questions fréquentes avant l'analyse personnalisée."
           />
-          <div className="mt-8 grid gap-4 md:grid-cols-3">
+          <div className="mt-6 grid gap-3 md:mt-8 md:grid-cols-3 md:gap-4">
             {cpfFaq.map((item) => (
-              <article key={item.question} className="rounded-3xl border border-slate-200 bg-loden-pearl p-6 shadow-soft">
+              <article key={item.question} className="rounded-2xl border border-slate-200 bg-loden-pearl p-4 shadow-soft sm:rounded-3xl sm:p-6">
                 <BadgeCheck className="h-6 w-6 text-loden-700" aria-hidden="true" />
                 <h2 className="mt-4 text-lg font-semibold text-loden-ink">{item.question}</h2>
-                <p className="mt-2 text-sm leading-6 text-loden-muted">{item.answer}</p>
+                <p className="mt-2 hidden text-sm leading-6 text-loden-muted sm:block">{item.answer}</p>
               </article>
             ))}
           </div>
@@ -91,10 +91,10 @@ export default function AutoEcoleCpfParisPage() {
 
 function Step({ icon: Icon, title, text }: { icon: typeof FileCheck2; title: string; text: string }) {
   return (
-    <article className="rounded-3xl border border-slate-200 bg-loden-pearl p-6 shadow-soft">
+    <article className="rounded-2xl border border-slate-200 bg-loden-pearl p-4 shadow-soft sm:rounded-3xl sm:p-6">
       <Icon className="h-6 w-6 text-loden-700" aria-hidden="true" />
-      <h2 className="mt-4 text-xl font-semibold text-loden-ink">{title}</h2>
-      <p className="mt-2 text-sm leading-6 text-loden-muted">{text}</p>
+      <h2 className="mt-4 text-lg font-semibold text-loden-ink sm:text-xl">{title}</h2>
+      <p className="mt-2 hidden text-sm leading-6 text-loden-muted sm:block">{text}</p>
     </article>
   );
 }

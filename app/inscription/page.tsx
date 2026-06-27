@@ -21,16 +21,16 @@ export default function InscriptionPage() {
         cta="Parler à un conseiller"
         ctaHref="/contact"
       />
-      <section className="bg-white py-10 md:py-14 xl:py-20">
+      <section className="bg-white py-8 md:py-14 xl:py-20">
         <div className="container-pad grid items-start gap-8 lg:grid-cols-[0.9fr_1.1fr]">
           <div className="order-2 lg:order-1">
             <SectionHeader
               eyebrow="Compte élève"
-              title="Une inscription prête pour le futur espace élève"
-              text="Le backend crée le profil utilisateur, le profil élève et rattache la formation souhaitée. Les prochaines étapes pourront ajouter documents, paiements et réservations authentifiées."
+              title="Ton dossier élève démarre ici"
+              text="Choisis ta formation, laisse tes coordonnées et retrouve ensuite les prochaines étapes dans ton espace élève."
             />
             <div className="mt-7 grid gap-3">
-              {["Profil élève sécurisé", "Formation rattachée", "JWT prêt pour l'espace élève", "Connexion CRM administrateur"].map((item) => (
+              {["Profil élève sécurisé", "Formation choisie", "Suivi centralisé", "Conseiller disponible"].map((item) => (
                 <div key={item} className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-loden-pearl p-4">
                   <CheckCircle2 className="h-5 w-5 text-loden-600" />
                   <span className="font-semibold text-loden-ink">{item}</span>
@@ -39,7 +39,7 @@ export default function InscriptionPage() {
             </div>
           </div>
           <div className="order-1 lg:order-2">
-            <Suspense fallback={<div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-premium">Chargement du formulaire...</div>}>
+            <Suspense fallback={<div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-premium sm:rounded-3xl sm:p-6">Chargement du formulaire...</div>}>
               <StudentRegistrationForm />
             </Suspense>
           </div>

@@ -202,7 +202,7 @@ export function PaymentIntentForm() {
     <div className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
       <PaymentPanel
         title="Paiement formation"
-        text="Sélectionne ton pack. LODENE crée ici une intention Stripe mockée, sans saisie de carte ni débit réel."
+        text="Sélectionne ton pack. Le paiement final sera confirmé dans une étape sécurisée."
       >
         <div className="mt-7 grid gap-3" role="radiogroup" aria-label="Choisir un pack">
           {plans
@@ -249,13 +249,13 @@ export function PaymentIntentForm() {
         ) : null}
       </PaymentPanel>
 
-      <aside className="rounded-3xl border border-slate-200 bg-white p-6 shadow-premium">
+      <aside className="rounded-2xl border border-slate-200 bg-white p-4 shadow-premium sm:rounded-3xl sm:p-6">
         <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-loden-50 text-loden-700">
           <ShieldCheck className="h-6 w-6" />
         </div>
-        <h2 className="mt-5 text-2xl font-semibold text-loden-ink">Base Stripe prête</h2>
+        <h2 className="mt-5 text-2xl font-semibold text-loden-ink">Paiement sécurisé</h2>
         <p className="mt-3 text-sm leading-6 text-loden-muted">
-          Cette étape prépare le futur checkout : montant, élève, pack et identifiant d’intention sont déjà structurés côté API.
+          Tu gardes la main : aucun paiement n&apos;est finalisé sans confirmation explicite.
         </p>
         <ul className="mt-6 grid gap-3 text-sm text-loden-muted">
           {["Aucun débit réel", "Connexion élève requise", "Historique visible dans l’espace élève"].map((item) => (
@@ -284,7 +284,7 @@ export function PaymentIntentForm() {
 
 function PaymentPanel({ title, text, children }: { title: string; text: string; children: React.ReactNode }) {
   return (
-    <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-premium">
+    <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-premium sm:rounded-3xl sm:p-6">
       <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-loden-50 text-loden-700">
         <LockKeyhole className="h-6 w-6" />
       </div>

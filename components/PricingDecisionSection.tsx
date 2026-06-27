@@ -42,7 +42,7 @@ const financingOptions = [
 
 export function PricingDecisionSection() {
   return (
-    <section className="bg-white py-10 md:py-14 xl:py-20">
+    <section className="bg-white py-8 md:py-14 xl:py-20">
       <div className="container-pad">
         <div className="grid gap-8 lg:grid-cols-[0.85fr_1.15fr] lg:items-start">
           <div>
@@ -51,7 +51,7 @@ export function PricingDecisionSection() {
               title="Quel pack correspond à ton objectif ?"
               text="Les tarifs deviennent plus simples quand ils sont reliés à ton niveau, ton urgence et ton financement."
             />
-            <div className="mt-6 rounded-3xl border border-slate-200 bg-loden-pearl p-4 shadow-soft md:mt-8 md:p-5">
+            <div className="mt-6 rounded-2xl border border-slate-200 bg-loden-pearl p-4 shadow-soft sm:rounded-3xl md:mt-8 md:p-5">
               <div className="flex items-center gap-3">
                 <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-loden-700 shadow-soft">
                   <CreditCard className="h-5 w-5" aria-hidden="true" />
@@ -63,7 +63,7 @@ export function PricingDecisionSection() {
               </div>
               <div className="mt-5 grid gap-3">
                 {financingOptions.map((option) => (
-                  <div key={option} className="flex items-center gap-3 rounded-2xl bg-white p-4">
+                  <div key={option} className="flex items-center gap-3 rounded-2xl bg-white p-3 sm:p-4">
                     <BadgeCheck className="h-5 w-5 text-loden-600" aria-hidden="true" />
                     <span className="text-sm font-semibold text-loden-ink">{option}</span>
                   </div>
@@ -79,16 +79,16 @@ export function PricingDecisionSection() {
             </div>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-3 md:grid-cols-2 md:gap-4">
             {recommendations.map((item) => {
               const Icon = item.icon;
               return (
-                <article key={item.profile} className="rounded-3xl border border-slate-200 bg-loden-pearl p-4 shadow-soft md:p-6">
+                <article key={item.profile} className="rounded-2xl border border-slate-200 bg-loden-pearl p-4 shadow-soft md:rounded-3xl md:p-6">
                   <Icon className="h-6 w-6 text-loden-700" aria-hidden="true" />
-                  <p className="mt-5 text-sm font-semibold uppercase tracking-[0.12em] text-loden-muted">{item.profile}</p>
+                  <p className="mt-4 text-sm font-semibold uppercase tracking-[0.12em] text-loden-muted md:mt-5">{item.profile}</p>
                   <h3 className="mt-2 text-xl font-semibold text-loden-ink">{item.plan}</h3>
                   <p className="mt-2 text-lg font-semibold text-loden-700">{item.budget}</p>
-                  <p className="mt-3 text-sm leading-6 text-loden-muted">{item.text}</p>
+                  <p className="mt-3 hidden text-sm leading-6 text-loden-muted sm:block">{item.text}</p>
                 </article>
               );
             })}

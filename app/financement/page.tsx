@@ -56,7 +56,7 @@ export default function FinancementPage() {
         ctaHref="#verifier"
       />
 
-      <section className="bg-white py-14 sm:py-20">
+      <section className="bg-white py-8 sm:py-20">
         <div className="container-pad">
           <SectionHeader
             eyebrow="Vos options"
@@ -64,38 +64,38 @@ export default function FinancementPage() {
             text="Chaque situation est différente : nous vérifions ce qui s'applique à votre projet avant tout engagement."
             align="center"
           />
-          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-7 grid gap-3 sm:mt-10 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
             {options.map((option) => {
               const Icon = option.icon;
               return (
-                <div key={option.title} className="rounded-3xl border border-slate-200 bg-loden-pearl p-6 shadow-soft">
+                <div key={option.title} className="rounded-2xl border border-slate-200 bg-loden-pearl p-4 shadow-soft sm:rounded-3xl sm:p-6">
                   <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-loden-700 shadow-soft">
                     <Icon className="h-6 w-6" aria-hidden="true" />
                   </span>
                   <h3 className="mt-4 text-lg font-semibold text-loden-ink">{option.title}</h3>
-                  <p className="mt-2 text-sm leading-6 text-loden-muted">{option.text}</p>
+                  <p className="mt-2 hidden text-sm leading-6 text-loden-muted sm:block">{option.text}</p>
                 </div>
               );
             })}
           </div>
-          <p className="mx-auto mt-8 max-w-3xl rounded-3xl border border-slate-200 bg-loden-pearl p-5 text-center text-sm leading-6 text-loden-muted">
+          <p className="mx-auto mt-6 max-w-3xl rounded-2xl border border-slate-200 bg-loden-pearl p-4 text-center text-xs leading-5 text-loden-muted sm:mt-8 sm:rounded-3xl sm:p-5 sm:text-sm sm:leading-6">
             Important : aucun financement « 100 % financé » n&apos;est garanti sans validation exacte du dispositif et de
             votre dossier. Un conseiller LODENE confirme votre éligibilité avant toute inscription.
           </p>
         </div>
       </section>
 
-      <section id="verifier" className="scroll-mt-28 bg-loden-pearl py-14 sm:py-20">
-        <div className="container-pad grid items-start gap-8 lg:grid-cols-[0.9fr_1.1fr]">
+      <section id="verifier" className="scroll-mt-28 bg-loden-pearl py-8 sm:py-20">
+        <div className="container-pad grid items-start gap-6 sm:gap-8 lg:grid-cols-[0.9fr_1.1fr]">
           <div>
             <SectionHeader
               eyebrow="Vérification"
               title="Vérifiez votre financement"
               text="Envoyez votre demande : nous étudions votre éligibilité (CPF et autres dispositifs) et revenons vers vous avec un devis clair."
             />
-            <div className="mt-8 rounded-3xl bg-loden-800 p-6 text-white">
-              <h3 className="text-xl font-semibold">Besoin d&apos;un échange direct ?</h3>
-              <p className="mt-2 text-sm leading-6 text-white/85">
+            <div className="mt-6 rounded-2xl bg-loden-800 p-4 text-white sm:mt-8 sm:rounded-3xl sm:p-6">
+              <h3 className="text-lg font-semibold sm:text-xl">Besoin d&apos;un échange direct ?</h3>
+              <p className="mt-2 hidden text-sm leading-6 text-white/85 sm:block">
                 Un conseiller peut vous rappeler pour faire le point sur votre projet et votre financement.
               </p>
               <Link
