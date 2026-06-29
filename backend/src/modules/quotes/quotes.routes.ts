@@ -34,8 +34,8 @@ const createSchema = z.object({
 
 const updateSchema = z.object({
   status: z.enum(["ACCEPTE", "REFUSE", "EXPIRE"]).optional(),
-  notes: z.string().trim().optional(),
-  validUntil: z.coerce.date().optional(),
+  notes: z.string().trim().nullable().optional(),
+  validUntil: z.union([z.null(), z.coerce.date()]).optional(),
   lines: z.array(lineSchema).min(1).optional()
 });
 

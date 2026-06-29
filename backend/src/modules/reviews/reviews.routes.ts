@@ -1,4 +1,4 @@
-import { Router } from "express";
+import { Router, type NextFunction, type Response } from "express";
 import { z } from "zod";
 import type { ApiConfig } from "../../config/env";
 import type { AuthenticatedRequest } from "../../http/request-context";
@@ -12,7 +12,8 @@ import { validateBody, validateQuery } from "../../shared/validation";
 const reviewSchema = z.object({
   instructorId: z.string().optional(),
   rating: z.number().int().min(1).max(5),
-  comment: z.string().trim().min(10)
+  comment: z.string().trim().min(10).max(600),
+  status: z.enum(["EN_ATTENTE", "PUBLIE", "REJETE"]).optional()
 });
 
 const reviewQuery = z.object({
@@ -28,6 +29,13 @@ const statusSchema = z.object({
 
 export function createReviewsRouter(repository: LodenRepository, config: ApiConfig) {
   const router = Router();
+  const optionalAuthenticate = (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    if (req.header("authorization")?.startsWith("Bearer ")) {
+      authenticate(repository, config.JWT_SECRET)(req, res, next);
+      return;
+    }
+    next();
+  };
 
   router.get(
     "/",
@@ -52,13 +60,27 @@ export function createReviewsRouter(repository: LodenRepository, config: ApiConf
 
   router.post(
     "/",
-    authenticate(repository, config.JWT_SECRET),
+    optionalAuthenticate,
     asyncHandler(async (req: AuthenticatedRequest, res) => {
       const body = validateBody(reviewSchema, req);
+      const status = body.status ?? "EN_ATTENTE";
+      if (status !== "EN_ATTENTE" && !(req.user && hasPermission(req.user.role, "reviews.moderate"))) {
+        throw forbidden();
+      }
+
       const review = await repository.createReview({
-        ...body,
+        instructorId: body.instructorId,
+        rating: body.rating,
+        comment: body.comment,
         userId: req.user?.id,
-        status: "EN_ATTENTE"
+        status
+      });
+      void repository.createAuditLog({
+        userId: req.user?.id ?? null,
+        action: "review.create",
+        entityType: "Review",
+        entityId: review.id,
+        metadata: { status }
       });
       res.status(201).json({ data: review });
     })

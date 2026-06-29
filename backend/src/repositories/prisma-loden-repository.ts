@@ -1097,7 +1097,14 @@ export class PrismaLodenRepository implements LodenRepository {
   }
 
   async createReview(input: CreateReviewInput) {
-    const row = await this.prisma.review.create({ data: { ...input, status: input.status ?? "EN_ATTENTE" } });
+    const status = input.status ?? "EN_ATTENTE";
+    const row = await this.prisma.review.create({
+      data: {
+        ...input,
+        status,
+        publishedAt: status === "PUBLIE" ? new Date() : undefined
+      }
+    });
     return { ...row, userId: row.userId ?? undefined, instructorId: row.instructorId ?? undefined, publishedAt: row.publishedAt ?? undefined };
   }
 

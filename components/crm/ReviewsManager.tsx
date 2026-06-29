@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Check, Star, X } from "lucide-react";
+import type { FormEvent } from "react";
+import { Check, Plus, Star, X } from "lucide-react";
 import { Badge, Card, EmptyState, SectionHeader, Skeleton, type BadgeVariant } from "@/components/crm/ui";
 
 type Review = {
@@ -10,6 +11,11 @@ type Review = {
   comment: string;
   status: "EN_ATTENTE" | "PUBLIE" | "REJETE";
   createdAt: string;
+};
+
+type ReviewPayload = {
+  data?: Review;
+  error?: { message?: string };
 };
 
 const FILTERS = [
@@ -39,8 +45,13 @@ export function ReviewsManager() {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
   const [filter, setFilter] = useState<(typeof FILTERS)[number]["key"]>("EN_ATTENTE");
   const [busy, setBusy] = useState<string | null>(null);
+  const [creating, setCreating] = useState(false);
+  const [formRating, setFormRating] = useState(5);
+  const [formComment, setFormComment] = useState("");
+  const [publishImmediately, setPublishImmediately] = useState(true);
 
   const load = () => {
     setLoading(true);
@@ -55,6 +66,48 @@ export function ReviewsManager() {
   };
 
   useEffect(load, []);
+
+  const createReview = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const comment = formComment.trim();
+
+    setError(null);
+    setSuccess(null);
+
+    if (comment.length < 10) {
+      setError("Le commentaire doit contenir au moins 10 caractères.");
+      return;
+    }
+
+    setCreating(true);
+    try {
+      const response = await fetch("/api/reviews", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          rating: formRating,
+          comment,
+          status: publishImmediately ? "PUBLIE" : "EN_ATTENTE"
+        })
+      });
+      const payload = (await response.json().catch(() => null)) as ReviewPayload | null;
+      const createdReview = payload?.data;
+      if (!response.ok || !createdReview) {
+        throw new Error(payload?.error?.message ?? "Création de l'avis impossible.");
+      }
+
+      setReviews((cur) => [createdReview, ...cur]);
+      setFilter(createdReview.status);
+      setFormRating(5);
+      setFormComment("");
+      setPublishImmediately(true);
+      setSuccess(publishImmediately ? "Avis publié sur le site." : "Avis ajouté à la file de modération.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Création de l'avis impossible.");
+    } finally {
+      setCreating(false);
+    }
+  };
 
   const moderate = async (review: Review, status: Review["status"]) => {
     setBusy(review.id);
@@ -84,6 +137,63 @@ export function ReviewsManager() {
 
   return (
     <div className="space-y-5">
+      <Card className="p-5">
+        <SectionHeader title="Ajouter un avis" subtitle="Saisissez uniquement un retour client réel." icon={Plus} />
+        <form onSubmit={createReview} className="mt-5 grid gap-4" noValidate>
+          <div>
+            <span className="text-sm font-semibold text-loden-ink">Note</span>
+            <div className="mt-2 flex gap-1">
+              {[1, 2, 3, 4, 5].map((rating) => (
+                <button
+                  key={rating}
+                  type="button"
+                  onClick={() => setFormRating(rating)}
+                  className="focus-ring rounded-lg p-1 text-amber-400 transition hover:bg-amber-50"
+                  aria-label={`${rating} sur 5`}
+                  aria-pressed={formRating === rating}
+                >
+                  <Star className={`h-6 w-6 ${rating <= formRating ? "fill-amber-400" : "text-slate-200"}`} aria-hidden="true" />
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <label className="grid gap-2 text-sm font-semibold text-loden-ink">
+            Commentaire
+            <textarea
+              className="field-input min-h-28 resize-y font-normal"
+              value={formComment}
+              onChange={(event) => setFormComment(event.target.value)}
+              placeholder="Retour client réel, sans information sensible."
+              minLength={10}
+              required
+            />
+          </label>
+
+          <label className="flex items-center gap-2 text-sm font-semibold text-loden-ink">
+            <input
+              type="checkbox"
+              className="h-4 w-4 rounded border-slate-300 text-loden-700 focus:ring-loden-500"
+              checked={publishImmediately}
+              onChange={(event) => setPublishImmediately(event.target.checked)}
+            />
+            Publier immédiatement
+          </label>
+
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              type="submit"
+              disabled={creating}
+              className="focus-ring inline-flex items-center gap-2 rounded-xl bg-loden-700 px-5 py-2.5 text-sm font-semibold text-white shadow-soft transition hover:bg-loden-800 disabled:opacity-70"
+            >
+              <Plus className="h-4 w-4" aria-hidden="true" />
+              {creating ? "Ajout..." : "Ajouter l'avis"}
+            </button>
+            {success ? <p className="text-sm font-medium text-emerald-700">{success}</p> : null}
+          </div>
+        </form>
+      </Card>
+
       <div className="inline-flex flex-wrap gap-1 rounded-xl border border-slate-200 bg-white p-1 shadow-soft">
         {FILTERS.map((f) => (
           <button

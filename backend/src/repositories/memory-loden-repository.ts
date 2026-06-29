@@ -1064,10 +1064,12 @@ export class MemoryLodenRepository implements LodenRepository {
 
   async createReview(input: CreateReviewInput) {
     const now = new Date();
+    const status = input.status ?? "EN_ATTENTE";
     const review: ReviewRecord = {
       ...input,
       id: randomUUID(),
-      status: input.status ?? "EN_ATTENTE",
+      status,
+      publishedAt: status === "PUBLIE" ? now : undefined,
       createdAt: now,
       updatedAt: now
     };

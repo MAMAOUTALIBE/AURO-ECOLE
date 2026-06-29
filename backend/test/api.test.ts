@@ -157,6 +157,38 @@ describe("LODENE API", () => {
     });
   });
 
+  it("accepts public review submissions only as pending moderation", async () => {
+    const { app } = testApp();
+
+    await request(app)
+      .post("/api/reviews")
+      .send({
+        rating: 5,
+        comment: "Avis public envoyé depuis la page avis."
+      })
+      .expect(201)
+      .expect(({ body }) => {
+        expect(body.data.status).toBe("EN_ATTENTE");
+        expect(body.data.userId).toBeUndefined();
+      });
+
+    await request(app)
+      .post("/api/reviews")
+      .send({
+        rating: 5,
+        comment: "Tentative de publication directe non autorisée.",
+        status: "PUBLIE"
+      })
+      .expect(403);
+
+    await request(app)
+      .get("/api/reviews")
+      .expect(200)
+      .expect(({ body }) => {
+        expect(body.data.some((review: { comment: string }) => review.comment === "Avis public envoyé depuis la page avis.")).toBe(false);
+      });
+  });
+
   it("searches formations, pricing and CPF content", async () => {
     const { app } = testApp();
 
@@ -690,6 +722,19 @@ describe("LODENE API", () => {
       .expect(201);
     await request(app).patch(`/api/quotes/${draft2.body.data.id}`).set("Authorization", bearer).send({ status: "ACCEPTE" }).expect(409);
 
+    const editedDraft = await request(app)
+      .patch(`/api/quotes/${draft2.body.data.id}`)
+      .set("Authorization", bearer)
+      .send({
+        lines: [{ label: "Code + accompagnement", quantity: 2, unitAmountCents: 4500, vatRate: 0 }],
+        notes: "Devis ajusté avant envoi.",
+        validUntil: null
+      })
+      .expect(200);
+    expect(editedDraft.body.data.totalCents).toBe(9000);
+    expect(editedDraft.body.data.notes).toBe("Devis ajusté avant envoi.");
+    expect(editedDraft.body.data.validUntil).toBeNull();
+
     // Devis envoyé : acceptation OK, lignes figées.
     await request(app).patch(`/api/quotes/${qid}`).set("Authorization", bearer).send({ lines: [{ label: "X", quantity: 1, unitAmountCents: 1 }] }).expect(409);
     const accepted = await request(app).patch(`/api/quotes/${qid}`).set("Authorization", bearer).send({ status: "ACCEPTE" }).expect(200);
@@ -976,6 +1021,57 @@ describe("LODENE API", () => {
       .expect(200)
       .expect(({ body }) => {
         expect(body.data.some((review: { status: string }) => review.status === "EN_ATTENTE")).toBe(true);
+      });
+  });
+
+  it("lets moderators create a directly published review", async () => {
+    const { app } = testApp();
+
+    const student = await request(app)
+      .post("/api/auth/register")
+      .send({
+        firstName: "Nora",
+        lastName: "Student",
+        email: "nora.student@example.com",
+        password: "super-password",
+        formationId: "formation-permis-b-manuel"
+      })
+      .expect(201);
+
+    await request(app)
+      .post("/api/reviews")
+      .set("Authorization", `Bearer ${student.body.token}`)
+      .send({
+        rating: 5,
+        comment: "Tentative de publication directe par un élève.",
+        status: "PUBLIE"
+      })
+      .expect(403);
+
+    const admin = await request(app)
+      .post("/api/auth/login")
+      .send({ email: "admin@loden-autoecole.fr", password: "admin-password" })
+      .expect(200);
+
+    await request(app)
+      .post("/api/reviews")
+      .set("Authorization", `Bearer ${admin.body.token}`)
+      .send({
+        rating: 5,
+        comment: "Avis réel publié directement depuis le CRM.",
+        status: "PUBLIE"
+      })
+      .expect(201)
+      .expect(({ body }) => {
+        expect(body.data.status).toBe("PUBLIE");
+        expect(body.data.publishedAt).toBeTruthy();
+      });
+
+    await request(app)
+      .get("/api/reviews")
+      .expect(200)
+      .expect(({ body }) => {
+        expect(body.data.some((review: { comment: string }) => review.comment === "Avis réel publié directement depuis le CRM.")).toBe(true);
       });
   });
 

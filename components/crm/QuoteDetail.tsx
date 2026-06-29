@@ -3,11 +3,12 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Ban, Check, Printer, Send, Trash2, X } from "lucide-react";
+import { ArrowLeft, Ban, Check, Pencil, Plus, Printer, Save, Send, Trash2, X } from "lucide-react";
 import { Badge, Skeleton, type BadgeVariant } from "@/components/crm/ui";
-import { euros, quoteDate, QUOTE_STATUS_LABELS, type QuoteStatus } from "@/lib/quote-mappers";
+import { euros, quoteDate, previewTotals, QUOTE_STATUS_LABELS, VAT_RATES, type QuoteStatus } from "@/lib/quote-mappers";
 
 type Line = { label: string; quantity: number; unitAmountCents: number; vatRate: number };
+type FormLine = { label: string; quantity: string; unitEuros: string; vatRate: number };
 type Snapshot = Record<string, string>;
 type Quote = {
   id: string;
@@ -26,6 +27,7 @@ type Quote = {
   notes?: string | null;
 };
 type Company = Record<string, string>;
+type QuotePayload = { data?: Quote; error?: { message?: string } };
 
 const STATUS_VARIANT: Record<QuoteStatus, BadgeVariant> = {
   BROUILLON: "neutral",
@@ -34,6 +36,28 @@ const STATUS_VARIANT: Record<QuoteStatus, BadgeVariant> = {
   REFUSE: "danger",
   EXPIRE: "warning"
 };
+
+const EMPTY_LINE: FormLine = { label: "", quantity: "1", unitEuros: "", vatRate: 0 };
+
+function centsToEurosInput(cents: number) {
+  const value = cents / 100;
+  return Number.isInteger(value) ? String(value) : value.toFixed(2);
+}
+
+function isoToDateInput(iso?: string | null) {
+  if (!iso) return "";
+  const date = new Date(iso);
+  return Number.isNaN(date.getTime()) ? "" : date.toISOString().slice(0, 10);
+}
+
+function lineToFormLine(line: Line): FormLine {
+  return {
+    label: line.label,
+    quantity: String(line.quantity),
+    unitEuros: centsToEurosInput(line.unitAmountCents),
+    vatRate: line.vatRate
+  };
+}
 
 function vatBreakdown(lines: Line[]) {
   const map = new Map<number, number>();
@@ -52,6 +76,11 @@ export function QuoteDetail({ id }: { id: string }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [editLines, setEditLines] = useState<FormLine[]>([{ ...EMPTY_LINE }]);
+  const [editValidUntil, setEditValidUntil] = useState("");
+  const [editNotes, setEditNotes] = useState("");
 
   const load = () => {
     Promise.all([
@@ -103,6 +132,57 @@ export function QuoteDetail({ id }: { id: string }) {
     if (await act(() => fetch(`/api/quotes/${id}`, { method: "DELETE" }), "Supprimer ce brouillon ?")) router.push("/admin/devis");
   };
 
+  const openEditor = () => {
+    if (!quote) return;
+    setError(null);
+    setEditLines(quote.lines.length > 0 ? quote.lines.map(lineToFormLine) : [{ ...EMPTY_LINE }]);
+    setEditValidUntil(isoToDateInput(quote.validUntil));
+    setEditNotes(quote.notes ?? "");
+    setEditing(true);
+  };
+
+  const saveEdit = async () => {
+    const payloadLines = editLines
+      .filter((line) => line.label.trim())
+      .map((line) => ({
+        label: line.label.trim(),
+        quantity: Math.max(1, Math.round(Number(line.quantity) || 1)),
+        unitAmountCents: Math.max(0, Math.round(Number(line.unitEuros) * 100) || 0),
+        vatRate: line.vatRate
+      }));
+
+    if (payloadLines.length === 0) {
+      setError("Ajoutez au moins une ligne de devis.");
+      return;
+    }
+
+    setSaving(true);
+    setBusy(true);
+    setError(null);
+    try {
+      const response = await fetch(`/api/quotes/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          lines: payloadLines,
+          validUntil: editValidUntil || null,
+          notes: editNotes.trim() || null
+        })
+      });
+      const payload = (await response.json().catch(() => null)) as QuotePayload | null;
+      if (!response.ok || !payload?.data) {
+        throw new Error(payload?.error?.message ?? "Modification impossible.");
+      }
+      setQuote(payload.data);
+      setEditing(false);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Modification impossible.");
+    } finally {
+      setSaving(false);
+      setBusy(false);
+    }
+  };
+
   if (loading) return <Skeleton className="h-[60vh] w-full rounded-2xl" />;
   if (!quote) return <p className="rounded-xl bg-rose-50 p-4 text-sm font-medium text-rose-700">{error ?? "Devis introuvable."}</p>;
 
@@ -112,6 +192,15 @@ export function QuoteDetail({ id }: { id: string }) {
   const breakdown = vatBreakdown(quote.lines);
   const line = (v?: string) => (v && v.trim() ? v : null);
   const watermark = isDraft ? "BROUILLON" : quote.status === "REFUSE" ? "REFUSÉ" : quote.status === "EXPIRE" ? "EXPIRÉ" : null;
+  const editPreview = previewTotals(
+    editLines
+      .filter((item) => item.label.trim() && item.unitEuros !== "")
+      .map((item) => ({
+        quantity: Math.max(1, Math.round(Number(item.quantity) || 1)),
+        unitAmountCents: Math.max(0, Math.round(Number(item.unitEuros) * 100) || 0),
+        vatRate: item.vatRate
+      }))
+  );
 
   return (
     <div>
@@ -123,6 +212,15 @@ export function QuoteDetail({ id }: { id: string }) {
           <Badge variant={STATUS_VARIANT[quote.status]}>{QUOTE_STATUS_LABELS[quote.status]}</Badge>
           {isDraft ? (
             <>
+              <button
+                type="button"
+                disabled={busy}
+                onClick={editing ? () => setEditing(false) : openEditor}
+                className="focus-ring inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-1.5 text-sm font-semibold text-loden-ink transition hover:bg-loden-50 disabled:opacity-60"
+              >
+                {editing ? <X className="h-4 w-4" aria-hidden="true" /> : <Pencil className="h-4 w-4" aria-hidden="true" />}
+                {editing ? "Fermer l'édition" : "Modifier"}
+              </button>
               <button type="button" disabled={busy} onClick={send} className="focus-ring inline-flex items-center gap-1.5 rounded-lg bg-loden-700 px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-loden-800 disabled:opacity-60">
                 <Send className="h-4 w-4" aria-hidden="true" /> Envoyer
               </button>
@@ -151,6 +249,97 @@ export function QuoteDetail({ id }: { id: string }) {
       </div>
 
       {error ? <p className="print-hidden mb-4 rounded-xl bg-rose-50 p-3 text-sm font-medium text-rose-700">{error}</p> : null}
+
+      {editing && isDraft ? (
+        <div className="print-hidden mb-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-soft">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <h2 className="text-base font-semibold text-loden-ink">Modifier le brouillon</h2>
+              <p className="mt-1 text-sm text-loden-muted">Les lignes restent modifiables tant que le devis n&apos;est pas envoyé.</p>
+            </div>
+            <button
+              type="button"
+              onClick={saveEdit}
+              disabled={saving}
+              className="focus-ring inline-flex items-center gap-2 rounded-xl bg-loden-700 px-5 py-2.5 text-sm font-semibold text-white shadow-soft transition hover:bg-loden-800 disabled:opacity-70"
+            >
+              <Save className="h-4 w-4" aria-hidden="true" />
+              {saving ? "Enregistrement..." : "Enregistrer"}
+            </button>
+          </div>
+
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            <label className="grid gap-2 text-sm font-semibold text-loden-ink">
+              Valable jusqu&apos;au
+              <input type="date" className="field-input font-normal" value={editValidUntil} onChange={(event) => setEditValidUntil(event.target.value)} />
+            </label>
+          </div>
+
+          <div className="mt-4 space-y-2">
+            <div className="hidden grid-cols-[1fr_70px_110px_90px_40px] gap-2 px-1 text-xs font-semibold uppercase tracking-wide text-loden-muted sm:grid">
+              <span>Désignation</span><span>Qté</span><span>PU HT €</span><span>TVA</span><span />
+            </div>
+            {editLines.map((item, index) => (
+              <div key={index} className="grid grid-cols-2 gap-2 sm:grid-cols-[1fr_70px_110px_90px_40px]">
+                <input
+                  className="field-input"
+                  placeholder="Désignation"
+                  value={item.label}
+                  onChange={(event) => setEditLines((current) => current.map((lineItem, itemIndex) => (itemIndex === index ? { ...lineItem, label: event.target.value } : lineItem)))}
+                  aria-label="Désignation"
+                />
+                <input
+                  className="field-input"
+                  type="number"
+                  min={1}
+                  placeholder="Qté"
+                  value={item.quantity}
+                  onChange={(event) => setEditLines((current) => current.map((lineItem, itemIndex) => (itemIndex === index ? { ...lineItem, quantity: event.target.value } : lineItem)))}
+                  aria-label="Quantité"
+                />
+                <input
+                  className="field-input"
+                  type="number"
+                  min={0}
+                  step="0.01"
+                  placeholder="PU HT"
+                  value={item.unitEuros}
+                  onChange={(event) => setEditLines((current) => current.map((lineItem, itemIndex) => (itemIndex === index ? { ...lineItem, unitEuros: event.target.value } : lineItem)))}
+                  aria-label="Prix unitaire HT"
+                />
+                <select
+                  className="field-input"
+                  value={item.vatRate}
+                  onChange={(event) => setEditLines((current) => current.map((lineItem, itemIndex) => (itemIndex === index ? { ...lineItem, vatRate: Number(event.target.value) } : lineItem)))}
+                  aria-label="TVA"
+                >
+                  {VAT_RATES.map((rate) => <option key={rate} value={rate}>{rate}%</option>)}
+                </select>
+                <button
+                  type="button"
+                  onClick={() => setEditLines((current) => (current.length > 1 ? current.filter((_, itemIndex) => itemIndex !== index) : current))}
+                  aria-label="Supprimer la ligne"
+                  className="focus-ring flex h-11 items-center justify-center rounded-xl border border-slate-200 text-rose-500 hover:bg-rose-50"
+                >
+                  <Trash2 className="h-4 w-4" aria-hidden="true" />
+                </button>
+              </div>
+            ))}
+            <button
+              type="button"
+              onClick={() => setEditLines((current) => [...current, { ...EMPTY_LINE }])}
+              className="focus-ring inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-1.5 text-sm font-semibold text-loden-700 hover:bg-loden-50"
+            >
+              <Plus className="h-4 w-4" aria-hidden="true" /> Ajouter une ligne
+            </button>
+          </div>
+
+          <textarea className="field-input mt-3 min-h-16" placeholder="Notes / conditions" value={editNotes} onChange={(event) => setEditNotes(event.target.value)} aria-label="Notes" />
+          <div className="mt-3 border-t border-slate-100 pt-3 text-sm text-loden-muted">
+            HT {euros(editPreview.subtotalCents)} · TVA {euros(editPreview.vatCents)} · <span className="font-bold text-loden-ink">TTC {euros(editPreview.totalCents)}</span>
+          </div>
+        </div>
+      ) : null}
 
       <div className="invoice-print relative mx-auto max-w-[210mm] rounded-2xl border border-slate-200 bg-white p-8 shadow-soft sm:p-10">
         {watermark ? (
