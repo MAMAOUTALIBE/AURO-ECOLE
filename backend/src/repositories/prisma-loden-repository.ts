@@ -1113,6 +1113,10 @@ export class PrismaLodenRepository implements LodenRepository {
     return { ...row, userId: row.userId ?? undefined, instructorId: row.instructorId ?? undefined, publishedAt: row.publishedAt ?? undefined };
   }
 
+  async deleteReview(id: string) {
+    await this.prisma.review.delete({ where: { id } });
+  }
+
   async listLeads(filters?: Parameters<LodenRepository["listLeads"]>[0]) {
     const where = {
       ...(filters?.status ? { status: filters.status } : {}),
