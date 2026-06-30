@@ -3,6 +3,8 @@ import type { Instructor, Testimonial } from "@/data/site";
 type ApiReview = {
   rating: number;
   comment: string;
+  authorName?: string | null;
+  authorLocation?: string | null;
 };
 
 type ApiInstructor = {
@@ -22,10 +24,10 @@ function initialsFromName(name: string) {
 }
 
 export function mapApiReview(review: ApiReview): Testimonial {
-  // Avis anonymisés côté API (pas de nom/lieu fabriqué, pas de mention "vérifié" non fondée).
+  // Le prénom saisi par le client est affiché tel quel ; à défaut, libellé neutre.
   return {
-    name: "Avis élève",
-    location: "",
+    name: review.authorName?.trim() || "Client",
+    location: review.authorLocation?.trim() || "",
     rating: review.rating,
     text: review.comment
   };

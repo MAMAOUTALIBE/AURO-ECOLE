@@ -9,6 +9,8 @@ type ReviewPayload = {
 };
 
 export function ReviewSubmissionForm() {
+  const [name, setName] = useState("");
+  const [city, setCity] = useState("");
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -17,11 +19,17 @@ export function ReviewSubmissionForm() {
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    const nextName = name.trim();
+    const nextCity = city.trim();
     const nextComment = comment.trim();
 
     setError(null);
     setSuccess(false);
 
+    if (nextName.length < 2) {
+      setError("Indiquez votre prénom.");
+      return;
+    }
     if (nextComment.length < 10) {
       setError("Écrivez au moins 10 caractères.");
       return;
@@ -32,13 +40,20 @@ export function ReviewSubmissionForm() {
       const response = await fetch("/api/reviews", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ rating, comment: nextComment })
+        body: JSON.stringify({
+          rating,
+          comment: nextComment,
+          authorName: nextName,
+          authorLocation: nextCity || undefined
+        })
       });
       const payload = (await response.json().catch(() => null)) as ReviewPayload | null;
       if (!response.ok || !payload?.data) {
         throw new Error(payload?.error?.message ?? "Envoi impossible.");
       }
 
+      setName("");
+      setCity("");
       setComment("");
       setRating(5);
       setSuccess(true);
@@ -57,6 +72,34 @@ export function ReviewSubmissionForm() {
           <p className="mt-1 text-sm text-loden-muted">Votre retour sera publié après validation.</p>
         </div>
         {success ? <CheckCircle2 className="h-6 w-6 shrink-0 text-emerald-600" aria-hidden="true" /> : null}
+      </div>
+
+      <div className="mt-4 grid gap-3 sm:grid-cols-2">
+        <label className="grid gap-2 text-sm font-semibold text-loden-ink">
+          Prénom
+          <input
+            type="text"
+            className="field-input font-normal"
+            value={name}
+            onChange={(event) => setName(event.target.value)}
+            maxLength={60}
+            placeholder="Ex : Sarah"
+            autoComplete="given-name"
+            required
+          />
+        </label>
+        <label className="grid gap-2 text-sm font-semibold text-loden-ink">
+          Ville <span className="font-normal text-loden-muted">(facultatif)</span>
+          <input
+            type="text"
+            className="field-input font-normal"
+            value={city}
+            onChange={(event) => setCity(event.target.value)}
+            maxLength={80}
+            placeholder="Ex : Conflans-Sainte-Honorine"
+            autoComplete="address-level2"
+          />
+        </label>
       </div>
 
       <fieldset className="mt-4">

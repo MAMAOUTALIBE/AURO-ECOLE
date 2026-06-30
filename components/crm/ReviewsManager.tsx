@@ -9,6 +9,8 @@ type Review = {
   id: string;
   rating: number;
   comment: string;
+  authorName?: string | null;
+  authorLocation?: string | null;
   status: "EN_ATTENTE" | "PUBLIE" | "REJETE";
   createdAt: string;
 };
@@ -50,6 +52,8 @@ export function ReviewsManager() {
   const [busy, setBusy] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
   const [formRating, setFormRating] = useState(5);
+  const [formName, setFormName] = useState("");
+  const [formCity, setFormCity] = useState("");
   const [formComment, setFormComment] = useState("");
   const [publishImmediately, setPublishImmediately] = useState(true);
 
@@ -87,6 +91,8 @@ export function ReviewsManager() {
         body: JSON.stringify({
           rating: formRating,
           comment,
+          authorName: formName.trim() || undefined,
+          authorLocation: formCity.trim() || undefined,
           status: publishImmediately ? "PUBLIE" : "EN_ATTENTE"
         })
       });
@@ -99,6 +105,8 @@ export function ReviewsManager() {
       setReviews((cur) => [createdReview, ...cur]);
       setFilter(createdReview.status);
       setFormRating(5);
+      setFormName("");
+      setFormCity("");
       setFormComment("");
       setPublishImmediately(true);
       setSuccess(publishImmediately ? "Avis publié sur le site." : "Avis ajouté à la file de modération.");
@@ -140,6 +148,31 @@ export function ReviewsManager() {
       <Card className="p-5">
         <SectionHeader title="Ajouter un avis" subtitle="Saisissez uniquement un retour client réel." icon={Plus} />
         <form onSubmit={createReview} className="mt-5 grid gap-4" noValidate>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <label className="grid gap-2 text-sm font-semibold text-loden-ink">
+              Prénom du client
+              <input
+                type="text"
+                className="field-input font-normal"
+                value={formName}
+                onChange={(event) => setFormName(event.target.value)}
+                maxLength={60}
+                placeholder="Ex : Sarah"
+              />
+            </label>
+            <label className="grid gap-2 text-sm font-semibold text-loden-ink">
+              Ville <span className="font-normal text-loden-muted">(facultatif)</span>
+              <input
+                type="text"
+                className="field-input font-normal"
+                value={formCity}
+                onChange={(event) => setFormCity(event.target.value)}
+                maxLength={80}
+                placeholder="Ex : Conflans-Sainte-Honorine"
+              />
+            </label>
+          </div>
+
           <div>
             <span className="text-sm font-semibold text-loden-ink">Note</span>
             <div className="mt-2 flex gap-1">
@@ -229,7 +262,15 @@ export function ReviewsManager() {
                 return (
                   <li key={review.id} className="rounded-2xl border border-slate-200/70 p-4">
                     <div className="flex flex-wrap items-center justify-between gap-2">
-                      <Stars rating={review.rating} />
+                      <div className="flex items-center gap-2">
+                        <Stars rating={review.rating} />
+                        {review.authorName ? (
+                          <span className="text-sm font-semibold text-loden-ink">
+                            {review.authorName}
+                            {review.authorLocation ? <span className="font-normal text-loden-muted"> · {review.authorLocation}</span> : null}
+                          </span>
+                        ) : null}
+                      </div>
                       <div className="flex items-center gap-2">
                         <Badge variant={meta.variant}>{meta.label}</Badge>
                         <span className="text-xs text-loden-muted">

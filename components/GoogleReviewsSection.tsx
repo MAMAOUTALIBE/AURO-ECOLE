@@ -1,5 +1,6 @@
 import { ExternalLink, PenLine, Star } from "lucide-react";
-import { firstName, getGoogleReviews, type GoogleReviewItem } from "@/lib/google-reviews";
+import { TestimonialCard } from "@/components/TestimonialCard";
+import { firstName, getGoogleReviews, getPublishedInternalReviews, type GoogleReviewItem } from "@/lib/google-reviews";
 
 // Étoiles avec remplissage partiel (ex. 4,7/5). Deux rangées superposées :
 // une grise (fond) et une dorée rognée à la largeur correspondant à la note.
@@ -60,11 +61,34 @@ export async function GoogleReviewsSection() {
 
   if (!config.enabled || !config.showOnHomepage) return null;
 
+  // Source d'affichage : avis Google si synchronisés, sinon repli sur les avis
+  // internes publiés (laissés par les clients sur le site, validés en modération).
+  const usingGoogle = reviews.length > 0;
+  const internal = usingGoogle ? [] : await getPublishedInternalReviews();
+
+  const displayStats = stats
+    ? { rating: stats.rating, totalCount: stats.totalCount, google: true }
+    : internal.length > 0
+      ? {
+          rating: internal.reduce((sum, t) => sum + t.rating, 0) / internal.length,
+          totalCount: internal.length,
+          google: false
+        }
+      : null;
+
   // Rien à montrer (ni avis, ni note, ni liens) → on n'affiche pas une section vide.
-  const hasAnything = reviews.length > 0 || Boolean(stats) || Boolean(config.reviewUrl) || Boolean(config.profileUrl);
+  const hasCards = usingGoogle || internal.length > 0;
+  const hasAnything = hasCards || Boolean(displayStats) || Boolean(config.reviewUrl) || Boolean(config.profileUrl);
   if (!hasAnything) return null;
 
-  const averageLabel = stats ? stats.rating.toFixed(1).replace(".", ",") : null;
+  const averageLabel = displayStats ? displayStats.rating.toFixed(1).replace(".", ",") : null;
+  const countLabel = displayStats
+    ? displayStats.google
+      ? displayStats.totalCount > 0
+        ? `${displayStats.totalCount} avis sur Google`
+        : "Avis Google"
+      : `${displayStats.totalCount} avis clients`
+    : null;
 
   return (
     <section className="bg-white py-7 md:py-10">
@@ -80,23 +104,27 @@ export async function GoogleReviewsSection() {
             ) : null}
           </div>
 
-          {stats ? (
+          {displayStats ? (
             <div className="flex shrink-0 items-center gap-4 rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-soft">
               <span className="text-4xl font-bold leading-none text-loden-ink">{averageLabel}</span>
               <div>
-                <StarRating rating={stats.rating} size="h-5 w-5" />
-                <p className="mt-1 text-sm text-loden-muted">
-                  {stats.totalCount > 0 ? `${stats.totalCount} avis sur Google` : "Avis Google"}
-                </p>
+                <StarRating rating={displayStats.rating} size="h-5 w-5" />
+                <p className="mt-1 text-sm text-loden-muted">{countLabel}</p>
               </div>
             </div>
           ) : null}
         </div>
 
-        {reviews.length > 0 ? (
+        {usingGoogle ? (
           <div className="mt-5 grid gap-3 md:grid-cols-2 md:gap-4 xl:grid-cols-3">
             {reviews.map((review) => (
               <ReviewCard key={review.id || review.authorName + review.publishTime} review={review} />
+            ))}
+          </div>
+        ) : internal.length > 0 ? (
+          <div className="mt-5 grid gap-3 md:grid-cols-2 md:gap-4 xl:grid-cols-3">
+            {internal.map((testimonial, index) => (
+              <TestimonialCard key={`${testimonial.name}-${index}`} testimonial={testimonial} />
             ))}
           </div>
         ) : null}
