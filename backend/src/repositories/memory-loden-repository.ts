@@ -1085,6 +1085,12 @@ export class MemoryLodenRepository implements LodenRepository {
     return review;
   }
 
+  async deleteReview(id: string) {
+    const index = this.store.reviews.findIndex((item) => item.id === id);
+    if (index === -1) throw notFound("Avis introuvable");
+    this.store.reviews.splice(index, 1);
+  }
+
   async listLeads(filters?: { status?: LeadRecord["status"]; agencyId?: string }) {
     return this.store.leads
       .filter(

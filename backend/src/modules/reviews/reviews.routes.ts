@@ -108,5 +108,23 @@ export function createReviewsRouter(repository: LodenRepository, config: ApiConf
     })
   );
 
+  // Suppression définitive d'un avis (y compris déjà publié).
+  router.delete(
+    "/:id",
+    authenticate(repository, config.JWT_SECRET),
+    requirePermission("reviews.moderate"),
+    asyncHandler(async (req, res) => {
+      const id = String(req.params.id);
+      await repository.deleteReview(id);
+      void repository.createAuditLog({
+        userId: (req as AuthenticatedRequest).user?.id ?? null,
+        action: "review.delete",
+        entityType: "Review",
+        entityId: id
+      });
+      res.status(204).end();
+    })
+  );
+
   return router;
 }

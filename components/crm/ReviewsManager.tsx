@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import type { FormEvent } from "react";
-import { Check, Plus, Star, X } from "lucide-react";
+import { Check, Plus, Star, Trash2, X } from "lucide-react";
 import { Badge, Card, EmptyState, SectionHeader, Skeleton, type BadgeVariant } from "@/components/crm/ui";
 
 type Review = {
@@ -130,6 +130,21 @@ export function ReviewsManager() {
       setReviews((cur) => cur.map((r) => (r.id === review.id ? { ...r, status } : r)));
     } catch {
       setError("Action de modération impossible.");
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const remove = async (review: Review) => {
+    if (!window.confirm("Supprimer définitivement cet avis ? Cette action est irréversible.")) return;
+    setBusy(review.id);
+    setError(null);
+    try {
+      const response = await fetch(`/api/reviews/${review.id}`, { method: "DELETE" });
+      if (!response.ok && response.status !== 204) throw new Error();
+      setReviews((cur) => cur.filter((r) => r.id !== review.id));
+    } catch {
+      setError("Suppression impossible.");
     } finally {
       setBusy(null);
     }
@@ -302,6 +317,15 @@ export function ReviewsManager() {
                             Rejeter
                           </button>
                         ) : null}
+                        <button
+                          type="button"
+                          disabled={busy === review.id}
+                          onClick={() => remove(review)}
+                          className="focus-ring inline-flex items-center gap-1.5 rounded-lg border border-rose-300 bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-700 transition hover:bg-rose-100 disabled:opacity-60"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+                          Supprimer
+                        </button>
                     </div>
                   </li>
                 );

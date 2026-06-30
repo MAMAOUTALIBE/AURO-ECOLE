@@ -451,6 +451,7 @@ export interface LodenRepository {
   listReviews(includeUnpublished?: boolean): Promise<ReviewRecord[]>;
   createReview(input: CreateReviewInput): Promise<ReviewRecord>;
   updateReview(id: string, input: Partial<ReviewRecord>): Promise<ReviewRecord>;
+  deleteReview(id: string): Promise<void>;
 
   listLeads(filters?: { status?: LeadStatus; agencyId?: string }): Promise<LeadRecord[]>;
   findLeadByEmail(email: string): Promise<LeadRecord | null>;
