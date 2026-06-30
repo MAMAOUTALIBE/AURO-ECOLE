@@ -49,6 +49,7 @@ export function ReviewsManager() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [filter, setFilter] = useState<(typeof FILTERS)[number]["key"]>("EN_ATTENTE");
+  const [formOpen, setFormOpen] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
   const [formRating, setFormRating] = useState(5);
@@ -109,6 +110,7 @@ export function ReviewsManager() {
       setFormCity("");
       setFormComment("");
       setPublishImmediately(true);
+      setFormOpen(false);
       setSuccess(publishImmediately ? "Avis publié sur le site." : "Avis ajouté à la file de modération.");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Création de l'avis impossible.");
@@ -160,6 +162,27 @@ export function ReviewsManager() {
 
   return (
     <div className="space-y-5">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-soft">
+        <div className="flex items-center gap-3">
+          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-loden-50 text-loden-700">
+            <Star className="h-5 w-5" aria-hidden="true" />
+          </span>
+          <div>
+            <p className="font-semibold text-loden-ink">Avis</p>
+            <p className="text-sm text-loden-muted">{counts.ALL ?? reviews.length} avis</p>
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={() => setFormOpen((v) => !v)}
+          className={`focus-ring inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold shadow-soft transition ${formOpen ? "border border-slate-200 bg-white text-loden-muted hover:bg-slate-50" : "bg-loden-700 text-white hover:bg-loden-800"}`}
+        >
+          {formOpen ? <X className="h-4 w-4" aria-hidden="true" /> : <Plus className="h-4 w-4" aria-hidden="true" />}
+          {formOpen ? "Fermer le formulaire" : "Ajouter un avis"}
+        </button>
+      </div>
+
+      {formOpen ? (
       <Card className="p-5">
         <SectionHeader title="Ajouter un avis" subtitle="Saisissez uniquement un retour client réel." icon={Plus} />
         <form onSubmit={createReview} className="mt-5 grid gap-4" noValidate>
@@ -241,6 +264,7 @@ export function ReviewsManager() {
           </div>
         </form>
       </Card>
+      ) : null}
 
       <div className="inline-flex flex-wrap gap-1 rounded-xl border border-slate-200 bg-white p-1 shadow-soft">
         {FILTERS.map((f) => (

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Plus, Trash2, Workflow, Zap } from "lucide-react";
+import { Plus, Trash2, Workflow, X, Zap } from "lucide-react";
 import { Badge, Card, EmptyState, SectionHeader, Skeleton } from "@/components/crm/ui";
 
 export const TRIGGER_LABELS: Record<string, string> = {
@@ -37,6 +37,7 @@ export function WorkflowsManager() {
   const [creating, setCreating] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
   const [form, setForm] = useState(EMPTY);
+  const [formOpen, setFormOpen] = useState(false);
 
   const load = () => {
     setLoading(true);
@@ -107,6 +108,26 @@ export function WorkflowsManager() {
 
   return (
     <div className="space-y-6">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-soft">
+        <div className="flex items-center gap-3">
+          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-loden-50 text-loden-700">
+            <Plus className="h-5 w-5" aria-hidden="true" />
+          </span>
+          <div>
+            <p className="font-semibold text-loden-ink">Automatisations</p>
+            <p className="text-sm text-loden-muted">{rules.length} automatisation(s)</p>
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={() => (formOpen ? setFormOpen(false) : setFormOpen(true))}
+          className={`focus-ring inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold shadow-soft transition ${formOpen ? "border border-slate-200 bg-white text-loden-muted hover:bg-slate-50" : "bg-loden-700 text-white hover:bg-loden-800"}`}
+        >
+          {formOpen ? <X className="h-4 w-4" aria-hidden="true" /> : <Plus className="h-4 w-4" aria-hidden="true" />}
+          {formOpen ? "Fermer le formulaire" : "Nouvelle automatisation"}
+        </button>
+      </div>
+      {formOpen ? (
       <Card className="p-5">
         <SectionHeader title="Nouvelle automatisation" subtitle="Quand un événement se produit, exécuter une action." icon={Plus} />
         <div className="mt-4 grid items-end gap-3 sm:grid-cols-[1fr_auto_auto_auto] sm:gap-2">
@@ -132,6 +153,7 @@ export function WorkflowsManager() {
         </div>
         {error ? <p className="mt-4 rounded-xl bg-rose-50 p-3 text-sm font-medium text-rose-700">{error}</p> : null}
       </Card>
+      ) : null}
 
       <div>
         <SectionHeader title="Règles d'automatisation" subtitle={loading ? undefined : `${rules.length} règle(s)`} icon={Workflow} />

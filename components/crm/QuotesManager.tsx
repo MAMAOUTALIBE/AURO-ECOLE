@@ -51,7 +51,7 @@ export function QuotesManager() {
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [page, setPage] = useState(1);
 
-  const [showForm, setShowForm] = useState(false);
+  const [formOpen, setFormOpen] = useState(false);
   const [creating, setCreating] = useState(false);
   const [clientUserId, setClientUserId] = useState("");
   const [validUntil, setValidUntil] = useState("");
@@ -116,6 +116,7 @@ export function QuotesManager() {
     setValidUntil("");
     setNotes("");
     setLines([{ ...EMPTY_LINE }]);
+    setFormOpen(false);
   };
 
   const create = async () => {
@@ -149,7 +150,6 @@ export function QuotesManager() {
       const payload = await response.json().catch(() => null);
       if (!response.ok) throw new Error(payload?.error?.message ?? "Création impossible.");
       resetForm();
-      setShowForm(false);
       load();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Création impossible.");
@@ -182,19 +182,31 @@ export function QuotesManager() {
             {STATUS_FILTERS.map((f) => <option key={f.key} value={f.key}>{f.label}</option>)}
           </select>
         </div>
-        <button
-          type="button"
-          onClick={() => setShowForm((v) => !v)}
-          className="focus-ring inline-flex items-center gap-1.5 rounded-xl bg-loden-700 px-4 py-2 text-sm font-semibold text-white shadow-soft transition hover:bg-loden-800"
-        >
-          {showForm ? <X className="h-4 w-4" aria-hidden="true" /> : <Plus className="h-4 w-4" aria-hidden="true" />}
-          {showForm ? "Fermer" : "Nouveau devis"}
-        </button>
       </div>
 
       {error ? <p className="rounded-xl bg-rose-50 p-3 text-sm font-medium text-rose-700">{error}</p> : null}
 
-      {showForm ? (
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-soft">
+        <div className="flex items-center gap-3">
+          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-loden-50 text-loden-700">
+            <FileSpreadsheet className="h-5 w-5" aria-hidden="true" />
+          </span>
+          <div>
+            <p className="font-semibold text-loden-ink">Devis</p>
+            <p className="text-sm text-loden-muted">{quotes.length} devis</p>
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={() => (formOpen ? resetForm() : setFormOpen(true))}
+          className={`focus-ring inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold shadow-soft transition ${formOpen ? "border border-slate-200 bg-white text-loden-muted hover:bg-slate-50" : "bg-loden-700 text-white hover:bg-loden-800"}`}
+        >
+          {formOpen ? <X className="h-4 w-4" aria-hidden="true" /> : <Plus className="h-4 w-4" aria-hidden="true" />}
+          {formOpen ? "Fermer le formulaire" : "Nouveau devis"}
+        </button>
+      </div>
+
+      {formOpen ? (
         <Card className="p-5">
           <SectionHeader title="Nouveau devis (brouillon)" subtitle="Le numéro est attribué à l'envoi, après relecture." icon={FileSpreadsheet} />
           <div className="mt-4 grid gap-3 sm:grid-cols-2">

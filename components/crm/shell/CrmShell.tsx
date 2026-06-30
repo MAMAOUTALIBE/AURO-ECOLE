@@ -107,7 +107,9 @@ export function CrmShell({ children }: { children: ReactNode }) {
       {/* Colonne principale */}
       <div className="flex min-w-0 flex-1 flex-col">
         <CrmTopbar onOpenMobile={() => setMobileOpen(true)} />
-        <main className="flex-1 px-4 py-6 sm:px-6 lg:px-8">{children}</main>
+        {/* min-w-0 + overflow-x-clip : aucune page ne déborde horizontalement ni ne passe
+            sous la sidebar (les contenus larges scrollent dans leur propre conteneur). */}
+        <main className="min-w-0 max-w-full flex-1 overflow-x-clip px-4 py-6 sm:px-6 lg:px-8">{children}</main>
       </div>
     </div>
   );
