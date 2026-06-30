@@ -17,7 +17,7 @@ export default function EspaceElevePage() {
         cta="Créer un compte"
         ctaHref="/inscription"
       />
-      <section className="bg-loden-pearl py-8 sm:py-20">
+      <section className="bg-loden-pearl py-8 md:py-12 xl:py-16">
         <div className="container-pad">
           <StudentDashboard />
         </div>

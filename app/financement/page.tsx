@@ -56,7 +56,7 @@ export default function FinancementPage() {
         ctaHref="#verifier"
       />
 
-      <section className="bg-white py-8 sm:py-20">
+      <section className="bg-white py-8 md:py-12 xl:py-16">
         <div className="container-pad">
           <SectionHeader
             eyebrow="Vos options"
@@ -64,28 +64,28 @@ export default function FinancementPage() {
             text="Chaque situation est différente : nous vérifions ce qui s'applique à votre projet avant tout engagement."
             align="center"
           />
-          <div className="mt-7 grid gap-3 sm:mt-10 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
+          <div className="mt-5 grid gap-3 sm:grid-cols-2 md:mt-7 md:gap-4 lg:grid-cols-3">
             {options.map((option) => {
               const Icon = option.icon;
               return (
-                <div key={option.title} className="rounded-2xl border border-slate-200 bg-loden-pearl p-4 shadow-soft sm:rounded-3xl sm:p-6">
-                  <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-loden-700 shadow-soft">
-                    <Icon className="h-6 w-6" aria-hidden="true" />
+                <div key={option.title} className="rounded-xl border border-slate-200 bg-loden-pearl p-4 shadow-soft md:rounded-2xl md:p-5">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-loden-700 shadow-soft md:h-12 md:w-12 md:rounded-2xl">
+                    <Icon className="h-5 w-5 md:h-6 md:w-6" aria-hidden="true" />
                   </span>
-                  <h3 className="mt-4 text-lg font-semibold text-loden-ink">{option.title}</h3>
-                  <p className="mt-2 hidden text-sm leading-6 text-loden-muted sm:block">{option.text}</p>
+                  <h3 className="mt-3 text-lg font-semibold text-loden-ink md:mt-4">{option.title}</h3>
+                  <p className="mt-2 hidden text-sm leading-6 text-loden-muted md:block">{option.text}</p>
                 </div>
               );
             })}
           </div>
-          <p className="mx-auto mt-6 max-w-3xl rounded-2xl border border-slate-200 bg-loden-pearl p-4 text-center text-xs leading-5 text-loden-muted sm:mt-8 sm:rounded-3xl sm:p-5 sm:text-sm sm:leading-6">
+          <p className="mx-auto mt-5 max-w-3xl rounded-xl border border-slate-200 bg-loden-pearl p-4 text-center text-xs leading-5 text-loden-muted md:mt-7 md:rounded-2xl md:p-5 md:text-sm md:leading-6">
             Important : aucun financement « 100 % financé » n&apos;est garanti sans validation exacte du dispositif et de
             votre dossier. Un conseiller LODENE confirme votre éligibilité avant toute inscription.
           </p>
         </div>
       </section>
 
-      <section id="verifier" className="scroll-mt-28 bg-loden-pearl py-8 sm:py-20">
+      <section id="verifier" className="scroll-mt-28 bg-loden-pearl py-8 md:py-12 xl:py-16">
         <div className="container-pad grid items-start gap-6 sm:gap-8 lg:grid-cols-[0.9fr_1.1fr]">
           <div>
             <SectionHeader
@@ -93,7 +93,7 @@ export default function FinancementPage() {
               title="Vérifiez votre financement"
               text="Envoyez votre demande : nous étudions votre éligibilité (CPF et autres dispositifs) et revenons vers vous avec un devis clair."
             />
-            <div className="mt-6 rounded-2xl bg-loden-800 p-4 text-white sm:mt-8 sm:rounded-3xl sm:p-6">
+            <div className="mt-5 rounded-xl bg-loden-800 p-4 text-white md:mt-7 md:rounded-2xl md:p-5">
               <h3 className="text-lg font-semibold sm:text-xl">Besoin d&apos;un échange direct ?</h3>
               <p className="mt-2 hidden text-sm leading-6 text-white/85 sm:block">
                 Un conseiller peut vous rappeler pour faire le point sur votre projet et votre financement.

@@ -835,5 +835,24 @@ export const initialSiteSettings: SiteSettingRecord[] = [
         { icon: "WalletCards", title: "CPF", detail: "formations éligibles" }
       ]
     }
+  },
+  {
+    // Avis Google. Place ID/liens vides par défaut : la section se configure depuis
+    // le CRM (/admin/site/avis-google). Aucun faux avis n'est injecté.
+    key: "google.reviews",
+    updatedAt: SITE_SETTINGS_DEFAULT_DATE,
+    value: {
+      enabled: true,
+      showOnHomepage: true,
+      placeId: "",
+      reviewUrl: "",
+      profileUrl: "",
+      sectionTitle: "Ils ont passé leur permis avec nous",
+      sectionSubtitle: "Les avis de nos élèves, directement depuis Google.",
+      minRating: 4,
+      maxReviews: 6,
+      fallbackRating: 0,
+      fallbackCount: 0
+    }
   }
 ];

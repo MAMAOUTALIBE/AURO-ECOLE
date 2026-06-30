@@ -12,7 +12,7 @@ export default function Error({ error, reset }: { error: Error & { digest?: stri
 
   return (
     <main className="bg-loden-pearl">
-      <section className="container-pad flex min-h-[58vh] flex-col items-center justify-center py-12 text-center sm:py-20">
+      <section className="container-pad flex min-h-[58vh] flex-col items-center justify-center py-12 text-center md:py-12 xl:py-16">
         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-loden-700 sm:text-sm sm:tracking-[0.18em]">Une erreur est survenue</p>
         <h1 className="mt-3 text-2xl font-semibold leading-tight text-loden-ink sm:mt-4 sm:text-5xl">Oups, un imprévu sur la route</h1>
         <p className="mt-4 max-w-xl text-sm leading-6 text-loden-muted sm:mt-5 sm:text-lg sm:leading-8">

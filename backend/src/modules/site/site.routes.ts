@@ -58,13 +58,32 @@ const heroHomeSchema = z.object({
   badges: z.array(heroBadgeSchema).max(6).default([])
 });
 
+// Avis Google : configuration pilotable depuis le CRM. La clé API reste côté serveur
+// (variable d'env) ; ici on ne stocke que des données publiques (Place ID, liens,
+// libellés, visibilité). Le cache des avis (`google.reviews.cache`) est écrit par le
+// service de synchro, jamais via le CMS — il n'apparaît donc pas dans ALLOWED_KEYS.
+const googleReviewsSchema = z.object({
+  enabled: z.boolean().default(true),
+  showOnHomepage: z.boolean().default(true),
+  placeId: z.string().trim().max(200).default(""),
+  reviewUrl: z.string().trim().max(500).default(""),
+  profileUrl: z.string().trim().max(500).default(""),
+  sectionTitle: z.string().trim().max(120).default("Ils ont passé leur permis avec nous"),
+  sectionSubtitle: z.string().trim().max(300).default("Les avis de nos élèves, directement depuis Google."),
+  minRating: z.number().int().min(1).max(5).default(4),
+  maxReviews: z.number().int().min(1).max(12).default(6),
+  fallbackRating: z.number().min(0).max(5).default(0),
+  fallbackCount: z.number().int().min(0).max(100000).default(0)
+});
+
 // Schéma générique pour les clés autorisées sans schéma dédié (phases ultérieures).
 const genericSchema = z.record(z.string(), z.unknown());
 
 const KEY_SCHEMAS: Record<string, z.ZodTypeAny> = {
   "nav.primary": navPrimarySchema,
   "nav.ctas": navCtasSchema,
-  "hero.home": heroHomeSchema
+  "hero.home": heroHomeSchema,
+  "google.reviews": googleReviewsSchema
 };
 
 // Liste blanche des clés pilotables depuis le CMS (évite l'écriture de clés arbitraires).
@@ -72,6 +91,7 @@ const ALLOWED_KEYS = new Set<string>([
   "nav.primary",
   "nav.ctas",
   "hero.home",
+  "google.reviews",
   "footer",
   "sections.home",
   "hours",

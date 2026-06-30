@@ -50,22 +50,22 @@ export function PoleLanding({ pole }: { pole: "VTC" | "SST" | "LOGISTIQUE_SECURI
         ctaHref={`/contact?pole=${pole}#demande`}
       />
 
-      <section className="bg-white py-8 md:py-14 xl:py-20">
+      <section className="bg-white py-8 md:py-10 xl:py-14">
         <div className="container-pad">
           <p className="mx-auto hidden max-w-3xl text-center text-base leading-7 text-loden-muted md:block md:text-lg md:leading-8">{content.intro}</p>
-          <div className="grid gap-3 sm:grid-cols-2 md:mt-7 md:gap-4 lg:grid-cols-4 xl:mt-10">
+          <div className="grid gap-3 sm:grid-cols-2 md:mt-7 md:gap-4 lg:grid-cols-4 xl:mt-9">
             {content.benefits.map((benefit) => (
-              <div key={benefit.title} className="rounded-2xl border border-slate-200 bg-loden-pearl p-4 shadow-soft md:rounded-3xl md:p-5">
+              <div key={benefit.title} className="rounded-xl border border-slate-200 bg-loden-pearl p-4 shadow-soft md:rounded-2xl md:p-5">
                 <CheckCircle2 className="h-6 w-6 text-loden-600" aria-hidden="true" />
                 <h3 className="mt-3 text-lg font-semibold text-loden-ink">{benefit.title}</h3>
-                <p className="mt-2 hidden text-sm leading-6 text-loden-muted sm:block">{benefit.text}</p>
+                <p className="mt-2 hidden text-sm leading-6 text-loden-muted md:block">{benefit.text}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      <section className="bg-loden-pearl py-8 md:py-14 xl:py-20">
+      <section className="bg-loden-pearl py-8 md:py-10 xl:py-14">
         <div className="container-pad">
           <SectionHeader
             eyebrow="Nos formations"
@@ -73,13 +73,13 @@ export function PoleLanding({ pole }: { pole: "VTC" | "SST" | "LOGISTIQUE_SECURI
             text="Choisis ta certification : financement CPF, entreprise ou OPCO selon ta situation."
             align="center"
           />
-          <div className="mt-6 grid gap-4 md:mt-7 md:grid-cols-2 md:gap-5 xl:mt-9 xl:grid-cols-3">
+          <div className="mt-5 grid gap-3 md:mt-7 md:grid-cols-2 md:gap-4 xl:mt-8 xl:grid-cols-3">
             {poleFormations.map((formation) => (
               <FormationCard key={formation.slug} formation={formation} />
             ))}
           </div>
 
-          <div className="mt-7 flex flex-col items-start gap-4 rounded-2xl bg-loden-800 p-4 text-white sm:flex-row sm:items-center sm:justify-between sm:rounded-3xl sm:p-5 md:p-8 xl:mt-12">
+          <div className="mt-6 flex flex-col items-start gap-4 rounded-xl bg-loden-800 p-4 text-white sm:flex-row sm:items-center sm:justify-between md:rounded-2xl md:p-6 xl:mt-10">
             <div>
               <h2 className="text-xl font-semibold md:text-2xl">Un projet en entreprise ou un financement OPCO ?</h2>
               <p className="mt-2 hidden max-w-2xl text-sm leading-6 text-white/85 sm:block">

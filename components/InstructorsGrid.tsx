@@ -33,14 +33,14 @@ export function InstructorsGrid() {
 
   if (visibleInstructors.length === 0) {
     return (
-      <p className="mt-6 rounded-2xl border border-slate-200 bg-loden-pearl p-4 text-center text-sm text-loden-muted sm:mt-9 sm:rounded-3xl sm:p-6">
+      <p className="mt-5 rounded-xl border border-slate-200 bg-loden-pearl p-4 text-center text-sm text-loden-muted md:mt-7 md:rounded-2xl md:p-5">
         L&apos;équipe pédagogique sera présentée prochainement.
       </p>
     );
   }
 
   return (
-    <div className="mt-6 grid gap-3 sm:mt-9 sm:gap-5 md:grid-cols-3">
+    <div className="mt-5 grid gap-3 md:mt-7 md:grid-cols-3 md:gap-4">
       {visibleInstructors.map((instructor) => (
         <InstructorCard key={instructor.name} instructor={instructor} />
       ))}

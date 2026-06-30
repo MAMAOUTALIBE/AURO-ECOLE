@@ -18,7 +18,7 @@ export default function ConnexionPage() {
         cta="Créer un compte"
         ctaHref="/inscription"
       />
-      <section className="bg-white py-8 sm:py-20">
+      <section className="bg-white py-8 md:py-12 xl:py-16">
         <div className="container-pad grid items-start gap-6 sm:gap-8 lg:grid-cols-[0.9fr_1.1fr]">
           <SectionHeader
             eyebrow="Connexion"

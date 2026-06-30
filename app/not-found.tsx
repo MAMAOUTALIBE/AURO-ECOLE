@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 export default function NotFound() {
   return (
     <main className="bg-loden-pearl">
-      <section className="container-pad flex min-h-[58vh] flex-col items-center justify-center py-12 text-center sm:py-20">
+      <section className="container-pad flex min-h-[58vh] flex-col items-center justify-center py-12 text-center md:py-12 xl:py-16">
         <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-loden-700 text-white shadow-soft sm:h-16 sm:w-16">
           <Compass className="h-7 w-7 sm:h-8 sm:w-8" aria-hidden="true" />
         </span>

@@ -99,9 +99,9 @@ export default async function FormationDetailPage({ params }: PageProps) {
         suppressHydrationWarning
         dangerouslySetInnerHTML={{ __html: safeJsonLd(courseSchema) }}
       />
-      <section className="bg-loden-pearl py-7 md:py-14 xl:py-20">
-        <div className="container-pad grid gap-8 lg:grid-cols-[1fr_0.75fr] lg:items-start">
-          <div className="relative h-32 overflow-hidden rounded-2xl shadow-soft sm:h-52 sm:rounded-3xl lg:col-span-2 xl:h-60">
+      <section className="bg-loden-pearl py-7 md:py-10 xl:py-14">
+        <div className="container-pad grid gap-5 md:gap-7 lg:grid-cols-[1fr_0.75fr] lg:items-start">
+          <div className="relative h-28 overflow-hidden rounded-xl shadow-soft sm:h-44 md:h-52 md:rounded-2xl lg:col-span-2 xl:h-60">
             <Image
               src={headerImage.src}
               alt={headerImage.alt}
@@ -117,10 +117,10 @@ export default async function FormationDetailPage({ params }: PageProps) {
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-loden-700 sm:text-sm">
               {eyebrow}
             </p>
-            <h1 className="mt-3 text-2xl font-semibold leading-tight text-loden-ink md:mt-4 md:text-5xl xl:text-6xl">
+            <h1 className="mt-2 text-[1.85rem] font-semibold leading-tight text-loden-ink sm:text-4xl md:mt-3 md:text-[2.8rem] xl:text-5xl">
               {formation.title}
             </h1>
-            <p className="mt-3 max-w-3xl text-sm leading-6 text-loden-muted md:mt-5 md:text-lg md:leading-8">{formation.description}</p>
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-loden-muted md:mt-4 md:text-base md:leading-7 xl:text-lg xl:leading-8">{formation.description}</p>
             <div className="mt-5 flex flex-wrap gap-2 sm:mt-6">
               {formation.tags.map((tag, index) => (
                 <span key={tag} className={`rounded-full bg-white px-4 py-2 text-sm font-semibold text-loden-700 shadow-soft ${index > 2 ? "hidden sm:inline-flex" : ""}`}>
@@ -128,7 +128,7 @@ export default async function FormationDetailPage({ params }: PageProps) {
                 </span>
               ))}
             </div>
-            <div className="mt-6 flex flex-col gap-3 sm:mt-8 sm:flex-row">
+            <div className="mt-5 flex flex-col gap-3 sm:mt-6 sm:flex-row">
               <Link
                 href={`/contact?formation=${formation.slug}#demande`}
                 className="focus-ring inline-flex w-full items-center justify-center gap-2 rounded-full bg-loden-700 px-6 py-3.5 font-semibold text-white shadow-soft transition hover:bg-loden-800 sm:w-auto sm:py-4"
@@ -144,7 +144,7 @@ export default async function FormationDetailPage({ params }: PageProps) {
               </Link>
             </div>
           </div>
-          <aside className="rounded-2xl border border-slate-200 bg-white p-4 shadow-soft sm:rounded-3xl sm:p-6">
+          <aside className="rounded-xl border border-slate-200 bg-white p-4 shadow-soft md:rounded-2xl md:p-5">
             <p className="text-sm font-semibold uppercase tracking-[0.14em] text-loden-700">Résumé</p>
             <div className="mt-4 grid gap-4 sm:mt-5">
               <div className="flex items-start gap-3">
@@ -173,20 +173,20 @@ export default async function FormationDetailPage({ params }: PageProps) {
         </div>
       </section>
 
-      <section className="bg-white py-8 md:py-14 xl:py-20">
-        <div className="container-pad grid gap-8 lg:grid-cols-2">
+      <section className="bg-white py-8 md:py-10 xl:py-14">
+        <div className="container-pad grid gap-5 md:gap-7 lg:grid-cols-2">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.14em] text-loden-700">Programme</p>
             <h2 className="mt-3 text-2xl font-semibold text-loden-ink sm:text-3xl">Un parcours cadré de bout en bout</h2>
-            <div className="mt-5 grid gap-3 sm:mt-7 sm:gap-4">
+            <div className="mt-5 grid gap-3 md:mt-7 md:gap-4">
               {programSteps.map((step, index) => (
-                <div key={step} className="flex gap-3 rounded-2xl border border-slate-200 bg-loden-pearl p-4 sm:gap-4 sm:rounded-3xl sm:p-5">
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-white font-semibold text-loden-700 shadow-soft">
+                <div key={step} className="flex gap-3 rounded-xl border border-slate-200 bg-loden-pearl p-4 md:gap-4 md:rounded-2xl md:p-5">
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white font-semibold text-loden-700 shadow-soft md:rounded-2xl">
                     {index + 1}
                   </span>
                   <div>
                     <p className="font-semibold text-loden-ink">{step}</p>
-                    <p className="mt-1 hidden text-sm leading-6 text-loden-muted sm:block">
+                    <p className="mt-1 hidden text-sm leading-6 text-loden-muted md:block">
                       L&apos;objectif est d&apos;avancer avec un rythme clair, des retours concrets et une prochaine action visible.
                     </p>
                   </div>
@@ -197,15 +197,15 @@ export default async function FormationDetailPage({ params }: PageProps) {
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.14em] text-loden-700">Garanties LODENE</p>
             <h2 className="mt-3 text-2xl font-semibold text-loden-ink sm:text-3xl">Des conditions lisibles avant de commencer</h2>
-            <div className="mt-5 grid gap-3 sm:mt-7 sm:gap-4">
+            <div className="mt-5 grid gap-3 md:mt-7 md:gap-4">
               {guarantees.map((item) => (
-                <div key={item} className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-soft sm:rounded-3xl sm:p-5">
+                <div key={item} className="flex items-start gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-soft md:rounded-2xl md:p-5">
                   <CheckCircle2 className="mt-1 h-5 w-5 shrink-0 text-loden-600" />
                   <p className="text-sm font-medium leading-6 text-loden-muted">{item}</p>
                 </div>
               ))}
             </div>
-            <div className="mt-6 rounded-2xl bg-loden-800 p-4 text-white sm:rounded-3xl sm:p-6">
+            <div className="mt-5 rounded-xl bg-loden-800 p-4 text-white md:mt-6 md:rounded-2xl md:p-5">
               <CalendarCheck className="h-7 w-7" />
               <h3 className="mt-4 text-xl font-semibold sm:text-2xl">Besoin d&apos;un planning précis ?</h3>
               <p className="mt-3 text-sm leading-6 text-white/85">

@@ -80,20 +80,20 @@ export function CpfRequestForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-premium sm:rounded-3xl md:p-6" noValidate>
+    <form onSubmit={handleSubmit(onSubmit)} className="rounded-xl border border-slate-200 bg-white p-4 shadow-premium sm:rounded-2xl md:rounded-3xl md:p-6" noValidate>
       <div className="flex items-start gap-3 border-b border-slate-200 pb-4 md:pb-5">
-        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-loden-50 text-loden-700">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-loden-50 text-loden-700 md:h-11 md:w-11 md:rounded-2xl">
           <FileCheck2 className="h-5 w-5" />
         </span>
         <div>
-          <h2 className="text-xl font-semibold text-loden-ink md:text-2xl">Vérifier mon financement</h2>
-          <p className="mt-1 hidden text-sm leading-6 text-loden-muted sm:block md:mt-2">
+          <h2 className="text-lg font-semibold text-loden-ink md:text-2xl">Vérifier mon financement</h2>
+          <p className="mt-1 hidden text-sm leading-6 text-loden-muted md:mt-2 md:block">
             Un conseiller analyse ton solde CPF et prépare le meilleur parcours possible.
           </p>
         </div>
       </div>
 
-      <div className="mt-5 grid gap-4 sm:grid-cols-2">
+      <div className="mt-4 grid gap-3 sm:grid-cols-2 md:mt-5 md:gap-4">
         <Field label="Nom complet" error={errors.fullName?.message}>
           <input {...register("fullName")} className="field-input" placeholder="Prénom Nom" autoComplete="name" />
         </Field>
@@ -114,11 +114,11 @@ export function CpfRequestForm() {
         </Field>
       </div>
 
-      <Field label="Montant CPF estimé en euros" error={errors.requestedAmount?.message} className="mt-4 hidden sm:grid">
+      <Field label="Montant CPF estimé en euros" error={errors.requestedAmount?.message} className="mt-4 hidden md:grid">
         <input {...register("requestedAmount")} className="field-input" inputMode="numeric" placeholder="Ex. 1200" />
       </Field>
 
-      <Field label="Précisions" error={errors.note?.message} className="mt-4 hidden sm:grid">
+      <Field label="Précisions" error={errors.note?.message} className="mt-4 hidden md:grid">
         <textarea
           {...register("note")}
           className="field-input min-h-28 resize-y"
@@ -129,7 +129,7 @@ export function CpfRequestForm() {
       <button
         type="submit"
         disabled={isSubmitting}
-        className="focus-ring mt-5 inline-flex w-full items-center justify-center gap-2 rounded-full bg-loden-700 px-6 py-3.5 font-semibold text-white transition hover:bg-loden-800 disabled:cursor-not-allowed disabled:opacity-70 sm:mt-6 sm:py-4"
+        className="focus-ring mt-5 inline-flex w-full items-center justify-center gap-2 rounded-full bg-loden-700 px-6 py-3.5 font-semibold text-white transition hover:bg-loden-800 disabled:cursor-not-allowed disabled:opacity-70 md:mt-6 md:py-4"
       >
         <Send className="h-5 w-5" />
         {isSubmitting ? "Analyse en cours..." : "Envoyer ma demande CPF"}

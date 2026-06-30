@@ -110,6 +110,7 @@ export const crmNav: NavSection[] = [
     items: [
       { label: "Hero accueil", href: "/admin/site/hero", icon: LayoutTemplate, status: "live" },
       { label: "Menu & navigation", href: "/admin/site/navigation", icon: Menu, status: "live" },
+      { label: "Avis Google", href: "/admin/site/avis-google", icon: Star, status: "live" },
       { label: "Médiathèque", href: "/admin/medias", icon: ImageIcon, status: "live" }
     ]
   },
