@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Plus, Search, Users } from "lucide-react";
+import { Plus, Search, Users, X } from "lucide-react";
 import { Badge, Card, EmptyState, Pagination, SectionHeader, Skeleton, type BadgeVariant } from "@/components/crm/ui";
 
 const PAGE_SIZE = 10;
@@ -48,6 +48,8 @@ export function UsersManager() {
   const [form, setForm] = useState(EMPTY);
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
+  // Formulaire repliable : masqué par défaut pour que la liste du personnel soit visible d'emblée.
+  const [formOpen, setFormOpen] = useState(false);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -128,6 +130,27 @@ export function UsersManager() {
 
   return (
     <div className="space-y-6">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-soft">
+        <div className="flex items-center gap-3">
+          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-loden-50 text-loden-700">
+            <Plus className="h-5 w-5" aria-hidden="true" />
+          </span>
+          <div>
+            <p className="font-semibold text-loden-ink">Personnel</p>
+            <p className="text-sm text-loden-muted">{loading ? "Chargement…" : `${users.length} membre(s)`}</p>
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={() => (formOpen ? setFormOpen(false) : setFormOpen(true))}
+          className={`focus-ring inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold shadow-soft transition ${formOpen ? "border border-slate-200 bg-white text-loden-muted hover:bg-slate-50" : "bg-loden-700 text-white hover:bg-loden-800"}`}
+        >
+          {formOpen ? <X className="h-4 w-4" aria-hidden="true" /> : <Plus className="h-4 w-4" aria-hidden="true" />}
+          {formOpen ? "Fermer le formulaire" : "Ajouter un membre"}
+        </button>
+      </div>
+
+      {formOpen ? (
       <Card className="p-5">
         <SectionHeader title="Ajouter un membre du personnel" subtitle="Crée un compte avec mot de passe temporaire." icon={Plus} />
         <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -150,6 +173,7 @@ export function UsersManager() {
         </button>
         {error ? <p className="mt-4 rounded-xl bg-rose-50 p-3 text-sm font-medium text-rose-700">{error}</p> : null}
       </Card>
+      ) : null}
 
       <div>
         <SectionHeader

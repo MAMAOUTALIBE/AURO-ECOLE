@@ -97,6 +97,8 @@ export function FormationsManager() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(EMPTY);
   const [pickerOpen, setPickerOpen] = useState(false);
+  // Formulaire repliable : masqué par défaut pour que le catalogue soit visible d'emblée.
+  const [formOpen, setFormOpen] = useState(false);
 
   const load = () => {
     setLoading(true);
@@ -116,6 +118,7 @@ export function FormationsManager() {
   const cancel = () => {
     setEditingId(null);
     setForm(EMPTY);
+    setFormOpen(false);
   };
 
   const startEdit = (f: Formation) => {
@@ -138,6 +141,7 @@ export function FormationsManager() {
       tags: (f.tags ?? []).join(", "),
       active: f.active
     });
+    setFormOpen(true);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -221,19 +225,43 @@ export function FormationsManager() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <MediaPickerModal open={pickerOpen} onClose={() => setPickerOpen(false)} onSelect={(media) => setForm((prev) => ({ ...prev, imageUrl: media.url }))} />
+
+      {/* Barre compacte : compteur catalogue + bouton ouvrir/fermer le formulaire. */}
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-soft">
+        <div className="flex items-center gap-3">
+          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-loden-50 text-loden-700">
+            <GraduationCap className="h-5 w-5" aria-hidden="true" />
+          </span>
+          <div>
+            <p className="font-semibold text-loden-ink">Catalogue des formations</p>
+            <p className="text-sm text-loden-muted">{loading ? "Chargement…" : `${items.length} formation(s)`}</p>
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={() => (formOpen ? cancel() : setFormOpen(true))}
+          className={`focus-ring inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold shadow-soft transition ${formOpen ? "border border-slate-200 bg-white text-loden-muted hover:bg-slate-50" : "bg-loden-700 text-white hover:bg-loden-800"}`}
+        >
+          {formOpen ? <X className="h-4 w-4" aria-hidden="true" /> : <Plus className="h-4 w-4" aria-hidden="true" />}
+          {formOpen ? "Fermer le formulaire" : "Ajouter une formation"}
+        </button>
+      </div>
+
+      {error ? <p className="rounded-xl bg-rose-50 p-3 text-sm font-medium text-rose-700">{error}</p> : null}
+
+      {/* Formulaire repliable (ajout / modification). */}
+      {formOpen ? (
       <Card className="p-5">
         <SectionHeader
           title={editingId ? "Modifier la formation" : "Ajouter une formation"}
           subtitle="Catalogue affiché sur le site public. Le prix interne reste privé (jamais publié)."
           icon={editingId ? Pencil : Plus}
           action={
-            editingId ? (
-              <button type="button" onClick={cancel} className="focus-ring inline-flex items-center gap-1 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-loden-muted hover:bg-slate-50">
-                <X className="h-3.5 w-3.5" aria-hidden="true" /> Annuler
-              </button>
-            ) : undefined
+            <button type="button" onClick={cancel} className="focus-ring inline-flex items-center gap-1 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-loden-muted hover:bg-slate-50">
+              <X className="h-3.5 w-3.5" aria-hidden="true" /> {editingId ? "Annuler" : "Fermer"}
+            </button>
           }
         />
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
@@ -311,25 +339,29 @@ export function FormationsManager() {
             </label>
           </div>
         </div>
-        <button
-          type="button"
-          onClick={submit}
-          disabled={busy}
-          className="focus-ring mt-4 inline-flex items-center gap-2 rounded-xl bg-loden-700 px-5 py-2.5 text-sm font-semibold text-white shadow-soft transition hover:bg-loden-800 disabled:opacity-70"
-        >
-          <Plus className="h-4 w-4" aria-hidden="true" />
-          {busy ? "Enregistrement…" : editingId ? "Enregistrer" : "Ajouter la formation"}
-        </button>
-        {error ? <p className="mt-4 rounded-xl bg-rose-50 p-3 text-sm font-medium text-rose-700">{error}</p> : null}
+        <div className="mt-5 flex flex-wrap items-center gap-3 border-t border-slate-100 pt-4">
+          <button
+            type="button"
+            onClick={submit}
+            disabled={busy}
+            className="focus-ring inline-flex items-center gap-2 rounded-xl bg-loden-700 px-5 py-2.5 text-sm font-semibold text-white shadow-soft transition hover:bg-loden-800 disabled:opacity-70"
+          >
+            <Plus className="h-4 w-4" aria-hidden="true" />
+            {busy ? "Enregistrement…" : editingId ? "Enregistrer les modifications" : "Ajouter la formation"}
+          </button>
+          <button type="button" onClick={cancel} className="focus-ring inline-flex items-center rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-loden-muted hover:bg-slate-50">
+            Annuler
+          </button>
+        </div>
       </Card>
+      ) : null}
 
       <div>
-        <SectionHeader title="Catalogue" subtitle={loading ? undefined : `${items.length} formation(s)`} icon={GraduationCap} />
-        <div className="mt-4">
+        <div className="mt-1">
           {loading ? (
             <div className="grid gap-3">{[0, 1, 2].map((i) => <Skeleton key={i} className="h-16 w-full rounded-2xl" />)}</div>
           ) : items.length === 0 ? (
-            <Card className="p-6"><EmptyState icon={GraduationCap} title="Catalogue vide" description="Ajoute ta première formation ci-dessus." /></Card>
+            <Card className="p-6"><EmptyState icon={GraduationCap} title="Catalogue vide" description="Clique sur « Ajouter une formation » en haut pour créer la première." /></Card>
           ) : (
             <div className="grid gap-3">
               {items.map((f) => (
