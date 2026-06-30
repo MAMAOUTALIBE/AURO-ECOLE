@@ -1,0 +1,559 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Depliant LODENE Formation</title>
+    <style>
+      :root {
+        --ink: #142126;
+        --muted: #64747a;
+        --teal: #08aeb8;
+        --teal-dark: #0e7490;
+        --petrol: #164e63;
+        --soft: #e7f4f3;
+        --fog: #f5f8f8;
+        --paper: #fbfdfc;
+        --line: #dce7e7;
+        --green: #25d366;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: #dfe8e8;
+        color: var(--ink);
+        font-family: Inter, Arial, Helvetica, sans-serif;
+      }
+
+      .toolbar {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+        padding: 14px;
+        background: rgba(251, 253, 252, 0.92);
+        border-bottom: 1px solid var(--line);
+        backdrop-filter: blur(10px);
+      }
+
+      .toolbar button {
+        border: 0;
+        border-radius: 999px;
+        background: var(--petrol);
+        color: white;
+        padding: 12px 20px;
+        font-weight: 800;
+        cursor: pointer;
+      }
+
+      .toolbar span {
+        display: inline-flex;
+        align-items: center;
+        color: var(--muted);
+        font-size: 13px;
+        font-weight: 700;
+      }
+
+      .sheet {
+        width: 297mm;
+        height: 210mm;
+        margin: 18px auto;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        overflow: hidden;
+        background: white;
+        box-shadow: 0 24px 80px rgba(20, 33, 38, 0.18);
+      }
+
+      .panel {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        padding: 10mm;
+        border-right: 1px dashed rgba(20, 33, 38, 0.18);
+        background: var(--paper);
+      }
+
+      .panel:last-child {
+        border-right: 0;
+      }
+
+      .panel.dark {
+        color: white;
+        background: linear-gradient(145deg, var(--petrol), #0e7490 72%, #08aeb8);
+      }
+
+      .panel.white {
+        background: white;
+      }
+
+      .panel.soft {
+        background: var(--soft);
+      }
+
+      .logo {
+        width: 43mm;
+        height: auto;
+        object-fit: contain;
+      }
+
+      .eyebrow {
+        margin: 0 0 4mm;
+        color: var(--teal-dark);
+        font-size: 8.5pt;
+        font-weight: 900;
+        letter-spacing: 0.13em;
+        text-transform: uppercase;
+      }
+
+      .dark .eyebrow {
+        color: rgba(255, 255, 255, 0.78);
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin: 0;
+      }
+
+      h1 {
+        margin-top: 10mm;
+        font-size: 28pt;
+        line-height: 1.02;
+        letter-spacing: -0.01em;
+      }
+
+      h2 {
+        font-size: 20pt;
+        line-height: 1.08;
+      }
+
+      h3 {
+        font-size: 11.5pt;
+        line-height: 1.15;
+      }
+
+      .lead {
+        margin-top: 5mm;
+        color: var(--muted);
+        font-size: 11pt;
+        line-height: 1.45;
+      }
+
+      .dark .lead,
+      .dark .muted {
+        color: rgba(255, 255, 255, 0.84);
+      }
+
+      .hero-photo {
+        width: 100%;
+        height: 52mm;
+        margin-top: 8mm;
+        overflow: hidden;
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.14);
+      }
+
+      .hero-photo img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .pill-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 2.2mm;
+        margin-top: 7mm;
+      }
+
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        border-radius: 999px;
+        padding: 2mm 3mm;
+        background: white;
+        color: var(--petrol);
+        font-size: 8pt;
+        font-weight: 900;
+      }
+
+      .dark .pill {
+        background: rgba(255, 255, 255, 0.16);
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.25);
+      }
+
+      .cta {
+        margin-top: auto;
+        padding-top: 8mm;
+      }
+
+      .big-phone {
+        display: inline-flex;
+        width: 100%;
+        justify-content: center;
+        border-radius: 999px;
+        background: white;
+        color: var(--petrol);
+        padding: 4mm 5mm;
+        font-size: 13pt;
+        font-weight: 950;
+      }
+
+      .formation-list {
+        display: grid;
+        gap: 2.5mm;
+        margin-top: 6mm;
+      }
+
+      .item {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: white;
+        padding: 3mm;
+      }
+
+      .item.compact {
+        padding: 2.4mm 3mm;
+      }
+
+      .item-head {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 4mm;
+      }
+
+      .price {
+        white-space: nowrap;
+        color: var(--teal-dark);
+        font-size: 9pt;
+        font-weight: 950;
+      }
+
+      .meta {
+        margin-top: 1.2mm;
+        color: var(--muted);
+        font-size: 8.5pt;
+        line-height: 1.35;
+      }
+
+      .tag {
+        display: inline-block;
+        margin-top: 2mm;
+        border-radius: 999px;
+        background: var(--soft);
+        color: var(--petrol);
+        padding: 1.2mm 2.5mm;
+        font-size: 7.5pt;
+        font-weight: 850;
+      }
+
+      .category-image {
+        width: 100%;
+        height: 28mm;
+        margin-top: 5mm;
+        overflow: hidden;
+        border-radius: 8px;
+      }
+
+      .category-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .mini-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2.5mm;
+        margin-top: 6mm;
+      }
+
+      .mini-card {
+        min-height: 28mm;
+        border-radius: 8px;
+        background: white;
+        border: 1px solid var(--line);
+        padding: 3mm;
+      }
+
+      .mini-card strong {
+        display: block;
+        font-size: 10pt;
+        line-height: 1.15;
+      }
+
+      .mini-card span {
+        display: block;
+        margin-top: 1.2mm;
+        color: var(--muted);
+        font-size: 8pt;
+        line-height: 1.3;
+      }
+
+      .contact-card {
+        display: grid;
+        gap: 3mm;
+        margin-top: 6mm;
+      }
+
+      .contact-line {
+        border-radius: 8px;
+        background: white;
+        border: 1px solid var(--line);
+        padding: 3mm;
+        font-size: 9.8pt;
+        font-weight: 800;
+      }
+
+      .contact-line span {
+        display: block;
+        margin-bottom: 0.8mm;
+        color: var(--muted);
+        font-size: 7.8pt;
+        font-weight: 900;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .qr-block {
+        display: grid;
+        grid-template-columns: 38mm 1fr;
+        align-items: center;
+        gap: 5mm;
+        margin-top: auto;
+        border-radius: 8px;
+        background: white;
+        border: 1px solid var(--line);
+        padding: 4mm;
+      }
+
+      .qr-block img {
+        width: 38mm;
+        height: 38mm;
+      }
+
+      .qr-block strong {
+        display: block;
+        color: var(--petrol);
+        font-size: 12pt;
+        line-height: 1.1;
+      }
+
+      .qr-block span {
+        display: block;
+        margin-top: 2mm;
+        color: var(--muted);
+        font-size: 8.7pt;
+        line-height: 1.35;
+      }
+
+      .note {
+        margin-top: 4mm;
+        color: var(--muted);
+        font-size: 7.4pt;
+        line-height: 1.35;
+      }
+
+      .dark .note {
+        color: rgba(255, 255, 255, 0.72);
+      }
+
+      .section-label {
+        position: absolute;
+        right: 5mm;
+        bottom: 5mm;
+        color: rgba(20, 33, 38, 0.32);
+        font-size: 7pt;
+        font-weight: 900;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+
+      .dark .section-label {
+        color: rgba(255, 255, 255, 0.34);
+      }
+
+      @page {
+        size: A4 landscape;
+        margin: 0;
+      }
+
+      @media print {
+        body {
+          background: white;
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+        }
+
+        .toolbar {
+          display: none;
+        }
+
+        .sheet {
+          width: 297mm;
+          height: 210mm;
+          margin: 0;
+          box-shadow: none;
+          page-break-after: always;
+        }
+
+        .sheet:last-child {
+          page-break-after: auto;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="toolbar">
+      <button type="button" onclick="window.print()">Imprimer / Exporter en PDF</button>
+      <span>Format A4 paysage - 2 pages - pliage en 3 volets</span>
+    </div>
+
+    <main>
+      <section class="sheet" aria-label="Recto du depliant">
+        <article class="panel dark">
+          <img class="logo" src="../lodene-logo-wordmark.png" alt="LODENE Formation" />
+          <p class="eyebrow">Centre de formation</p>
+          <h1>Permis, VTC, SST & logistique.</h1>
+          <p class="lead">Un accompagnement clair pour choisir la bonne formation, le bon financement et le bon planning.</p>
+          <div class="hero-photo">
+            <img src="../loden-hero.jpg" alt="Eleve en formation de conduite" />
+          </div>
+          <div class="pill-row">
+            <span class="pill">Permis B</span>
+            <span class="pill">VTC</span>
+            <span class="pill">SST</span>
+            <span class="pill">Logistique</span>
+          </div>
+          <div class="cta">
+            <span class="big-phone">06 60 32 50 87</span>
+            <p class="note">Appel ou WhatsApp - Devis personnalise avant engagement.</p>
+          </div>
+          <span class="section-label">Couverture</span>
+        </article>
+
+        <article class="panel white">
+          <p class="eyebrow">Auto-ecole</p>
+          <h2>Passez votre permis avec LODENE</h2>
+          <p class="lead">Des formules adaptees au niveau, au budget et au rythme de chaque eleve.</p>
+          <div class="formation-list">
+            <div class="item compact">
+              <div class="item-head"><h3>Permis B automatique - Declic Auto</h3><span class="price">924 €</span></div>
+              <p class="meta">13 leçons - CPF possible</p>
+            </div>
+            <div class="item compact">
+              <div class="item-head"><h3>Permis B automatique - Maitrise Auto</h3><span class="price">1 344 €</span></div>
+              <p class="meta">20 leçons - CPF possible</p>
+            </div>
+            <div class="item compact">
+              <div class="item-head"><h3>Permis B manuel - Essentiel</h3><span class="price">1 344 €</span></div>
+              <p class="meta">20 leçons - CPF possible</p>
+            </div>
+            <div class="item compact">
+              <div class="item-head"><h3>Permis B manuel - Confort</h3><span class="price">1 944 €</span></div>
+              <p class="meta">30 leçons - CPF possible</p>
+            </div>
+            <div class="item compact">
+              <div class="item-head"><h3>Stage accelere code & conduite</h3><span class="price">Sur devis</span></div>
+              <p class="meta">2 a 4 semaines</p>
+            </div>
+            <div class="item compact">
+              <div class="item-head"><h3>Conduite accompagnee / passerelle</h3><span class="price">Sur devis</span></div>
+              <p class="meta">AAC des 15 ans ou formation courte boite auto vers manuelle</p>
+            </div>
+          </div>
+          <span class="section-label">Volet permis</span>
+        </article>
+
+        <article class="panel soft">
+          <p class="eyebrow">VTC</p>
+          <h2>Devenez chauffeur VTC</h2>
+          <p class="lead">Preparation examen CMA, plateforme de formation et accompagnement selon la formule choisie.</p>
+          <div class="category-image">
+            <img src="../formations/photos/vtc-excellence.webp" alt="Formation VTC LODENE" />
+          </div>
+          <div class="mini-grid">
+            <div class="mini-card"><strong>Distanciel Eco</strong><span>Acces plateforme 24h/24 - 399 €</span></div>
+            <div class="mini-card"><strong>Intermediaire Light</strong><span>Distanciel + 2 visios - 599 €</span></div>
+            <div class="mini-card"><strong>Confort Pro</strong><span>Preparation complete - 899 €</span></div>
+            <div class="mini-card"><strong>Excellence</strong><span>Pack cle en main avec conduite - 2 499 €</span></div>
+          </div>
+          <p class="note">Accompagnement administratif carte professionnelle selon formule.</p>
+          <span class="section-label">Volet VTC</span>
+        </article>
+      </section>
+
+      <section class="sheet" aria-label="Verso du depliant">
+        <article class="panel white">
+          <p class="eyebrow">SST</p>
+          <h2>Sauveteur Secouriste du Travail</h2>
+          <p class="lead">Formez vos equipes aux gestes de premiers secours et a la prevention des risques.</p>
+          <div class="category-image">
+            <img src="../formations/photos/sst-initial.webp" alt="Formation SST LODENE" />
+          </div>
+          <div class="formation-list">
+            <div class="item">
+              <div class="item-head"><h3>SST Initial</h3><span class="price">120 €</span></div>
+              <p class="meta">14 h / 2 jours - formation inter-entreprise</p>
+              <span class="tag">Entreprise</span>
+            </div>
+            <div class="item">
+              <div class="item-head"><h3>MAC SST / Recyclage</h3><span class="price">75 €</span></div>
+              <p class="meta">7 h / 1 jour - maintien et actualisation des competences</p>
+              <span class="tag">Recyclage</span>
+            </div>
+          </div>
+          <p class="note">Sessions intra-entreprise possibles sur devis.</p>
+          <span class="section-label">Volet SST</span>
+        </article>
+
+        <article class="panel soft">
+          <p class="eyebrow">Logistique & securite</p>
+          <h2>Conduite en securite</h2>
+          <p class="lead">Des formations terrain pour les salaries, entreprises et equipes operationnelles.</p>
+          <div class="formation-list">
+            <div class="item compact"><div class="item-head"><h3>Chariots elevateurs - R489</h3><span class="price">Devis</span></div><p class="meta">2 a 3 jours selon niveau</p></div>
+            <div class="item compact"><div class="item-head"><h3>Gerbeur accompagnant - R485</h3><span class="price">Devis</span></div><p class="meta">1 a 2 jours</p></div>
+            <div class="item compact"><div class="item-head"><h3>Nacelles / PEMP - R486</h3><span class="price">Devis</span></div><p class="meta">2 a 3 jours</p></div>
+            <div class="item compact"><div class="item-head"><h3>Pont roulant - R484</h3><span class="price">Devis</span></div><p class="meta">Commande au sol ou telecommande</p></div>
+            <div class="item compact"><div class="item-head"><h3>Echafaudage roulant - R457</h3><span class="price">Devis</span></div><p class="meta">Montage, demontage, utilisation</p></div>
+            <div class="item compact"><div class="item-head"><h3>Terberg / tracteur de parc</h3><span class="price">Devis</span></div><p class="meta">Manoeuvres en environnement logistique</p></div>
+          </div>
+          <span class="section-label">Volet pro</span>
+        </article>
+
+        <article class="panel white">
+          <p class="eyebrow">Contact</p>
+          <h2>Demandez votre diagnostic gratuit</h2>
+          <p class="lead">Vous ne savez pas quelle formation choisir ? LODENE vous oriente vers le bon parcours et le bon financement.</p>
+          <div class="contact-card">
+            <div class="contact-line"><span>Telephone / WhatsApp</span>06 60 32 50 87</div>
+            <div class="contact-line"><span>Email</span>ae@lodene.fr</div>
+            <div class="contact-line"><span>Adresse</span>30 rue Pierre Le Guen, 78700 Conflans-Sainte-Honorine</div>
+            <div class="contact-line"><span>Site</span>https://lodene.fr/</div>
+          </div>
+          <div class="qr-block">
+            <img src="./qr-lodene.png" alt="QR code vers le site LODENE" />
+            <div>
+              <strong>Scannez pour voir toutes les formations</strong>
+              <span>QR code vers https://lodene.fr/</span>
+            </div>
+          </div>
+          <p class="note">Tarifs indiques a partir de. Conditions, disponibilites et financements confirmes par devis.</p>
+          <span class="section-label">Dos / contact</span>
+        </article>
+      </section>
+    </main>
+  </body>
+</html>

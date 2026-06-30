@@ -15,7 +15,8 @@ import { HeroSection } from "@/components/HeroSection";
 import { HomeFormationsCarousel } from "@/components/HomeFormationsCarousel";
 import { GoogleReviewsSection } from "@/components/GoogleReviewsSection";
 import { MotionReveal } from "@/components/MotionReveal";
-import { contactInfo, formations } from "@/data/site";
+import { contactInfo } from "@/data/site";
+import { getFormations } from "@/lib/catalog";
 import { formatCurrency } from "@/lib/utils";
 
 export const metadata: Metadata = {
@@ -89,7 +90,8 @@ function whatsappHref() {
   return `https://wa.me/${international}`;
 }
 
-export default function HomePage() {
+export default async function HomePage() {
+  const formations = await getFormations();
   return (
     <main>
       <HeroSection />

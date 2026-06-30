@@ -4,7 +4,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { formationImageMeta } from "@/lib/formation-image";
 import { ArrowRight, BadgeCheck, CalendarCheck, CheckCircle2, Clock3, ShieldCheck } from "lucide-react";
-import { formations, productLineLabels } from "@/data/site";
+import { productLineLabels } from "@/data/site";
+import { getFormationBySlug, getFormations } from "@/lib/catalog";
 import { formatCurrency } from "@/lib/utils";
 import { safeJsonLd } from "@/lib/json-ld";
 import { SITE_NAME, SITE_URL, absoluteUrl } from "@/lib/seo";
@@ -13,13 +14,14 @@ type PageProps = {
   params: Promise<{ slug: string }>;
 };
 
-export function generateStaticParams() {
+export async function generateStaticParams() {
+  const formations = await getFormations();
   return formations.map((formation) => ({ slug: formation.slug }));
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
-  const formation = formations.find((item) => item.slug === slug);
+  const formation = await getFormationBySlug(slug);
 
   if (!formation) {
     return {
@@ -44,7 +46,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function FormationDetailPage({ params }: PageProps) {
   const { slug } = await params;
-  const formation = formations.find((item) => item.slug === slug);
+  const formation = await getFormationBySlug(slug);
 
   if (!formation) notFound();
 
