@@ -116,6 +116,7 @@ const STUDENT_STATUSES: { key: string; name: string; color: string }[] = [
 export function CrmDashboard() {
   const router = useRouter();
   const [period, setPeriod] = useState<7 | 30 | 90>(30);
+  const [tab, setTab] = useState<"pilotage" | "analyse" | "activite">("pilotage");
   const [loading, setLoading] = useState(true);
   const [denied, setDenied] = useState(false);
   const [serviceDown, setServiceDown] = useState(false);
@@ -375,6 +376,26 @@ export function CrmDashboard() {
         </div>
       </div>
 
+      {/* Onglets : aère le tableau de bord (3 vues au lieu d'un long défilement). */}
+      <div className="flex flex-wrap gap-1 rounded-xl border border-slate-200 bg-white p-1 shadow-soft">
+        {([
+          { k: "pilotage", label: "Pilotage" },
+          { k: "analyse", label: "Analyse" },
+          { k: "activite", label: "Activité" }
+        ] as const).map((t) => (
+          <button
+            key={t.k}
+            type="button"
+            onClick={() => setTab(t.k)}
+            className={`focus-ring rounded-lg px-4 py-2 text-sm font-semibold transition ${tab === t.k ? "bg-loden-700 text-white shadow-soft" : "text-loden-muted hover:text-loden-ink"}`}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {tab === "pilotage" ? (
+      <>
       {/* ZONE 0 — COPILOTE : priorités opérationnelles du jour */}
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <KpiCard icon={CalendarClock} href="/admin/rendez-vous?source=chatbot" label="RDV à confirmer" value={loading ? "" : nf(cockpit?.kpis.rdvPendingConfirmation ?? 0)} loading={loading} accent="amber" subLabel={`${cockpit?.kpis.rdvToday ?? 0} aujourd'hui`} />
@@ -413,7 +434,11 @@ export function CrmDashboard() {
         <KpiCard icon={PiggyBank} href="/admin/cpf" label="CPF en cours" value={loading ? "" : nf(stats?.cpf.pending ?? 0)} loading={loading} accent="indigo" />
         <KpiCard icon={Star} href="/admin/avis" label="Avis à modérer" value={loading ? "" : nf(stats?.reviews.pending ?? 0)} loading={loading} accent="rose" />
       </div>
+      </>
+      ) : null}
 
+      {tab === "analyse" ? (
+      <>
       {/* ZONE 2 — Analyse visuelle */}
       <div className="grid gap-4 xl:grid-cols-3">
         <Card className="flex flex-col p-5 xl:col-span-2">
@@ -474,7 +499,11 @@ export function CrmDashboard() {
           </div>
         </Card>
       </div>
+      </>
+      ) : null}
 
+      {tab === "activite" ? (
+      <>
       {/* ZONE 3/4/5 — Activité, Tâches, Agenda */}
       <div className="grid gap-4 xl:grid-cols-3">
         {/* Activité récente */}
@@ -592,6 +621,8 @@ export function CrmDashboard() {
           </div>
         </Card>
       </div>
+      </>
+      ) : null}
 
       {/* ZONE 6 — Centre IA */}
       <Card className="overflow-hidden">
