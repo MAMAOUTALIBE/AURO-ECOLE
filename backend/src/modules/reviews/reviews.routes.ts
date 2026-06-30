@@ -13,6 +13,8 @@ const reviewSchema = z.object({
   instructorId: z.string().optional(),
   rating: z.number().int().min(1).max(5),
   comment: z.string().trim().min(10).max(600),
+  authorName: z.string().trim().min(1).max(60).optional(),
+  authorLocation: z.string().trim().max(80).optional(),
   status: z.enum(["EN_ATTENTE", "PUBLIE", "REJETE"]).optional()
 });
 
@@ -72,6 +74,8 @@ export function createReviewsRouter(repository: LodenRepository, config: ApiConf
         instructorId: body.instructorId,
         rating: body.rating,
         comment: body.comment,
+        authorName: body.authorName,
+        authorLocation: body.authorLocation,
         userId: req.user?.id,
         status
       });

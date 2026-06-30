@@ -3,6 +3,8 @@
 //   - backend/src/modules/reviews/google-reviews.service.ts (DEFAULT_GOOGLE_REVIEWS_CONFIG)
 //   - backend/src/data/initial-data.ts (clé "google.reviews")
 
+import type { Testimonial } from "@/data/site";
+
 const DEFAULT_BACKEND_URL = "http://127.0.0.1:4000";
 
 // ---- Types --------------------------------------------------------------------
@@ -121,5 +123,28 @@ export async function getGoogleReviews(): Promise<GoogleReviewsPayload> {
     return json?.data ?? emptyPayload;
   } catch {
     return emptyPayload;
+  }
+}
+
+/**
+ * Avis internes PUBLIÉS (laissés par les clients sur le site, validés en modération).
+ * Sert de repli sur l'accueil/la page avis quand aucun avis Google n'est synchronisé.
+ */
+export async function getPublishedInternalReviews(): Promise<Testimonial[]> {
+  const baseUrl = process.env.LODEN_API_URL ?? DEFAULT_BACKEND_URL;
+  try {
+    const response = await fetch(new URL("/api/reviews", baseUrl), { cache: "no-store" });
+    if (!response.ok) return [];
+    const json = (await response.json()) as {
+      data?: Array<{ rating: number; comment: string; authorName?: string | null; authorLocation?: string | null }>;
+    };
+    return (json.data ?? []).map((review) => ({
+      name: review.authorName?.trim() || "Client",
+      location: review.authorLocation?.trim() || "",
+      rating: review.rating,
+      text: review.comment
+    }));
+  } catch {
+    return [];
   }
 }

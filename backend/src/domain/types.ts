@@ -483,6 +483,8 @@ export type ReviewRecord = {
   agencyId?: string | null;
   rating: number;
   comment: string;
+  authorName?: string | null;
+  authorLocation?: string | null;
   status: ReviewStatus;
   publishedAt?: Date | null;
   createdAt: Date;
