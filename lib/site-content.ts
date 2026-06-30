@@ -50,13 +50,11 @@ export const defaultNavPrimary: NavPrimary = {
       active: true,
       icon: "GraduationCap",
       children: [
-        { id: "permis-b-manuel", label: "Permis B manuel", href: "/formations/permis-b-manuel-essentiel", active: true, icon: "Car" },
-        { id: "permis-b-auto", label: "Permis B automatique", href: "/formations/permis-b-auto-declic", active: true, icon: "Car" },
-        { id: "conduite-accompagnee", label: "Conduite accompagnée", href: "/formations/conduite-accompagnee", active: true, icon: "ShieldCheck" },
-        { id: "stage-accelere", label: "Stage accéléré", href: "/formations/stage-accelere", active: true, icon: "Sparkles" },
-        { id: "vtc", label: "Formation VTC", href: "/vtc", active: true, icon: "CarTaxiFront" },
-        { id: "sst", label: "Formation SST", href: "/sst", active: true, icon: "ShieldCheck" },
-        { id: "logistique", label: "Logistique & sécurité", href: "/logistique-securite", active: true, icon: "HardHat" },
+        { id: "permis", label: "Permis B & conduite", href: "/formations", active: true, icon: "Car" },
+        { id: "vtc", label: "VTC & transport", href: "/vtc", active: true, icon: "CarTaxiFront" },
+        { id: "securite", label: "Sécurité & secourisme (SST)", href: "/sst", active: true, icon: "ShieldCheck" },
+        { id: "caces", label: "CACES & logistique", href: "/logistique-securite", active: true, icon: "HardHat" },
+        { id: "digital", label: "Digital, IA & CRM", href: "/formations", active: true, icon: "Sparkles" },
         { id: "toutes", label: "Toutes les formations", href: "/formations", active: true, icon: "GraduationCap" }
       ]
     },

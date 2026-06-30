@@ -198,7 +198,7 @@ export function HeaderMain({ nav, ctas }: { nav?: NavPrimary; ctas?: NavCtas }) 
   const ctaItems: NavCta[] = (ctas ?? defaultNavCtas).items.filter((item) => item.active && !isStudentAccountHref(item.href));
   const formationItem = items.find((item) => item.id === "formations");
   const keyFormationLinks = (formationItem?.children ?? [])
-    .filter((child) => ["permis-b-manuel", "permis-b-auto", "vtc", "sst", "toutes"].includes(child.id))
+    .filter((child) => ["permis", "vtc", "securite", "caces", "digital"].includes(child.id))
     .slice(0, 5);
   const phoneHref = contactInfo.phone ? `tel:${contactInfo.phone.replaceAll(" ", "")}` : "/contact";
   const whatsappHref = contactInfo.whatsapp ? `https://wa.me/${contactInfo.whatsapp}` : "/contact";
