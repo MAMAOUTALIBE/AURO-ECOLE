@@ -63,12 +63,12 @@ export function FormationExplorer() {
   }, [activeFilter, activePole, query, sourceFormations]);
 
   return (
-    <section className="bg-white py-8 md:py-14 xl:py-20">
+    <section className="bg-white py-8 md:py-10 xl:py-14">
       <div className="container-pad">
-        <div className="mb-4 grid gap-3 md:hidden">
+        <div className="mb-3 grid gap-3 md:hidden">
           <Link
             href="/contact#demande"
-            className="focus-ring flex items-center justify-between gap-4 rounded-2xl bg-loden-800 p-4 text-white shadow-soft"
+            className="focus-ring flex items-center justify-between gap-4 rounded-xl bg-loden-800 p-4 text-white shadow-soft"
           >
             <span>
               <span className="block text-sm font-bold">Pas sûr de la bonne formation ?</span>
@@ -80,8 +80,8 @@ export function FormationExplorer() {
           </Link>
         </div>
 
-        <div className="rounded-2xl border border-slate-200 bg-loden-pearl p-3 sm:rounded-[1.75rem] sm:p-5 lg:p-6">
-          <div className="flex items-center gap-3 rounded-2xl bg-white px-4 py-3 shadow-soft">
+        <div className="rounded-xl border border-slate-200 bg-loden-pearl p-3 sm:rounded-2xl md:rounded-[1.75rem] md:p-5 lg:p-6">
+          <div className="flex items-center gap-3 rounded-xl bg-white px-4 py-3 shadow-soft md:rounded-2xl">
             <Search className="h-5 w-5 text-loden-500" aria-hidden="true" />
             <input
               value={query}
@@ -119,13 +119,13 @@ export function FormationExplorer() {
           </div>
         </div>
         {visibleFormations.length > 0 ? (
-          <div className="mt-6 grid gap-4 md:mt-8 md:grid-cols-2 md:gap-5 xl:grid-cols-3 2xl:gap-6">
+          <div className="mt-5 grid gap-3 md:mt-7 md:grid-cols-2 md:gap-4 xl:grid-cols-3 2xl:gap-5">
             {visibleFormations.map((formation) => (
               <FormationCard key={formation.slug} formation={formation} />
             ))}
           </div>
         ) : (
-          <p className="mt-6 rounded-2xl border border-slate-200 bg-loden-pearl p-4 text-center text-sm font-medium text-loden-muted sm:mt-8 sm:rounded-3xl sm:p-6">
+          <p className="mt-5 rounded-xl border border-slate-200 bg-loden-pearl p-4 text-center text-sm font-medium text-loden-muted md:mt-7 md:rounded-2xl md:p-5">
             Aucune formation ne correspond à ces filtres. Essaie un autre pôle ou réinitialise la recherche.
           </p>
         )}

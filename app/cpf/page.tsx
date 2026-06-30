@@ -23,7 +23,7 @@ export default async function CpfPage() {
         cta="Vérifier mon financement"
         ctaHref="#demande-cpf"
       />
-      <section className="bg-white py-8 sm:py-20">
+      <section className="bg-white py-8 md:py-12 xl:py-16">
         <div className="container-pad">
           <SectionHeader
             eyebrow="Méthode"
@@ -31,16 +31,16 @@ export default async function CpfPage() {
             text="Le financement ne doit pas ralentir ton permis. Chaque étape est cadrée par un conseiller."
             align="center"
           />
-          <div className="mt-6 grid gap-3 sm:mt-9 sm:gap-5 md:grid-cols-3">
+          <div className="mt-5 grid gap-3 md:mt-7 md:grid-cols-3 md:gap-4">
             {cpfSteps.map((step) => {
               const Icon = step.icon;
               return (
-                <article key={step.title} className="rounded-2xl border border-slate-200 bg-loden-pearl p-4 shadow-soft sm:rounded-3xl sm:p-6">
-                  <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-loden-700 shadow-soft">
-                    <Icon className="h-6 w-6" />
+                <article key={step.title} className="rounded-xl border border-slate-200 bg-loden-pearl p-4 shadow-soft md:rounded-2xl md:p-5">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-loden-700 shadow-soft md:h-12 md:w-12 md:rounded-2xl">
+                    <Icon className="h-5 w-5 md:h-6 md:w-6" />
                   </span>
-                  <h3 className="mt-4 text-lg font-semibold text-loden-ink sm:mt-5 sm:text-xl">{step.title}</h3>
-                  <p className="mt-3 hidden text-sm leading-6 text-loden-muted sm:block">{step.text}</p>
+                  <h3 className="mt-3 text-lg font-semibold text-loden-ink md:mt-5 md:text-xl">{step.title}</h3>
+                  <p className="mt-3 hidden text-sm leading-6 text-loden-muted md:block">{step.text}</p>
                 </article>
               );
             })}
@@ -48,17 +48,17 @@ export default async function CpfPage() {
         </div>
       </section>
       <FaqSection items={faqItems} />
-      <section id="demande-cpf" className="bg-loden-pearl py-8 sm:py-20">
-        <div className="container-pad grid items-start gap-8 lg:grid-cols-[0.9fr_1.1fr]">
+      <section id="demande-cpf" className="bg-loden-pearl py-8 md:py-12 xl:py-16">
+        <div className="container-pad grid items-start gap-5 md:gap-7 lg:grid-cols-[0.9fr_1.1fr]">
           <div>
             <SectionHeader
               eyebrow="Demande CPF"
               title="Vérifie ton financement avant de t'inscrire"
               text="Envoie les informations essentielles. Un conseiller te répond avec la formation, le reste à charge et les prochaines étapes."
             />
-            <div className="mt-6 grid gap-3 text-sm font-medium text-loden-muted sm:grid-cols-2 lg:grid-cols-1">
+            <div className="mt-5 grid gap-2.5 text-sm font-medium text-loden-muted sm:grid-cols-2 lg:grid-cols-1">
               {["Éligibilité CPF analysée", "Reste à charge estimé", "Conseiller dédié", "Parcours adapté au planning"].map((item) => (
-                <span key={item} className="rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-soft">
+                <span key={item} className="rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-soft">
                   {item}
                 </span>
               ))}
@@ -67,10 +67,10 @@ export default async function CpfPage() {
           <CpfRequestForm />
         </div>
       </section>
-      <section id="aides" className="scroll-mt-28 bg-loden-pearl py-8 sm:py-20">
-        <div className="container-pad grid gap-5 md:grid-cols-3">
+      <section id="aides" className="scroll-mt-28 bg-loden-pearl py-8 md:py-12 xl:py-16">
+        <div className="container-pad grid gap-3 md:grid-cols-3 md:gap-5">
           {["CPF", "Paiement 3x / 4x", "Aides régionales"].map((item) => (
-            <div key={item} className="rounded-2xl bg-white p-4 shadow-soft sm:rounded-3xl sm:p-6">
+            <div key={item} className="rounded-xl bg-white p-4 shadow-soft md:rounded-2xl md:p-5">
               <p className="text-sm font-semibold uppercase tracking-[0.14em] text-loden-700">Financement</p>
               <h3 className="mt-3 text-2xl font-semibold text-loden-ink">{item}</h3>
               <p className="mt-3 hidden text-sm leading-6 text-loden-muted sm:block">

@@ -45,7 +45,7 @@ export default async function BlogPage() {
         cta="Parler à un conseiller"
         ctaHref="/contact"
       />
-      <section className="bg-white py-8 sm:py-20">
+      <section className="bg-white py-8 md:py-12 xl:py-16">
         <div className="container-pad">
           <SectionHeader
             eyebrow="Guides LODENE"
@@ -55,14 +55,14 @@ export default async function BlogPage() {
           />
 
           {articles.length > 0 ? (
-            <div className="mt-7 grid gap-4 md:mt-10 md:grid-cols-3 md:gap-5">
+            <div className="mt-5 grid gap-3 md:mt-7 md:grid-cols-3 md:gap-4">
               {articles.map((article) => (
                 <Link
                   key={article.id}
                   href={`/blog/${article.slug}`}
-                  className="focus-ring group flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-soft transition duration-300 hover:-translate-y-1 hover:shadow-premium sm:rounded-3xl"
+                  className="focus-ring group flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-soft transition duration-300 hover:-translate-y-1 hover:shadow-premium md:rounded-2xl"
                 >
-                  <div className="relative h-44 overflow-hidden bg-loden-pearl">
+                  <div className="relative h-36 overflow-hidden bg-loden-pearl md:h-44">
                     {article.coverImageUrl ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={article.coverImageUrl} alt={article.title} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
@@ -72,12 +72,12 @@ export default async function BlogPage() {
                       </div>
                     )}
                   </div>
-                  <div className="flex flex-1 flex-col p-4 sm:p-6">
+                  <div className="flex flex-1 flex-col p-4 md:p-5">
                     {article.category ? (
                       <span className="mb-2 inline-flex w-fit rounded-full bg-loden-50 px-2.5 py-0.5 text-xs font-semibold text-loden-700">{article.category}</span>
                     ) : null}
                     <h2 className="text-lg font-semibold text-loden-ink">{article.title}</h2>
-                    {article.excerpt ? <p className="mt-2 hidden flex-1 text-sm leading-6 text-loden-muted sm:block">{article.excerpt}</p> : <span className="flex-1" />}
+                    {article.excerpt ? <p className="mt-2 hidden flex-1 text-sm leading-6 text-loden-muted md:block">{article.excerpt}</p> : <span className="flex-1" />}
                     <span className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-loden-700">
                       Lire l’article
                       <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" aria-hidden="true" />
@@ -88,16 +88,16 @@ export default async function BlogPage() {
               ))}
             </div>
           ) : (
-            <div className="mt-7 grid gap-4 md:mt-10 md:grid-cols-3 md:gap-5">
+            <div className="mt-5 grid gap-3 md:mt-7 md:grid-cols-3 md:gap-4">
               {fallbackArticles.map((article) => {
                 const Icon = article.icon;
                 return (
-                  <article key={article.title} className="rounded-2xl border border-slate-200 bg-loden-pearl p-4 shadow-soft sm:rounded-3xl sm:p-6">
-                    <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-loden-700 shadow-soft">
-                      <Icon className="h-6 w-6" aria-hidden="true" />
+                  <article key={article.title} className="rounded-xl border border-slate-200 bg-loden-pearl p-4 shadow-soft md:rounded-2xl md:p-5">
+                    <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-loden-700 shadow-soft md:h-12 md:w-12 md:rounded-2xl">
+                      <Icon className="h-5 w-5 md:h-6 md:w-6" aria-hidden="true" />
                     </span>
-                    <h2 className="mt-4 text-lg font-semibold text-loden-ink sm:mt-5 sm:text-xl">{article.title}</h2>
-                    <p className="mt-3 hidden text-sm leading-6 text-loden-muted sm:block">{article.text}</p>
+                    <h2 className="mt-3 text-lg font-semibold text-loden-ink md:mt-5 md:text-xl">{article.title}</h2>
+                    <p className="mt-3 hidden text-sm leading-6 text-loden-muted md:block">{article.text}</p>
                     <Link
                       href={article.href}
                       className="focus-ring mt-5 inline-flex items-center gap-2 rounded-full text-sm font-semibold text-loden-700 hover:text-loden-900"

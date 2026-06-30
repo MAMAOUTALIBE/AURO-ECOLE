@@ -52,7 +52,7 @@ export function VerifyEmailClient({ token }: { token: string }) {
 
   return (
     <div
-      className="rounded-2xl border border-slate-200 bg-white p-4 shadow-premium sm:rounded-3xl sm:p-6"
+      className="rounded-xl border border-slate-200 bg-white p-4 shadow-premium sm:rounded-2xl md:rounded-3xl md:p-6"
       role="status"
       aria-live="polite"
     >

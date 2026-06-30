@@ -31,6 +31,7 @@ import { createPaymentsRouter, createStripeWebhookHandler } from "./modules/paym
 import { createPermissionsRouter } from "./modules/permissions/permissions.routes";
 import { createStripeProvider } from "./payments/stripe-provider";
 import { createReviewsRouter } from "./modules/reviews/reviews.routes";
+import { createGoogleReviewsRouter } from "./modules/reviews/google-reviews.routes";
 import { createSearchRouter } from "./modules/search/search.routes";
 import { createSiteRouter } from "./modules/site/site.routes";
 import { createStatsRouter } from "./modules/stats/stats.routes";
@@ -118,6 +119,8 @@ export function createApp(repository: LodenRepository, config: ApiConfig, deps: 
   // Même routeur exposé sous /api/content (notamment /api/content/company).
   app.use("/api/content", contentRouter);
   app.use("/api/reviews", createReviewsRouter(repository, config));
+  // Avis Google (synchro fiche Google Business + boutons « laisser un avis »).
+  app.use("/api/google-reviews", createGoogleReviewsRouter(repository, config));
   app.use("/api/media", createMediaRouter(repository, config));
   app.use("/api/notifications", createNotificationsRouter(repository, config));
   app.use("/api/site", createSiteRouter(repository, config));

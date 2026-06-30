@@ -29,7 +29,7 @@ export function FaqSection({
   };
 
   return (
-    <section id="faq" className="scroll-mt-28 bg-white py-8 md:py-14 xl:py-20">
+    <section id="faq" className="scroll-mt-28 bg-white py-8 md:py-10 xl:py-14">
       <script
         type="application/ld+json"
         suppressHydrationWarning
@@ -37,19 +37,19 @@ export function FaqSection({
       />
       <div className="container-pad">
         <SectionHeader eyebrow={eyebrow} title={title} text={text} align="center" />
-        <div className="mx-auto mt-6 grid max-w-4xl gap-3 md:mt-9">
+        <div className="mx-auto mt-5 grid max-w-4xl gap-2.5 md:mt-7 md:gap-3">
           {items.map((item, index) => (
             <details
               key={item.question}
-              className="group rounded-2xl border border-slate-200 bg-loden-pearl p-4 shadow-soft open:bg-white md:rounded-3xl md:p-5"
+              className="group rounded-xl border border-slate-200 bg-loden-pearl p-4 shadow-soft open:bg-white md:rounded-2xl md:p-5"
               open={index === 0}
             >
               <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-left text-base font-semibold text-loden-ink">
                 <span>{item.question}</span>
                 <ChevronDown className="h-5 w-5 shrink-0 text-loden-600 transition group-open:rotate-180" />
               </summary>
-              <p className="mt-4 text-sm leading-6 text-loden-muted">{item.answer}</p>
-              <p className="mt-3 hidden text-xs font-semibold uppercase tracking-[0.12em] text-loden-700 sm:block">
+              <p className="mt-3 text-sm leading-6 text-loden-muted md:mt-4">{item.answer}</p>
+              <p className="mt-3 hidden text-xs font-semibold uppercase tracking-[0.12em] text-loden-700 md:block">
                 {item.category}
               </p>
             </details>

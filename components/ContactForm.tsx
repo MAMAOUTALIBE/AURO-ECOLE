@@ -118,20 +118,20 @@ export function ContactForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-premium sm:rounded-[1.75rem] sm:p-6" noValidate>
-      <div className="flex items-start gap-3 border-b border-slate-200 pb-4 sm:pb-5">
-        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-loden-50 text-loden-700">
+    <form onSubmit={handleSubmit(onSubmit)} className="rounded-xl border border-slate-200 bg-white p-4 shadow-premium sm:rounded-2xl md:rounded-[1.75rem] md:p-6" noValidate>
+      <div className="flex items-start gap-3 border-b border-slate-200 pb-4 md:pb-5">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-loden-50 text-loden-700 md:h-11 md:w-11 md:rounded-2xl">
           <ClipboardCheck className="h-5 w-5" />
         </span>
         <div>
-          <h2 className="text-xl font-semibold text-loden-ink sm:text-2xl">Diagnostic & devis</h2>
-          <p className="mt-1 hidden text-sm leading-6 text-loden-muted sm:mt-2 sm:block">
+          <h2 className="text-lg font-semibold text-loden-ink md:text-2xl">Diagnostic & devis</h2>
+          <p className="mt-1 hidden text-sm leading-6 text-loden-muted md:mt-2 md:block">
             Les réponses permettent à LODENE de te rappeler avec le bon parcours, le bon financement et un planning réaliste.
           </p>
         </div>
       </div>
 
-      <div className="mt-5 grid gap-4 sm:grid-cols-2">
+      <div className="mt-4 grid gap-3 sm:grid-cols-2 md:mt-5 md:gap-4">
         <Field label="Nom" error={errors.name?.message}>
           <input {...register("name")} className="field-input" placeholder="Ton nom" autoComplete="name" />
         </Field>
@@ -152,12 +152,12 @@ export function ContactForm() {
             <option>Remise à niveau</option>
           </select>
         </Field>
-        <Field label="Entreprise / financeur (optionnel)" error={errors.company?.message} className="hidden sm:grid">
+        <Field label="Entreprise / financeur (optionnel)" error={errors.company?.message} className="hidden md:grid">
           <input {...register("company")} className="field-input" placeholder="Société, OPCO, Pôle emploi…" autoComplete="organization" />
         </Field>
       </div>
 
-      <div className="mt-4 hidden gap-4 sm:grid sm:grid-cols-2">
+      <div className="mt-4 hidden gap-4 md:grid md:grid-cols-2">
         <Field label="Financement" error={errors.financing?.message}>
           <select {...register("financing")} className="field-input">
             <option>À définir</option>
@@ -193,13 +193,13 @@ export function ContactForm() {
         </Field>
       </div>
 
-      <Field label="Message" error={errors.message?.message} className="mt-4 hidden sm:grid">
+      <Field label="Message" error={errors.message?.message} className="mt-4 hidden md:grid">
         <textarea {...register("message")} className="field-input min-h-32 resize-y" placeholder="Objectif, contraintes, date d'examen visée, solde CPF approximatif..." />
       </Field>
       <button
         type="submit"
         disabled={isSubmitting}
-        className="focus-ring mt-5 inline-flex w-full items-center justify-center gap-2 rounded-full bg-loden-700 px-6 py-3.5 font-semibold text-white transition hover:bg-loden-800 disabled:cursor-not-allowed disabled:opacity-70 sm:mt-6 sm:py-4"
+        className="focus-ring mt-5 inline-flex w-full items-center justify-center gap-2 rounded-full bg-loden-700 px-6 py-3.5 font-semibold text-white transition hover:bg-loden-800 disabled:cursor-not-allowed disabled:opacity-70 md:mt-6 md:py-4"
       >
         <Send className="h-5 w-5" />
         {isSubmitting ? "Envoi..." : (

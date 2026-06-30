@@ -16,7 +16,7 @@ export default function EspaceFormateurPage() {
         title="Ton planning et tes examens en un coup d'œil"
         text="Retrouve les leçons à venir et les examens programmés. Réservé aux moniteurs et à l'encadrement pédagogique."
       />
-      <section className="bg-loden-pearl py-8 sm:py-20">
+      <section className="bg-loden-pearl py-8 md:py-12 xl:py-16">
         <div className="container-pad">
           <InstructorDashboard />
         </div>

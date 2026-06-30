@@ -32,7 +32,7 @@ export function PricingPlansGrid() {
   const plans = remotePlans ?? pricingPlans;
 
   return (
-    <div className="container-pad grid gap-5 md:grid-cols-2 xl:grid-cols-4 2xl:gap-6">
+    <div className="container-pad grid gap-3 md:grid-cols-2 md:gap-4 xl:grid-cols-4 2xl:gap-5">
       {plans.map((plan, index) => (
         <PricingCard key={plan.title} plan={plan} featured={index === 1} />
       ))}

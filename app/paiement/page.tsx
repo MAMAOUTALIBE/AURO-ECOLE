@@ -18,7 +18,7 @@ export default function PaiementPage() {
         cta="Voir les tarifs"
         ctaHref="/tarifs"
       />
-      <section className="bg-loden-pearl py-8 sm:py-20">
+      <section className="bg-loden-pearl py-8 md:py-12 xl:py-16">
         <div className="container-pad">
           <Suspense fallback={<div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-premium sm:rounded-3xl sm:p-6">Chargement du paiement...</div>}>
             <PaymentIntentForm />

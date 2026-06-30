@@ -44,7 +44,7 @@ export function ForgotPasswordForm() {
 
   if (sent) {
     return (
-      <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-premium sm:rounded-3xl sm:p-6" role="status">
+      <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-premium sm:rounded-2xl md:rounded-3xl md:p-6" role="status">
         <div className="flex items-center gap-3">
           <span className="grid h-11 w-11 place-items-center rounded-full bg-loden-pearl text-loden-700">
             <MailCheck className="h-6 w-6" />
@@ -68,12 +68,12 @@ export function ForgotPasswordForm() {
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="rounded-2xl border border-slate-200 bg-white p-4 shadow-premium sm:rounded-3xl sm:p-6"
+      className="rounded-xl border border-slate-200 bg-white p-4 shadow-premium sm:rounded-2xl md:rounded-3xl md:p-6"
       noValidate
     >
-      <div className="border-b border-slate-200 pb-5">
-        <h2 className="text-xl font-semibold text-loden-ink sm:text-2xl">Mot de passe oublié</h2>
-        <p className="mt-2 hidden text-sm leading-6 text-loden-muted sm:block">
+      <div className="border-b border-slate-200 pb-4 md:pb-5">
+        <h2 className="text-lg font-semibold text-loden-ink md:text-2xl">Mot de passe oublié</h2>
+        <p className="mt-2 hidden text-sm leading-6 text-loden-muted md:block">
           Saisis l&apos;email de ton compte : on t&apos;envoie un lien sécurisé pour en choisir un nouveau.
         </p>
       </div>
@@ -91,14 +91,14 @@ export function ForgotPasswordForm() {
       <button
         type="submit"
         disabled={isSubmitting}
-        className="focus-ring mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full bg-loden-700 px-6 py-4 font-semibold text-white transition hover:bg-loden-800 disabled:cursor-not-allowed disabled:opacity-70"
+        className="focus-ring mt-5 inline-flex w-full items-center justify-center gap-2 rounded-full bg-loden-700 px-6 py-3.5 font-semibold text-white transition hover:bg-loden-800 disabled:cursor-not-allowed disabled:opacity-70 md:mt-6 md:py-4"
       >
         <Send className="h-5 w-5" />
         {isSubmitting ? "Envoi..." : "Envoyer le lien de réinitialisation"}
       </button>
 
       {submitError ? (
-        <p className="mt-4 rounded-2xl bg-red-50 p-4 text-sm font-medium text-red-700" role="alert">
+        <p className="mt-4 rounded-xl bg-red-50 p-4 text-sm font-medium text-red-700" role="alert">
           {submitError}
         </p>
       ) : null}

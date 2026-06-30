@@ -26,18 +26,18 @@ export default function FaqPage() {
         title="Les réponses utiles avant de vous engager"
         text="Une question qui n'apparaît pas ici ? Contactez un conseiller, nous vous répondons rapidement."
       />
-      <section className="bg-loden-pearl py-8 sm:py-20">
+      <section className="bg-loden-pearl py-8 md:py-12 xl:py-16">
         <div className="container-pad">
-          <div className="flex flex-col items-start gap-5 rounded-2xl bg-loden-800 p-5 text-white sm:flex-row sm:items-center sm:justify-between sm:rounded-3xl sm:p-8">
+          <div className="flex flex-col items-start gap-4 rounded-xl bg-loden-800 p-4 text-white sm:flex-row sm:items-center sm:justify-between md:rounded-2xl md:p-6">
             <div>
-              <h2 className="text-2xl font-semibold">Besoin d&apos;une réponse personnalisée ?</h2>
+              <h2 className="text-xl font-semibold md:text-2xl">Besoin d&apos;une réponse personnalisée ?</h2>
               <p className="mt-2 hidden max-w-2xl text-sm leading-6 text-white/85 sm:block">
                 Notre équipe vous oriente vers la bonne formation et vérifie votre financement.
               </p>
             </div>
             <Link
               href="/contact#demande"
-              className="focus-ring inline-flex shrink-0 items-center justify-center gap-2 rounded-full bg-white px-6 py-4 font-semibold text-loden-800 transition hover:bg-loden-pearl"
+              className="focus-ring inline-flex w-full shrink-0 items-center justify-center gap-2 rounded-full bg-white px-6 py-3.5 font-semibold text-loden-800 transition hover:bg-loden-pearl sm:w-auto md:py-4"
             >
               Contacter LODENE
               <ArrowRight className="h-5 w-5" aria-hidden="true" />

@@ -86,8 +86,8 @@ export function HomeFormationsCarousel({ formations }: { formations: Formation[]
     <div>
       <div className="flex items-end justify-between gap-4">
         <div>
-          <p className="text-sm font-semibold uppercase text-loden-700">Formations principales</p>
-          <h2 className="mt-3 text-2xl font-semibold leading-tight text-loden-ink sm:text-4xl">
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-loden-700 sm:text-sm">Formations principales</p>
+          <h2 className="mt-2 text-[1.45rem] font-semibold leading-tight text-loden-ink sm:text-3xl lg:text-4xl">
             Les parcours les plus demandés
           </h2>
         </div>
@@ -114,7 +114,7 @@ export function HomeFormationsCarousel({ formations }: { formations: Formation[]
       <div
         ref={trackRef}
         onScroll={updateActiveIndex}
-        className="mt-6 flex snap-x snap-mandatory gap-5 overflow-x-auto scroll-smooth pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        className="mt-5 flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-smooth pb-4 [scrollbar-width:none] md:gap-5 [&::-webkit-scrollbar]:hidden"
         aria-label="Carousel des formations LODENE"
       >
         {featuredFormations.map((formation) => {
@@ -128,10 +128,10 @@ export function HomeFormationsCarousel({ formations }: { formations: Formation[]
             <article
               key={formation.slug}
               data-carousel-card
-              className="group flex min-w-0 shrink-0 basis-[88%] snap-start overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-soft transition duration-300 hover:-translate-y-1 hover:border-loden-200 hover:shadow-premium sm:basis-full sm:rounded-[1.75rem] md:basis-[calc((100%_-_1.5rem)_/_2)] xl:basis-[calc((100%_-_3rem)_/_3)]"
+              className="group flex min-w-0 shrink-0 basis-[86%] snap-start overflow-hidden rounded-xl border border-slate-200 bg-white shadow-soft transition duration-300 hover:-translate-y-1 hover:border-loden-200 hover:shadow-premium sm:basis-full sm:rounded-2xl md:basis-[calc((100%_-_1.25rem)_/_2)] md:rounded-[1.75rem] xl:basis-[calc((100%_-_2.5rem)_/_3)]"
             >
-              <Link href={`/formations/${formation.slug}`} className="focus-ring flex h-full w-full flex-col rounded-2xl sm:rounded-[1.75rem]">
-                <div className="relative h-36 overflow-hidden bg-loden-900 sm:h-48">
+              <Link href={`/formations/${formation.slug}`} className="focus-ring flex h-full w-full flex-col rounded-xl sm:rounded-2xl md:rounded-[1.75rem]">
+                <div className="relative h-32 overflow-hidden bg-loden-900 sm:h-40 md:h-48">
                   <Image
                     src={image.src}
                     alt={image.alt}
@@ -148,9 +148,9 @@ export function HomeFormationsCarousel({ formations }: { formations: Formation[]
                   </span>
                 </div>
 
-                <div className="flex flex-1 flex-col p-4 sm:p-6">
-                  <h3 className="text-lg font-semibold leading-tight text-loden-ink sm:text-xl">{labels.title}</h3>
-                  <p className="mt-2 line-clamp-2 text-sm leading-6 text-loden-muted sm:mt-3">{labels.description}</p>
+                <div className="flex flex-1 flex-col p-4 md:p-6">
+                  <h3 className="text-lg font-semibold leading-tight text-loden-ink md:text-xl">{labels.title}</h3>
+                  <p className="mt-2 line-clamp-2 text-sm leading-6 text-loden-muted md:mt-3">{labels.description}</p>
 
                   <div className="mt-5 grid gap-2 text-sm text-loden-muted">
                     <span className="inline-flex items-center gap-2">
@@ -163,7 +163,7 @@ export function HomeFormationsCarousel({ formations }: { formations: Formation[]
                     </span>
                   </div>
 
-                  <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-4 sm:mt-5">
+                  <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-4 md:mt-5">
                     <span className="inline-flex items-center gap-2 text-sm font-semibold text-loden-700">
                       <Sparkles className="h-4 w-4" aria-hidden="true" />
                       Découvrir

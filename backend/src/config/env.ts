@@ -39,6 +39,11 @@ const envSchema = z.object({
   WHATSAPP_ACCESS_TOKEN: z.string().optional(),
   WHATSAPP_BUSINESS_NUMBER: z.string().optional(),
   WHATSAPP_TEMPLATE_APPOINTMENT_CONFIRMATION: z.string().optional(),
+  // Avis Google (optionnel). Sans GOOGLE_PLACES_API_KEY, la synchro automatique des
+  // vrais avis Google est désactivée et le module bascule en mode manuel (note/avis
+  // saisis dans le CRM) — aucune fonctionnalité ne casse. Clé serveur uniquement,
+  // jamais exposée au navigateur (le front passe par le proxy Next).
+  GOOGLE_PLACES_API_KEY: z.string().optional(),
   // IA (optionnel). Sans GROQ_API_KEY, l'IA renvoie un message clair (désactivée).
   AI_PROVIDER: z.string().default("groq"),
   // 70B requis pour un tool-calling fiable (le 8B formate mal les appels d'outils).

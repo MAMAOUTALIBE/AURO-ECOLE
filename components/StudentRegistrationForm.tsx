@@ -105,20 +105,20 @@ export function StudentRegistrationForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-premium sm:rounded-3xl sm:p-6" noValidate>
-      <div className="flex items-start gap-3 border-b border-slate-200 pb-4 sm:pb-5">
-        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-loden-50 text-loden-700">
+    <form onSubmit={handleSubmit(onSubmit)} className="rounded-xl border border-slate-200 bg-white p-4 shadow-premium sm:rounded-2xl md:rounded-3xl md:p-6" noValidate>
+      <div className="flex items-start gap-3 border-b border-slate-200 pb-4 md:pb-5">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-loden-50 text-loden-700 md:h-11 md:w-11 md:rounded-2xl">
           <LockKeyhole className="h-5 w-5" />
         </span>
         <div>
-          <h2 className="text-xl font-semibold text-loden-ink sm:text-2xl">Créer mon espace élève</h2>
-          <p className="mt-1 hidden text-sm leading-6 text-loden-muted sm:mt-2 sm:block">
+          <h2 className="text-lg font-semibold text-loden-ink md:text-2xl">Créer mon espace élève</h2>
+          <p className="mt-1 hidden text-sm leading-6 text-loden-muted md:mt-2 md:block">
             L&apos;inscription crée ton profil élève et prépare ton futur suivi de progression.
           </p>
         </div>
       </div>
 
-      <div className="mt-5 grid gap-4 sm:grid-cols-2">
+      <div className="mt-4 grid gap-3 sm:grid-cols-2 md:mt-5 md:gap-4">
         <Field label="Prénom" error={errors.firstName?.message}>
           <input {...register("firstName")} className="field-input" placeholder="Prénom" autoComplete="given-name" />
         </Field>
@@ -143,7 +143,7 @@ export function StudentRegistrationForm() {
         </select>
       </Field>
 
-      <div className="mt-4 grid gap-4 sm:grid-cols-2">
+      <div className="mt-4 grid gap-3 sm:grid-cols-2 md:gap-4">
         <Field label="Mot de passe" error={errors.password?.message}>
           <input {...register("password")} className="field-input" type="password" autoComplete="new-password" />
         </Field>
@@ -155,7 +155,7 @@ export function StudentRegistrationForm() {
       <button
         type="submit"
         disabled={isSubmitting}
-        className="focus-ring mt-5 inline-flex w-full items-center justify-center gap-2 rounded-full bg-loden-700 px-6 py-3.5 font-semibold text-white transition hover:bg-loden-800 disabled:cursor-not-allowed disabled:opacity-70 sm:mt-6 sm:py-4"
+        className="focus-ring mt-5 inline-flex w-full items-center justify-center gap-2 rounded-full bg-loden-700 px-6 py-3.5 font-semibold text-white transition hover:bg-loden-800 disabled:cursor-not-allowed disabled:opacity-70 md:mt-6 md:py-4"
       >
         <Send className="h-5 w-5" />
         {isSubmitting ? "Création..." : "Créer mon compte élève"}

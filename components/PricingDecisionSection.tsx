@@ -42,18 +42,18 @@ const financingOptions = [
 
 export function PricingDecisionSection() {
   return (
-    <section className="bg-white py-8 md:py-14 xl:py-20">
+    <section className="bg-white py-8 md:py-10 xl:py-14">
       <div className="container-pad">
-        <div className="grid gap-8 lg:grid-cols-[0.85fr_1.15fr] lg:items-start">
+        <div className="grid gap-5 md:gap-7 lg:grid-cols-[0.85fr_1.15fr] lg:items-start">
           <div>
             <SectionHeader
               eyebrow="Aide au choix"
               title="Quel pack correspond à ton objectif ?"
               text="Les tarifs deviennent plus simples quand ils sont reliés à ton niveau, ton urgence et ton financement."
             />
-            <div className="mt-6 rounded-2xl border border-slate-200 bg-loden-pearl p-4 shadow-soft sm:rounded-3xl md:mt-8 md:p-5">
+            <div className="mt-5 rounded-xl border border-slate-200 bg-loden-pearl p-4 shadow-soft md:mt-7 md:rounded-2xl md:p-5">
               <div className="flex items-center gap-3">
-                <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-loden-700 shadow-soft">
+                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-loden-700 shadow-soft md:h-11 md:w-11 md:rounded-2xl">
                   <CreditCard className="h-5 w-5" aria-hidden="true" />
                 </span>
                 <div>
@@ -61,9 +61,9 @@ export function PricingDecisionSection() {
                   <p className="mt-1 text-sm text-loden-muted">À confirmer avec un conseiller avant paiement.</p>
                 </div>
               </div>
-              <div className="mt-5 grid gap-3">
+              <div className="mt-4 grid gap-2.5 md:mt-5 md:gap-3">
                 {financingOptions.map((option) => (
-                  <div key={option} className="flex items-center gap-3 rounded-2xl bg-white p-3 sm:p-4">
+                  <div key={option} className="flex items-center gap-3 rounded-xl bg-white p-3 md:rounded-2xl md:p-4">
                     <BadgeCheck className="h-5 w-5 text-loden-600" aria-hidden="true" />
                     <span className="text-sm font-semibold text-loden-ink">{option}</span>
                   </div>
@@ -83,12 +83,12 @@ export function PricingDecisionSection() {
             {recommendations.map((item) => {
               const Icon = item.icon;
               return (
-                <article key={item.profile} className="rounded-2xl border border-slate-200 bg-loden-pearl p-4 shadow-soft md:rounded-3xl md:p-6">
+                <article key={item.profile} className="rounded-xl border border-slate-200 bg-loden-pearl p-4 shadow-soft md:rounded-2xl md:p-5">
                   <Icon className="h-6 w-6 text-loden-700" aria-hidden="true" />
-                  <p className="mt-4 text-sm font-semibold uppercase tracking-[0.12em] text-loden-muted md:mt-5">{item.profile}</p>
+                  <p className="mt-3 text-xs font-semibold uppercase tracking-[0.12em] text-loden-muted md:mt-5 md:text-sm">{item.profile}</p>
                   <h3 className="mt-2 text-xl font-semibold text-loden-ink">{item.plan}</h3>
                   <p className="mt-2 text-lg font-semibold text-loden-700">{item.budget}</p>
-                  <p className="mt-3 hidden text-sm leading-6 text-loden-muted sm:block">{item.text}</p>
+                  <p className="mt-3 hidden text-sm leading-6 text-loden-muted md:block">{item.text}</p>
                 </article>
               );
             })}
