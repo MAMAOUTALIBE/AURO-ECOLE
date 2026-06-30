@@ -51,6 +51,7 @@ enum ProductLine {
   CACES
   SST
   LOGISTIQUE_SECURITE
+  DIGITAL
 }
 
 enum TaxMode {

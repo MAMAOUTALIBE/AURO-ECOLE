@@ -5,7 +5,7 @@ type ApiFormation = {
   slug: string;
   subtitle?: string | null;
   mode: "MANUEL" | "AUTOMATIQUE" | "MIXTE" | "CODE";
-  productLine?: "AUTO_ECOLE" | "VTC" | "CACES" | "SST" | "LOGISTIQUE_SECURITE";
+  productLine?: "AUTO_ECOLE" | "VTC" | "CACES" | "SST" | "LOGISTIQUE_SECURITE" | "DIGITAL";
   durationLabel: string;
   priceCents: number;
   quoteOnly?: boolean;

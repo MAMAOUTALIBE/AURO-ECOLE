@@ -21,7 +21,7 @@ const formationSchema = z.object({
   subtitle: z.string().trim().optional(),
   description: z.string().trim().min(10),
   mode: z.enum(["MANUEL", "AUTOMATIQUE", "MIXTE", "CODE"]),
-  productLine: z.enum(["AUTO_ECOLE", "VTC", "CACES", "SST", "LOGISTIQUE_SECURITE"]).optional(),
+  productLine: z.enum(["AUTO_ECOLE", "VTC", "CACES", "SST", "LOGISTIQUE_SECURITE", "DIGITAL"]).optional(),
   priceCents: z.number().int().nonnegative(),
   taxMode: z.enum(["TTC", "HT"]).optional(),
   quoteOnly: z.boolean().optional(),
