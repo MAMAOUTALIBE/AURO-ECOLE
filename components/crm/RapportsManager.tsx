@@ -22,6 +22,7 @@ const STAGE_LABELS: Record<string, string> = {
   RELANCE: "Relance",
   DEVIS_ENVOYE: "Devis envoyé",
   INSCRIT: "Inscrit",
+  BON_UTILISE: "Bon utilisé",
   PERDU: "Perdu"
 };
 const STATUS_LABELS: Record<string, string> = {

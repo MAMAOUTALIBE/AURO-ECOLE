@@ -27,6 +27,7 @@ import { createAutomationsRouter } from "./modules/automations/automations.route
 import { createLeadsRouter } from "./modules/leads/leads.routes";
 import { createMediaRouter } from "./modules/media/media.routes";
 import { createNotificationsRouter } from "./modules/notifications/notifications.routes";
+import { createOffer50Router } from "./modules/offers/offer50.routes";
 import { createPaymentsRouter, createStripeWebhookHandler } from "./modules/payments/payments.routes";
 import { createPermissionsRouter } from "./modules/permissions/permissions.routes";
 import { createStripeProvider } from "./payments/stripe-provider";
@@ -113,6 +114,7 @@ export function createApp(repository: LodenRepository, config: ApiConfig, deps: 
   app.use("/api/automations", createAutomationsRouter(repository, config));
   app.use("/api/cpf", createCpfRouter(repository, config));
   app.use("/api/exams", createExamsRouter(repository, config));
+  app.use("/api/offre-50", createOffer50Router(repository, config, aiProvider));
   app.use("/api/contact-requests", createContactsRouter(repository, config, aiProvider));
   const contentRouter = createContentRouter(repository, config);
   app.use("/api/faq", contentRouter);

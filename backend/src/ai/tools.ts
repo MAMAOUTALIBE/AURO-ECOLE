@@ -730,7 +730,7 @@ const createTaskTool: ToolEntry = {
 // --- update_lead_status : faire avancer un prospect dans le pipeline ---
 const updateLeadStatusArgs = z.object({
   leadId: z.string().trim().min(1),
-  status: z.enum(["PROSPECT", "CONTACTE", "RELANCE", "DEVIS_ENVOYE", "INSCRIT", "PERDU"]),
+  status: z.enum(["PROSPECT", "CONTACTE", "RELANCE", "DEVIS_ENVOYE", "INSCRIT", "BON_UTILISE", "PERDU"]),
   notes: z.string().trim().max(1000).optional(),
   nextFollowUpInDays: z.coerce.number().int().min(0).max(120).optional()
 });
@@ -742,12 +742,12 @@ const updateLeadStatusTool: ToolEntry = {
     function: {
       name: "update_lead_status",
       description:
-        "Met à jour le statut d'un prospect (PROSPECT, CONTACTE, RELANCE, DEVIS_ENVOYE, INSCRIT, PERDU). Nécessite le leadId (utilise find_lead).",
+        "Met à jour le statut d'un prospect (PROSPECT, CONTACTE, RELANCE, DEVIS_ENVOYE, INSCRIT, BON_UTILISE, PERDU). Nécessite le leadId (utilise find_lead).",
       parameters: {
         type: "object",
         properties: {
           leadId: { type: "string" },
-          status: { type: "string", enum: ["PROSPECT", "CONTACTE", "RELANCE", "DEVIS_ENVOYE", "INSCRIT", "PERDU"] },
+          status: { type: "string", enum: ["PROSPECT", "CONTACTE", "RELANCE", "DEVIS_ENVOYE", "INSCRIT", "BON_UTILISE", "PERDU"] },
           notes: { type: "string", description: "Note de suivi (optionnel)" },
           nextFollowUpInDays: { type: "number", description: "Prochaine relance dans N jours (optionnel)" }
         },

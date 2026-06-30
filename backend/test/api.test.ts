@@ -1157,6 +1157,60 @@ describe("LODENE API", () => {
       });
   });
 
+  it("tracks QR offer leads and lets staff mark the voucher as used", async () => {
+    const { app } = testApp();
+
+    const created = await request(app)
+      .post("/api/offre-50/leads")
+      .send({
+        fullName: "Prospect QR",
+        email: "prospect.qr@example.com",
+        phone: "0612345678",
+        formation: "Permis B automatique",
+        preferredContact: "WhatsApp",
+        message: "Je souhaite utiliser le bon de réduction.",
+        code: "LODENE50",
+        consentContact: true,
+        consentWhatsapp: true
+      })
+      .expect(201);
+
+    expect(created.body.data.promo.code).toBe("LODENE50");
+    expect(created.body.data.lead.source).toBe("QR_OFFRE_50");
+    expect(created.body.data.lead.interest).toBe("Permis B automatique");
+    expect(created.body.data.lead.notes).toContain("Code promo: LODENE50");
+    expect(created.body.data.lead.consentWhatsapp).toBe(true);
+
+    await request(app)
+      .post("/api/offre-50/events")
+      .send({ event: "qr_offer_voucher_download", code: "LODENE50", target: "/offre-50/bon_reduction_50_propre.png" })
+      .expect(201);
+
+    const adminLogin = await request(app)
+      .post("/api/auth/login")
+      .send({ email: "admin@loden-autoecole.fr", password: "admin-password" })
+      .expect(200);
+
+    await request(app)
+      .get("/api/leads")
+      .set("Authorization", `Bearer ${adminLogin.body.token}`)
+      .expect(200)
+      .expect(({ body }) => {
+        const lead = body.data.find((item: { email: string }) => item.email === "prospect.qr@example.com");
+        expect(lead.source).toBe("QR_OFFRE_50");
+      });
+
+    await request(app)
+      .patch(`/api/leads/${created.body.data.lead.id}/status`)
+      .set("Authorization", `Bearer ${adminLogin.body.token}`)
+      .send({ status: "BON_UTILISE", notes: "Bon LODENE50 utilisé en agence." })
+      .expect(200)
+      .expect(({ body }) => {
+        expect(body.data.status).toBe("BON_UTILISE");
+        expect(body.data.notes).toBe("Bon LODENE50 utilisé en agence.");
+      });
+  });
+
   it("lets staff read and update a student file, but blocks students", async () => {
     const { app } = testApp();
 

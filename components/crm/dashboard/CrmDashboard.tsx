@@ -100,6 +100,7 @@ const LEAD_STAGES: { key: string; name: string; color: string }[] = [
   { key: "RELANCE", name: "Relance", color: "#f59e0b" },
   { key: "DEVIS_ENVOYE", name: "Devis envoyé", color: "#6366f1" },
   { key: "INSCRIT", name: "Inscrit", color: "#10b981" },
+  { key: "BON_UTILISE", name: "Bon utilisé", color: "#0f9f83" },
   { key: "PERDU", name: "Perdu", color: "#f43f5e" }
 ];
 const STUDENT_STATUSES: { key: string; name: string; color: string }[] = [

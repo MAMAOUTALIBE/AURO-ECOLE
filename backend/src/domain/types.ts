@@ -73,7 +73,7 @@ export type CpfRequestStatus =
   | "REFUSEE";
 export type ContactRequestStatus = "NOUVELLE" | "EN_COURS" | "TRAITEE" | "ARCHIVEE";
 export type ReviewStatus = "EN_ATTENTE" | "PUBLIE" | "REJETE";
-export type LeadStatus = "PROSPECT" | "CONTACTE" | "RELANCE" | "DEVIS_ENVOYE" | "INSCRIT" | "PERDU";
+export type LeadStatus = "PROSPECT" | "CONTACTE" | "RELANCE" | "DEVIS_ENVOYE" | "INSCRIT" | "BON_UTILISE" | "PERDU";
 export type StudentSkillRecord = {
   id: string;
   studentId: string;
