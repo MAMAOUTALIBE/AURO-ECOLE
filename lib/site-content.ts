@@ -54,7 +54,7 @@ export const defaultNavPrimary: NavPrimary = {
         { id: "vtc", label: "VTC & transport", href: "/vtc", active: true, icon: "CarTaxiFront" },
         { id: "securite", label: "Sécurité & secourisme (SST)", href: "/sst", active: true, icon: "ShieldCheck" },
         { id: "caces", label: "CACES & logistique", href: "/logistique-securite", active: true, icon: "HardHat" },
-        { id: "digital", label: "Digital, IA & CRM", href: "/formations", active: true, icon: "Sparkles" },
+        { id: "digital", label: "Digital, IA & CRM", href: "/digital", active: true, icon: "Sparkles" },
         { id: "toutes", label: "Toutes les formations", href: "/formations", active: true, icon: "GraduationCap" }
       ]
     },
