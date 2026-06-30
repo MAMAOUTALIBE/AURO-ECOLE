@@ -798,11 +798,11 @@ export const initialSiteSettings: SiteSettingRecord[] = [
           icon: "Sparkles",
           children: [
             { id: "a-propos", label: "À propos", href: "/a-propos", active: true, icon: "Info" },
-            { id: "avis", label: "Avis clients", href: "/avis", active: true, icon: "Star" },
             { id: "faq", label: "FAQ", href: "/faq", active: true, icon: "CircleHelp" },
             { id: "blog", label: "Blog", href: "/blog", active: true, icon: "Newspaper" }
           ]
         },
+        { id: "avis", label: "Avis", href: "/avis", active: true, icon: "Star" },
         { id: "contact", label: "Contact", href: "/contact", active: true, icon: "MessageCircle" }
       ]
     }

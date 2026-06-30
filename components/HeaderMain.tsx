@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { LucideIcon } from "lucide-react";
-import { ArrowRight, BookOpenCheck, ChevronDown, CreditCard, GraduationCap, Menu, MessageCircle, Phone, Sparkles, UserRound, X } from "lucide-react";
+import { ArrowRight, BookOpenCheck, ChevronDown, CreditCard, GraduationCap, Menu, MessageCircle, Phone, Sparkles, Star, UserRound, X } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { contactInfo } from "@/data/site";
@@ -206,6 +206,7 @@ export function HeaderMain({ nav, ctas }: { nav?: NavPrimary; ctas?: NavCtas }) 
     { href: "/formations", label: "Formations", icon: GraduationCap },
     { href: "/tarifs", label: "Tarifs", icon: CreditCard },
     { href: "/financement", label: "Financement", icon: BookOpenCheck },
+    { href: "/avis", label: "Avis", icon: Star },
     { href: "/contact", label: "Contact", icon: MessageCircle },
     { href: "/connexion", label: "Connexion", icon: UserRound }
   ];
