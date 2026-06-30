@@ -20,14 +20,14 @@ import { getFormations } from "@/lib/catalog";
 import { formatCurrency } from "@/lib/utils";
 
 export const metadata: Metadata = {
-  title: "LODENE Auto-École | Permis B, VTC, SST & formations à Conflans",
+  title: "LODENE — Auto-école & centre de formation à Conflans",
   description:
-    "Auto-école agréée à Conflans-Sainte-Honorine : permis B manuel/automatique, conduite accompagnée, stage accéléré, VTC, SST et formations professionnelles. Financement CPF, planning flexible, suivi personnalisé.",
+    "Auto-école et centre de formation à Conflans-Sainte-Honorine : permis B, VTC, sécurité (SST, CACES) et formations professionnelles IA, CRM & automatisation. Financement OPCO/FAF/CPF, présentiel ou distanciel, accompagnement personnalisé.",
   alternates: { canonical: "/" },
   openGraph: {
-    title: "LODENE Auto-École — Passe ton permis avec une école nouvelle génération",
+    title: "LODENE — Auto-école & centre de formation nouvelle génération",
     description:
-      "Permis B, VTC, SST et formations pro à Conflans-Sainte-Honorine. CPF, réservation en ligne et accompagnement premium.",
+      "Permis B, VTC, sécurité et formations pro (IA, CRM, automatisation) à Conflans-Sainte-Honorine. Financement OPCO/FAF/CPF, présentiel ou distanciel.",
     url: "/",
     type: "website"
   }

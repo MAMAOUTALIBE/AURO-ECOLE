@@ -187,7 +187,7 @@ export const diagnosticSteps = [
 // Pôle métier d'une formation. Par défaut AUTO_ECOLE (permis) ; VTC, SST et
 // LOGISTIQUE_SECURITE couvrent le centre de formation professionnelle.
 // CACES reste pour compatibilité (sous-ensemble de la logistique & sécurité).
-export type ProductLine = "AUTO_ECOLE" | "VTC" | "CACES" | "SST" | "LOGISTIQUE_SECURITE";
+export type ProductLine = "AUTO_ECOLE" | "VTC" | "CACES" | "SST" | "LOGISTIQUE_SECURITE" | "DIGITAL";
 
 export type Formation = {
   title: string;
@@ -210,7 +210,8 @@ export const productLineLabels: Record<ProductLine, string> = {
   VTC: "VTC",
   CACES: "CACES",
   SST: "SST",
-  LOGISTIQUE_SECURITE: "Logistique & sécurité"
+  LOGISTIQUE_SECURITE: "Logistique & sécurité",
+  DIGITAL: "Digital & IA"
 };
 
 // Catalogue public (SSR/SEO/accueil) — aligné sur la base (backend/src/data/initial-data.ts).

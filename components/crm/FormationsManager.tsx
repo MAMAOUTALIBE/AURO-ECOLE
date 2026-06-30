@@ -5,7 +5,7 @@ import { GraduationCap, ImagePlus, Lock, Pencil, Plus, Trash2, X } from "lucide-
 import { Badge, Card, EmptyState, SectionHeader, Skeleton } from "@/components/crm/ui";
 import { MediaPickerModal } from "@/components/crm/site/MediaPickerModal";
 
-type ProductLine = "AUTO_ECOLE" | "VTC" | "CACES" | "SST" | "LOGISTIQUE_SECURITE";
+type ProductLine = "AUTO_ECOLE" | "VTC" | "CACES" | "SST" | "LOGISTIQUE_SECURITE" | "DIGITAL";
 type TaxMode = "TTC" | "HT";
 type CpfStatus = "NON_RENSEIGNE" | "NON_ELIGIBLE" | "POSSIBLE" | "A_CONFIRMER" | "ELIGIBLE";
 
@@ -41,7 +41,8 @@ const PRODUCT_LINES: { key: ProductLine; label: string }[] = [
   { key: "VTC", label: "VTC" },
   { key: "SST", label: "SST" },
   { key: "LOGISTIQUE_SECURITE", label: "Logistique & sécurité" },
-  { key: "CACES", label: "CACES" }
+  { key: "CACES", label: "CACES" },
+  { key: "DIGITAL", label: "Digital & IA" }
 ];
 
 const TAX_MODES: { key: TaxMode; label: string }[] = [
