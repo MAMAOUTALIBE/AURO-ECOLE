@@ -479,9 +479,9 @@ const CURATED_FORMATION_CONTENT: Record<string, CuratedFormationContent> = {
     ]
   },
   "ia-crm-automatisation": {
-    kicker: "Pôle Digital, IA & CRM",
-    title: "IA, CRM & automatisation",
-    subtitle: "Digitalisez, organisez et automatisez votre activité en 14 h.",
+    kicker: "Pôle Digital",
+    title: "IA & CRM",
+    subtitle: "Automatisez vos suivis clients avec une méthode simple, en 14 h.",
     priceLabel: "Dès 990 €",
     fundingLabel: "OPCO / entreprise",
     fundingIcon: "Building2",
@@ -619,6 +619,7 @@ export default async function FormationDetailPage({ params }: PageProps) {
         ]}
         primaryCta={primaryCta}
         secondaryCta={secondaryCta}
+        variant={isIaCrm ? "compactImage" : "default"}
       />
 
       <section className="border-b border-slate-200 bg-white py-6">

@@ -219,22 +219,10 @@ function digitalIllustrationSlides(slug: string): FormationHeroSlide[] {
   const curatedDigitalSlides: Record<string, FormationHeroSlide[]> = {
     "ia-crm-automatisation": [
       {
-        kind: "illustration",
-        icon: "Sparkles",
-        keyword: "IA au quotidien",
-        gradient: "from-loden-700 via-[#08AEB8] to-loden-900"
-      },
-      {
-        kind: "illustration",
-        icon: "Database",
-        keyword: "Mini-CRM & suivi clients",
-        gradient: "from-loden-800 via-loden-700 to-loden-900"
-      },
-      {
-        kind: "illustration",
-        icon: "Workflow",
-        keyword: "Relances automatisées",
-        gradient: "from-[#08AEB8] via-loden-700 to-loden-900"
+        kind: "image",
+        src: "/loden-hero.jpg",
+        alt: "Formateur LODENE accompagnant une élève devant une voiture-école.",
+        objectPosition: "62% 50%"
       }
     ],
     "ia-professionnels": [

@@ -20,6 +20,7 @@ type FormationHeroProps = {
   badges: HeroBadge[];
   primaryCta: { href: string; label: string };
   secondaryCta: { href: string; label: string };
+  variant?: "default" | "compactImage";
 };
 
 const ILLUSTRATION_ICONS: Record<FormationHeroIllustrationIcon, LucideIcon> = {
@@ -45,12 +46,14 @@ export function FormationHero({
   subtitle,
   badges,
   primaryCta,
-  secondaryCta
+  secondaryCta,
+  variant = "default"
 }: FormationHeroProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [paused, setPaused] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
   const visibleSlides = slides.length > 0 ? slides : [];
+  const compactImage = variant === "compactImage";
 
   useEffect(() => {
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -72,7 +75,10 @@ export function FormationHero({
 
   return (
     <section
-      className="relative isolate max-h-[640px] min-h-[52vh] overflow-hidden bg-loden-900 md:min-h-[56vh]"
+      className={cn(
+        "relative isolate overflow-hidden",
+        compactImage ? "min-h-[430px] bg-white md:min-h-[500px]" : "max-h-[640px] min-h-[52vh] bg-loden-900 md:min-h-[56vh]"
+      )}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       aria-label={`Formation ${title}`}
@@ -114,21 +120,43 @@ export function FormationHero({
             </div>
           );
         })}
-        <div className="absolute inset-0 bg-gradient-to-r from-black/65 via-black/40 to-black/10" aria-hidden="true" />
-        {visibleSlides[displayedIndex]?.kind === "image" && visibleSlides[displayedIndex]?.keyword ? (
+        <div
+          className={cn(
+            "absolute inset-0",
+            compactImage
+              ? "bg-gradient-to-r from-white via-white/88 to-white/15"
+              : "bg-gradient-to-r from-black/65 via-black/40 to-black/10"
+          )}
+          aria-hidden="true"
+        />
+        {!compactImage && visibleSlides[displayedIndex]?.kind === "image" && visibleSlides[displayedIndex]?.keyword ? (
           <div className="absolute bottom-7 right-4 max-w-[calc(100%-2rem)] text-right text-3xl font-black uppercase leading-[0.95] text-white/20 sm:bottom-8 sm:right-6 sm:text-4xl md:right-10 md:text-5xl lg:text-6xl">
             {visibleSlides[displayedIndex].keyword}
           </div>
         ) : null}
       </div>
 
-      <div className="container-pad relative z-10 flex min-h-[52vh] items-center py-10 md:min-h-[56vh]">
-        <div className="max-w-3xl text-white">
-          <p className="inline-flex rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-black uppercase tracking-[0.16em] text-white shadow-soft backdrop-blur-sm sm:text-sm">
+      <div
+        className={cn(
+          "container-pad relative z-10 flex items-center",
+          compactImage ? "min-h-[430px] py-8 md:min-h-[500px]" : "min-h-[52vh] py-10 md:min-h-[56vh]"
+        )}
+      >
+        <div className={cn(compactImage ? "max-w-xl text-loden-ink" : "max-w-3xl text-white")}>
+          <p
+            className={cn(
+              "inline-flex rounded-full px-4 py-2 text-xs font-black uppercase tracking-[0.16em] shadow-soft sm:text-sm",
+              compactImage
+                ? "border border-loden-100 bg-white text-loden-700"
+                : "border border-white/20 bg-white/10 text-white backdrop-blur-sm"
+            )}
+          >
             {kicker}
           </p>
-          <h1 className="mt-4 text-[2.15rem] font-black leading-[1.04] sm:text-5xl lg:text-6xl">{title}</h1>
-          <p className="mt-4 max-w-2xl text-base font-semibold leading-7 text-white/88 md:text-lg">{subtitle}</p>
+          <h1 className={cn("mt-4 font-black leading-[1.04]", compactImage ? "text-4xl sm:text-5xl lg:text-[3.5rem]" : "text-[2.15rem] sm:text-5xl lg:text-6xl")}>
+            {title}
+          </h1>
+          <p className={cn("mt-4 max-w-2xl text-base font-semibold leading-7 md:text-lg", compactImage ? "text-loden-muted" : "text-white/88")}>{subtitle}</p>
 
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">
             <Link
@@ -140,7 +168,12 @@ export function FormationHero({
             </Link>
             <Link
               href={secondaryCta.href}
-              className="focus-ring inline-flex min-h-12 items-center justify-center rounded-full border border-white/50 bg-white/95 px-6 py-3 text-sm font-black text-loden-ink shadow-soft transition hover:bg-white sm:w-auto"
+              className={cn(
+                "focus-ring inline-flex min-h-12 items-center justify-center rounded-full px-6 py-3 text-sm font-black shadow-soft transition sm:w-auto",
+                compactImage
+                  ? "border border-loden-200 bg-white text-loden-ink hover:border-loden-500"
+                  : "border border-white/50 bg-white/95 text-loden-ink hover:bg-white"
+              )}
             >
               {secondaryCta.label}
             </Link>
@@ -152,7 +185,12 @@ export function FormationHero({
               return (
                 <span
                   key={badge.label}
-                  className="inline-flex min-h-10 items-center gap-2 rounded-full border border-white/15 bg-white/12 px-3.5 py-2 text-xs font-black text-white shadow-soft backdrop-blur-sm"
+                  className={cn(
+                    "inline-flex min-h-10 items-center gap-2 rounded-full px-3.5 py-2 text-xs font-black shadow-soft",
+                    compactImage
+                      ? "border border-loden-100 bg-white text-loden-ink"
+                      : "border border-white/15 bg-white/12 text-white backdrop-blur-sm"
+                  )}
                 >
                   <BadgeIcon className="h-4 w-4 text-[#08AEB8]" aria-hidden="true" />
                   {badge.label}
