@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { ExternalLink } from "lucide-react";
 import { ReviewSubmissionForm } from "@/components/ReviewSubmissionForm";
 import { ReviewsGrid } from "@/components/ReviewsGrid";
+import { PaginatedReviews } from "@/components/PaginatedReviews";
 import { ReviewCard } from "@/components/GoogleReviewsSection";
 import { firstName, getGoogleReviews } from "@/lib/google-reviews";
 import { safeJsonLd } from "@/lib/json-ld";
@@ -91,11 +92,11 @@ export default async function AvisPage() {
             </h2>
           </div>
           {reviews.length > 0 ? (
-            <div className="mt-5 grid gap-3 md:grid-cols-2 md:gap-4 xl:grid-cols-3">
+            <PaginatedReviews className="mt-5" pageSize={6}>
               {reviews.map((review) => (
                 <ReviewCard key={review.id || review.authorName + review.publishTime} review={review} />
               ))}
-            </div>
+            </PaginatedReviews>
           ) : (
             // Avis laissés par les clients sur le site (publiés après modération).
             <ReviewsGrid />

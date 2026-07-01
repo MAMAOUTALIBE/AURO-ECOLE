@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { testimonials, type Testimonial } from "@/data/site";
 import { mapApiReview } from "@/lib/social-mappers";
 import { TestimonialCard } from "@/components/TestimonialCard";
+import { PaginatedReviews } from "@/components/PaginatedReviews";
 
 // Avis réels uniquement (plus de duplication artificielle de la liste).
 const fallbackTestimonials = testimonials;
@@ -43,10 +44,10 @@ export function ReviewsGrid() {
   }
 
   return (
-    <div className="mt-4 grid gap-3 md:mt-6 md:grid-cols-2 md:gap-4 xl:grid-cols-3">
+    <PaginatedReviews className="mt-4 md:mt-6" pageSize={6}>
       {reviews.map((testimonial, index) => (
         <TestimonialCard key={`${testimonial.name}-${index}`} testimonial={testimonial} />
       ))}
-    </div>
+    </PaginatedReviews>
   );
 }
