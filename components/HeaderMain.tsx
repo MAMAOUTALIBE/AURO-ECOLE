@@ -212,7 +212,7 @@ export function HeaderMain({ nav, ctas }: { nav?: NavPrimary; ctas?: NavCtas }) 
   ];
 
   return (
-    <header className="sticky top-0 z-40 border-b border-slate-200/80 bg-white/95 shadow-[0_8px_26px_rgba(20,33,38,0.08)] backdrop-blur-xl md:border-0 md:bg-transparent md:pb-2 md:pt-0 md:shadow-none">
+    <header className="relative z-40 border-b border-slate-200/80 bg-white/95 shadow-[0_8px_26px_rgba(20,33,38,0.08)] backdrop-blur-xl md:border-0 md:bg-transparent md:pb-2 md:pt-0 md:shadow-none">
       <div className="w-full px-4 md:px-0">
         <div className="flex min-h-16 items-center justify-between gap-3 md:hidden">
           <MobileLogo />

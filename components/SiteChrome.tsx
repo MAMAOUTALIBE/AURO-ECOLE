@@ -30,8 +30,8 @@ export function SiteChrome({
       >
         Aller au contenu
       </a>
-      {header}
-      <div id="contenu-principal" tabIndex={-1}>
+      <div className="fixed inset-x-0 top-0 z-50">{header}</div>
+      <div id="contenu-principal" className="pt-36 md:pt-40 lg:pt-44" tabIndex={-1}>
         {children}
       </div>
       {footer}
