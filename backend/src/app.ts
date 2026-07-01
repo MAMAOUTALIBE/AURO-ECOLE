@@ -25,6 +25,7 @@ import { createContractsRouter } from "./modules/contracts/contracts.routes";
 import { createCmsRouter } from "./modules/cms/cms.routes";
 import { createAutomationsRouter } from "./modules/automations/automations.routes";
 import { createLeadsRouter } from "./modules/leads/leads.routes";
+import { createInscriptionsRouter } from "./modules/inscriptions/inscriptions.routes";
 import { createMediaRouter } from "./modules/media/media.routes";
 import { createNotificationsRouter } from "./modules/notifications/notifications.routes";
 import { createOffersRouter } from "./modules/offers/offers.routes";
@@ -116,6 +117,7 @@ export function createApp(repository: LodenRepository, config: ApiConfig, deps: 
   app.use("/api/cpf", createCpfRouter(repository, config));
   app.use("/api/exams", createExamsRouter(repository, config));
   app.use("/api/contact-requests", createContactsRouter(repository, config, aiProvider));
+  app.use("/api/inscriptions", createInscriptionsRouter(repository, config, aiProvider));
   const contentRouter = createContentRouter(repository, config);
   app.use("/api/faq", contentRouter);
   // Même routeur exposé sous /api/content (notamment /api/content/company).

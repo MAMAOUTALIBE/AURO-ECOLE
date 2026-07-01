@@ -1110,6 +1110,10 @@ export class MemoryLodenRepository implements LodenRepository {
     return [...this.store.leads].reverse().find((lead) => lead.email.toLowerCase() === target) ?? null;
   }
 
+  async findLeadById(id: string) {
+    return this.store.leads.find((lead) => lead.id === id) ?? null;
+  }
+
   async createLead(input: CreateLeadInput) {
     const now = new Date();
     const lead: LeadRecord = {
