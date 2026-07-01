@@ -14,6 +14,487 @@ type PageProps = {
   params: Promise<{ slug: string }>;
 };
 
+type HeroBadgeIcon = "Clock3" | "BadgeCheck" | "Building2" | "ShieldCheck" | "WalletCards";
+
+type CuratedFormationContent = {
+  kicker: string;
+  title: string;
+  subtitle: string;
+  priceLabel: string;
+  fundingLabel: string;
+  fundingIcon: HeroBadgeIcon;
+  description: string;
+  keyPoints: string[];
+};
+
+const CURATED_FORMATION_CONTENT: Record<string, CuratedFormationContent> = {
+  "permis-b-auto-declic": {
+    kicker: "Pôle Auto-école · Permis B",
+    title: "Permis B automatique",
+    subtitle: "Formule Déclic Auto — 13 leçons pour avancer efficacement vers l'examen.",
+    priceLabel: "924 €",
+    fundingLabel: "CPF possible",
+    fundingIcon: "WalletCards",
+    description: "Un parcours court en boîte automatique pour apprendre l'essentiel et avancer efficacement vers l'examen.",
+    keyPoints: [
+      "Boîte automatique : conduite simplifiée",
+      "13 h de conduite pour démarrer vite",
+      "Rythme efficace et objectifs ciblés",
+      "CPF possible selon dossier"
+    ]
+  },
+  "permis-b-auto-maitrise": {
+    kicker: "Pôle Auto-école · Permis B",
+    title: "Permis B automatique",
+    subtitle: "Formule Maîtrise Auto — 20 leçons pour progresser en toute sérénité.",
+    priceLabel: "1 344 €",
+    fundingLabel: "CPF possible",
+    fundingIcon: "WalletCards",
+    description: "Une formule complète en boîte automatique, avec davantage d'heures de conduite individuelles pour aborder l'examen en confiance.",
+    keyPoints: [
+      "Boîte automatique : conduite simplifiée",
+      "20 h de conduite pour plus d'aisance",
+      "Rythme progressif et serein",
+      "CPF possible selon dossier"
+    ]
+  },
+  "permis-b-manuel-essentiel": {
+    kicker: "Pôle Auto-école · Permis B",
+    title: "Permis B manuel",
+    subtitle: "Formule Essentiel Manuelle — 20 leçons pour maîtriser la boîte manuelle.",
+    priceLabel: "1 344 €",
+    fundingLabel: "CPF possible",
+    fundingIcon: "WalletCards",
+    description: "Une formation complète pour apprendre à conduire en boîte manuelle, avec un accompagnement pédagogique jusqu'à l'examen.",
+    keyPoints: [
+      "Boîte manuelle : conduire tous les véhicules",
+      "20 h de conduite + accompagnement examen",
+      "Le permis le plus polyvalent",
+      "CPF possible selon dossier"
+    ]
+  },
+  "permis-b-manuel-confort": {
+    kicker: "Pôle Auto-école · Permis B",
+    title: "Permis B manuel",
+    subtitle: "Formule Confort Manuelle — 30 leçons pour aborder l'examen en toute confiance.",
+    priceLabel: "1 944 €",
+    fundingLabel: "CPF possible",
+    fundingIcon: "WalletCards",
+    description: "Une formule renforcée en boîte manuelle, avec davantage d'heures de conduite pour aborder l'examen en confiance.",
+    keyPoints: [
+      "Boîte manuelle : conduire tous les véhicules",
+      "30 h de conduite pour plus de pratique",
+      "Idéale pour progresser sans stress",
+      "CPF possible selon dossier"
+    ]
+  },
+  "stage-accelere": {
+    kicker: "Pôle Auto-école · Permis B",
+    title: "Stage accéléré code et conduite",
+    subtitle: "Parcours intensif — code et conduite avec planning prioritaire.",
+    priceLabel: "Sur devis",
+    fundingLabel: "CPF possible",
+    fundingIcon: "WalletCards",
+    description: "Un parcours intensif pour avancer plus vite sur le code et la conduite, avec une planification resserrée et prioritaire.",
+    keyPoints: [
+      "Code et conduite sur rythme intensif",
+      "Planning prioritaire selon disponibilités",
+      "Objectifs suivis à chaque étape",
+      "CPF possible selon dossier"
+    ]
+  },
+  "passerelle-bva-manuelle": {
+    kicker: "Pôle Auto-école · Permis B",
+    title: "Passerelle BVA vers boîte manuelle",
+    subtitle: "Complément de formation — reprenez la main sur la boîte manuelle.",
+    priceLabel: "Sur devis",
+    fundingLabel: "Financement accompagné",
+    fundingIcon: "Building2",
+    description: "Une formation courte pour évoluer d'un permis boîte automatique vers la boîte manuelle, avec un travail ciblé sur les bons réflexes.",
+    keyPoints: [
+      "Transition de la BVA vers la boîte manuelle",
+      "Travail du levier et de l'embrayage",
+      "Formation courte et ciblée",
+      "Devis clair avant inscription"
+    ]
+  },
+  "conduite-accompagnee": {
+    kicker: "Pôle Auto-école · Permis B",
+    title: "Conduite accompagnée",
+    subtitle: "AAC dès 15 ans — gagnez de l'expérience avant l'examen.",
+    priceLabel: "Sur devis",
+    fundingLabel: "Suivi famille",
+    fundingIcon: "ShieldCheck",
+    description: "Un accompagnement dès 15 ans pour gagner en expérience, construire de bons réflexes et préparer l'examen avec plus de recul.",
+    keyPoints: [
+      "Accessible dès 15 ans",
+      "Expérience progressive avec accompagnateur",
+      "Suivi pédagogique jusqu'à l'examen",
+      "Parcours adapté au rythme de l'élève"
+    ]
+  },
+  "permis-remorque-be-b96": {
+    kicker: "Pôle Auto-école · Remorque",
+    title: "Permis remorque B96 / BE",
+    subtitle: "Tracter en toute sécurité — maniabilité, attelage et conduite.",
+    priceLabel: "Sur devis",
+    fundingLabel: "Financement accompagné",
+    fundingIcon: "Building2",
+    description: "Une formation pour conduire avec une remorque en sécurité, selon le besoin : extension B96 ou permis BE.",
+    keyPoints: [
+      "Extension B96 ou permis BE selon le poids",
+      "Attelage, vérifications et règles de sécurité",
+      "Maniabilité et conduite avec remorque",
+      "Parcours adapté au véhicule et au projet"
+    ]
+  },
+  "stage-recuperation-points": {
+    kicker: "Pôle Auto-école · Sécurité routière",
+    title: "Stage de récupération de points",
+    subtitle: "Sensibilisation sécurité routière — 2 jours pour récupérer jusqu'à 4 points.",
+    priceLabel: "250 €",
+    fundingLabel: "Stage agréé",
+    fundingIcon: "ShieldCheck",
+    description: "Un stage de sensibilisation à la sécurité routière sur deux jours, permettant de récupérer jusqu'à 4 points sur le permis de conduire.",
+    keyPoints: [
+      "Stage agréé sur 2 jours",
+      "Récupération possible jusqu'à 4 points",
+      "Sensibilisation aux risques routiers",
+      "Inscription simple avec documents permis"
+    ]
+  },
+  "vtc-distanciel-eco": {
+    kicker: "Pôle VTC · Chauffeur professionnel",
+    title: "Formation VTC",
+    subtitle: "Distanciel Éco — préparez les modules réglementaires à votre rythme.",
+    priceLabel: "399 €",
+    fundingLabel: "Dossier CMA",
+    fundingIcon: "Building2",
+    description: "L'accès essentiel pour préparer les épreuves théoriques VTC avec une plateforme disponible 24h/24 et un appui au dossier CMA.",
+    keyPoints: [
+      "Plateforme en ligne accessible 24h/24",
+      "7 modules réglementaires VTC",
+      "Aide au dossier CMA",
+      "Rythme flexible en distanciel"
+    ]
+  },
+  "vtc-intermediaire-light": {
+    kicker: "Pôle VTC · Chauffeur professionnel",
+    title: "Formation VTC",
+    subtitle: "Intermédiaire Light — distanciel renforcé avec 2 visios collectives.",
+    priceLabel: "599 €",
+    fundingLabel: "Coaching inclus",
+    fundingIcon: "Building2",
+    description: "Un parcours théorique renforcé avec deux sessions collectives en visioconférence et un accompagnement ciblé sur les points clés de l'examen.",
+    keyPoints: [
+      "Distanciel + 2 visios collectives",
+      "Révisions encadrées par un formateur",
+      "Module gestion et tarification",
+      "Préparation structurée à l'examen"
+    ]
+  },
+  "vtc-confort-pro": {
+    kicker: "Pôle VTC · Chauffeur professionnel",
+    title: "Formation VTC",
+    subtitle: "Confort Pro — préparation complète théorie + pratique hors conduite.",
+    priceLabel: "899 €",
+    fundingLabel: "Carte pro",
+    fundingIcon: "Building2",
+    description: "Une préparation complète pour consolider la théorie, travailler les simulations pratiques et avancer vers la carte professionnelle VTC.",
+    keyPoints: [
+      "Théorie + épreuve pratique hors conduite",
+      "Modules vidéo et supports structurés",
+      "Simulations de repérage",
+      "Assistance carte professionnelle VTC"
+    ]
+  },
+  "vtc-excellence": {
+    kicker: "Pôle VTC · Chauffeur professionnel",
+    title: "Formation VTC Excellence",
+    subtitle: "Pack clé en main — conduite, véhicule examen et coaching jusqu'à la carte pro.",
+    priceLabel: "2 499 €",
+    fundingLabel: "Véhicule examen",
+    fundingIcon: "Building2",
+    description: "La formule la plus complète pour préparer l'activité VTC avec conduite incluse, véhicule double-commande et accompagnement jusqu'à la carte pro.",
+    keyPoints: [
+      "Pack clé en main avec frais CMA inclus",
+      "10 h de conduite incluses",
+      "Véhicule double-commande à l'examen",
+      "Coaching jusqu'à la carte professionnelle"
+    ]
+  },
+  "formation-taxi": {
+    kicker: "Pôle Transport · Taxi",
+    title: "Formation Taxi",
+    subtitle: "Préparation à la carte professionnelle — réglementation, gestion et sécurité.",
+    priceLabel: "Sur devis",
+    fundingLabel: "Carte pro",
+    fundingIcon: "Building2",
+    description: "Une préparation à l'examen Taxi pour obtenir la carte professionnelle et exercer le métier de chauffeur de taxi.",
+    keyPoints: [
+      "Préparation à la carte professionnelle Taxi",
+      "Réglementation, gestion et sécurité",
+      "Travail des attentes de l'examen",
+      "Parcours adapté selon le niveau"
+    ]
+  },
+  "fimo-fco": {
+    kicker: "Pôle Transport · Routier",
+    title: "FIMO / FCO",
+    subtitle: "Marchandises & voyageurs — formation obligatoire des conducteurs routiers.",
+    priceLabel: "Sur devis",
+    fundingLabel: "Parcours pro",
+    fundingIcon: "Building2",
+    description: "Une formation destinée aux conducteurs de transport routier de marchandises ou de voyageurs, selon le parcours FIMO ou FCO.",
+    keyPoints: [
+      "FIMO ou FCO selon situation",
+      "Marchandises ou voyageurs",
+      "Cadre réglementaire du transport routier",
+      "Devis adapté au parcours professionnel"
+    ]
+  },
+  "sst-initial": {
+    kicker: "Pôle SST · Sécurité au travail",
+    title: "SST Initial",
+    subtitle: "Sauveteur Secouriste du Travail — 14 h pour agir et prévenir.",
+    priceLabel: "120 € HT / pers.",
+    fundingLabel: "Inter / intra",
+    fundingIcon: "ShieldCheck",
+    description: "Une formation complète pour acquérir les gestes de premiers secours au travail et participer à la prévention des risques.",
+    keyPoints: [
+      "Gestes de secours et conduite à tenir",
+      "Prévention des risques professionnels",
+      "Format inter ou intra-entreprise",
+      "Certificat SST selon validation"
+    ]
+  },
+  "mac-sst": {
+    kicker: "Pôle SST · Sécurité au travail",
+    title: "MAC SST / Recyclage",
+    subtitle: "Maintien et actualisation — 7 h pour renouveler les compétences SST.",
+    priceLabel: "75 € HT / pers.",
+    fundingLabel: "Recyclage SST",
+    fundingIcon: "ShieldCheck",
+    description: "Une journée de maintien et d'actualisation pour renouveler les compétences SST et consolider les réflexes de prévention.",
+    keyPoints: [
+      "Actualisation des gestes de secours",
+      "Révision des situations de travail",
+      "Mise en pratique encadrée",
+      "Renouvellement du certificat SST"
+    ]
+  },
+  "gestes-postures-prap": {
+    kicker: "Pôle SST · Prévention",
+    title: "Gestes & postures / PRAP",
+    subtitle: "Prévention des risques liés à l'activité physique — 1 jour.",
+    priceLabel: "Sur devis",
+    fundingLabel: "Prévention TMS",
+    fundingIcon: "ShieldCheck",
+    description: "Une formation pour adopter les bons gestes, réduire les risques de TMS et améliorer la prévention au quotidien.",
+    keyPoints: [
+      "Analyse des situations de travail",
+      "Gestes et postures adaptés",
+      "Prévention des TMS et accidents",
+      "Mise en pratique sur cas concrets"
+    ]
+  },
+  "incendie-evacuation": {
+    kicker: "Pôle Sécurité · Incendie",
+    title: "Manipulation extincteur & évacuation",
+    subtitle: "EPI, alerte et évacuation — savoir réagir face à un départ de feu.",
+    priceLabel: "Sur devis",
+    fundingLabel: "Intra-entreprise",
+    fundingIcon: "ShieldCheck",
+    description: "Une formation courte pour connaître les consignes de sécurité, manipuler les extincteurs et organiser l'alerte ou l'évacuation.",
+    keyPoints: [
+      "Consignes de sécurité incendie",
+      "Manipulation des extincteurs",
+      "Rôle des équipiers de première intervention",
+      "Alerte et évacuation"
+    ]
+  },
+  "habilitation-electrique": {
+    kicker: "Pôle Sécurité · Habilitation",
+    title: "Habilitation électrique",
+    subtitle: "B0/H0 – BS/BE — prévention des risques électriques selon le poste.",
+    priceLabel: "Sur devis",
+    fundingLabel: "NF C 18-510",
+    fundingIcon: "ShieldCheck",
+    description: "Une préparation à l'habilitation électrique selon la norme NF C 18-510, avec niveaux adaptés au poste et aux opérations autorisées.",
+    keyPoints: [
+      "Risques électriques et prévention",
+      "Niveaux B0/H0, BS/BE selon besoin",
+      "Conduite à tenir en situation à risque",
+      "Parcours adapté au poste de travail"
+    ]
+  },
+  "chariots-elevateurs-r489": {
+    kicker: "Pôle Logistique · CACES",
+    title: "Chariots élévateurs R489",
+    subtitle: "Conduite en sécurité — catégories chariots selon besoin et niveau.",
+    priceLabel: "Sur devis",
+    fundingLabel: "Intra-entreprise",
+    fundingIcon: "Building2",
+    description: "Une formation sur site client pour conduire les chariots élévateurs en sécurité, avec théorie, pratique et vérifications essentielles.",
+    keyPoints: [
+      "Catégories 1, 2, 3 et 5 selon besoin",
+      "Théorie + pratique sur site",
+      "Vérifications et conduite en sécurité",
+      "Parcours adapté au niveau des participants"
+    ]
+  },
+  "gerbeur-r485": {
+    kicker: "Pôle Logistique · CACES",
+    title: "Gerbeur accompagnant R485",
+    subtitle: "Conduite en sécurité — prise en main du gerbeur sur site client.",
+    priceLabel: "Sur devis",
+    fundingLabel: "Intra-entreprise",
+    fundingIcon: "Building2",
+    description: "Une formation opérationnelle pour utiliser un gerbeur accompagnant en sécurité, avec mise en pratique dans l'environnement de travail.",
+    keyPoints: [
+      "Utilisation sécurisée du gerbeur",
+      "Manœuvres et circulation en entrepôt",
+      "Mise en pratique sur site client",
+      "Évaluation adaptée au poste de travail"
+    ]
+  },
+  "nacelles-pemp-r486": {
+    kicker: "Pôle Sécurité · Travaux en hauteur",
+    title: "Nacelles / PEMP R486",
+    subtitle: "Travaux en hauteur — utiliser une PEMP en sécurité.",
+    priceLabel: "Sur devis",
+    fundingLabel: "Intra-entreprise",
+    fundingIcon: "ShieldCheck",
+    description: "Une formation pour utiliser les plateformes élévatrices mobiles de personnel en sécurité, avec rappel des EPI et règles de stabilisation.",
+    keyPoints: [
+      "Prévention des chutes et risques hauteur",
+      "Utilisation des EPI et contrôles avant départ",
+      "Stabilisation et manœuvres de la PEMP",
+      "Formation adaptée au matériel de l'entreprise"
+    ]
+  },
+  "pont-roulant-r484": {
+    kicker: "Pôle Logistique · Industrie",
+    title: "Pont roulant R484",
+    subtitle: "Commande au sol ou télécommande — manœuvrer en sécurité.",
+    priceLabel: "Sur devis",
+    fundingLabel: "Intra-entreprise",
+    fundingIcon: "Building2",
+    description: "Une formation pratique pour utiliser le pont roulant avec commande au sol ou télécommande, incluant les règles de sécurité et l'évaluation sur site.",
+    keyPoints: [
+      "Commande au sol ou télécommande",
+      "Élingage, consignes et zones de sécurité",
+      "Manœuvres en atelier industriel",
+      "Évaluation pratique sur site"
+    ]
+  },
+  "echafaudage-roulant-r457": {
+    kicker: "Pôle Sécurité · Travaux en hauteur",
+    title: "Échafaudage roulant R457",
+    subtitle: "Montage, démontage, utilisation — travailler en hauteur en sécurité.",
+    priceLabel: "Sur devis",
+    fundingLabel: "Intra-entreprise",
+    fundingIcon: "ShieldCheck",
+    description: "Une formation pour monter, démonter et utiliser un échafaudage roulant conformément aux règles de sécurité et de conformité.",
+    keyPoints: [
+      "Montage et démontage en sécurité",
+      "Contrôles de conformité avant utilisation",
+      "Prévention des risques de chute",
+      "Cas pratiques adaptés au terrain"
+    ]
+  },
+  "terberg-tracteur-parc": {
+    kicker: "Pôle Logistique · Manœuvres",
+    title: "Terberg / tracteur de parc",
+    subtitle: "Manœuvres logistiques — prise en main en environnement sécurisé.",
+    priceLabel: "Sur devis",
+    fundingLabel: "Intra-entreprise",
+    fundingIcon: "Building2",
+    description: "Une formation à la prise en main et aux manœuvres de tracteur de parc, adaptée aux environnements logistiques et industriels.",
+    keyPoints: [
+      "Prise en main du tracteur de parc",
+      "Manœuvres en zone logistique",
+      "Sécurité, angles morts et circulation",
+      "Adaptation au site et aux flux de l'entreprise"
+    ]
+  },
+  "ia-professionnels": {
+    kicker: "Pôle Digital · IA",
+    title: "L'IA pour les professionnels",
+    subtitle: "Gagner du temps au quotidien — prompts métier et usages concrets.",
+    priceLabel: "590 €",
+    fundingLabel: "Entreprise / OPCO",
+    fundingIcon: "Building2",
+    description: "Une formation pratique pour prendre en main les assistants IA, rédiger plus vite et améliorer la qualification des demandes.",
+    keyPoints: [
+      "Prompts métier prêts à l'emploi",
+      "Rédaction, réponses et qualification",
+      "Gain de temps sur les tâches courantes",
+      "Méthode directement applicable"
+    ]
+  },
+  "mini-crm": {
+    kicker: "Pôle Digital · CRM",
+    title: "Créer & piloter son mini-CRM",
+    subtitle: "Suivi prospects, devis & relances — ne plus rien laisser passer.",
+    priceLabel: "690 €",
+    fundingLabel: "Entreprise / OPCO",
+    fundingIcon: "Building2",
+    description: "Une formation pour mettre en place un CRM simple : prospects, clients, statuts, devis, relances et tableau de bord.",
+    keyPoints: [
+      "Base prospects et clients structurée",
+      "Pipeline commercial clair",
+      "Suivi des devis et relances",
+      "Tableau de bord simple à piloter"
+    ]
+  },
+  "automatisation-no-code": {
+    kicker: "Pôle Digital · Automatisation",
+    title: "Automatisation no-code",
+    subtitle: "Relances, notifications, workflows — automatiser sans coder.",
+    priceLabel: "690 €",
+    fundingLabel: "Entreprise / OPCO",
+    fundingIcon: "Building2",
+    description: "Une formation pour automatiser les tâches répétitives sans coder : rappels, relances, notifications et workflows simples.",
+    keyPoints: [
+      "Automatisations simples sans code",
+      "Relances et rappels automatiques",
+      "Notifications et workflows",
+      "Process plus fluides au quotidien"
+    ]
+  },
+  "prospection-presence-en-ligne": {
+    kicker: "Pôle Digital · Prospection",
+    title: "Prospection & présence en ligne",
+    subtitle: "Site, Google, réseaux sociaux — générer plus de demandes.",
+    priceLabel: "590 €",
+    fundingLabel: "Entreprise / OPCO",
+    fundingIcon: "Building2",
+    description: "Une formation pour développer sa visibilité, structurer ses messages de prospection et améliorer sa présence en ligne.",
+    keyPoints: [
+      "Fiche Google et présence locale",
+      "Site vitrine et messages clairs",
+      "Réseaux sociaux utiles",
+      "Prospection plus régulière"
+    ]
+  },
+  "ia-crm-automatisation": {
+    kicker: "Pôle Digital, IA & CRM",
+    title: "IA, CRM & automatisation",
+    subtitle: "Digitalisez, organisez et automatisez votre activité en 14 h.",
+    priceLabel: "Dès 990 €",
+    fundingLabel: "OPCO / entreprise",
+    fundingIcon: "Building2",
+    description: "Une formation courte pour structurer votre organisation, utiliser l'IA au quotidien et automatiser les relances utiles.",
+    keyPoints: [
+      "Structurer un mini-CRM pour suivre prospects, clients et relances.",
+      "Utiliser l'IA pour rédiger, qualifier et préparer les réponses.",
+      "Automatiser les tâches répétitives sans complexité technique.",
+      "Repartir avec une méthode directement applicable."
+    ]
+  }
+};
+
 export async function generateStaticParams() {
   const formations = await getFormations();
   return formations.map((formation) => ({ slug: formation.slug }));
@@ -53,55 +534,18 @@ export default async function FormationDetailPage({ params }: PageProps) {
   const productLine = formation.productLine ?? "AUTO_ECOLE";
   const isPro = productLine !== "AUTO_ECOLE";
   const isIaCrm = formation.slug === "ia-crm-automatisation";
-  const isPermisAutoMaitrise = formation.slug === "permis-b-auto-maitrise";
-  const isPermisManuelEssentiel = formation.slug === "permis-b-manuel-essentiel";
-  const isPermisManuelConfort = formation.slug === "permis-b-manuel-confort";
+  const curatedContent = CURATED_FORMATION_CONTENT[formation.slug];
   const eyebrow = isPro ? `Formation ${productLineLabels[productLine]}` : `Formation ${formation.mode}`;
-  const heroKicker =
-    isPermisAutoMaitrise || isPermisManuelEssentiel || isPermisManuelConfort
-      ? "Pôle Auto-école · Permis B"
-      : isIaCrm
-        ? "Pôle Digital, IA & CRM"
-        : eyebrow;
-  const heroTitle =
-    isPermisAutoMaitrise
-      ? "Permis B automatique"
-      : isPermisManuelEssentiel || isPermisManuelConfort
-        ? "Permis B manuel"
-        : formation.title;
-  const heroSubtitle = isPermisAutoMaitrise
-    ? "Formule Maîtrise Auto — 20 leçons pour progresser en toute sérénité."
-    : isPermisManuelEssentiel
-      ? "Formule Essentiel Manuelle — 20 leçons pour maîtriser la boîte manuelle."
-      : isPermisManuelConfort
-        ? "Formule Confort Manuelle — 30 leçons pour aborder l'examen en toute confiance."
-        : isIaCrm
-          ? "Digitalisez, organisez et automatisez votre activité en 14 h."
-          : formation.subtitle ?? formation.description.split(".")[0] ?? formation.duration;
-  const priceLabel = isIaCrm
-    ? "Dès 990 €"
-    : isPermisAutoMaitrise || isPermisManuelEssentiel
-      ? "1 344 €"
-      : isPermisManuelConfort
-        ? "1 944 €"
-        : formation.price > 0
-          ? `Dès ${formatCurrency(formation.price)}`
-          : "Sur devis";
-  const fundingLabel = isIaCrm
-    ? "OPCO / entreprise"
-    : isPermisAutoMaitrise || isPermisManuelEssentiel || isPermisManuelConfort || formation.cpf
-      ? "CPF possible"
-      : "Financement accompagné";
+  const heroKicker = curatedContent?.kicker ?? eyebrow;
+  const heroTitle = curatedContent?.title ?? formation.title;
+  const heroSubtitle = curatedContent?.subtitle ?? formation.subtitle ?? formation.description.split(".")[0] ?? formation.duration;
+  const priceLabel = curatedContent?.priceLabel ?? (formation.price > 0 ? `Dès ${formatCurrency(formation.price)}` : "Sur devis");
+  const fundingLabel = curatedContent?.fundingLabel ?? (formation.cpf ? "CPF possible" : "Financement accompagné");
+  const fundingIcon = curatedContent?.fundingIcon ?? (formation.cpf ? "WalletCards" : "Building2");
   const heroSlides = formationHeroSlides(formation.slug, productLine);
   const primaryCta = { href: `/contact?formation=${formation.slug}#demande`, label: "Demander un devis" };
   const secondaryCta = { href: `/inscription?formation=${formation.slug}`, label: "Pré-inscription" };
-  const bodyDescription = isPermisAutoMaitrise
-    ? "Une formule complète en boîte automatique, avec davantage d'heures de conduite individuelles pour aborder l'examen en confiance."
-    : isPermisManuelEssentiel
-      ? "Une formation complète pour apprendre à conduire en boîte manuelle, avec un accompagnement pédagogique jusqu'à l'examen."
-      : isPermisManuelConfort
-        ? "Une formule renforcée en boîte manuelle, avec davantage d'heures de conduite pour aborder l'examen en confiance."
-        : formation.description;
+  const bodyDescription = curatedContent?.description ?? formation.description;
 
   const courseSchema = {
     "@context": "https://schema.org",
@@ -146,35 +590,7 @@ export default async function FormationDetailPage({ params }: PageProps) {
     "Accompagnement administratif jusqu'au démarrage"
   ];
 
-  const keyPoints = isIaCrm
-    ? [
-        "Structurer un mini-CRM pour suivre prospects, clients et relances.",
-        "Utiliser l'IA pour rédiger, qualifier et préparer les réponses.",
-        "Automatiser les tâches répétitives sans complexité technique.",
-        "Repartir avec une méthode directement applicable."
-      ]
-    : isPermisAutoMaitrise
-      ? [
-          "Boîte automatique : conduite simplifiée",
-          "20 h de conduite pour plus d'aisance",
-          "Rythme progressif et serein",
-          "CPF possible selon dossier"
-        ]
-      : isPermisManuelEssentiel
-        ? [
-            "Boîte manuelle : conduire tous les véhicules",
-            "20 h de conduite + accompagnement examen",
-            "Le permis le plus polyvalent",
-            "CPF possible selon dossier"
-          ]
-      : isPermisManuelConfort
-        ? [
-            "Boîte manuelle : conduire tous les véhicules",
-            "30 h de conduite pour plus de pratique",
-            "Idéale pour progresser sans stress",
-            "CPF possible selon dossier"
-          ]
-        : guarantees;
+  const keyPoints = curatedContent?.keyPoints ?? guarantees;
 
   const keyFacts = [
     { icon: Clock3, label: "Durée", value: formation.duration },
@@ -199,7 +615,7 @@ export default async function FormationDetailPage({ params }: PageProps) {
         badges={[
           { icon: "Clock3", label: formation.duration },
           { icon: "BadgeCheck", label: priceLabel },
-          { icon: isPermisAutoMaitrise || isPermisManuelEssentiel || isPermisManuelConfort ? "WalletCards" : "Building2", label: fundingLabel }
+          { icon: fundingIcon, label: fundingLabel }
         ]}
         primaryCta={primaryCta}
         secondaryCta={secondaryCta}
