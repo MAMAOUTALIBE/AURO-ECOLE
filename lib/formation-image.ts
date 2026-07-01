@@ -226,14 +226,20 @@ function digitalIllustrationSlides(slug: string): FormationHeroSlide[] {
       }
     ],
     "ia-professionnels": [
-      { kind: "illustration", icon: "Sparkles", keyword: "IA métier", gradient: "from-loden-700 via-[#08AEB8] to-loden-900" },
-      { kind: "illustration", icon: "Users", keyword: "Réponses rapides", gradient: "from-loden-800 via-loden-700 to-loden-900" },
-      { kind: "illustration", icon: "Zap", keyword: "Productivité", gradient: "from-[#08AEB8] via-loden-700 to-loden-900" }
+      {
+        kind: "image",
+        src: "/loden-hero.jpg",
+        alt: "Formateur LODENE échangeant avec une élève devant une voiture-école.",
+        objectPosition: "62% 50%"
+      }
     ],
     "mini-crm": [
-      { kind: "illustration", icon: "Database", keyword: "Mini-CRM", gradient: "from-loden-800 via-loden-700 to-loden-900" },
-      { kind: "illustration", icon: "Users", keyword: "Pipeline clients", gradient: "from-loden-700 via-[#08AEB8] to-loden-900" },
-      { kind: "illustration", icon: "Workflow", keyword: "Relances", gradient: "from-[#08AEB8] via-loden-700 to-loden-900" }
+      {
+        kind: "image",
+        src: "/loden-hero.jpg",
+        alt: "Formateur LODENE accompagnant une élève avec une tablette devant une voiture-école.",
+        objectPosition: "62% 50%"
+      }
     ],
     "automatisation-no-code": [
       { kind: "illustration", icon: "Workflow", keyword: "No-code", gradient: "from-[#08AEB8] via-loden-700 to-loden-900" },

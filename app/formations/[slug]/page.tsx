@@ -419,9 +419,9 @@ const CURATED_FORMATION_CONTENT: Record<string, CuratedFormationContent> = {
     ]
   },
   "ia-professionnels": {
-    kicker: "Pôle Digital · IA",
-    title: "L'IA pour les professionnels",
-    subtitle: "Gagner du temps au quotidien — prompts métier et usages concrets.",
+    kicker: "Pôle Digital",
+    title: "IA pour professionnels",
+    subtitle: "Gagnez du temps avec des usages IA simples et concrets.",
     priceLabel: "590 €",
     fundingLabel: "Entreprise / OPCO",
     fundingIcon: "Building2",
@@ -434,9 +434,9 @@ const CURATED_FORMATION_CONTENT: Record<string, CuratedFormationContent> = {
     ]
   },
   "mini-crm": {
-    kicker: "Pôle Digital · CRM",
-    title: "Créer & piloter son mini-CRM",
-    subtitle: "Suivi prospects, devis & relances — ne plus rien laisser passer.",
+    kicker: "Pôle Digital",
+    title: "Mini-CRM",
+    subtitle: "Organisez vos prospects, clients et relances simplement.",
     priceLabel: "690 €",
     fundingLabel: "Entreprise / OPCO",
     fundingIcon: "Building2",
@@ -534,6 +534,7 @@ export default async function FormationDetailPage({ params }: PageProps) {
   const productLine = formation.productLine ?? "AUTO_ECOLE";
   const isPro = productLine !== "AUTO_ECOLE";
   const isIaCrm = formation.slug === "ia-crm-automatisation";
+  const isCompactImageHero = isIaCrm || ["ia-professionnels", "mini-crm"].includes(formation.slug);
   const curatedContent = CURATED_FORMATION_CONTENT[formation.slug];
   const eyebrow = isPro ? `Formation ${productLineLabels[productLine]}` : `Formation ${formation.mode}`;
   const heroKicker = curatedContent?.kicker ?? eyebrow;
@@ -619,7 +620,7 @@ export default async function FormationDetailPage({ params }: PageProps) {
         ]}
         primaryCta={primaryCta}
         secondaryCta={secondaryCta}
-        variant={isIaCrm ? "compactImage" : "default"}
+        variant={isCompactImageHero ? "compactImage" : "default"}
       />
 
       <section className="border-b border-slate-200 bg-white py-6">
