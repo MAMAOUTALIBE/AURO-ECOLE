@@ -7,6 +7,8 @@ import type { LodenRepository } from "../../repositories/loden-repository";
 import type { BookingRecord, ChatAppointmentRecord } from "../../domain/types";
 import { asyncHandler } from "../../shared/async-handler";
 import { badRequest, conflict, notFound } from "../../shared/http-error";
+import bcrypt from "bcryptjs";
+import { generateTempPassword } from "../../shared/password";
 import { emailSchema, validateBody, validateQuery } from "../../shared/validation";
 import { sendChatAppointmentAdminAlert, sendChatAppointmentClientConfirmation } from "../../shared/mailer";
 import { buildWhatsAppAppointmentText, buildWhatsAppUrl, sendWhatsAppMessage } from "../../shared/whatsapp";
@@ -775,15 +777,21 @@ export function createAppointmentsAdminRouter(repository: LodenRepository, confi
         .object({ formationId: z.string().trim().optional(), purchasedHours: z.number().int().min(0).optional() })
         .parse(req.body ?? {});
 
-      // Utilisateur (réutilise l'existant par email, sinon création en ELEVE).
+      // Utilisateur : réutilise l'existant par email, sinon création en ELEVE avec un
+      // mot de passe temporaire renvoyé UNE fois (à transmettre à l'élève pour /connexion).
+      let temporaryPassword: string | null = null;
       let user = appointment.email ? await repository.findUserByEmail(appointment.email) : null;
       if (!user) {
+        temporaryPassword = generateTempPassword();
+        const passwordHash = await bcrypt.hash(temporaryPassword, 12);
         user = await repository.createUser({
           firstName: appointment.firstName,
           lastName: appointment.lastName,
           email: appointment.email || `${appointment.phone.replace(/\D/g, "")}@lead.loden.local`,
           phone: appointment.phone,
-          role: "ELEVE"
+          role: "ELEVE",
+          status: "ACTIVE",
+          passwordHash
         });
       }
       // Fiche élève (réutilise l'existante).
@@ -819,7 +827,7 @@ export function createAppointmentsAdminRouter(repository: LodenRepository, confi
       });
 
       const refs = await buildRefs(repository);
-      res.status(201).json({ data: { appointment: enrichAppointment(updated, refs), student, user: { id: user.id, email: user.email }, task } });
+      res.status(201).json({ data: { appointment: enrichAppointment(updated, refs), student, user: { id: user.id, email: user.email }, task, temporaryPassword } });
     })
   );
 

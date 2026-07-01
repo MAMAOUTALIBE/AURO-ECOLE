@@ -4,13 +4,16 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   CalendarCheck,
   CalendarDays,
+  Check,
+  Copy,
   KanbanSquare,
   Plus,
   RefreshCw,
   RotateCcw,
   Search,
   Table2,
-  Users
+  Users,
+  X
 } from "lucide-react";
 import { ACTIVE_AGENCY_KEY } from "@/components/AgencySwitcher";
 import { KpiCard, Skeleton } from "@/components/crm/ui";
@@ -103,6 +106,8 @@ export function RendezVousCockpit({ initialView = "kanban", initialSource }: Ren
   const [formOpen, setFormOpen] = useState(false);
   const [formMode, setFormMode] = useState<"create" | "edit">("create");
   const [editTarget, setEditTarget] = useState<EnrichedAppointment | null>(null);
+  const [credentials, setCredentials] = useState<{ email: string; temporaryPassword: string } | null>(null);
+  const [copiedField, setCopiedField] = useState<string | null>(null);
 
   // Plage du calendrier (mise à jour par CalendarView).
   const [calendarRange, setCalendarRange] = useState<{ from: string; to: string } | null>(null);
@@ -260,7 +265,12 @@ export function RendezVousCockpit({ initialView = "kanban", initialSource }: Ren
           window.open(payload.data.url as string, "_blank", "noopener");
         }
 
-        if (action.kind === "transform") setNotice("Prospect transformé en élève.");
+        if (action.kind === "transform") {
+          const pwd = (payload?.data?.temporaryPassword ?? null) as string | null;
+          const email = payload?.data?.user?.email as string | undefined;
+          if (pwd && email) setCredentials({ email, temporaryPassword: pwd });
+          else setNotice("Rendez-vous transformé en élève (compte déjà existant).");
+        }
         if (action.kind === "delete") {
           setNotice("Rendez-vous supprimé.");
           if (drawerId === id) setDrawerId(null);
@@ -322,6 +332,16 @@ export function RendezVousCockpit({ initialView = "kanban", initialSource }: Ren
     setEditTarget(appointment);
     setFormMode("edit");
     setFormOpen(true);
+  };
+
+  const copyValue = async (field: string, value: string) => {
+    try {
+      await navigator.clipboard.writeText(value);
+      setCopiedField(field);
+      window.setTimeout(() => setCopiedField((current) => (current === field ? null : current)), 1500);
+    } catch {
+      // Presse-papiers indisponible : on ignore silencieusement.
+    }
   };
 
   /* ----------------------------- Rendu ----------------------------- */
@@ -466,6 +486,53 @@ export function RendezVousCockpit({ initialView = "kanban", initialSource }: Ren
         }}
         onSubmit={submitForm}
       />
+
+      {credentials ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" role="dialog" aria-modal="true">
+          <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-premium">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-loden-700">Compte élève créé</p>
+                <h3 className="mt-1 text-lg font-semibold text-loden-ink">Identifiants à transmettre</h3>
+              </div>
+              <button type="button" onClick={() => setCredentials(null)} className="focus-ring rounded-full p-1 text-loden-muted hover:bg-loden-50" aria-label="Fermer">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <p className="mt-3 text-sm text-loden-muted">
+              Transmets ces identifiants à l&apos;élève (connexion sur <span className="font-semibold">/connexion</span>). Le mot de passe temporaire ne sera plus affiché ensuite.
+            </p>
+            <div className="mt-4 grid gap-2">
+              {[
+                { label: "Identifiant (email)", field: "email", value: credentials.email },
+                { label: "Mot de passe temporaire", field: "pwd", value: credentials.temporaryPassword }
+              ].map((row) => (
+                <div key={row.field} className="flex items-center justify-between gap-2 rounded-xl border border-slate-200 bg-loden-pearl px-3 py-2">
+                  <div className="min-w-0">
+                    <p className="text-[11px] font-semibold uppercase tracking-wide text-loden-muted">{row.label}</p>
+                    <p className="truncate font-mono text-sm font-semibold text-loden-ink">{row.value}</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => void copyValue(row.field, row.value)}
+                    className="focus-ring inline-flex shrink-0 items-center gap-1 rounded-lg bg-white px-2 py-1 text-xs font-semibold text-loden-700 shadow-soft transition hover:bg-loden-50"
+                  >
+                    {copiedField === row.field ? <Check className="h-3.5 w-3.5" aria-hidden="true" /> : <Copy className="h-3.5 w-3.5" aria-hidden="true" />}
+                    {copiedField === row.field ? "Copié" : "Copier"}
+                  </button>
+                </div>
+              ))}
+            </div>
+            <button
+              type="button"
+              onClick={() => setCredentials(null)}
+              className="focus-ring mt-5 w-full rounded-full bg-loden-700 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-loden-800"
+            >
+              J&apos;ai transmis les identifiants
+            </button>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

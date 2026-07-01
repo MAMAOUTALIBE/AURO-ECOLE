@@ -45,11 +45,42 @@ export function createInscriptionsRouter(repository: LodenRepository, config: Ap
         firstName: body.firstName,
         lastName: body.lastName,
         email: body.email,
-        phone: body.phone,
+        phone: body.phone ?? "Non renseigné",
         source: "inscription",
         interest: body.formationTitle,
         notes,
         status: "PROSPECT"
+      });
+
+      // Crée aussi un RDV « inscription » (type=registration, statut Nouveau, sans moniteur)
+      // afin que la demande apparaisse dans le Centre RDV. Elle basculera dans le Planning
+      // dès qu'un moniteur + un créneau lui seront assignés depuis le CRM.
+      const now = new Date();
+      const pad = (value: number) => String(value).padStart(2, "0");
+      const date = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+      const time = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
+      const endsAt = new Date(now.getTime() + 30 * 60_000);
+
+      await repository.createChatAppointment({
+        leadId: lead.id,
+        fullName,
+        firstName: body.firstName,
+        lastName: body.lastName,
+        phone: body.phone ?? "Non renseigné",
+        email: body.email,
+        formation: body.formationTitle,
+        objective: "Inscription",
+        message: body.message,
+        date,
+        time,
+        requestedAt: now,
+        startsAt: now,
+        endsAt,
+        type: "registration",
+        status: "new",
+        source: "manual",
+        consentContact: true,
+        consentWhatsApp: false
       });
 
       void notifyNewLead(config, lead);

@@ -8,26 +8,11 @@ import { runAutomations } from "../../automations/engine";
 import { authenticate, requirePermission, resolveScopedAgencyId } from "../../middleware/auth";
 import type { LodenRepository } from "../../repositories/loden-repository";
 import { asyncHandler } from "../../shared/async-handler";
+import { conflict, notFound } from "../../shared/http-error";
 import { notifyNewLead } from "../../shared/mailer";
+import { generateTempPassword } from "../../shared/password";
 import { emailSchema, phoneSchema, validateBody, validateQuery } from "../../shared/validation";
 import bcrypt from "bcryptjs";
-import { randomBytes } from "node:crypto";
-import { conflict, notFound } from "../../shared/http-error";
-
-// Mot de passe temporaire lisible (10 caractères, sans caractères ambigus 0/O/1/l/I),
-// généré côté serveur et affiché UNE fois dans le CRM pour être transmis à l'élève.
-function generateTempPassword() {
-  const upper = "ABCDEFGHJKMNPQRSTUVWXYZ";
-  const lower = "abcdefghijkmnpqrstuvwxyz";
-  const digits = "23456789";
-  const pick = (set: string, count: number) => {
-    const bytes = randomBytes(count);
-    let out = "";
-    for (let i = 0; i < count; i += 1) out += set[bytes[i] % set.length];
-    return out;
-  };
-  return `${pick(upper, 3)}${pick(digits, 4)}${pick(lower, 3)}`;
-}
 
 const leadStatusSchema = z.enum(["PROSPECT", "CONTACTE", "RELANCE", "DEVIS_ENVOYE", "INSCRIT", "PERDU"]);
 

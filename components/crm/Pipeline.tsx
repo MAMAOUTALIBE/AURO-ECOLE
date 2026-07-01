@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Check, Copy, KanbanSquare, Plus, UserPlus, X } from "lucide-react";
+import { KanbanSquare, Plus, X } from "lucide-react";
 import { ACTIVE_AGENCY_KEY } from "@/components/AgencySwitcher";
 
 type Lead = {
@@ -45,9 +45,6 @@ export function Pipeline() {
   const [showForm, setShowForm] = useState(false);
   const [creating, setCreating] = useState(false);
   const [form, setForm] = useState({ fullName: "", email: "", phone: "", interest: "" });
-  const [convertingId, setConvertingId] = useState<string | null>(null);
-  const [credentials, setCredentials] = useState<{ name: string; email: string; temporaryPassword: string } | null>(null);
-  const [copiedField, setCopiedField] = useState<string | null>(null);
 
   useEffect(() => {
     const agency = window.localStorage.getItem(ACTIVE_AGENCY_KEY);
@@ -78,35 +75,6 @@ export function Pipeline() {
       setError("Le changement d'étape a échoué.");
     } finally {
       setBusyId(null);
-    }
-  };
-
-  // "Créer le compte élève" : convertit le lead en compte ELEVE et récupère
-  // l'identifiant + le mot de passe temporaire à transmettre (affichés dans la modale).
-  const createAccount = async (lead: Lead) => {
-    setConvertingId(lead.id);
-    setError(null);
-    try {
-      const response = await fetch(`/api/leads/${lead.id}/convert-to-student`, { method: "POST" });
-      const payload = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(payload?.error?.message ?? "Création du compte impossible.");
-      const data = payload.data as { email: string; temporaryPassword: string };
-      setCredentials({ name: lead.fullName, email: data.email, temporaryPassword: data.temporaryPassword });
-      setLeads((current) => current.map((item) => (item.id === lead.id ? { ...item, status: "INSCRIT" } : item)));
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Création du compte impossible.");
-    } finally {
-      setConvertingId(null);
-    }
-  };
-
-  const copyValue = async (field: string, value: string) => {
-    try {
-      await navigator.clipboard.writeText(value);
-      setCopiedField(field);
-      window.setTimeout(() => setCopiedField((current) => (current === field ? null : current)), 1500);
-    } catch {
-      // Presse-papiers indisponible : on ignore silencieusement.
     }
   };
 
@@ -212,17 +180,6 @@ export function Pipeline() {
                           <option key={option.key} value={option.key}>{option.label}</option>
                         ))}
                       </select>
-                      {lead.status !== "INSCRIT" ? (
-                        <button
-                          type="button"
-                          onClick={() => createAccount(lead)}
-                          disabled={convertingId === lead.id}
-                          className="focus-ring mt-2 inline-flex w-full items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-loden-50 px-2 py-1.5 text-xs font-semibold text-loden-700 transition hover:bg-loden-100 disabled:opacity-60"
-                        >
-                          <UserPlus className="h-3.5 w-3.5" aria-hidden="true" />
-                          {convertingId === lead.id ? "Création…" : "Créer le compte élève"}
-                        </button>
-                      ) : null}
                     </div>
                   );
                 })}
@@ -238,67 +195,6 @@ export function Pipeline() {
           Aucun prospect pour cette sélection. Les demandes de contact créent automatiquement un prospect.
         </div>
       ) : null}
-
-      {credentials ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" role="dialog" aria-modal="true">
-          <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-premium">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-loden-700">Compte élève créé</p>
-                <h3 className="mt-1 text-xl font-semibold text-loden-ink">{credentials.name}</h3>
-              </div>
-              <button type="button" onClick={() => setCredentials(null)} className="focus-ring rounded-full p-1 text-loden-muted hover:bg-loden-50" aria-label="Fermer">
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-            <p className="mt-3 text-sm text-loden-muted">
-              Transmets ces identifiants à l&apos;élève (connexion sur <span className="font-semibold">/connexion</span>). Le mot de passe temporaire ne sera plus affiché ensuite.
-            </p>
-            <div className="mt-4 grid gap-2">
-              <CredRow label="Identifiant (email)" value={credentials.email} field="email" onCopy={copyValue} copied={copiedField === "email"} />
-              <CredRow label="Mot de passe temporaire" value={credentials.temporaryPassword} field="pwd" onCopy={copyValue} copied={copiedField === "pwd"} />
-            </div>
-            <button
-              type="button"
-              onClick={() => setCredentials(null)}
-              className="focus-ring mt-5 w-full rounded-full bg-loden-700 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-loden-800"
-            >
-              J&apos;ai transmis les identifiants
-            </button>
-          </div>
-        </div>
-      ) : null}
-    </div>
-  );
-}
-
-function CredRow({
-  label,
-  value,
-  field,
-  onCopy,
-  copied
-}: {
-  label: string;
-  value: string;
-  field: string;
-  onCopy: (field: string, value: string) => void;
-  copied: boolean;
-}) {
-  return (
-    <div className="flex items-center justify-between gap-2 rounded-xl border border-slate-200 bg-loden-pearl px-3 py-2">
-      <div className="min-w-0">
-        <p className="text-[11px] font-semibold uppercase tracking-wide text-loden-muted">{label}</p>
-        <p className="truncate font-mono text-sm font-semibold text-loden-ink">{value}</p>
-      </div>
-      <button
-        type="button"
-        onClick={() => onCopy(field, value)}
-        className="focus-ring inline-flex shrink-0 items-center gap-1 rounded-lg bg-white px-2 py-1 text-xs font-semibold text-loden-700 shadow-soft transition hover:bg-loden-50"
-      >
-        {copied ? <Check className="h-3.5 w-3.5" aria-hidden="true" /> : <Copy className="h-3.5 w-3.5" aria-hidden="true" />}
-        {copied ? "Copié" : "Copier"}
-      </button>
     </div>
   );
 }
