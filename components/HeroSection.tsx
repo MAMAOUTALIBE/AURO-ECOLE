@@ -64,8 +64,8 @@ export async function HeroSection() {
           ))}
         </div>
 
-        <div className="container-pad relative z-10 grid min-h-[inherit] items-end gap-6 pb-[calc(6.5rem+env(safe-area-inset-bottom))] pt-8 md:grid-cols-[minmax(0,44rem)_minmax(20rem,1fr)] md:items-center md:pb-16 md:pt-12 lg:gap-10 xl:gap-14">
-          <div className="max-w-xl md:hidden">
+        <div className="container-pad relative z-10 flex min-h-[inherit] items-end pb-[calc(6.5rem+env(safe-area-inset-bottom))] pt-8 md:hidden">
+          <div className="w-full max-w-xl">
             <div className="flex flex-col gap-3 sm:flex-row">
               <Link
                 href="/inscription"
@@ -82,49 +82,6 @@ export async function HeroSection() {
                 Voir les formations
               </Link>
             </div>
-
-            <div className="mt-5 flex items-center gap-3 md:hidden">
-              <Link
-                href="/offre-50?code=LODENE50"
-                className="loden-home-hero-badge focus-ring inline-flex items-center gap-3 rounded-2xl border border-white/70 bg-white/95 p-2 pr-4 text-loden-900 shadow-premium"
-              >
-                <Image src="/offre-50/qr_offre_50_LDNE50.png" alt="QR code offre LODENE -50€" width={64} height={64} className="h-14 w-14 rounded-xl object-contain" />
-                <span className="grid">
-                  <span className="text-sm font-black">-50 € avec le QR code</span>
-                  <span className="text-xs font-semibold text-loden-muted">Voir l&apos;offre</span>
-                </span>
-              </Link>
-            </div>
-          </div>
-
-          <div className="pointer-events-none relative hidden min-h-[32rem] md:col-start-2 md:block">
-            <Link
-              href="/offre-50?code=LODENE50"
-              className="loden-home-hero-flyer focus-ring pointer-events-auto absolute right-3 top-10 block w-[12rem] rounded-[1.25rem] shadow-[0_24px_64px_rgba(5,50,74,0.28)] lg:right-8 lg:w-[14rem] xl:right-14 xl:w-[16rem]"
-              aria-label="Voir l'offre LODENE -50€"
-            >
-              <span className="loden-home-hero-canopy" aria-hidden="true" />
-              <span className="loden-home-hero-lines" aria-hidden="true" />
-              <Image
-                src="/offre-50/affiche_offre_50_propre.png"
-                alt="Flyer offre spéciale LODENE 50€ de réduction"
-                width={2480}
-                height={3508}
-                className="rounded-[1.25rem] border border-white/70 bg-white object-cover"
-              />
-            </Link>
-
-            <Link
-              href="/offre-50?code=LODENE50"
-              className="loden-home-hero-qr focus-ring pointer-events-auto absolute bottom-10 right-2 z-20 flex items-center gap-2 rounded-2xl border border-white bg-white p-2.5 pr-4 text-loden-900 shadow-premium lg:right-8"
-            >
-              <Image src="/offre-50/qr_offre_50_LDNE50.png" alt="QR code vers l'offre LODENE -50€" width={96} height={96} className="h-16 w-16 rounded-xl object-contain" />
-              <span className="grid">
-                <span className="text-[0.65rem] font-black uppercase tracking-[0.14em] text-loden-700">Offre limitée</span>
-                <span className="text-base font-black">-50 € avec le QR code</span>
-                <span className="text-xs font-semibold text-loden-muted">Cliquez ou scannez</span>
-              </span>
-            </Link>
           </div>
         </div>
 
