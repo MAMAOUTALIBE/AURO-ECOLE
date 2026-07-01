@@ -27,6 +27,7 @@ import { createAutomationsRouter } from "./modules/automations/automations.route
 import { createLeadsRouter } from "./modules/leads/leads.routes";
 import { createMediaRouter } from "./modules/media/media.routes";
 import { createNotificationsRouter } from "./modules/notifications/notifications.routes";
+import { createOffersRouter } from "./modules/offers/offers.routes";
 import { createPaymentsRouter, createStripeWebhookHandler } from "./modules/payments/payments.routes";
 import { createPermissionsRouter } from "./modules/permissions/permissions.routes";
 import { createStripeProvider } from "./payments/stripe-provider";
@@ -100,6 +101,7 @@ export function createApp(repository: LodenRepository, config: ApiConfig, deps: 
   app.use("/api/instructors", createInstructorsRouter(repository, config));
   app.use("/api/vehicles", createVehiclesRouter(repository, config));
   app.use("/api/leads", createLeadsRouter(repository, config, aiProvider));
+  app.use("/api/offers", createOffersRouter(repository, config, aiProvider));
   app.use("/api/users", createUsersRouter(repository, config));
   app.use("/api/students", createStudentsRouter(repository, config));
   app.use("/api/bookings", createBookingsRouter(repository, config));

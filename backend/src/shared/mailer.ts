@@ -4,6 +4,15 @@ import nodemailer from "nodemailer";
 type EmailMessage = { to: string; subject: string; text: string; html?: string };
 export type EmailDeliveryStatus = "sent" | "skipped" | "failed";
 
+function escapeHtml(value: string) {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 /**
  * Adaptateur email pluggable.
  * - Si RESEND_API_KEY + MAIL_FROM sont configurés -> envoi via l'API HTTP Resend.
@@ -95,6 +104,57 @@ export async function notifyNewLead(config: ApiConfig, lead: LeadLike): Promise<
     to,
     subject: `Nouveau prospect : ${lead.fullName}`,
     text: lines.join("\n")
+  });
+}
+
+export type Offer50VoucherEmailInput = {
+  to: string;
+  firstName: string;
+  code: string;
+  voucherUrl: string;
+};
+
+export async function sendOffer50VoucherEmail(
+  config: ApiConfig,
+  input: Offer50VoucherEmailInput
+): Promise<EmailDeliveryStatus> {
+  const firstNameHtml = escapeHtml(input.firstName);
+  const codeHtml = escapeHtml(input.code);
+  const voucherUrlHtml = escapeHtml(input.voucherUrl);
+  const lines = [
+    `Bonjour ${input.firstName},`,
+    "",
+    "Merci pour votre inscription.",
+    `Voici votre bon de réduction de 50 € avec le code : ${input.code}.`,
+    "",
+    `Télécharger votre bon : ${input.voucherUrl}`,
+    "",
+    "Présentez ce bon lors de votre inscription chez LODENE Formation.",
+    "",
+    "Offre valable une seule fois par personne, non cumulable avec une autre promotion.",
+    "",
+    "LODENE Formation",
+    "30 rue Pierre Le Guen",
+    "78700 Conflans-Sainte-Honorine",
+    "Téléphone / WhatsApp : 06 60 32 50 87",
+    "Site : https://lodene.fr/"
+  ];
+
+  const html = [
+    `<p>Bonjour ${firstNameHtml},</p>`,
+    "<p>Merci pour votre inscription.</p>",
+    `<p>Voici votre bon de réduction de <strong>50 €</strong> avec le code : <strong>${codeHtml}</strong>.</p>`,
+    `<p><a href="${voucherUrlHtml}">Télécharger votre bon de réduction</a></p>`,
+    "<p>Présentez ce bon lors de votre inscription chez LODENE Formation.</p>",
+    "<p>Offre valable une seule fois par personne, non cumulable avec une autre promotion.</p>",
+    "<p><strong>LODENE Formation</strong><br />30 rue Pierre Le Guen<br />78700 Conflans-Sainte-Honorine<br />Téléphone / WhatsApp : 06 60 32 50 87<br />Site : https://lodene.fr/</p>"
+  ].join("\n");
+
+  return sendEmail(config, {
+    to: input.to,
+    subject: "Votre bon de réduction LODENE de 50 €",
+    text: lines.join("\n"),
+    html
   });
 }
 

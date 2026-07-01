@@ -70,6 +70,7 @@ export const crmNav: NavSection[] = [
       { label: "Rendez-vous & planning", href: "/admin/rendez-vous", icon: CalendarClock, status: "live" },
       { label: "Leads", href: "/admin/pipeline", icon: FolderKanban, status: "live" },
       { label: "Prospects", href: "/admin/pipeline", icon: Target, status: "live" },
+      { label: "Offre QR -50 €", href: "/admin/offre-qr-50", icon: Megaphone, status: "live" },
       { label: "Devis", href: "/admin/devis", icon: FileSpreadsheet, status: "live" },
       { label: "Contrats", href: "/admin/contrats", icon: FileSignature, status: "live" }
     ]
