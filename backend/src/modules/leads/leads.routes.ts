@@ -10,6 +10,24 @@ import type { LodenRepository } from "../../repositories/loden-repository";
 import { asyncHandler } from "../../shared/async-handler";
 import { notifyNewLead } from "../../shared/mailer";
 import { emailSchema, phoneSchema, validateBody, validateQuery } from "../../shared/validation";
+import bcrypt from "bcryptjs";
+import { randomBytes } from "node:crypto";
+import { conflict, notFound } from "../../shared/http-error";
+
+// Mot de passe temporaire lisible (10 caractères, sans caractères ambigus 0/O/1/l/I),
+// généré côté serveur et affiché UNE fois dans le CRM pour être transmis à l'élève.
+function generateTempPassword() {
+  const upper = "ABCDEFGHJKMNPQRSTUVWXYZ";
+  const lower = "abcdefghijkmnpqrstuvwxyz";
+  const digits = "23456789";
+  const pick = (set: string, count: number) => {
+    const bytes = randomBytes(count);
+    let out = "";
+    for (let i = 0; i < count; i += 1) out += set[bytes[i] % set.length];
+    return out;
+  };
+  return `${pick(upper, 3)}${pick(digits, 4)}${pick(lower, 3)}`;
+}
 
 const leadStatusSchema = z.enum(["PROSPECT", "CONTACTE", "RELANCE", "DEVIS_ENVOYE", "INSCRIT", "PERDU"]);
 
@@ -77,6 +95,57 @@ export function createLeadsRouter(repository: LodenRepository, config: ApiConfig
         metadata: { status: body.status }
       });
       res.json({ data: lead });
+    })
+  );
+
+  // Convertit une demande d'inscription (Lead) en compte élève : crée le User (rôle ELEVE)
+  // + le Student, génère un mot de passe temporaire (renvoyé UNE fois), et passe le lead
+  // en statut INSCRIT. C'est l'action "Créer le compte élève" du pipeline.
+  router.post(
+    "/:id/convert-to-student",
+    requirePermission("students.manage"),
+    asyncHandler(async (req, res) => {
+      const lead = await repository.findLeadById(String(req.params.id));
+      if (!lead) throw notFound("Demande d'inscription introuvable");
+
+      const existing = await repository.findUserByEmail(lead.email);
+      if (existing) throw conflict("Un compte existe déjà avec cet email");
+
+      const nameParts = lead.fullName.trim().split(/\s+/);
+      const firstName = lead.firstName?.trim() || nameParts[0] || "Élève";
+      const lastName = lead.lastName?.trim() || nameParts.slice(1).join(" ") || "LODENE";
+
+      const temporaryPassword = generateTempPassword();
+      const passwordHash = await bcrypt.hash(temporaryPassword, 12);
+
+      const user = await repository.createUser({
+        firstName,
+        lastName,
+        email: lead.email,
+        phone: lead.phone ?? undefined,
+        role: "ELEVE",
+        status: "ACTIVE",
+        passwordHash
+      });
+      const student = await repository.createStudent({ userId: user.id });
+      const updatedLead = await repository.updateLead(lead.id, { status: "INSCRIT" });
+
+      void repository.createAuditLog({
+        userId: (req as AuthenticatedRequest).user?.id ?? null,
+        action: "lead.convert_to_student",
+        entityType: "Lead",
+        entityId: lead.id,
+        metadata: { studentId: student.id, userId: user.id }
+      });
+
+      res.status(201).json({
+        data: {
+          email: user.email,
+          temporaryPassword,
+          studentId: student.id,
+          lead: updatedLead
+        }
+      });
     })
   );
 

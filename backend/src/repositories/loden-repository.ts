@@ -455,6 +455,7 @@ export interface LodenRepository {
 
   listLeads(filters?: { status?: LeadStatus; agencyId?: string }): Promise<LeadRecord[]>;
   findLeadByEmail(email: string): Promise<LeadRecord | null>;
+  findLeadById(id: string): Promise<LeadRecord | null>;
   createLead(input: CreateLeadInput): Promise<LeadRecord>;
   updateLead(id: string, input: Partial<LeadRecord>): Promise<LeadRecord>;
 

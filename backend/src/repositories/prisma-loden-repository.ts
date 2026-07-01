@@ -1154,6 +1154,21 @@ export class PrismaLodenRepository implements LodenRepository {
     };
   }
 
+  async findLeadById(id: string) {
+    if (!id.trim()) return null;
+    const row = await this.prisma.lead.findUnique({ where: { id } });
+    if (!row) return null;
+    return {
+      ...row,
+      phone: row.phone ?? undefined,
+      source: row.source ?? undefined,
+      interest: row.interest ?? undefined,
+      notes: row.notes ?? undefined,
+      estimatedValueCents: row.estimatedValueCents ?? undefined,
+      nextFollowUpAt: row.nextFollowUpAt ?? undefined
+    };
+  }
+
   async createLead(input: CreateLeadInput) {
     const row = await this.prisma.lead.create({ data: { ...input, status: input.status ?? "PROSPECT" } });
     return {
