@@ -106,7 +106,7 @@ export function createStatsRouter(repository: LodenRepository, config: ApiConfig
       const rdvToFollowUp = appointments.filter((a) => a.status === "to_follow_up");
       const openTasks = tasks.filter((t) => t.status === "A_FAIRE");
       const overdueTasks = openTasks.filter((t) => new Date(t.deadline).getTime() < now.getTime());
-      const hotLeads = leads.filter((l) => l.temperature === "chaud" && l.status !== "INSCRIT" && l.status !== "PERDU");
+      const hotLeads = leads.filter((l) => l.temperature === "chaud" && l.status !== "INSCRIT" && l.status !== "BON_UTILISE" && l.status !== "PERDU");
       const chatbotLeads = leads.filter((l) => (l.source ?? "").startsWith("chatbot") || (l.source ?? "").startsWith("assistant-ia"));
       const inscrits = leads.filter((l) => l.status === "INSCRIT").length;
 
@@ -138,7 +138,7 @@ export function createStatsRouter(repository: LodenRepository, config: ApiConfig
       type Suggestion = { leadId: string; fullName: string; reason: string; temperature: string | null; interest: string | null; daysInactive: number };
       const suggestions: Suggestion[] = [];
       for (const l of leads) {
-        if (l.status === "INSCRIT" || l.status === "PERDU") continue;
+        if (l.status === "INSCRIT" || l.status === "BON_UTILISE" || l.status === "PERDU") continue;
         const inactive = daysSince(l.updatedAt);
         let reason: string | null = null;
         if (l.temperature === "chaud" && !l.nextFollowUpAt && (l.status === "PROSPECT" || l.status === "CONTACTE")) reason = "Prospect chaud sans relance planifiée";

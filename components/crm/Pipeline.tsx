@@ -12,6 +12,7 @@ type Lead = {
   status: string;
   source?: string | null;
   interest?: string | null;
+  notes?: string | null;
   estimatedValueCents?: number | null;
   temperature?: string | null;
 };
@@ -29,12 +30,18 @@ const STAGES: { key: string; label: string }[] = [
   { key: "RELANCE", label: "Relance" },
   { key: "DEVIS_ENVOYE", label: "Devis envoyé" },
   { key: "INSCRIT", label: "Inscrit" },
+  { key: "BON_UTILISE", label: "Bon utilisé" },
   { key: "PERDU", label: "Perdu" }
 ];
 
 function euros(cents?: number | null) {
   if (!cents) return null;
   return new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(cents / 100);
+}
+
+function sourceLabel(source?: string | null) {
+  if (source === "QR_OFFRE_50") return "QR offre -50€";
+  return source;
 }
 
 export function Pipeline() {
@@ -143,7 +150,7 @@ export function Pipeline() {
         </div>
       ) : null}
       {error ? <p className="mb-4 rounded-2xl bg-red-50 p-4 text-sm font-medium text-red-700">{error}</p> : null}
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-6">
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-7">
         {STAGES.map((stage) => {
           const stageLeads = leads.filter((lead) => lead.status === stage.key);
           return (
@@ -166,8 +173,14 @@ export function Pipeline() {
                           <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${TEMP_STYLES[lead.temperature]}`}>{TEMP_LABELS[lead.temperature]}</span>
                         ) : null}
                         {lead.interest ? <span className="rounded-full bg-loden-50 px-2 py-0.5 text-[11px] font-semibold text-loden-700">{lead.interest}</span> : null}
+                        {lead.source ? <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700">{sourceLabel(lead.source)}</span> : null}
                         {value ? <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700">{value}</span> : null}
                       </div>
+                      {lead.source === "QR_OFFRE_50" ? (
+                        <p className="mt-2 rounded-lg bg-emerald-50 px-2 py-1 text-[11px] font-semibold text-emerald-800">
+                          Code promo LODENE50 à vérifier en agence.
+                        </p>
+                      ) : null}
                       <select
                         aria-label={`Étape de ${lead.fullName}`}
                         className="focus-ring mt-2 w-full cursor-pointer rounded-lg border border-slate-200 bg-loden-fog px-2 py-1 text-xs font-semibold text-loden-ink outline-none disabled:opacity-60"

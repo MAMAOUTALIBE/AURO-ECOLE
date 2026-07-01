@@ -11,7 +11,7 @@ import { asyncHandler } from "../../shared/async-handler";
 import { notifyNewLead } from "../../shared/mailer";
 import { emailSchema, phoneSchema, validateBody, validateQuery } from "../../shared/validation";
 
-const leadStatusSchema = z.enum(["PROSPECT", "CONTACTE", "RELANCE", "DEVIS_ENVOYE", "INSCRIT", "PERDU"]);
+const leadStatusSchema = z.enum(["PROSPECT", "CONTACTE", "RELANCE", "DEVIS_ENVOYE", "INSCRIT", "BON_UTILISE", "PERDU"]);
 
 const leadQuerySchema = z.object({
   status: leadStatusSchema.optional(),
