@@ -125,7 +125,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="bg-white py-7 md:py-10">
+      <section id="formations" className="bg-white py-7 md:py-10">
         <div className="container-pad">
           <HomeFormationsCarousel formations={formations} />
         </div>
