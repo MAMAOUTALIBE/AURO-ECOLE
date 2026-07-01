@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { formationImageMeta } from "@/lib/formation-image";
+import { FormationHero } from "@/components/FormationHero";
+import { formationHeroSlides } from "@/lib/formation-image";
 import { ArrowRight, BadgeCheck, CalendarCheck, CheckCircle2, Clock3, ShieldCheck } from "lucide-react";
 import { productLineLabels } from "@/data/site";
 import { getFormationBySlug, getFormations } from "@/lib/catalog";
@@ -52,8 +52,56 @@ export default async function FormationDetailPage({ params }: PageProps) {
 
   const productLine = formation.productLine ?? "AUTO_ECOLE";
   const isPro = productLine !== "AUTO_ECOLE";
+  const isIaCrm = formation.slug === "ia-crm-automatisation";
+  const isPermisAutoMaitrise = formation.slug === "permis-b-auto-maitrise";
+  const isPermisManuelEssentiel = formation.slug === "permis-b-manuel-essentiel";
+  const isPermisManuelConfort = formation.slug === "permis-b-manuel-confort";
   const eyebrow = isPro ? `Formation ${productLineLabels[productLine]}` : `Formation ${formation.mode}`;
-  const headerImage = formationImageMeta(formation.slug, productLine);
+  const heroKicker =
+    isPermisAutoMaitrise || isPermisManuelEssentiel || isPermisManuelConfort
+      ? "Pôle Auto-école · Permis B"
+      : isIaCrm
+        ? "Pôle Digital, IA & CRM"
+        : eyebrow;
+  const heroTitle =
+    isPermisAutoMaitrise
+      ? "Permis B automatique"
+      : isPermisManuelEssentiel || isPermisManuelConfort
+        ? "Permis B manuel"
+        : formation.title;
+  const heroSubtitle = isPermisAutoMaitrise
+    ? "Formule Maîtrise Auto — 20 leçons pour progresser en toute sérénité."
+    : isPermisManuelEssentiel
+      ? "Formule Essentiel Manuelle — 20 leçons pour maîtriser la boîte manuelle."
+      : isPermisManuelConfort
+        ? "Formule Confort Manuelle — 30 leçons pour aborder l'examen en toute confiance."
+        : isIaCrm
+          ? "Digitalisez, organisez et automatisez votre activité en 14 h."
+          : formation.subtitle ?? formation.description.split(".")[0] ?? formation.duration;
+  const priceLabel = isIaCrm
+    ? "Dès 990 €"
+    : isPermisAutoMaitrise || isPermisManuelEssentiel
+      ? "1 344 €"
+      : isPermisManuelConfort
+        ? "1 944 €"
+        : formation.price > 0
+          ? `Dès ${formatCurrency(formation.price)}`
+          : "Sur devis";
+  const fundingLabel = isIaCrm
+    ? "OPCO / entreprise"
+    : isPermisAutoMaitrise || isPermisManuelEssentiel || isPermisManuelConfort || formation.cpf
+      ? "CPF possible"
+      : "Financement accompagné";
+  const heroSlides = formationHeroSlides(formation.slug, productLine);
+  const primaryCta = { href: `/contact?formation=${formation.slug}#demande`, label: "Demander un devis" };
+  const secondaryCta = { href: `/inscription?formation=${formation.slug}`, label: "Pré-inscription" };
+  const bodyDescription = isPermisAutoMaitrise
+    ? "Une formule complète en boîte automatique, avec davantage d'heures de conduite individuelles pour aborder l'examen en confiance."
+    : isPermisManuelEssentiel
+      ? "Une formation complète pour apprendre à conduire en boîte manuelle, avec un accompagnement pédagogique jusqu'à l'examen."
+      : isPermisManuelConfort
+        ? "Une formule renforcée en boîte manuelle, avec davantage d'heures de conduite pour aborder l'examen en confiance."
+        : formation.description;
 
   const courseSchema = {
     "@context": "https://schema.org",
@@ -81,17 +129,58 @@ export default async function FormationDetailPage({ params }: PageProps) {
   };
 
   const programSteps = [
-    "Diagnostic du niveau et choix du rythme",
-    "Créneaux planifiés avec un moniteur référent",
-    "Suivi de progression et ajustement des objectifs",
-    "Préparation à l'examen ou à l'objectif de conduite"
+    isIaCrm ? "Diagnostic des outils et priorités métier" : "Diagnostic du niveau et choix du rythme",
+    isIaCrm ? "Mise en place d'un mini-CRM simple" : "Créneaux planifiés avec un moniteur référent",
+    isIaCrm ? "Cas d'usage IA et relances automatisées" : "Suivi de progression et ajustement des objectifs",
+    isIaCrm ? "Plan d'action pour déployer en autonomie" : "Préparation à l'examen ou à l'objectif de conduite"
   ];
 
   const guarantees = [
-    formation.cpf ? "Parcours compatible CPF selon le dossier" : "Conseil financement selon la situation",
+    isIaCrm
+      ? "Financement OPCO ou entreprise selon votre dossier"
+      : formation.cpf
+        ? "Parcours compatible CPF selon le dossier"
+        : "Conseil financement selon la situation",
     isPro ? "Financement entreprise / OPCO possible" : "Planning visible et suivi élève digital",
     "Devis clair avant engagement",
     "Accompagnement administratif jusqu'au démarrage"
+  ];
+
+  const keyPoints = isIaCrm
+    ? [
+        "Structurer un mini-CRM pour suivre prospects, clients et relances.",
+        "Utiliser l'IA pour rédiger, qualifier et préparer les réponses.",
+        "Automatiser les tâches répétitives sans complexité technique.",
+        "Repartir avec une méthode directement applicable."
+      ]
+    : isPermisAutoMaitrise
+      ? [
+          "Boîte automatique : conduite simplifiée",
+          "20 h de conduite pour plus d'aisance",
+          "Rythme progressif et serein",
+          "CPF possible selon dossier"
+        ]
+      : isPermisManuelEssentiel
+        ? [
+            "Boîte manuelle : conduire tous les véhicules",
+            "20 h de conduite + accompagnement examen",
+            "Le permis le plus polyvalent",
+            "CPF possible selon dossier"
+          ]
+      : isPermisManuelConfort
+        ? [
+            "Boîte manuelle : conduire tous les véhicules",
+            "30 h de conduite pour plus de pratique",
+            "Idéale pour progresser sans stress",
+            "CPF possible selon dossier"
+          ]
+        : guarantees;
+
+  const keyFacts = [
+    { icon: Clock3, label: "Durée", value: formation.duration },
+    { icon: BadgeCheck, label: "Tarif", value: priceLabel },
+    { icon: ShieldCheck, label: "Financement", value: fundingLabel },
+    { icon: CalendarCheck, label: "Mode", value: formation.mode }
   ];
 
   return (
@@ -101,124 +190,117 @@ export default async function FormationDetailPage({ params }: PageProps) {
         suppressHydrationWarning
         dangerouslySetInnerHTML={{ __html: safeJsonLd(courseSchema) }}
       />
-      <section className="bg-loden-pearl py-7 md:py-10 xl:py-14">
-        <div className="container-pad grid gap-5 md:gap-7 lg:grid-cols-[1fr_0.75fr] lg:items-start">
-          <div className="relative h-28 overflow-hidden rounded-xl shadow-soft sm:h-44 md:h-52 md:rounded-2xl lg:col-span-2 xl:h-60">
-            <Image
-              src={headerImage.src}
-              alt={headerImage.alt}
-              fill
-              priority
-              unoptimized
-              sizes="100vw"
-              className="object-cover"
-              style={{ objectPosition: headerImage.objectPosition ?? "50% 50%" }}
-            />
-          </div>
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-loden-700 sm:text-sm">
-              {eyebrow}
-            </p>
-            <h1 className="mt-2 text-[1.85rem] font-semibold leading-tight text-loden-ink sm:text-4xl md:mt-3 md:text-[2.8rem] xl:text-5xl">
-              {formation.title}
-            </h1>
-            <p className="mt-2 max-w-3xl text-sm leading-6 text-loden-muted md:mt-4 md:text-base md:leading-7 xl:text-lg xl:leading-8">{formation.description}</p>
-            <div className="mt-5 flex flex-wrap gap-2 sm:mt-6">
-              {formation.tags.map((tag, index) => (
-                <span key={tag} className={`rounded-full bg-white px-4 py-2 text-sm font-semibold text-loden-700 shadow-soft ${index > 2 ? "hidden sm:inline-flex" : ""}`}>
-                  {tag}
+
+      <FormationHero
+        slides={heroSlides}
+        kicker={heroKicker}
+        title={heroTitle}
+        subtitle={heroSubtitle}
+        badges={[
+          { icon: "Clock3", label: formation.duration },
+          { icon: "BadgeCheck", label: priceLabel },
+          { icon: isPermisAutoMaitrise || isPermisManuelEssentiel || isPermisManuelConfort ? "WalletCards" : "Building2", label: fundingLabel }
+        ]}
+        primaryCta={primaryCta}
+        secondaryCta={secondaryCta}
+      />
+
+      <section className="border-b border-slate-200 bg-white py-6">
+        <div className="container-pad grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {keyFacts.map((fact) => {
+            const FactIcon = fact.icon;
+            return (
+              <div key={fact.label} className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-loden-pearl px-4 py-3 shadow-soft">
+                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white text-loden-700">
+                  <FactIcon className="h-5 w-5" aria-hidden="true" />
                 </span>
-              ))}
-            </div>
-            <div className="mt-5 flex flex-col gap-3 sm:mt-6 sm:flex-row">
-              <Link
-                href={`/contact?formation=${formation.slug}#demande`}
-                className="focus-ring inline-flex w-full items-center justify-center gap-2 rounded-full bg-loden-700 px-6 py-3.5 font-semibold text-white shadow-soft transition hover:bg-loden-800 sm:w-auto sm:py-4"
-              >
-                Demander un devis
-                <ArrowRight className="h-5 w-5" />
-              </Link>
-              <Link
-                href={`/inscription?formation=${formation.slug}`}
-                className="focus-ring inline-flex w-full items-center justify-center rounded-full border border-slate-200 bg-white px-6 py-3.5 font-semibold text-loden-ink transition hover:border-loden-300 hover:bg-loden-50 sm:w-auto sm:py-4"
-              >
-                Pré-inscription
-              </Link>
-            </div>
-          </div>
-          <aside className="rounded-xl border border-slate-200 bg-white p-4 shadow-soft md:rounded-2xl md:p-5">
-            <p className="text-sm font-semibold uppercase tracking-[0.14em] text-loden-700">Résumé</p>
-            <div className="mt-4 grid gap-4 sm:mt-5">
-              <div className="flex items-start gap-3">
-                <Clock3 className="mt-1 h-5 w-5 text-loden-600" />
-                <div>
-                  <p className="font-semibold text-loden-ink">{formation.duration}</p>
-                  <p className="text-sm text-loden-muted">Durée ou accès indicatif</p>
+                <div className="min-w-0">
+                  <p className="text-xs font-black uppercase tracking-[0.12em] text-loden-muted">{fact.label}</p>
+                  <p className="truncate text-sm font-black text-loden-ink">{fact.value}</p>
                 </div>
               </div>
-              <div className="flex items-start gap-3">
-                <BadgeCheck className="mt-1 h-5 w-5 text-loden-600" />
-                <div>
-                  <p className="font-semibold text-loden-ink">{formation.price > 0 ? `Dès ${formatCurrency(formation.price)}` : "Sur devis"}</p>
-                  <p className="text-sm text-loden-muted">Devis confirmé avant inscription</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <ShieldCheck className="mt-1 h-5 w-5 text-loden-600" />
-                <div>
-                  <p className="font-semibold text-loden-ink">{formation.cpf ? "CPF possible" : "Financement accompagné"}</p>
-                  <p className="text-sm text-loden-muted">Analyse selon le profil élève</p>
-                </div>
-              </div>
-            </div>
-          </aside>
+            );
+          })}
         </div>
       </section>
 
-      <section className="bg-white py-8 md:py-10 xl:py-14">
-        <div className="container-pad grid gap-5 md:gap-7 lg:grid-cols-2">
+      <section className="bg-loden-pearl py-6">
+        <div className="container-pad grid gap-4 lg:grid-cols-[1.05fr_0.95fr] lg:items-start">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.14em] text-loden-700">Programme</p>
-            <h2 className="mt-3 text-2xl font-semibold text-loden-ink sm:text-3xl">Un parcours cadré de bout en bout</h2>
-            <div className="mt-5 grid gap-3 md:mt-7 md:gap-4">
-              {programSteps.map((step, index) => (
-                <div key={step} className="flex gap-3 rounded-xl border border-slate-200 bg-loden-pearl p-4 md:gap-4 md:rounded-2xl md:p-5">
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white font-semibold text-loden-700 shadow-soft md:rounded-2xl">
-                    {index + 1}
-                  </span>
-                  <div>
-                    <p className="font-semibold text-loden-ink">{step}</p>
-                    <p className="mt-1 hidden text-sm leading-6 text-loden-muted md:block">
-                      L&apos;objectif est d&apos;avancer avec un rythme clair, des retours concrets et une prochaine action visible.
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <p className="text-xs font-black uppercase tracking-[0.14em] text-loden-700">Objectif</p>
+            <h2 className="mt-2 text-2xl font-black text-loden-ink sm:text-3xl">Comprendre le parcours</h2>
+            <p className="mt-3 max-w-3xl text-sm leading-7 text-loden-muted md:text-base">
+              {bodyDescription}
+            </p>
+            {isIaCrm ? (
+              <Link href="/digital" className="focus-ring mt-3 inline-flex rounded-full text-sm font-black text-loden-700 hover:text-loden-900">
+                Voir le programme détaillé
+              </Link>
+            ) : null}
           </div>
-          <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.14em] text-loden-700">Garanties LODENE</p>
-            <h2 className="mt-3 text-2xl font-semibold text-loden-ink sm:text-3xl">Des conditions lisibles avant de commencer</h2>
-            <div className="mt-5 grid gap-3 md:mt-7 md:gap-4">
-              {guarantees.map((item) => (
-                <div key={item} className="flex items-start gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-soft md:rounded-2xl md:p-5">
-                  <CheckCircle2 className="mt-1 h-5 w-5 shrink-0 text-loden-600" />
-                  <p className="text-sm font-medium leading-6 text-loden-muted">{item}</p>
-                </div>
-              ))}
+
+          <div className="grid gap-3">
+            {keyPoints.map((item) => (
+              <div key={item} className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-soft">
+                <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-loden-700" aria-hidden="true" />
+                <p className="text-sm font-semibold leading-6 text-loden-muted">{item}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-white py-6">
+        <div className="container-pad">
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <p className="text-xs font-black uppercase tracking-[0.14em] text-loden-700">Programme</p>
+              <h2 className="mt-2 text-2xl font-black text-loden-ink sm:text-3xl">4 étapes concrètes</h2>
             </div>
-            <div className="mt-5 rounded-xl bg-loden-800 p-4 text-white md:mt-6 md:rounded-2xl md:p-5">
-              <CalendarCheck className="h-7 w-7" />
-              <h3 className="mt-4 text-xl font-semibold sm:text-2xl">Besoin d&apos;un planning précis ?</h3>
-              <p className="mt-3 text-sm leading-6 text-white/85">
-                Envoie tes disponibilités et ton objectif. LODENE te propose un rythme réaliste avant l&apos;engagement.
+            <span className="rounded-full bg-loden-50 px-4 py-2 text-sm font-black text-loden-700">
+              {formation.duration}
+            </span>
+          </div>
+
+          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {programSteps.map((step, index) => (
+              <article key={step} className="rounded-2xl border border-slate-200 bg-loden-pearl p-4 shadow-soft">
+                <span className="grid h-9 w-9 place-items-center rounded-xl bg-white text-sm font-black text-loden-700 shadow-soft">
+                  {index + 1}
+                </span>
+                <h3 className="mt-3 text-sm font-black leading-6 text-loden-ink">{step}</h3>
+                <p className="mt-2 text-xs font-semibold leading-5 text-loden-muted">
+                  Une action claire, un livrable utile et une prochaine étape visible.
+                </p>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-loden-pearl py-6">
+        <div className="container-pad">
+          <div className="rounded-2xl bg-loden-800 p-5 text-white shadow-premium md:flex md:items-center md:justify-between md:gap-6 md:p-6">
+            <div className="max-w-2xl">
+              <CalendarCheck className="h-7 w-7 text-[#08AEB8]" aria-hidden="true" />
+              <h2 className="mt-3 text-2xl font-black">Demander un devis / planning</h2>
+              <p className="mt-2 text-sm leading-6 text-white/85">
+                Partagez votre objectif et vos disponibilités. LODENE vous confirme un parcours clair avant engagement.
               </p>
+            </div>
+            <div className="mt-5 flex flex-col gap-3 sm:flex-row md:mt-0">
               <Link
-                href={`/contact?formation=${formation.slug}#demande`}
-                className="focus-ring mt-5 inline-flex w-full items-center justify-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-semibold text-loden-800 transition hover:bg-loden-pearl sm:w-auto"
+                href={primaryCta.href}
+                className="focus-ring inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-black text-loden-800 transition hover:bg-loden-pearl"
               >
-                Demander mon planning
-                <ArrowRight className="h-4 w-4" />
+                Demander un devis
+                <ArrowRight className="h-4 w-4" aria-hidden="true" />
+              </Link>
+              <Link
+                href={secondaryCta.href}
+                className="focus-ring inline-flex min-h-12 items-center justify-center rounded-full border border-white/35 px-5 py-3 text-sm font-black text-white transition hover:bg-white/10"
+              >
+                Pré-inscription
               </Link>
             </div>
           </div>

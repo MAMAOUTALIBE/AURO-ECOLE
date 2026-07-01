@@ -6,6 +6,20 @@ type FormationImage = {
   objectPosition?: string;
 };
 
+export type FormationHeroIllustrationIcon = "Sparkles" | "Database" | "Users" | "Workflow" | "Zap";
+
+export type FormationHeroSlide =
+  | (FormationImage & {
+      kind: "image";
+      keyword?: string;
+    })
+  | {
+      kind: "illustration";
+      keyword: string;
+      icon: FormationHeroIllustrationIcon;
+      gradient?: string;
+    };
+
 // Photos réalistes par formation, avec repli par pôle pour les contenus CMS inconnus.
 const BY_SLUG: Record<string, FormationImage> = {
   "permis-b-auto-declic": {
@@ -113,6 +127,34 @@ const BY_PRODUCT_LINE: Record<string, FormationImage> = {
   LOGISTIQUE_SECURITE: BY_SLUG["chariots-elevateurs-r489"]
 };
 
+const BY_PRODUCT_LINE_SLIDES: Record<string, FormationImage[]> = {
+  AUTO_ECOLE: [
+    BY_SLUG["permis-b-auto-declic"],
+    BY_SLUG["permis-b-manuel-essentiel"],
+    BY_SLUG["stage-accelere"]
+  ],
+  VTC: [
+    BY_SLUG["vtc-confort-pro"],
+    BY_SLUG["vtc-excellence"],
+    BY_SLUG["vtc-intermediaire-light"]
+  ],
+  CACES: [
+    BY_SLUG["chariots-elevateurs-r489"],
+    BY_SLUG["gerbeur-r485"],
+    BY_SLUG["nacelles-pemp-r486"]
+  ],
+  SST: [
+    BY_SLUG["sst-initial"],
+    BY_SLUG["mac-sst"],
+    BY_SLUG["sst-initial"]
+  ],
+  LOGISTIQUE_SECURITE: [
+    BY_SLUG["chariots-elevateurs-r489"],
+    BY_SLUG["terberg-tracteur-parc"],
+    BY_SLUG["nacelles-pemp-r486"]
+  ]
+};
+
 export function formationImageMeta(slug: string, productLine?: ProductLine): FormationImage {
   return BY_SLUG[slug] ?? BY_PRODUCT_LINE[productLine ?? "AUTO_ECOLE"] ?? BY_PRODUCT_LINE.AUTO_ECOLE;
 }
@@ -127,4 +169,177 @@ export function formationImageAlt(slug: string, productLine?: ProductLine): stri
 
 export function formationImageObjectPosition(slug: string, productLine?: ProductLine): string {
   return formationImageMeta(slug, productLine).objectPosition ?? "50% 50%";
+}
+
+function toImageSlide(image: FormationImage, keyword?: string): FormationHeroSlide {
+  return { kind: "image", keyword, ...image };
+}
+
+function dedupeImages(images: FormationImage[]) {
+  const seen = new Set<string>();
+  return images.filter((image) => {
+    if (seen.has(image.src)) return false;
+    seen.add(image.src);
+    return true;
+  });
+}
+
+function loadNodeModule<T>(moduleName: string): T | null {
+  if (typeof window !== "undefined") return null;
+  try {
+    const dynamicRequire = Function("moduleName", "return require(moduleName)") as (name: string) => T;
+    return dynamicRequire(moduleName);
+  } catch {
+    return null;
+  }
+}
+
+function publicFileExists(src: string) {
+  const fs = loadNodeModule<{ existsSync(path: string): boolean }>("node:fs");
+  const path = loadNodeModule<{ join(...parts: string[]): string }>("node:path");
+  if (!fs || !path) return false;
+  return fs.existsSync(path.join(process.cwd(), "public", src.replace(/^\//, "")));
+}
+
+function dedicatedPhotoSlides(slug: string): FormationHeroSlide[] {
+  return [1, 2, 3]
+    .map((index) => {
+      const src = `/formations/photos/${slug}-${index}.webp`;
+      if (!publicFileExists(src)) return null;
+      return toImageSlide({
+        src,
+        alt: `Visuel formation ${slug.replace(/-/g, " ")} LODENE ${index}`,
+        objectPosition: "50% 50%"
+      });
+    })
+    .filter(Boolean) as FormationHeroSlide[];
+}
+
+function digitalIllustrationSlides(slug: string): FormationHeroSlide[] {
+  if (slug === "ia-crm-automatisation") {
+    return [
+      {
+        kind: "illustration",
+        icon: "Sparkles",
+        keyword: "IA au quotidien",
+        gradient: "from-loden-700 via-[#08AEB8] to-loden-900"
+      },
+      {
+        kind: "illustration",
+        icon: "Database",
+        keyword: "Mini-CRM & suivi clients",
+        gradient: "from-loden-800 via-loden-700 to-loden-900"
+      },
+      {
+        kind: "illustration",
+        icon: "Workflow",
+        keyword: "Relances automatisées",
+        gradient: "from-[#08AEB8] via-loden-700 to-loden-900"
+      }
+    ];
+  }
+
+  return [
+    { kind: "illustration", icon: "Sparkles", keyword: "Digital & IA", gradient: "from-loden-700 via-[#08AEB8] to-loden-900" },
+    { kind: "illustration", icon: "Users", keyword: "Suivi client", gradient: "from-loden-800 via-loden-700 to-loden-900" },
+    { kind: "illustration", icon: "Zap", keyword: "Automatisation", gradient: "from-[#08AEB8] via-loden-700 to-loden-900" }
+  ];
+}
+
+function permisAutoMaitriseSlides(): FormationHeroSlide[] {
+  return [
+    toImageSlide(
+      {
+        ...BY_SLUG["permis-b-auto-maitrise"],
+        alt: "Élève et moniteur préparant une leçon en boîte automatique avec LODENE."
+      },
+      "Boîte automatique"
+    ),
+    toImageSlide(
+      {
+        ...BY_SLUG["permis-b-auto-declic"],
+        alt: "Élève en conduite renforcée avec un moniteur LODENE dans une voiture automatique."
+      },
+      "Conduite renforcée"
+    ),
+    toImageSlide(
+      {
+        ...BY_SLUG["conduite-accompagnee"],
+        alt: "Jeune conducteur accompagné préparant son passage à l'examen avec LODENE."
+      },
+      "Prêt pour l'examen"
+    )
+  ];
+}
+
+function permisManuelEssentielSlides(): FormationHeroSlide[] {
+  return [
+    toImageSlide(
+      {
+        ...BY_SLUG["permis-b-manuel-essentiel"],
+        alt: "Élève apprenant à conduire en boîte manuelle avec un moniteur LODENE."
+      },
+      "Boîte manuelle"
+    ),
+    toImageSlide(
+      {
+        ...BY_SLUG["permis-b-manuel-confort"],
+        alt: "Élève travaillant la maîtrise du levier de vitesse avec un moniteur LODENE."
+      },
+      "Maîtrise du levier"
+    ),
+    toImageSlide(
+      {
+        ...BY_SLUG["conduite-accompagnee"],
+        alt: "Jeune conducteur préparant son passage à l'examen avec LODENE."
+      },
+      "Prêt pour l'examen"
+    )
+  ];
+}
+
+function permisManuelConfortSlides(): FormationHeroSlide[] {
+  return [
+    toImageSlide(
+      {
+        ...BY_SLUG["permis-b-manuel-confort"],
+        alt: "Élève travaillant la boîte manuelle avec un moniteur LODENE près d'une voiture auto-école."
+      },
+      "Boîte manuelle"
+    ),
+    toImageSlide(
+      {
+        ...BY_SLUG["permis-b-manuel-essentiel"],
+        alt: "Élève en conduite renforcée avec un moniteur LODENE en boîte manuelle."
+      },
+      "Conduite renforcée"
+    ),
+    toImageSlide(
+      {
+        ...BY_SLUG["conduite-accompagnee"],
+        alt: "Jeune conducteur accompagné préparant son passage à l'examen avec LODENE."
+      },
+      "Prêt pour l'examen"
+    )
+  ];
+}
+
+export function formationHeroSlides(slug: string, productLine?: ProductLine): FormationHeroSlide[] {
+  const dedicated = dedicatedPhotoSlides(slug);
+  if (dedicated.length > 0) return dedicated;
+
+  if (slug === "permis-b-auto-maitrise") return permisAutoMaitriseSlides();
+  if (slug === "permis-b-manuel-essentiel") return permisManuelEssentielSlides();
+  if (slug === "permis-b-manuel-confort") return permisManuelConfortSlides();
+
+  const ownImage = BY_SLUG[slug];
+  if (ownImage) {
+    const fallbackImages = BY_PRODUCT_LINE_SLIDES[productLine ?? "AUTO_ECOLE"] ?? BY_PRODUCT_LINE_SLIDES.AUTO_ECOLE;
+    return dedupeImages([ownImage, ...fallbackImages]).slice(0, 3).map((image) => toImageSlide(image));
+  }
+
+  if (productLine === "DIGITAL") return digitalIllustrationSlides(slug);
+
+  const fallbackImages = BY_PRODUCT_LINE_SLIDES[productLine ?? "AUTO_ECOLE"] ?? BY_PRODUCT_LINE_SLIDES.AUTO_ECOLE;
+  return fallbackImages.slice(0, 3).map((image) => toImageSlide(image));
 }
