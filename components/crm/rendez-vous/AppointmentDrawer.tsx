@@ -114,7 +114,9 @@ export function AppointmentDrawer({
     }
   };
 
-  const SourceIcon = appointment ? SOURCE_ICONS[appointment.source] : MessageCircle;
+  // Fallback si la source n'est pas dans la cartographie (robustesse : jamais de composant
+  // undefined qui ferait planter le rendu du volet).
+  const SourceIcon = (appointment ? SOURCE_ICONS[appointment.source] : MessageCircle) ?? MessageCircle;
 
   return (
     <div className="fixed inset-0 z-[100] flex justify-end bg-black/40" role="dialog" aria-modal="true">

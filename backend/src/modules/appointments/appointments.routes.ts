@@ -19,6 +19,7 @@ import {
   appointmentSourceSchema,
   appointmentStatusSchema,
   appointmentTypeSchema,
+  canonicalSource,
   kanbanColumnForStatus,
   statusColor
 } from "./appointments.vocab";
@@ -156,6 +157,10 @@ function enrichAppointment(appointment: ChatAppointmentRecord, refs: Refs) {
   const vehicle = appointment.vehicleId ? refs.vehicles.find((v) => v.id === appointment.vehicleId) : null;
   return {
     ...appointment,
+    // Normalise la source vers le vocabulaire canonique : les RDV créés par l'agent IA
+    // portent des sources granulaires ("assistant-ia-devis"…) que le front ne sait pas
+    // afficher (icône/libellé introuvable → plantage du volet détail). On ramène à canonique.
+    source: canonicalSource(appointment.source),
     kanbanColumn: kanbanColumnForStatus(appointment.status),
     color: statusColor(appointment.status),
     instructorName: instructor?.name ?? null,
@@ -269,10 +274,10 @@ function appointmentEvent(appointment: ChatAppointmentRecord, refs: Refs): Calen
     startsAt: appointment.startsAt.toISOString(),
     endsAt: appointment.endsAt.toISOString(),
     status: appointment.status,
-    source: appointment.source,
+    source: enriched.source,
     type: appointment.type,
     // Source chatbot mise en avant en violet (cf. cahier des charges), sinon couleur par statut.
-    color: appointment.source === "chatbot" ? "#7c3aed" : enriched.color,
+    color: enriched.source === "chatbot" ? "#7c3aed" : enriched.color,
     instructorId: appointment.instructorId ?? null,
     instructorName: enriched.instructorName,
     advisorName: enriched.advisorName,

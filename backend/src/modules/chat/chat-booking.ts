@@ -6,7 +6,7 @@ import { badRequest, conflict } from "../../shared/http-error";
 import { pickAttribution, type AttributionInput } from "../../shared/validation";
 import { sendChatAppointmentAdminAlert, sendChatAppointmentClientConfirmation } from "../../shared/mailer";
 import { buildWhatsAppAppointmentText, buildWhatsAppUrl, sendWhatsAppMessage } from "../../shared/whatsapp";
-import { canonicalType } from "../appointments/appointments.vocab";
+import { canonicalSource, canonicalType } from "../appointments/appointments.vocab";
 
 // Logique de réservation chatbot partagée entre la route HTTP (/api/chat/appointment)
 // et l'outil de l'agent IA (book_appointment_slot) — source unique de vérité.
@@ -103,7 +103,7 @@ export async function createCallbackAppointmentForLead(
     type: canonicalType(input.type || "APPEL"),
     status: "new",
     priority: "normal",
-    source: input.source || "chatbot",
+    source: canonicalSource(input.source || "chatbot"),
     consentContact: input.consentContact,
     consentWhatsApp: input.consentWhatsApp
   });

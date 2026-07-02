@@ -131,7 +131,8 @@ function KanbanCard({
   onAction: (action: DrawerAction) => void;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
-  const SourceIcon = SOURCE_ICONS[card.source];
+  // Fallback si la source sort du vocabulaire connu : jamais de composant undefined (plantage carte).
+  const SourceIcon = SOURCE_ICONS[card.source] ?? MessageCircle;
   const tags = deriveTags(card);
   const assignee = card.advisorName || card.instructorName;
   const wa = card.phone;
