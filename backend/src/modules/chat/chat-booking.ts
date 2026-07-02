@@ -70,6 +70,65 @@ export async function createLeadFromChat(repository: LodenRepository, input: Cha
   return repository.createLead({ ...fields, email: input.email, source: "chatbot", status: "PROSPECT" });
 }
 
+/**
+ * Crée un RDV « À rappeler » (statut Nouveau, sans créneau) rattaché à un lead EXISTANT.
+ * Utilisé pour centraliser l'entrant du chatbot dans « Rendez-vous & Planning ». Ne recrée
+ * pas de lead (le lead technique reste en base pour le lien RDV↔élève, masqué du pipeline).
+ */
+export async function createCallbackAppointmentForLead(
+  repository: LodenRepository,
+  leadId: string,
+  input: ChatBookingDetails & { type?: string; source?: string }
+) {
+  const name = fullName(input) || "Contact chatbot";
+  const now = new Date();
+  const pad = (value: number) => String(value).padStart(2, "0");
+  return repository.createChatAppointment({
+    leadId,
+    fullName: name,
+    firstName: input.firstName,
+    lastName: input.lastName,
+    phone: input.phone || "Non renseigné",
+    email: input.email,
+    formation: input.formation,
+    objective: input.objective,
+    message: input.message,
+    date: `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`,
+    time: `${pad(now.getHours())}:${pad(now.getMinutes())}`,
+    requestedAt: now,
+    startsAt: now,
+    endsAt: new Date(now.getTime() + 30 * 60_000),
+    type: canonicalType(input.type || "APPEL"),
+    status: "new",
+    priority: "normal",
+    source: input.source || "chatbot",
+    consentContact: input.consentContact,
+    consentWhatsApp: input.consentWhatsApp
+  });
+}
+
+/**
+ * Coordonnées captées par le chatbot SANS choix de créneau → lead (source chatbot) + RDV
+ * « À rappeler » + tâche de rappel. La demande atterrit UNIQUEMENT dans « Rendez-vous & Planning ».
+ */
+export async function createCallbackAppointment(
+  repository: LodenRepository,
+  input: ChatBookingDetails & { type?: string }
+) {
+  const lead = await createLeadFromChat(repository, input);
+  const appointment = await createCallbackAppointmentForLead(repository, lead.id, input);
+  await repository.createChatTask({
+    leadId: lead.id,
+    appointmentId: appointment.id,
+    type: "RELANCE",
+    priority: "HAUTE",
+    deadline: new Date(Date.now() + 24 * 60 * 60_000),
+    note: `Rappeler ${fullName(input)} (${input.phone || input.email}) — ${input.objective}${input.formation ? ` · ${input.formation}` : ""}.`
+  });
+  await createFinancingFollowUpTask(repository, lead.id, input, appointment.id);
+  return { lead, appointment };
+}
+
 /** Tâche de suivi prudente : vérification CPF (sans promesse) ou devis entreprise. */
 export async function createFinancingFollowUpTask(
   repository: LodenRepository,
