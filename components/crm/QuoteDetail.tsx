@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Ban, Check, Pencil, Plus, Printer, Save, Send, Trash2, X } from "lucide-react";
+import { ArrowLeft, BadgeCheck, Ban, Building2, CalendarDays, Check, FileText, Pencil, PenLine, Plus, Printer, Save, Send, ShieldCheck, Trash2, UserRound, X } from "lucide-react";
 import { Badge, Skeleton, type BadgeVariant } from "@/components/crm/ui";
 import { euros, quoteDate, previewTotals, QUOTE_STATUS_LABELS, VAT_RATES, type QuoteStatus } from "@/lib/quote-mappers";
 
@@ -40,6 +41,14 @@ const STATUS_VARIANT: Record<QuoteStatus, BadgeVariant> = {
   ACCEPTE: "success",
   REFUSE: "danger",
   EXPIRE: "warning"
+};
+
+const DOCUMENT_STATUS_CLASS: Record<QuoteStatus, string> = {
+  BROUILLON: "border-slate-200 bg-white text-slate-700",
+  ENVOYE: "border-loden-200 bg-loden-50 text-loden-800",
+  ACCEPTE: "border-emerald-200 bg-emerald-50 text-emerald-800",
+  REFUSE: "border-rose-200 bg-rose-50 text-rose-700",
+  EXPIRE: "border-amber-200 bg-amber-50 text-amber-800"
 };
 
 const EMPTY_LINE: FormLine = { label: "", quantity: "1", unitEuros: "", vatRate: 0 };
@@ -346,76 +355,184 @@ export function QuoteDetail({ id }: { id: string }) {
         </div>
       ) : null}
 
-      <div className="invoice-print relative mx-auto max-w-[210mm] rounded-2xl border border-slate-200 bg-white p-8 shadow-soft sm:p-10">
+      <div className="invoice-print quote-print relative mx-auto max-w-[210mm] overflow-hidden rounded-[1.75rem] border border-loden-100 bg-white shadow-[0_24px_90px_rgba(20,33,38,0.12)] print:rounded-none print:border-0 print:shadow-none">
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,#f3fcfd_0%,#ffffff_34%,#ffffff_100%)]" aria-hidden="true" />
+        <div className="absolute inset-x-0 top-0 h-2 bg-gradient-to-r from-loden-900 via-loden-500 to-loden-900" aria-hidden="true" />
+        <div className="pointer-events-none absolute -right-10 bottom-12 h-56 w-56 opacity-[0.035]" aria-hidden="true">
+          <Image src="/lodene-logo.png" alt="" fill sizes="224px" className="object-contain" />
+        </div>
         {watermark ? (
-          <span className={`pointer-events-none absolute inset-0 flex items-center justify-center text-7xl font-black opacity-[0.07] ${quote.status === "REFUSE" ? "text-rose-600" : "text-slate-500"}`} aria-hidden="true">
+          <span className={`pointer-events-none absolute inset-0 flex rotate-[-14deg] items-center justify-center text-6xl font-black uppercase tracking-[0.18em] opacity-[0.06] sm:text-8xl ${quote.status === "REFUSE" ? "text-rose-600" : "text-loden-900"}`} aria-hidden="true">
             {watermark}
           </span>
         ) : null}
 
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <p className="text-2xl font-black tracking-tight text-loden-700">LODENE</p>
-            <div className="mt-2 text-xs leading-5 text-loden-muted">
-              {line(issuer.legalName) ? <p className="font-semibold text-loden-ink">{issuer.legalName}</p> : null}
-              {line(issuer.address) ? <p>{issuer.address}</p> : null}
-              {line(issuer.postalCode) || line(issuer.city) ? <p>{[issuer.postalCode, issuer.city].filter(Boolean).join(" ")}</p> : null}
-              {line(issuer.siret) ? <p>SIRET : {issuer.siret}</p> : null}
-              {line(issuer.approvalNumber) ? <p>Agrément : {issuer.approvalNumber}</p> : null}
-              {line(issuer.phone) || line(issuer.email) ? <p>{[issuer.phone, issuer.email].filter(Boolean).join(" · ")}</p> : null}
+        <div className="relative p-5 sm:p-8">
+          <header className="grid gap-6 border-b border-loden-100 pb-6 sm:grid-cols-[1fr_auto] sm:items-start">
+            <div>
+              <div className="inline-flex rounded-2xl bg-white p-2 shadow-sm ring-1 ring-loden-100">
+                <Image src="/lodene-logo-wordmark.png" alt="LODENE Formation" width={1320} height={660} className="h-16 w-auto max-w-[220px] sm:h-20" priority={false} />
+              </div>
+              <p className="mt-4 max-w-md text-sm font-semibold leading-6 text-loden-muted">
+                Auto-école, VTC, SST, logistique & sécurité à Conflans-Sainte-Honorine.
+              </p>
             </div>
-          </div>
-          <div className="text-right">
-            <p className="text-lg font-bold text-loden-ink">{quote.number ? `Devis N° ${quote.number}` : "BROUILLON — non numéroté"}</p>
-            <p className="mt-1 text-xs text-loden-muted">Date d&apos;envoi : {quoteDate(quote.sentAt)}</p>
-            {quote.validUntil ? <p className="text-xs text-loden-muted">Valable jusqu&apos;au : {quoteDate(quote.validUntil)}</p> : null}
-          </div>
+
+            <div className="rounded-2xl bg-loden-900 p-5 text-white shadow-[0_18px_45px_rgba(22,78,99,0.22)] sm:min-w-[240px] sm:text-right">
+              <p className="text-xs font-black uppercase tracking-[0.28em] text-loden-200">Devis</p>
+              <p className="mt-2 text-xl font-black">{quote.number ?? "Non numéroté"}</p>
+              <span className={`mt-4 inline-flex rounded-full border px-3 py-1 text-xs font-black ${DOCUMENT_STATUS_CLASS[quote.status]}`}>
+                {QUOTE_STATUS_LABELS[quote.status]}
+              </span>
+            </div>
+          </header>
+
+          <section className="mt-6 grid gap-3 sm:grid-cols-3">
+            <div className="rounded-2xl border border-loden-100 bg-white/85 p-4 shadow-sm">
+              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-loden-50 text-loden-700">
+                <CalendarDays className="h-4 w-4" aria-hidden="true" />
+              </span>
+              <p className="mt-3 text-[0.68rem] font-black uppercase tracking-[0.16em] text-loden-muted">Date d&apos;envoi</p>
+              <p className="mt-1 text-sm font-black text-loden-ink">{quoteDate(quote.sentAt)}</p>
+            </div>
+            <div className="rounded-2xl border border-loden-100 bg-white/85 p-4 shadow-sm">
+              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-loden-50 text-loden-700">
+                <BadgeCheck className="h-4 w-4" aria-hidden="true" />
+              </span>
+              <p className="mt-3 text-[0.68rem] font-black uppercase tracking-[0.16em] text-loden-muted">Validité</p>
+              <p className="mt-1 text-sm font-black text-loden-ink">{quote.validUntil ? quoteDate(quote.validUntil) : "À confirmer"}</p>
+            </div>
+            <div className="rounded-2xl border border-loden-100 bg-loden-50 p-4 shadow-sm">
+              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white text-loden-700">
+                <FileText className="h-4 w-4" aria-hidden="true" />
+              </span>
+              <p className="mt-3 text-[0.68rem] font-black uppercase tracking-[0.16em] text-loden-muted">Montant TTC</p>
+              <p className="mt-1 text-lg font-black text-loden-900">{euros(quote.totalCents)}</p>
+            </div>
+          </section>
+
+          <section className="mt-6 grid gap-4 sm:grid-cols-2">
+            <article className="rounded-2xl border border-slate-200 bg-white p-5">
+              <div className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.16em] text-loden-700">
+                <Building2 className="h-4 w-4" aria-hidden="true" />
+                Émis par
+              </div>
+              <div className="mt-4 text-sm leading-6 text-loden-muted">
+                {line(issuer.legalName) ? <p className="font-black text-loden-ink">{issuer.legalName}</p> : <p className="font-black text-loden-ink">LODENE Formation</p>}
+                {line(issuer.legalForm) || line(issuer.capital) ? <p>{[issuer.legalForm, issuer.capital && `capital ${issuer.capital}`].filter(Boolean).join(" · ")}</p> : null}
+                {line(issuer.address) ? <p>{issuer.address}</p> : null}
+                {line(issuer.postalCode) || line(issuer.city) ? <p>{[issuer.postalCode, issuer.city].filter(Boolean).join(" ")}</p> : null}
+                {line(issuer.siret) ? <p>SIRET : {issuer.siret}</p> : null}
+                {line(issuer.approvalNumber) ? <p>Agrément : {issuer.approvalNumber}</p> : null}
+                {line(issuer.phone) || line(issuer.email) ? <p className="font-semibold text-loden-ink">{[issuer.phone, issuer.email].filter(Boolean).join(" · ")}</p> : null}
+              </div>
+            </article>
+
+            <article className="rounded-2xl border border-loden-100 bg-loden-50/80 p-5">
+              <div className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.16em] text-loden-700">
+                <UserRound className="h-4 w-4" aria-hidden="true" />
+                Devis pour
+              </div>
+              <div className="mt-4 text-sm leading-6 text-loden-muted">
+                <p className="text-base font-black text-loden-ink">{client.name || "Client"}</p>
+                {client.email ? <p>{client.email}</p> : null}
+                {client.address ? <p>{client.address}</p> : null}
+              </div>
+            </article>
+          </section>
+
+          <section className="mt-7 overflow-hidden rounded-2xl border border-slate-200 bg-white">
+            <div className="bg-loden-900 px-5 py-3 text-xs font-black uppercase tracking-[0.16em] text-white">
+              Détail de la proposition
+            </div>
+
+            <div className="grid gap-3 p-4 sm:hidden print:hidden">
+              {quote.lines.map((item, index) => (
+                <article key={index} className="rounded-xl border border-slate-200 bg-loden-fog p-3 text-sm">
+                  <p className="font-black text-loden-ink">{item.label}</p>
+                  <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-loden-muted">
+                    <p>Qté : <span className="font-bold text-loden-ink">{item.quantity}</span></p>
+                    <p>TVA : <span className="font-bold text-loden-ink">{item.vatRate}%</span></p>
+                    <p>PU HT : <span className="font-bold text-loden-ink">{euros(item.unitAmountCents)}</span></p>
+                    <p>Total HT : <span className="font-bold text-loden-ink">{euros(item.quantity * item.unitAmountCents)}</span></p>
+                  </div>
+                </article>
+              ))}
+            </div>
+
+            <table className="hidden w-full text-left text-sm sm:table print:table">
+              <thead className="bg-loden-50 text-[0.68rem] uppercase tracking-[0.14em] text-loden-700">
+                <tr>
+                  <th className="px-5 py-3 font-black">Désignation</th>
+                  <th className="px-3 py-3 text-right font-black">Qté</th>
+                  <th className="px-3 py-3 text-right font-black">PU HT</th>
+                  <th className="px-3 py-3 text-right font-black">TVA</th>
+                  <th className="px-5 py-3 text-right font-black">Total HT</th>
+                </tr>
+              </thead>
+              <tbody>
+                {quote.lines.map((item, index) => (
+                  <tr key={index} className="border-t border-slate-100">
+                    <td className="px-5 py-4 font-semibold text-loden-ink">{item.label}</td>
+                    <td className="px-3 py-4 text-right text-loden-muted">{item.quantity}</td>
+                    <td className="px-3 py-4 text-right text-loden-muted">{euros(item.unitAmountCents)}</td>
+                    <td className="px-3 py-4 text-right text-loden-muted">{item.vatRate}%</td>
+                    <td className="px-5 py-4 text-right font-black text-loden-ink">{euros(item.quantity * item.unitAmountCents)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </section>
+
+          <section className="mt-6 grid gap-5 lg:grid-cols-[1fr_340px]">
+            <div className="rounded-2xl border border-slate-200 bg-white p-5">
+              <div className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.16em] text-loden-700">
+                <ShieldCheck className="h-4 w-4" aria-hidden="true" />
+                Conditions
+              </div>
+              <p className="mt-3 text-xs leading-5 text-loden-muted">
+                Devis valable selon les dates et disponibilités indiquées. Offre non contractuelle avant acceptation, validation administrative et règlement des conditions d&apos;inscription.
+              </p>
+              {quote.notes ? <p className="mt-4 whitespace-pre-line rounded-xl bg-loden-fog p-3 text-xs leading-5 text-loden-muted">{quote.notes}</p> : null}
+            </div>
+
+            <div className="rounded-2xl bg-loden-900 p-5 text-white shadow-[0_18px_45px_rgba(22,78,99,0.18)]">
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between text-white/75"><span>Total HT</span><span>{euros(quote.subtotalCents)}</span></div>
+                {breakdown.length > 0 ? breakdown.map(([rate, cents]) => (
+                  <div key={rate} className="flex justify-between text-white/75"><span>TVA {rate}%</span><span>{euros(cents)}</span></div>
+                )) : <div className="flex justify-between text-white/75"><span>TVA</span><span>{euros(quote.vatCents)}</span></div>}
+              </div>
+              <div className="mt-4 border-t border-white/15 pt-4">
+                <p className="text-xs font-black uppercase tracking-[0.16em] text-loden-200">Total à régler</p>
+                <p className="mt-1 text-3xl font-black tracking-tight">{euros(quote.totalCents)}</p>
+              </div>
+            </div>
+          </section>
+
+          <section className="mt-7 grid gap-4 sm:grid-cols-2">
+            <div className="min-h-28 rounded-2xl border border-dashed border-slate-300 bg-white p-5">
+              <div className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.16em] text-loden-muted">
+                <PenLine className="h-4 w-4" aria-hidden="true" />
+                Signature client
+              </div>
+              <p className="mt-8 text-xs font-semibold text-loden-muted">Bon pour accord</p>
+            </div>
+            <div className="min-h-28 rounded-2xl border border-dashed border-slate-300 bg-white p-5">
+              <div className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.16em] text-loden-muted">
+                <PenLine className="h-4 w-4" aria-hidden="true" />
+                Signature LODENE
+              </div>
+            </div>
+          </section>
+
+          <footer className="mt-8 border-t border-loden-100 pt-4 text-[10px] leading-4 text-loden-muted">
+            <p className="font-semibold text-loden-ink">LODENE Formation — 30 rue Pierre Le Guen, 78700 Conflans-Sainte-Honorine — 06 60 32 50 87 — lodene.fr</p>
+            <p className="mt-1">
+              Document généré par un outil de gestion. Les mentions légales, le régime et les taux de TVA relèvent de la responsabilité de LODENE Formation.
+            </p>
+          </footer>
         </div>
-
-        <div className="mt-8 rounded-xl bg-slate-50 p-4 text-sm">
-          <p className="text-xs font-semibold uppercase tracking-wide text-loden-muted">Devis pour</p>
-          <p className="mt-1 font-semibold text-loden-ink">{client.name || "—"}</p>
-          {client.email ? <p className="text-xs text-loden-muted">{client.email}</p> : null}
-          {client.address ? <p className="text-xs text-loden-muted">{client.address}</p> : null}
-        </div>
-
-        <table className="mt-8 w-full text-left text-sm">
-          <thead className="border-b-2 border-slate-200 text-xs uppercase tracking-wide text-loden-muted">
-            <tr>
-              <th className="py-2 pr-4 font-semibold">Désignation</th>
-              <th className="py-2 pr-4 text-right font-semibold">Qté</th>
-              <th className="py-2 pr-4 text-right font-semibold">PU HT</th>
-              <th className="py-2 pr-4 text-right font-semibold">TVA</th>
-              <th className="py-2 text-right font-semibold">Total HT</th>
-            </tr>
-          </thead>
-          <tbody>
-            {quote.lines.map((l, i) => (
-              <tr key={i} className="border-b border-slate-100">
-                <td className="py-2 pr-4 text-loden-ink">{l.label}</td>
-                <td className="py-2 pr-4 text-right text-loden-muted">{l.quantity}</td>
-                <td className="py-2 pr-4 text-right text-loden-muted">{euros(l.unitAmountCents)}</td>
-                <td className="py-2 pr-4 text-right text-loden-muted">{l.vatRate}%</td>
-                <td className="py-2 text-right font-medium text-loden-ink">{euros(l.quantity * l.unitAmountCents)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-
-        <div className="mt-6 flex justify-end">
-          <div className="w-full max-w-xs space-y-1 text-sm">
-            <div className="flex justify-between text-loden-muted"><span>Total HT</span><span>{euros(quote.subtotalCents)}</span></div>
-            {breakdown.length > 0 ? breakdown.map(([rate, cents]) => (
-              <div key={rate} className="flex justify-between text-loden-muted"><span>TVA {rate}%</span><span>{euros(cents)}</span></div>
-            )) : <div className="flex justify-between text-loden-muted"><span>TVA</span><span>{euros(quote.vatCents)}</span></div>}
-            <div className="flex justify-between border-t border-slate-200 pt-1 text-base font-bold text-loden-ink"><span>Total TTC</span><span>{euros(quote.totalCents)}</span></div>
-          </div>
-        </div>
-
-        {quote.notes ? <p className="mt-6 whitespace-pre-line text-xs text-loden-muted">{quote.notes}</p> : null}
-        <p className="mt-8 border-t border-slate-100 pt-4 text-[10px] leading-4 text-loden-muted">
-          Devis sans valeur contractuelle jusqu&apos;à acceptation. Document généré par un outil de gestion (non certifié fiscalement).
-        </p>
       </div>
     </div>
   );
