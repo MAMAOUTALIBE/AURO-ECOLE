@@ -3,6 +3,7 @@ import { SUMMARIZE_SYSTEM } from "../../ai/prompts";
 import type { AiProvider } from "../../ai/types";
 import type { LodenRepository } from "../../repositories/loden-repository";
 import { badRequest, conflict } from "../../shared/http-error";
+import { pickAttribution, type AttributionInput } from "../../shared/validation";
 import { sendChatAppointmentAdminAlert, sendChatAppointmentClientConfirmation } from "../../shared/mailer";
 import { buildWhatsAppAppointmentText, buildWhatsAppUrl, sendWhatsAppMessage } from "../../shared/whatsapp";
 import { canonicalSource, canonicalType } from "../appointments/appointments.vocab";
@@ -22,7 +23,7 @@ export type ChatBookingDetails = {
   companySize?: number;
   consentContact: boolean;
   consentWhatsApp: boolean;
-};
+} & AttributionInput;
 
 export function fullName(input: { firstName: string; lastName: string }) {
   return `${input.firstName.trim()} ${input.lastName.trim()}`.replace(/\s+/g, " ");
@@ -64,10 +65,11 @@ export async function createLeadFromChat(repository: LodenRepository, input: Cha
     temperature: "chaud"
   };
 
-  // Déduplication par email : on met à jour l'existant (sans toucher au statut du pipeline).
+  // Déduplication par email : on met à jour l'existant (sans toucher au statut du pipeline
+  // ni à l'attribution first-touch déjà enregistrée).
   const existing = await repository.findLeadByEmail(input.email);
   if (existing) return repository.updateLead(existing.id, fields);
-  return repository.createLead({ ...fields, email: input.email, source: "chatbot", status: "PROSPECT" });
+  return repository.createLead({ ...fields, email: input.email, source: "chatbot", status: "PROSPECT", ...pickAttribution(input) });
 }
 
 /**

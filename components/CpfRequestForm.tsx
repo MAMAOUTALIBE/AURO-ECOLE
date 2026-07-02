@@ -6,6 +6,7 @@ import { cloneElement, isValidElement, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { phoneInputProps, phoneSchema } from "@/lib/validation";
+import { trackConversion } from "@/lib/analytics";
 
 // Les `value` doivent correspondre aux IDs réels des formations (backend/src/data/initial-data.ts).
 const formationOptions = [
@@ -75,6 +76,7 @@ export function CpfRequestForm() {
       return;
     }
 
+    trackConversion("cpf_submit", values.formationId);
     setSent(true);
     reset({ formationId: formationOptions[0].value });
   };

@@ -4,6 +4,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowRight, CalendarDays, CheckCircle2, MessageCircle, Send, Sparkles, X } from "lucide-react";
 import { contactInfo } from "@/data/site";
 import { cn } from "@/lib/utils";
+import { trackConversion, trackEvent } from "@/lib/analytics";
+import { attributionPayload } from "@/lib/attribution";
 
 type Message = { role: "user" | "assistant"; content: string };
 type ChatSuggestion = {
@@ -143,7 +145,10 @@ export function AiChatWidget() {
   }, [messages, flow, open, slots, loading]);
 
   useEffect(() => {
-    const openAssistant = () => setOpen(true);
+    const openAssistant = () => {
+      trackEvent("CTA", "click_assistant", "event");
+      setOpen(true);
+    };
     window.addEventListener("lodene:open-assistant", openAssistant);
     return () => window.removeEventListener("lodene:open-assistant", openAssistant);
   }, []);
@@ -298,11 +303,13 @@ export function AiChatWidget() {
           consentContact: flow.consentContact,
           consentWhatsApp: flow.consentWhatsApp,
           conversation: compactMessages,
-          conversationId
+          conversationId,
+          ...attributionPayload()
         })
       });
       const payload = await response.json().catch(() => null);
       if (!response.ok) throw new Error(payload?.error?.message ?? "La prise de rendez-vous a échoué.");
+      trackConversion("rdv_request", flow.formation);
       const whatsappUrl = payload?.data?.whatsapp?.url as string | undefined;
       setConfirmedWhatsappUrl(whatsappUrl ?? whatsappHref());
       setFlow({ ...flow, step: "done" });
@@ -580,7 +587,12 @@ export function AiChatWidget() {
         </a>
         <button
           type="button"
-          onClick={() => setOpen((value) => !value)}
+          onClick={() =>
+            setOpen((value) => {
+              if (!value) trackEvent("CTA", "click_assistant", window.location.pathname);
+              return !value;
+            })
+          }
           className="focus-ring inline-flex h-14 items-center justify-center gap-2 rounded-full bg-loden-700 px-4 text-sm font-semibold text-white shadow-premium transition hover:bg-loden-800"
           aria-label={open ? "Fermer l'assistant LODENE" : "Ouvrir l'assistant LODENE"}
         >

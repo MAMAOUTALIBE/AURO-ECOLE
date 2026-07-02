@@ -17,6 +17,7 @@ export function DiagnosticCtaSection() {
           <div className="mt-5 flex flex-col gap-3 md:mt-7 sm:flex-row">
             <Link
               href="/contact"
+              data-track="click_devis"
               className="focus-ring inline-flex items-center justify-center gap-2 rounded-full bg-white px-6 py-3.5 font-semibold text-loden-ink shadow-soft hover:bg-loden-50 md:py-4"
             >
               Demander mon diagnostic

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { AnalyticsProvider } from "@/components/analytics/AnalyticsProvider";
 import { AiChatWidget } from "@/components/AiChatWidget";
 import { Footer } from "@/components/Footer";
 import { HeaderMain } from "@/components/HeaderMain";
@@ -102,6 +103,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
   return (
     <html lang="fr" data-scroll-behavior="smooth">
       <body>
+        <AnalyticsProvider />
         <script
           type="application/ld+json"
           suppressHydrationWarning

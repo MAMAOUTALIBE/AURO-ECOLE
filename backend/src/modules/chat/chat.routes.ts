@@ -14,7 +14,7 @@ import type { AuthenticatedRequest } from "../../http/request-context";
 import type { LodenRepository } from "../../repositories/loden-repository";
 import { asyncHandler } from "../../shared/async-handler";
 import { forbidden, notFound } from "../../shared/http-error";
-import { emailSchema, phoneSchema, validateBody, validateQuery } from "../../shared/validation";
+import { attributionSchema, emailSchema, phoneSchema, validateBody, validateQuery } from "../../shared/validation";
 import { bookChatAppointment, createCallbackAppointment, displayDate, displayTime, listAppointmentSlots } from "./chat-booking";
 
 const publicChatLimiter = rateLimit({
@@ -56,7 +56,7 @@ const leadBodySchema = z.object({
   companySize: z.coerce.number().int().min(1).max(100000).optional(),
   consentContact: z.literal(true),
   consentWhatsApp: z.boolean().default(false)
-});
+}).merge(attributionSchema);
 
 const appointmentBodySchema = leadBodySchema.extend({
   slotId: z.string().trim().min(1),

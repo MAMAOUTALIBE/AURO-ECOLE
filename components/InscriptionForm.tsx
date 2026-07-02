@@ -4,6 +4,8 @@ import { useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { CheckCircle2, Send } from "lucide-react";
 import { phoneInputProps } from "@/lib/validation";
+import { trackConversion } from "@/lib/analytics";
+import { attributionPayload } from "@/lib/attribution";
 
 type FormationOption = { slug: string; title: string; subtitle?: string };
 
@@ -63,13 +65,15 @@ export function InscriptionForm({ formations }: { formations: FormationOption[] 
           email: values.email.trim(),
           phone: values.phone.trim(),
           formationTitle: formation.title,
-          formationSlug: formation.slug
+          formationSlug: formation.slug,
+          ...attributionPayload()
         })
       });
       if (!response.ok) {
         const payload = (await response.json().catch(() => null)) as { error?: { message?: string } } | null;
         throw new Error(payload?.error?.message ?? "Envoi impossible.");
       }
+      trackConversion("inscription_submit", formation.title);
       setSent(true);
       setValues({ firstName: "", lastName: "", phone: "", email: "", formationSlug: initialSlug });
     } catch (e) {

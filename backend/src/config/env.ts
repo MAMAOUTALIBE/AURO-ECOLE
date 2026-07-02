@@ -44,6 +44,14 @@ const envSchema = z.object({
   // saisis dans le CRM) — aucune fonctionnalité ne casse. Clé serveur uniquement,
   // jamais exposée au navigateur (le front passe par le proxy Next).
   GOOGLE_PLACES_API_KEY: z.string().optional(),
+  // Mesure d'audience (optionnel). Renseigner MATOMO_URL + MATOMO_SITE_ID + MATOMO_API_TOKEN
+  // permet au CRM (page « Statistiques & Trafic ») d'interroger l'API Reporting de Matomo
+  // côté serveur (visiteurs, sources, appareils…). Le token reste secret (jamais exposé au
+  // navigateur). Sans ces variables, le tableau de bord retombe sur les KPIs issus du CRM
+  // (prospects, RDV, conversions) — aucune fonctionnalité ne casse.
+  MATOMO_URL: z.string().optional(),
+  MATOMO_SITE_ID: z.string().optional(),
+  MATOMO_API_TOKEN: z.string().optional(),
   // IA (optionnel). Sans GROQ_API_KEY, l'IA renvoie un message clair (désactivée).
   AI_PROVIDER: z.string().default("groq"),
   // 70B requis pour un tool-calling fiable (le 8B formate mal les appels d'outils).

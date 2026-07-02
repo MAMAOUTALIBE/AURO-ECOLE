@@ -1,4 +1,5 @@
 import {
+  BarChart3,
   BellRing,
   BookOpenCheck,
   Bot,
@@ -129,6 +130,7 @@ export const crmNav: NavSection[] = [
     title: "Reporting",
     icon: FileSpreadsheet,
     items: [
+      { label: "Statistiques & Trafic", href: "/admin/trafic", icon: BarChart3, status: "live" },
       { label: "Statistiques", href: "/admin/reporting", icon: FileSpreadsheet, status: "live" },
       { label: "Rapports", href: "/admin/rapports", icon: ScrollText, status: "live" }
     ]
