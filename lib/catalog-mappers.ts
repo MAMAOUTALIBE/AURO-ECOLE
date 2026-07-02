@@ -46,7 +46,7 @@ export function mapApiFormation(formation: ApiFormation): Formation {
     title: formation.title,
     slug: formation.slug,
     subtitle: formation.subtitle ?? undefined,
-    mode: modeLabels[formation.mode],
+    mode: modeLabels[formation.mode] ?? "Manuel",
     productLine: formation.productLine ?? "AUTO_ECOLE",
     duration: formation.durationLabel,
     price: formation.priceCents / 100,

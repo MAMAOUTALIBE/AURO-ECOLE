@@ -46,8 +46,8 @@ export async function getContentBySlug(slug: string): Promise<ContentEntry | nul
 }
 
 // Découpe un corps texte en paragraphes (séparés par des lignes vides).
-export function toParagraphs(body: string): string[] {
-  return body
+export function toParagraphs(body: string | null | undefined): string[] {
+  return (body ?? "")
     .split(/\n{2,}/)
     .map((paragraph) => paragraph.trim())
     .filter(Boolean);
