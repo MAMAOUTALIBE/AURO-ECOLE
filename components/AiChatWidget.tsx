@@ -128,6 +128,10 @@ export function AiChatWidget() {
   // État courant lu par le déclencheur proactif (évite un setState imbriqué).
   const proactiveRef = useRef({ open, count: messages.length });
   proactiveRef.current = { open, count: messages.length };
+  // Re-engagement doux : si le visiteur ferme l'assistant, il se rouvre 30 s après
+  // (au plus 3 fois par session, pour rester gentil et éviter le harcèlement).
+  const hasBeenOpenedRef = useRef(false);
+  const reopenCountRef = useRef(0);
 
   const compactMessages = useMemo(
     () => messages.filter((_, index) => index !== 0).slice(-10),
@@ -158,6 +162,22 @@ export function AiChatWidget() {
     }, 8_000);
     return () => window.clearTimeout(timer);
   }, []);
+
+  // Re-ouverture automatique : 30 s après que le visiteur a FERMÉ l'assistant, on le rouvre
+  // gentiment (plafonné à 3 fois par session). Ne se déclenche que si le chat a déjà été ouvert.
+  useEffect(() => {
+    if (open) {
+      hasBeenOpenedRef.current = true;
+      return;
+    }
+    if (typeof window === "undefined") return;
+    if (!hasBeenOpenedRef.current || reopenCountRef.current >= 3) return;
+    const timer = window.setTimeout(() => {
+      reopenCountRef.current += 1;
+      setOpen(true);
+    }, 30_000);
+    return () => window.clearTimeout(timer);
+  }, [open]);
 
   const pushAssistant = (content: string) => setMessages((current) => [...current, { role: "assistant", content }]);
   const pushUser = (content: string) => setMessages((current) => [...current, { role: "user", content }]);
