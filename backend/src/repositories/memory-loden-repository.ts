@@ -1198,7 +1198,20 @@ export class MemoryLodenRepository implements LodenRepository {
   async deleteChatAppointment(id: string) {
     const index = this.store.chatAppointments.findIndex((appointment) => appointment.id === id);
     if (index === -1) throw notFound("Rendez-vous introuvable");
-    this.store.chatAppointments.splice(index, 1);
+    const [appointment] = this.store.chatAppointments.splice(index, 1);
+    // Miroir de l'incrément fait à la création : on libère le créneau correspondant
+    // (min 0) et on le réactive s'il repasse sous sa capacité, sinon les créneaux
+    // du chatbot restent « complets » à tort après une suppression.
+    const slot = this.store.chatAvailabilitySlots.find(
+      (item) =>
+        item.startsAt.getTime() === appointment.startsAt.getTime() &&
+        item.endsAt.getTime() === appointment.endsAt.getTime()
+    );
+    if (slot) {
+      slot.bookedCount = Math.max(0, slot.bookedCount - 1);
+      slot.updatedAt = new Date();
+      if (slot.bookedCount < slot.capacity) slot.active = true;
+    }
   }
 
   async listChatTasks(filters?: { status?: ChatTaskRecord["status"]; leadId?: string; appointmentId?: string }) {

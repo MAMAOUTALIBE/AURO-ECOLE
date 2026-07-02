@@ -8,6 +8,12 @@ import { Badge, Card, EmptyState, KpiCard, Pagination, SectionHeader, Skeleton, 
 import { euros, CONTRACT_STATUS_LABELS, type ContractStatus } from "@/lib/contract-mappers";
 
 const PAGE_SIZE = 10;
+
+const parseEuros = (v: string) => {
+  const n = Number(String(v).replace(/\s/g, "").replace(",", "."));
+  return Number.isFinite(n) ? n : 0;
+};
+
 const DEFAULT_BODY = `Le présent contrat de formation est conclu entre l'auto-école LODENE et l'élève désigné ci-dessous.\n\n1. Objet : formation à la conduite et préparation à l'examen du permis.\n2. Durée et modalités : selon le forfait souscrit.\n3. Prix et règlement : montant indiqué, payable selon l'échéancier convenu.\n4. Conditions générales : conformément au règlement intérieur de l'auto-école.`;
 
 type Contract = {
@@ -122,7 +128,7 @@ export function ContractsManager() {
           ...(form.formationId ? { formationId: form.formationId } : {}),
           title: form.title.trim(),
           body: form.body.trim(),
-          totalCents: form.priceEuros ? Math.round(Number(form.priceEuros) * 100) : 0,
+          totalCents: form.priceEuros ? Math.round(parseEuros(form.priceEuros) * 100) : 0,
           ...(form.startsAt ? { startsAt: form.startsAt } : {})
         })
       });

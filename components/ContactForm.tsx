@@ -109,7 +109,8 @@ export function ContactForm() {
     });
 
     if (!response.ok) {
-      setSubmitError("La demande n'a pas pu être envoyée. Réessaie dans quelques instants.");
+      const payload = await response.json().catch(() => null);
+      setSubmitError(payload?.error?.message ?? "La demande n'a pas pu être envoyée. Réessaie dans quelques instants.");
       return;
     }
 

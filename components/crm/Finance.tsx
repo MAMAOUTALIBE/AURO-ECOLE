@@ -42,7 +42,7 @@ const KINDS = [
 ];
 
 function euros(cents: number) {
-  return new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(cents / 100);
+  return new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 2 }).format(cents / 100);
 }
 function fmtDate(iso: string) {
   return new Date(iso).toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "numeric" });
@@ -55,6 +55,7 @@ export function Finance() {
   const [loading, setLoading] = useState(true);
   const [form, setForm] = useState({ studentUserId: "", amountEuros: "", kind: "FORMATION" });
   const [busy, setBusy] = useState(false);
+  const [busyId, setBusyId] = useState<string | null>(null);
   const [installments, setInstallments] = useState<Installment[]>([]);
   const [plan, setPlan] = useState({ studentId: "", totalEuros: "", count: "3", startDate: "" });
   const [planBusy, setPlanBusy] = useState(false);
@@ -116,6 +117,7 @@ export function Finance() {
   };
 
   const markInstallment = async (installment: Installment, status: string) => {
+    setBusyId(installment.id);
     try {
       const response = await fetch(`/api/installments/${installment.id}`, {
         method: "PATCH",
@@ -126,6 +128,8 @@ export function Finance() {
       setInstallments((current) => current.map((item) => (item.id === installment.id ? { ...item, status } : item)));
     } catch {
       setError("Mise à jour de l'échéance impossible.");
+    } finally {
+      setBusyId(null);
     }
   };
 
@@ -178,6 +182,7 @@ export function Finance() {
   };
 
   const setStatus = async (payment: Payment, status: string) => {
+    setBusyId(payment.id);
     try {
       const response = await fetch(`/api/payments/${payment.id}`, {
         method: "PATCH",
@@ -188,6 +193,8 @@ export function Finance() {
       setPayments((current) => current.map((item) => (item.id === payment.id ? { ...item, status } : item)));
     } catch {
       setError("Mise à jour du paiement impossible.");
+    } finally {
+      setBusyId(null);
     }
   };
 
@@ -270,7 +277,8 @@ export function Finance() {
                   </div>
                   <select
                     aria-label="Changer le statut"
-                    className="focus-ring mt-4 w-full cursor-pointer rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-loden-ink outline-none"
+                    disabled={busyId === payment.id}
+                    className="focus-ring mt-4 w-full cursor-pointer rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-loden-ink outline-none disabled:opacity-60"
                     value={payment.status}
                     onChange={(e) => setStatus(payment, e.target.value)}
                   >
@@ -304,7 +312,8 @@ export function Finance() {
                         </span>
                         <select
                           aria-label="Changer le statut"
-                          className="focus-ring cursor-pointer rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs font-semibold text-loden-ink outline-none"
+                          disabled={busyId === payment.id}
+                          className="focus-ring cursor-pointer rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs font-semibold text-loden-ink outline-none disabled:opacity-60"
                           value={payment.status}
                           onChange={(e) => setStatus(payment, e.target.value)}
                         >
@@ -378,7 +387,7 @@ export function Finance() {
                     </div>
                   </div>
                   {installment.status !== "PAYE" ? (
-                    <button type="button" onClick={() => markInstallment(installment, "PAYE")} className="focus-ring mt-4 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm font-semibold text-loden-700 hover:bg-loden-50">
+                    <button type="button" disabled={busyId === installment.id} onClick={() => markInstallment(installment, "PAYE")} className="focus-ring mt-4 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm font-semibold text-loden-700 hover:bg-loden-50 disabled:opacity-60">
                       Marquer payée
                     </button>
                   ) : null}
@@ -409,7 +418,7 @@ export function Finance() {
                           {installment.status === "PAYE" ? "Payée" : installment.status === "EN_RETARD" ? "En retard" : "En attente"}
                         </span>
                         {installment.status !== "PAYE" ? (
-                          <button type="button" onClick={() => markInstallment(installment, "PAYE")} className="focus-ring rounded-lg border border-slate-200 px-2 py-1 text-xs font-semibold text-loden-700 hover:bg-loden-50">
+                          <button type="button" disabled={busyId === installment.id} onClick={() => markInstallment(installment, "PAYE")} className="focus-ring rounded-lg border border-slate-200 px-2 py-1 text-xs font-semibold text-loden-700 hover:bg-loden-50 disabled:opacity-60">
                             Marquer payée
                           </button>
                         ) : null}

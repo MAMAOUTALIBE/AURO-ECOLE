@@ -7,6 +7,11 @@ import { ArrowLeft, Ban, Check, Pencil, Plus, Printer, Save, Send, Trash2, X } f
 import { Badge, Skeleton, type BadgeVariant } from "@/components/crm/ui";
 import { euros, quoteDate, previewTotals, QUOTE_STATUS_LABELS, VAT_RATES, type QuoteStatus } from "@/lib/quote-mappers";
 
+const parseEuros = (v: string) => {
+  const n = Number(String(v).replace(/\s/g, "").replace(",", "."));
+  return Number.isFinite(n) ? n : 0;
+};
+
 type Line = { label: string; quantity: number; unitAmountCents: number; vatRate: number };
 type FormLine = { label: string; quantity: string; unitEuros: string; vatRate: number };
 type Snapshot = Record<string, string>;
@@ -147,7 +152,7 @@ export function QuoteDetail({ id }: { id: string }) {
       .map((line) => ({
         label: line.label.trim(),
         quantity: Math.max(1, Math.round(Number(line.quantity) || 1)),
-        unitAmountCents: Math.max(0, Math.round(Number(line.unitEuros) * 100) || 0),
+        unitAmountCents: Math.max(0, Math.round(parseEuros(line.unitEuros) * 100)),
         vatRate: line.vatRate
       }));
 
@@ -197,7 +202,7 @@ export function QuoteDetail({ id }: { id: string }) {
       .filter((item) => item.label.trim() && item.unitEuros !== "")
       .map((item) => ({
         quantity: Math.max(1, Math.round(Number(item.quantity) || 1)),
-        unitAmountCents: Math.max(0, Math.round(Number(item.unitEuros) * 100) || 0),
+        unitAmountCents: Math.max(0, Math.round(parseEuros(item.unitEuros) * 100)),
         vatRate: item.vatRate
       }))
   );
