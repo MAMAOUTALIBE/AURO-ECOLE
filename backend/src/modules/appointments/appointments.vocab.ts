@@ -77,6 +77,21 @@ export function canonicalType(value: string | null | undefined): string {
   return map[value] ?? value;
 }
 
+// Ramène une source quelconque vers le vocabulaire canonique (chatbot|manual|phone|whatsapp|crm).
+// Indispensable : les outils de l'agent IA créent des RDV avec des sources granulaires
+// ("assistant-ia", "assistant-ia-rdv", "assistant-ia-devis") — non canoniques — qui, non
+// normalisées, cassent l'affichage du Centre RDV (icône/libellé introuvable). L'assistant IA
+// EST le chatbot → on ramène ces valeurs à "chatbot".
+export function canonicalSource(value: string | null | undefined): string {
+  const v = (value ?? "").toLowerCase();
+  if (!v) return "manual";
+  if ((APPOINTMENT_SOURCES as readonly string[]).includes(v)) return v;
+  if (v.startsWith("assistant-ia") || v.startsWith("chatbot") || v.includes("assistant") || v.includes("chat")) return "chatbot";
+  if (v.includes("whatsapp")) return "whatsapp";
+  if (v.includes("phone") || v.includes("tel")) return "phone";
+  return "crm";
+}
+
 export function canonicalStatus(value: string | null | undefined): string {
   const map: Record<string, string> = {
     A_CONFIRMER: "pending_confirmation",
