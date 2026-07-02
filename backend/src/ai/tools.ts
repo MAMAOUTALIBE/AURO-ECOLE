@@ -85,8 +85,10 @@ const CATEGORY_LABELS: Record<string, string> = {
 export type ToolContext = {
   repository: LodenRepository;
   config: ApiConfig;
-  scope: "public" | "crm";
+  scope: "public" | "crm" | "student";
   actorUserId?: string | null;
+  // Sécurité : lié à l'élève de la SESSION pour l'assistant espace élève. Jamais fourni par le modèle.
+  studentId?: string | null;
   aiProvider?: AiProvider;
 };
 
@@ -992,4 +994,87 @@ export const crmTools: ToolEntry[] = [
   summarizeConversationTool,
   sendAdminEmailAlertTool,
   bookAppointmentTool
+];
+
+/**
+ * Outils de l'assistant ESPACE ÉLÈVE : LECTURE SEULE, strictement limitée au dossier de
+ * l'élève de la SESSION (ctx.studentId, jamais fourni par le modèle). Aucun accès à un autre
+ * élève ni aux finances/paiements.
+ */
+export const studentSelfTools: ToolEntry[] = [
+  {
+    def: {
+      type: "function",
+      function: {
+        name: "get_my_file",
+        description:
+          "Récupère le dossier de l'élève connecté : formation, heures achetées/consommées/restantes, progression, statut du dossier, date d'examen.",
+        parameters: { type: "object", properties: {}, additionalProperties: false }
+      }
+    },
+    handler: async (_args, ctx) => {
+      if (!ctx.studentId) return { ok: false, error: "Aucun élève en session." };
+      const student = await ctx.repository.findStudentById(ctx.studentId);
+      if (!student) return { ok: false, error: "Dossier élève introuvable." };
+      const user = await ctx.repository.findUserById(student.userId);
+      const formations = student.formationId ? await ctx.repository.listFormations(true) : [];
+      const formation = formations.find((f) => f.id === student.formationId);
+      return {
+        ok: true,
+        prenom: user?.firstName ?? null,
+        formation: formation?.title ?? "Non renseignée",
+        heuresAchetees: student.purchasedHours,
+        heuresConsommees: student.consumedHours,
+        heuresRestantes: Math.max(0, student.purchasedHours - student.consumedHours),
+        progression: `${student.progressPercent}%`,
+        statutDossier: student.fileStatus,
+        dateExamen: student.examDate ? student.examDate.toISOString().slice(0, 10) : null
+      };
+    }
+  },
+  {
+    def: {
+      type: "function",
+      function: {
+        name: "get_my_appointments",
+        description: "Liste les prochains rendez-vous et leçons de conduite de l'élève connecté.",
+        parameters: { type: "object", properties: {}, additionalProperties: false }
+      }
+    },
+    handler: async (_args, ctx) => {
+      if (!ctx.studentId) return { ok: false, error: "Aucun élève en session." };
+      const now = new Date();
+      const closed = ["cancelled", "no_show", "completed"];
+      const rdv = (await ctx.repository.listChatAppointments({}))
+        .filter((a) => a.studentId === ctx.studentId && a.startsAt >= now && !closed.includes(a.status))
+        .sort((a, b) => a.startsAt.getTime() - b.startsAt.getTime())
+        .slice(0, 5)
+        .map((a) => ({ date: a.date, heure: a.time, type: a.type, formation: a.formation, statut: a.status }));
+      const lecons = (await ctx.repository.listBookings({ studentId: ctx.studentId }))
+        .filter((b) => b.startsAt >= now)
+        .sort((a, b) => a.startsAt.getTime() - b.startsAt.getTime())
+        .slice(0, 5)
+        .map((b) => ({
+          date: b.startsAt.toLocaleDateString("fr-FR"),
+          heure: b.startsAt.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }),
+          statut: b.status
+        }));
+      return { ok: true, rendezVous: rdv, lecons };
+    }
+  },
+  {
+    def: {
+      type: "function",
+      function: {
+        name: "get_my_documents",
+        description: "Liste les documents présents au dossier de l'élève connecté.",
+        parameters: { type: "object", properties: {}, additionalProperties: false }
+      }
+    },
+    handler: async (_args, ctx) => {
+      if (!ctx.studentId) return { ok: false, error: "Aucun élève en session." };
+      const docs = await ctx.repository.listStudentDocuments(ctx.studentId);
+      return { ok: true, documents: docs.map((d) => ({ type: d.type })), total: docs.length };
+    }
+  }
 ];

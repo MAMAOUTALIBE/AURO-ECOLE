@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { StudentAssistant } from "@/components/StudentAssistant";
 import {
   ArrowRight,
   CalendarCheck,
@@ -238,6 +239,10 @@ export function StudentDashboard() {
           </div>
         </div>
       </section>
+
+      <div className="lg:col-span-2">
+        <StudentAssistant />
+      </div>
     </div>
   );
 }

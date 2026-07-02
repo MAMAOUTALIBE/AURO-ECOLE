@@ -4,16 +4,16 @@ import { z } from "zod";
 import { buildPublicFallbackReply } from "../../ai/public-fallback";
 import type { AiMessage, AiProvider } from "../../ai/types";
 import { buildChatGuidance } from "../../ai/conversation-guidance";
-import { buildPublicAgentSystemPrompt } from "../../ai/prompts";
+import { buildPublicAgentSystemPrompt, buildStudentAgentSystemPrompt } from "../../ai/prompts";
 import { buildKnowledgeBlock } from "../../ai/knowledge";
 import { runAgent } from "../../ai/agent";
-import { publicAgentTools } from "../../ai/tools";
+import { publicAgentTools, studentSelfTools } from "../../ai/tools";
 import type { ApiConfig } from "../../config/env";
 import { authenticate, requirePermission } from "../../middleware/auth";
 import type { AuthenticatedRequest } from "../../http/request-context";
 import type { LodenRepository } from "../../repositories/loden-repository";
 import { asyncHandler } from "../../shared/async-handler";
-import { notFound } from "../../shared/http-error";
+import { forbidden, notFound } from "../../shared/http-error";
 import { emailSchema, phoneSchema, validateBody, validateQuery } from "../../shared/validation";
 import { bookChatAppointment, createCallbackAppointment, displayDate, displayTime, listAppointmentSlots } from "./chat-booking";
 
@@ -225,6 +225,39 @@ export function createChatRouter(repository: LodenRepository, config: ApiConfig,
       const body = validateBody(appointmentBodySchema, req);
       const result = await bookChatAppointment(repository, config, ai, body);
       res.status(201).json({ data: result });
+    })
+  );
+
+  // Assistant ESPACE ÉLÈVE : élève connecté, lecture seule sur SON dossier (studentId = session).
+  router.post(
+    "/student",
+    authenticate(repository, config.JWT_SECRET),
+    asyncHandler(async (req: AuthenticatedRequest, res) => {
+      if (!req.user) throw forbidden("Connexion requise.");
+      const student = await repository.findStudentByUserId(req.user.id);
+      if (!student) throw forbidden("Espace élève requis.");
+      const body = validateBody(messageSchema, req);
+      const user = await repository.findUserById(req.user.id);
+      if (!ai.available) {
+        res.json({ data: { reply: "L'assistant est momentanément indisponible. Un conseiller LODENE peut vous aider au 06 60 32 50 87.", mode: "fallback" } });
+        return;
+      }
+      const userMessages: AiMessage[] = body.messages.map((m) =>
+        m.role === "assistant" ? { role: "assistant", content: m.content } : { role: "user", content: m.content }
+      );
+      try {
+        const reply = await runAgent(ai, {
+          systemPrompt: buildStudentAgentSystemPrompt({ firstName: user?.firstName }),
+          userMessages,
+          tools: studentSelfTools,
+          context: { repository, config, scope: "student", actorUserId: req.user.id, studentId: student.id, aiProvider: ai },
+          maxSteps: 3
+        });
+        res.json({ data: { reply } });
+      } catch (error) {
+        console.error("[chat] assistant élève échoué:", error instanceof Error ? error.message : error);
+        res.json({ data: { reply: "Désolé, je n'ai pas pu récupérer votre dossier à l'instant. Réessayez, ou contactez le 06 60 32 50 87.", mode: "fallback" } });
+      }
     })
   );
 
