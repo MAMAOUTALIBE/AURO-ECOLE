@@ -245,7 +245,41 @@ export function Finance() {
         </div>
         {loading ? <p className="mt-6 text-sm text-loden-muted">Chargement…</p> : null}
         {!loading ? (
-          <div className="mt-6 overflow-x-auto">
+          <div className="mt-6">
+            <div className="grid gap-3 md:hidden">
+              {pagedPayments.map((payment) => (
+                <article key={payment.id} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-soft">
+                  <div className="flex min-w-0 items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="truncate font-semibold text-loden-ink">{payerName(payment)}</p>
+                      <p className="mt-1 text-xs text-loden-muted">{KINDS.find((k) => k.key === payment.kind)?.label ?? payment.kind}</p>
+                    </div>
+                    <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${STATUS_STYLES[payment.status]}`}>
+                      {STATUSES.find((s) => s.key === payment.status)?.label ?? payment.status}
+                    </span>
+                  </div>
+                  <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-wide text-loden-muted">Montant</p>
+                      <p className="mt-1 font-bold text-loden-ink">{euros(payment.amountCents)}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-wide text-loden-muted">Date</p>
+                      <p className="mt-1 font-medium text-loden-ink">{fmtDate(payment.createdAt)}</p>
+                    </div>
+                  </div>
+                  <select
+                    aria-label="Changer le statut"
+                    className="focus-ring mt-4 w-full cursor-pointer rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-loden-ink outline-none"
+                    value={payment.status}
+                    onChange={(e) => setStatus(payment, e.target.value)}
+                  >
+                    {STATUSES.map((s) => <option key={s.key} value={s.key}>{s.label}</option>)}
+                  </select>
+                </article>
+              ))}
+            </div>
+            <div className="hidden overflow-x-auto md:block">
             <table className="w-full text-left text-sm">
               <thead className="text-xs uppercase tracking-wide text-loden-muted">
                 <tr className="border-b border-slate-200">
@@ -287,6 +321,7 @@ export function Finance() {
                 ) : null}
               </tbody>
             </table>
+            </div>
             <Pagination page={page} pageSize={PAGE_SIZE} total={filteredPayments.length} onPage={setPage} />
           </div>
         ) : null}
@@ -319,7 +354,38 @@ export function Finance() {
         </button>
 
         {installments.length > 0 ? (
-          <div className="mt-6 overflow-x-auto">
+          <div className="mt-6">
+            <div className="grid gap-3 md:hidden">
+              {installments.map((installment) => (
+                <article key={installment.id} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-soft">
+                  <div className="flex min-w-0 items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="truncate font-semibold text-loden-ink">{studentNameById(installment.studentId)}</p>
+                      <p className="mt-1 text-xs text-loden-muted">{installment.label}</p>
+                    </div>
+                    <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${installment.status === "PAYE" ? "bg-emerald-50 text-emerald-700" : installment.status === "EN_RETARD" ? "bg-red-50 text-red-700" : "bg-amber-50 text-amber-700"}`}>
+                      {installment.status === "PAYE" ? "Payée" : installment.status === "EN_RETARD" ? "En retard" : "En attente"}
+                    </span>
+                  </div>
+                  <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-wide text-loden-muted">Date</p>
+                      <p className="mt-1 font-medium text-loden-ink">{fmtDate(installment.dueDate)}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-wide text-loden-muted">Montant</p>
+                      <p className="mt-1 font-bold text-loden-ink">{euros(installment.amountCents)}</p>
+                    </div>
+                  </div>
+                  {installment.status !== "PAYE" ? (
+                    <button type="button" onClick={() => markInstallment(installment, "PAYE")} className="focus-ring mt-4 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm font-semibold text-loden-700 hover:bg-loden-50">
+                      Marquer payée
+                    </button>
+                  ) : null}
+                </article>
+              ))}
+            </div>
+            <div className="hidden overflow-x-auto md:block">
             <table className="w-full text-left text-sm">
               <thead className="text-xs uppercase tracking-wide text-loden-muted">
                 <tr className="border-b border-slate-200">
@@ -353,6 +419,7 @@ export function Finance() {
                 ))}
               </tbody>
             </table>
+            </div>
           </div>
         ) : null}
       </div>

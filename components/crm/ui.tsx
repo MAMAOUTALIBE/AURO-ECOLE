@@ -20,7 +20,7 @@ export function Card({
   as?: "div" | "section" | "article";
 }) {
   return (
-    <Tag className={cn("rounded-2xl border border-slate-200/80 bg-white shadow-soft", className)}>{children}</Tag>
+    <Tag className={cn("min-w-0 max-w-full rounded-2xl border border-slate-200/80 bg-white shadow-soft", className)}>{children}</Tag>
   );
 }
 
@@ -151,11 +151,7 @@ const KPI_ACCENT: Record<string, string> = {
   sky: "bg-sky-50 text-sky-600"
 };
 
-/**
- * Carte KPI compacte (une seule ligne) :
- *   [icône]  valeur libellé · subLabel        [tendance]
- * Tout tient sur une ligne (nowrap + ellipsis) pour un dashboard dense et lisible.
- */
+/** Carte KPI compacte mais lisible : valeur + libellé, puis détail sur une ligne dédiée. */
 export function KpiCard({
   icon: Icon,
   label,
@@ -179,19 +175,24 @@ export function KpiCard({
   const TrendIcon = trend ? TREND_ICON[trend.direction] : Minus;
 
   const inner = (
-    <div className="flex items-center gap-3">
+    <div className="flex min-w-0 items-center gap-3">
       <span className={cn("flex h-10 w-10 shrink-0 items-center justify-center rounded-xl", KPI_ACCENT[accent])}>
         <Icon className="h-5 w-5" aria-hidden="true" />
       </span>
       <div className="min-w-0 flex-1">
         {loading ? (
-          <Skeleton className="h-4 w-32" />
+          <div className="space-y-1.5">
+            <Skeleton className="h-4 w-28" />
+            <Skeleton className="h-3 w-20" />
+          </div>
         ) : (
-          <p className="truncate text-sm leading-tight text-loden-muted">
-            <span className="text-[15px] font-bold tracking-tight text-loden-ink">{value}</span>{" "}
-            <span className="font-medium text-loden-ink">{label}</span>
-            {subLabel ? <span className="text-loden-muted"> · {subLabel}</span> : null}
-          </p>
+          <div className="min-w-0">
+            <p className="flex min-w-0 items-baseline gap-1.5 leading-tight">
+              <span className="shrink-0 text-base font-bold tracking-tight text-loden-ink">{value}</span>
+              <span className="truncate text-sm font-semibold text-loden-ink">{label}</span>
+            </p>
+            {subLabel ? <p className="mt-0.5 truncate text-xs font-medium text-loden-muted">{subLabel}</p> : null}
+          </div>
         )}
       </div>
       {showTrend ? (

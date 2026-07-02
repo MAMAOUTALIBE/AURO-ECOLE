@@ -88,7 +88,46 @@ export function CpfManager() {
         ) : requests.length === 0 ? (
           <EmptyState icon={PiggyBank} title="Aucun dossier CPF" description="Les demandes de financement CPF apparaîtront ici dès réception." compact />
         ) : (
-          <div className="overflow-x-auto">
+          <>
+          <div className="grid gap-3 md:hidden">
+            {requests.map((req) => (
+              <article key={req.id} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-soft">
+                <div className="flex min-w-0 items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="truncate font-semibold text-loden-ink">{req.fullName}</p>
+                    <p className="truncate text-xs text-loden-muted">{req.email}</p>
+                  </div>
+                  <Badge variant={meta(req.status)?.variant ?? "neutral"}>{meta(req.status)?.label ?? req.status}</Badge>
+                </div>
+                <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wide text-loden-muted">Montant</p>
+                    <p className="mt-1 font-bold text-loden-ink">{euros(req.requestedAmountCents)}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wide text-loden-muted">Reçu le</p>
+                    <p className="mt-1 font-medium text-loden-ink">
+                      {new Date(req.createdAt).toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "numeric" })}
+                    </p>
+                  </div>
+                </div>
+                <select
+                  aria-label="Changer le statut du dossier"
+                  disabled={busy === req.id}
+                  className="focus-ring mt-4 w-full cursor-pointer rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-loden-ink outline-none disabled:opacity-60"
+                  value={req.status}
+                  onChange={(e) => changeStatus(req, e.target.value)}
+                >
+                  {STATUSES.map((s) => (
+                    <option key={s.key} value={s.key}>
+                      {s.label}
+                    </option>
+                  ))}
+                </select>
+              </article>
+            ))}
+          </div>
+          <div className="hidden overflow-x-auto md:block">
             <table className="w-full text-left text-sm">
               <thead className="text-xs uppercase tracking-wide text-loden-muted">
                 <tr className="border-b border-slate-200">
@@ -133,6 +172,7 @@ export function CpfManager() {
               </tbody>
             </table>
           </div>
+          </>
         )}
       </div>
     </Card>

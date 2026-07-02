@@ -143,11 +143,11 @@ export function Pipeline() {
         </div>
       ) : null}
       {error ? <p className="mb-4 rounded-2xl bg-red-50 p-4 text-sm font-medium text-red-700">{error}</p> : null}
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-6">
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
         {STAGES.map((stage) => {
           const stageLeads = leads.filter((lead) => lead.status === stage.key);
           return (
-            <div key={stage.key} className="rounded-3xl border border-slate-200 bg-loden-pearl/60 p-3">
+            <div key={stage.key} className="min-w-0 rounded-3xl border border-slate-200 bg-loden-pearl/60 p-3">
               <div className="flex items-center justify-between px-1 pb-2">
                 <p className="text-sm font-semibold text-loden-ink">{stage.label}</p>
                 <span className="rounded-full bg-white px-2 py-0.5 text-xs font-semibold text-loden-muted shadow-soft">
@@ -158,8 +158,8 @@ export function Pipeline() {
                 {stageLeads.map((lead) => {
                   const value = euros(lead.estimatedValueCents);
                   return (
-                    <div key={lead.id} className="rounded-2xl border border-slate-200 bg-white p-3 shadow-soft">
-                      <p className="text-sm font-semibold text-loden-ink">{lead.fullName}</p>
+                    <div key={lead.id} className="min-w-0 rounded-2xl border border-slate-200 bg-white p-3 shadow-soft">
+                      <p className="truncate text-sm font-semibold text-loden-ink">{lead.fullName}</p>
                       <p className="truncate text-xs text-loden-muted">{lead.email}</p>
                       <div className="mt-1 flex flex-wrap gap-1">
                         {lead.temperature && TEMP_LABELS[lead.temperature] ? (

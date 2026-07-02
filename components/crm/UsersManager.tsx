@@ -202,7 +202,52 @@ export function UsersManager() {
             <Card className="p-6"><EmptyState icon={Users} title={users.length === 0 ? "Aucun utilisateur" : "Aucun résultat"} description={users.length === 0 ? "Ajoute un premier membre du personnel ci-dessus." : "Aucun compte ne correspond à la recherche."} /></Card>
           ) : (
             <>
-            <Card className="overflow-x-auto p-0">
+            <div className="grid gap-3 lg:hidden">
+              {paged.map((user) => {
+                const meta = STATUS_META[user.status] ?? { label: user.status, variant: "neutral" as BadgeVariant };
+                const locked = user.role === "SUPER_ADMIN";
+                return (
+                  <article key={user.id} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-soft">
+                    <div className="flex min-w-0 items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="truncate font-semibold text-loden-ink">{user.firstName} {user.lastName}</p>
+                        <p className="truncate text-xs text-loden-muted">{user.email}</p>
+                      </div>
+                      <Badge variant={meta.variant}>{meta.label}</Badge>
+                    </div>
+                    <div className="mt-4 grid gap-3">
+                      {locked ? (
+                        <Badge variant="brand">{ROLE_LABELS[user.role] ?? user.role}</Badge>
+                      ) : (
+                        <select
+                          aria-label={`Rôle de ${user.firstName}`}
+                          disabled={busy === user.id}
+                          className="focus-ring w-full cursor-pointer rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-loden-ink outline-none disabled:opacity-60"
+                          value={ASSIGNABLE.includes(user.role) ? user.role : ""}
+                          onChange={(e) => patch(user, { role: e.target.value })}
+                        >
+                          {!ASSIGNABLE.includes(user.role) ? <option value="">{ROLE_LABELS[user.role] ?? user.role}</option> : null}
+                          {ASSIGNABLE.map((r) => <option key={r} value={r}>{ROLE_LABELS[r]}</option>)}
+                        </select>
+                      )}
+                      {locked ? (
+                        <span className="text-xs text-loden-muted">Compte protégé</span>
+                      ) : (
+                        <button
+                          type="button"
+                          disabled={busy === user.id}
+                          onClick={() => patch(user, { status: user.status === "ACTIVE" ? "SUSPENDED" : "ACTIVE" })}
+                          className="focus-ring rounded-xl border border-slate-200 px-3 py-2 text-sm font-semibold text-loden-ink transition hover:bg-loden-50 disabled:opacity-60"
+                        >
+                          {user.status === "ACTIVE" ? "Suspendre" : "Réactiver"}
+                        </button>
+                      )}
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+            <Card className="hidden overflow-x-auto p-0 lg:block">
               <table className="w-full text-left text-sm">
                 <thead className="text-xs uppercase tracking-wide text-loden-muted">
                   <tr className="border-b border-slate-200">

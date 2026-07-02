@@ -53,7 +53,27 @@ export function PermissionsViewer() {
         ) : !matrix ? (
           <EmptyState icon={ShieldCheck} title="Matrice indisponible" compact />
         ) : (
-          <div className="overflow-x-auto">
+          <>
+          <div className="grid gap-3 lg:hidden">
+            {matrix.permissions.map((permission) => {
+              const grantedRoles = matrix.roles.filter((r) => r.permissions.includes(permission));
+              return (
+                <article key={permission} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-soft">
+                  <p className="break-words font-mono text-xs font-semibold text-loden-ink">{permission}</p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {grantedRoles.length > 0 ? grantedRoles.map((r) => (
+                      <span key={r.role} className="rounded-full bg-loden-50 px-2.5 py-1 text-xs font-semibold text-loden-700">
+                        {ROLE_SHORT[r.role] ?? r.role}
+                      </span>
+                    )) : (
+                      <span className="text-xs text-loden-muted">Aucun rôle</span>
+                    )}
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+          <div className="hidden overflow-x-auto lg:block">
             <table className="w-full border-collapse text-left text-sm">
               <thead>
                 <tr className="border-b border-slate-200 text-xs uppercase tracking-wide text-loden-muted">
@@ -86,6 +106,7 @@ export function PermissionsViewer() {
               </tbody>
             </table>
           </div>
+          </>
         )}
       </div>
     </Card>

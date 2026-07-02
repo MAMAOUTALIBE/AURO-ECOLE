@@ -10,6 +10,8 @@ import {
   Bot,
   CalendarClock,
   CalendarDays,
+  ChevronDown,
+  ChevronUp,
   CreditCard,
   FileText,
   GraduationCap,
@@ -117,6 +119,7 @@ export function CrmDashboard() {
   const router = useRouter();
   const [period, setPeriod] = useState<7 | 30 | 90>(30);
   const [tab, setTab] = useState<"pilotage" | "analyse" | "activite">("pilotage");
+  const [showAllPriorities, setShowAllPriorities] = useState(false);
   const [loading, setLoading] = useState(true);
   const [denied, setDenied] = useState(false);
   const [serviceDown, setServiceDown] = useState(false);
@@ -321,6 +324,8 @@ export function CrmDashboard() {
     { icon: CalendarClock, label: "Réservations à confirmer", count: bookings.filter((b) => b.status === "EN_ATTENTE").length, href: "/admin/rendez-vous?view=planning", tone: "text-sky-600" }
   ];
   const openTasks = tasks.filter((t) => t.count > 0);
+  const priorityItems = cockpit?.toProcess ?? [];
+  const visiblePriorityItems = showAllPriorities ? priorityItems : priorityItems.slice(0, 4);
 
   /* --------- Agenda du jour / à venir --------- */
   const upcoming = bookings
@@ -404,11 +409,31 @@ export function CrmDashboard() {
         <KpiCard icon={Inbox} href="/admin/relances" label="Tâches en retard" value={loading ? "" : nf(cockpit?.kpis.tasksOverdue ?? 0)} loading={loading} accent="indigo" subLabel={`${cockpit?.kpis.tasksDueToday ?? 0} pour aujourd'hui`} />
       </div>
 
-      {!loading && (cockpit?.toProcess.length ?? 0) > 0 ? (
+      {!loading && priorityItems.length > 0 ? (
         <Card className="p-5">
-          <SectionHeader title="À traiter maintenant" subtitle="File priorisée par le copilote : RDV à confirmer, relances, conversations." icon={Zap} action={<Link href="/admin/relances" className="text-xs font-semibold text-loden-700 hover:underline">Relances</Link>} />
+          <SectionHeader
+            title="À traiter maintenant"
+            subtitle="File priorisée par le copilote : RDV à confirmer, relances, conversations."
+            icon={Zap}
+            action={
+              <div className="flex items-center gap-2">
+                {priorityItems.length > 4 ? (
+                  <button
+                    type="button"
+                    onClick={() => setShowAllPriorities((value) => !value)}
+                    className="focus-ring inline-flex items-center gap-1 rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs font-semibold text-loden-muted hover:bg-slate-50"
+                    aria-expanded={showAllPriorities}
+                  >
+                    {showAllPriorities ? <ChevronUp className="h-3.5 w-3.5" aria-hidden="true" /> : <ChevronDown className="h-3.5 w-3.5" aria-hidden="true" />}
+                    {showAllPriorities ? "Réduire" : `+${priorityItems.length - 4}`}
+                  </button>
+                ) : null}
+                <Link href="/admin/relances" className="text-xs font-semibold text-loden-700 hover:underline">Relances</Link>
+              </div>
+            }
+          />
           <ul className="mt-4 grid gap-2 md:grid-cols-2">
-            {cockpit!.toProcess.map((it, i) => (
+            {visiblePriorityItems.map((it, i) => (
               <li key={`${it.type}-${i}`}>
                 <Link href={it.href} className="flex items-center gap-3 rounded-xl border border-slate-200/70 px-3 py-2.5 transition hover:border-loden-200 hover:bg-loden-50/40">
                   <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${it.priority === "urgent" ? "bg-rose-500" : it.priority === "high" ? "bg-amber-500" : "bg-sky-400"}`} aria-hidden="true" />

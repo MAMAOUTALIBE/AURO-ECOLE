@@ -145,6 +145,7 @@ export function ResourcePlanning() {
       : `${startOfWeek(anchor).toLocaleDateString("fr-FR", { day: "numeric", month: "short" })} – ${addDays(startOfWeek(anchor), 6).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" })}`;
 
   const step = (dir: number) => setAnchor((d) => addDays(d, mode === "week" ? dir * 7 : dir));
+  const mobileEvents = [...events].sort((a, b) => a.startsAt.localeCompare(b.startsAt));
 
   const HourAxis = ({ headerH }: { headerH: number }) => (
     <div className="w-12 shrink-0">
@@ -181,8 +182,32 @@ export function ResourcePlanning() {
       {error ? <p className="mt-4 rounded-xl bg-rose-50 p-3 text-sm font-medium text-rose-700">{error}</p> : null}
       {loading ? <p className="mt-6 text-sm text-loden-muted">Chargement…</p> : null}
 
+      {!loading && !error ? (
+        <div className="mt-5 grid gap-3 md:hidden">
+          {mobileEvents.length === 0 ? (
+            <p className="py-6 text-center text-sm text-loden-muted">Aucune leçon ni rendez-vous.</p>
+          ) : mobileEvents.map((event) => (
+            <Link
+              key={`${event.kind}-${event.id}`}
+              href="/admin/rendez-vous?view=planning"
+              className="block rounded-2xl border border-slate-200 bg-white p-4 shadow-soft"
+            >
+              <div className="flex min-w-0 items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="truncate font-semibold text-loden-ink">{event.title}</p>
+                  <p className="mt-1 text-xs text-loden-muted">{event.instructorName ?? "Non assigné"}</p>
+                </div>
+                <span className="shrink-0 rounded-full bg-loden-50 px-2.5 py-1 text-xs font-semibold text-loden-700">
+                  {fmtTime(event.startsAt)}–{fmtTime(event.endsAt)}
+                </span>
+              </div>
+            </Link>
+          ))}
+        </div>
+      ) : null}
+
       {!loading && !error && mode === "day" ? (
-        <div className="mt-5 overflow-x-auto">
+        <div className="mt-5 hidden overflow-x-auto md:block">
           {columns.length === 0 ? (
             <p className="py-6 text-center text-sm text-loden-muted">Aucun moniteur.</p>
           ) : (
@@ -201,7 +226,7 @@ export function ResourcePlanning() {
       ) : null}
 
       {!loading && !error && mode === "week" ? (
-        <div className="mt-5 overflow-x-auto">
+        <div className="mt-5 hidden overflow-x-auto md:block">
           {columns.length === 0 ? (
             <p className="py-6 text-center text-sm text-loden-muted">Aucune leçon ni rendez-vous cette semaine.</p>
           ) : (
