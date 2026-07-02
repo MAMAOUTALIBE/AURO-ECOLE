@@ -35,7 +35,7 @@ function fmt(iso: string) {
 }
 function euros(cents?: number | null) {
   if (!cents) return null;
-  return new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(cents / 100);
+  return new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 2 }).format(cents / 100);
 }
 
 export function RelancesManager() {

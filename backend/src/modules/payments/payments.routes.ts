@@ -79,7 +79,9 @@ export function createPaymentsRouter(repository: LodenRepository, config: ApiCon
     requirePermission("payments.manage"),
     asyncHandler(async (req: AuthenticatedRequest, res) => {
       const body = validateBody(recordSchema, req);
-      const payment = await repository.createPayment(body);
+      // Épingle l'agence côté serveur (évite la fuite inter-agences via un body forgé).
+      const agencyId = await resolveScopedAgencyId(repository, req, body.agencyId);
+      const payment = await repository.createPayment({ ...body, agencyId });
       // Traçabilité : tout encaissement manuel (espèces/chèque/virement) est journalisé
       // — qui l'a saisi, le montant et le statut — au même titre que les changements de statut.
       // Le montant reste celui saisi par le staff (un acompte/échéance est légitimement

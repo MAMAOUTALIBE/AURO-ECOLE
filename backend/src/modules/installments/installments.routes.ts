@@ -44,6 +44,8 @@ export function createInstallmentsRouter(repository: LodenRepository, config: Ap
     requirePermission("payments.manage"),
     asyncHandler(async (req, res) => {
       const body = validateBody(planSchema, req);
+      // Épingle l'agence côté serveur (évite la fuite inter-agences via un body forgé).
+      const agencyId = await resolveScopedAgencyId(repository, req as AuthenticatedRequest, body.agencyId);
       const base = Math.floor(body.totalCents / body.count);
       const remainder = body.totalCents - base * body.count;
 
@@ -58,7 +60,7 @@ export function createInstallmentsRouter(repository: LodenRepository, config: Ap
         created.push(
           await repository.createInstallment({
             studentId: body.studentId,
-            agencyId: body.agencyId,
+            agencyId,
             label: `Échéance ${index + 1}/${body.count}`,
             dueDate,
             amountCents

@@ -24,7 +24,7 @@ const STATUSES: { key: string; label: string; variant: BadgeVariant }[] = [
 
 const euros = (cents?: number | null) =>
   cents && cents > 0
-    ? new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(cents / 100)
+    ? new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 2 }).format(cents / 100)
     : "—";
 
 export function CpfManager() {

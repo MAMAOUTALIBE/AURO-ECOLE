@@ -9,6 +9,11 @@ import { euros, quoteDate, previewTotals, VAT_RATES, QUOTE_STATUS_LABELS, type Q
 
 const PAGE_SIZE = 10;
 
+const parseEuros = (v: string) => {
+  const n = Number(String(v).replace(/\s/g, "").replace(",", "."));
+  return Number.isFinite(n) ? n : 0;
+};
+
 type Line = { label: string; quantity: number; unitAmountCents: number; vatRate: number };
 type Quote = {
   id: string;
@@ -108,7 +113,7 @@ export function QuotesManager() {
 
   const previewLines = lines
     .filter((l) => l.label.trim() && l.unitEuros !== "")
-    .map((l) => ({ quantity: Number(l.quantity) || 0, unitAmountCents: Math.round(Number(l.unitEuros) * 100) || 0, vatRate: l.vatRate }));
+    .map((l) => ({ quantity: Number(l.quantity) || 0, unitAmountCents: Math.round(parseEuros(l.unitEuros) * 100), vatRate: l.vatRate }));
   const preview = previewTotals(previewLines);
 
   const resetForm = () => {
@@ -125,7 +130,7 @@ export function QuotesManager() {
       .map((l) => ({
         label: l.label.trim(),
         quantity: Math.max(1, Math.round(Number(l.quantity) || 1)),
-        unitAmountCents: Math.max(0, Math.round(Number(l.unitEuros) * 100) || 0),
+        unitAmountCents: Math.max(0, Math.round(parseEuros(l.unitEuros) * 100)),
         vatRate: l.vatRate
       }));
     if (!clientUserId || payloadLines.length === 0) {

@@ -2,7 +2,7 @@ import { Router } from "express";
 import { z } from "zod";
 import type { ApiConfig } from "../../config/env";
 import type { AuthenticatedRequest } from "../../http/request-context";
-import { authenticate, requirePermission } from "../../middleware/auth";
+import { assertAgencyAccess, authenticate, requirePermission, resolveScopedAgencyId } from "../../middleware/auth";
 import type { LodenRepository } from "../../repositories/loden-repository";
 import type { BookingRecord, ChatAppointmentRecord } from "../../domain/types";
 import { asyncHandler } from "../../shared/async-handler";
@@ -334,6 +334,7 @@ export function createAppointmentsAdminRouter(repository: LodenRepository, confi
     requirePermission("leads.read"),
     asyncHandler(async (req, res) => {
       const query = validateQuery(calendarQuerySchema, req);
+      const agencyId = await resolveScopedAgencyId(repository, req as AuthenticatedRequest, query.agencyId);
       const from = query.from ?? new Date(Date.now() - 7 * 24 * 60 * 60_000);
       const to = query.to ?? new Date(Date.now() + 60 * 24 * 60 * 60_000);
       const refs = await buildRefs(repository);
@@ -341,7 +342,7 @@ export function createAppointmentsAdminRouter(repository: LodenRepository, confi
       const appointments = await repository.listChatAppointments({
         from,
         to,
-        agencyId: query.agencyId,
+        agencyId,
         instructorId: query.instructorId,
         source: query.source,
         status: query.status
@@ -351,7 +352,7 @@ export function createAppointmentsAdminRouter(repository: LodenRepository, confi
         .map((a) => appointmentEvent(a, refs));
 
       if (query.includeLessons && !query.source) {
-        const bookings = await repository.listBookings({ agencyId: query.agencyId, instructorId: query.instructorId });
+        const bookings = await repository.listBookings({ agencyId, instructorId: query.instructorId });
         const lessonEvents = bookings
           .filter((b) => b.startsAt >= from && b.startsAt <= to)
           .filter((b) => (!query.formationId || b.formationId === query.formationId))
@@ -370,10 +371,11 @@ export function createAppointmentsAdminRouter(repository: LodenRepository, confi
     requirePermission("leads.read"),
     asyncHandler(async (req, res) => {
       const query = validateQuery(listQuerySchema, req);
+      const agencyId = await resolveScopedAgencyId(repository, req as AuthenticatedRequest, query.agencyId);
       const refs = await buildRefs(repository);
       const appointments = await repository.listChatAppointments({
         source: query.source,
-        agencyId: query.agencyId,
+        agencyId,
         instructorId: query.instructorId,
         assignedToId: query.assignedToId
       });
@@ -394,10 +396,11 @@ export function createAppointmentsAdminRouter(repository: LodenRepository, confi
     requirePermission("leads.read"),
     asyncHandler(async (req, res) => {
       const query = validateQuery(calendarQuerySchema, req);
+      const agencyId = await resolveScopedAgencyId(repository, req as AuthenticatedRequest, query.agencyId);
       const from = query.from ?? new Date();
       const to = query.to ?? new Date(Date.now() + 30 * 24 * 60 * 60_000);
       const [slots, availabilities] = await Promise.all([
-        repository.listChatAvailabilitySlots({ from, to, active: true, agencyId: query.agencyId }),
+        repository.listChatAvailabilitySlots({ from, to, active: true, agencyId }),
         repository.listAvailabilities(query.instructorId)
       ]);
       res.json({
@@ -424,11 +427,12 @@ export function createAppointmentsAdminRouter(repository: LodenRepository, confi
     requirePermission("leads.read"),
     asyncHandler(async (req, res) => {
       const query = validateQuery(listQuerySchema, req);
+      const agencyId = await resolveScopedAgencyId(repository, req as AuthenticatedRequest, query.agencyId);
       const refs = await buildRefs(repository);
       let appointments = await repository.listChatAppointments({
         status: query.status,
         source: query.source,
-        agencyId: query.agencyId,
+        agencyId,
         instructorId: query.instructorId,
         assignedToId: query.assignedToId,
         from: query.from,
@@ -476,6 +480,7 @@ export function createAppointmentsAdminRouter(repository: LodenRepository, confi
     asyncHandler(async (req, res) => {
       const appointment = await repository.findChatAppointmentById(String(req.params.id));
       if (!appointment) throw notFound("Rendez-vous introuvable");
+      await assertAgencyAccess(repository, req as AuthenticatedRequest, appointment.agencyId);
       const refs = await buildRefs(repository);
       res.json({ data: await appointmentDetail(repository, appointment, refs) });
     })
@@ -591,6 +596,7 @@ export function createAppointmentsAdminRouter(repository: LodenRepository, confi
       const id = String(req.params.id);
       const existing = await repository.findChatAppointmentById(id);
       if (!existing) throw notFound("Rendez-vous introuvable");
+      await assertAgencyAccess(repository, req as AuthenticatedRequest, existing.agencyId);
       const body = validateBody(updateSchema, req);
 
       const startsAt = body.startsAt ?? existing.startsAt;
@@ -628,6 +634,7 @@ export function createAppointmentsAdminRouter(repository: LodenRepository, confi
       const id = String(req.params.id);
       const existing = await repository.findChatAppointmentById(id);
       if (!existing) throw notFound("Rendez-vous introuvable");
+      await assertAgencyAccess(repository, req as AuthenticatedRequest, existing.agencyId);
       const body = validateBody(statusSchema, req);
 
       const updated = await repository.updateChatAppointment(id, { status: body.status, updatedById: req.user?.id ?? null });
@@ -659,6 +666,7 @@ export function createAppointmentsAdminRouter(repository: LodenRepository, confi
       const id = String(req.params.id);
       const existing = await repository.findChatAppointmentById(id);
       if (!existing) throw notFound("Rendez-vous introuvable");
+      await assertAgencyAccess(repository, req as AuthenticatedRequest, existing.agencyId);
       const body = validateBody(assignSchema, req);
 
       const instructorId = body.instructorId === undefined ? existing.instructorId : body.instructorId;
@@ -693,6 +701,7 @@ export function createAppointmentsAdminRouter(repository: LodenRepository, confi
       const id = String(req.params.id);
       const existing = await repository.findChatAppointmentById(id);
       if (!existing) throw notFound("Rendez-vous introuvable");
+      await assertAgencyAccess(repository, req as AuthenticatedRequest, existing.agencyId);
       const body = validateBody(rescheduleSchema, req);
       if (body.endsAt <= body.startsAt) throw badRequest("La fin doit être après le début.");
 
@@ -771,6 +780,7 @@ export function createAppointmentsAdminRouter(repository: LodenRepository, confi
       const id = String(req.params.id);
       const appointment = await repository.findChatAppointmentById(id);
       if (!appointment) throw notFound("Rendez-vous introuvable");
+      await assertAgencyAccess(repository, req as AuthenticatedRequest, appointment.agencyId);
       if (appointment.studentId) throw conflict("Ce rendez-vous est déjà lié à un élève.");
 
       const body = z
@@ -800,7 +810,8 @@ export function createAppointmentsAdminRouter(repository: LodenRepository, confi
         student = await repository.createStudent({
           userId: user.id,
           formationId: body.formationId ?? appointment.formationId ?? null,
-          purchasedHours: body.purchasedHours ?? 0
+          purchasedHours: body.purchasedHours ?? 0,
+          agencyId: appointment.agencyId
         });
       }
 
@@ -839,6 +850,7 @@ export function createAppointmentsAdminRouter(repository: LodenRepository, confi
       const id = String(req.params.id);
       const existing = await repository.findChatAppointmentById(id);
       if (!existing) throw notFound("Rendez-vous introuvable");
+      await assertAgencyAccess(repository, req as AuthenticatedRequest, existing.agencyId);
       await repository.deleteChatAppointment(id);
       await repository.createAuditLog({
         userId: req.user?.id ?? null,

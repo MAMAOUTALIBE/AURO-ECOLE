@@ -267,10 +267,16 @@ export class PrismaLodenRepository implements LodenRepository {
         update: { lastNumber: { increment: 1 } }
       });
       const number = `FAC-${year}-${String(counter.lastNumber).padStart(6, "0")}`;
-      return tx.invoice.update({
-        where: { id },
+      // Garde anti-double-émission : le passage BROUILLON -> EMISE n'est appliqué que si
+      // la facture est encore un brouillon. Deux émissions concurrentes : la 2ᵉ touche 0
+      // ligne -> on abort la transaction (le compteur n'est pas consommé), pas de trou de
+      // numérotation (obligation légale FR : séquence sans trou).
+      const { count } = await tx.invoice.updateMany({
+        where: { id, status: "BROUILLON" },
         data: { number, status: "EMISE", issuedAt, issuerSnapshot: snapshots.issuer as never, clientSnapshot: snapshots.client as never }
       });
+      if (count !== 1) throw conflict("Facture déjà émise");
+      return tx.invoice.findUniqueOrThrow({ where: { id } });
     });
     return this.mapInvoice(row);
   }
@@ -380,10 +386,14 @@ export class PrismaLodenRepository implements LodenRepository {
         update: { lastNumber: { increment: 1 } }
       });
       const number = `DEV-${year}-${String(counter.lastNumber).padStart(6, "0")}`;
-      return tx.quote.update({
-        where: { id },
+      // Garde anti-double-envoi : BROUILLON -> ENVOYE seulement si encore brouillon.
+      // Deux envois concurrents : le 2ᵉ touche 0 ligne -> abort, pas de trou de numérotation.
+      const { count } = await tx.quote.updateMany({
+        where: { id, status: "BROUILLON" },
         data: { number, status: "ENVOYE", sentAt, issuerSnapshot: snapshots.issuer as never, clientSnapshot: snapshots.client as never }
       });
+      if (count !== 1) throw conflict("Devis déjà envoyé");
+      return tx.quote.findUniqueOrThrow({ where: { id } });
     });
     return this.mapQuote(row);
   }
@@ -487,10 +497,14 @@ export class PrismaLodenRepository implements LodenRepository {
         update: { lastNumber: { increment: 1 } }
       });
       const number = `CTR-${year}-${String(counter.lastNumber).padStart(6, "0")}`;
-      return tx.contract.update({
-        where: { id },
+      // Garde anti-double-activation : BROUILLON -> ACTIF seulement si encore brouillon.
+      // Deux activations concurrentes : la 2ᵉ touche 0 ligne -> abort, pas de trou de numérotation.
+      const { count } = await tx.contract.updateMany({
+        where: { id, status: "BROUILLON" },
         data: { number, status: "ACTIF", signedAt, issuerSnapshot: snapshots.issuer as never, clientSnapshot: snapshots.client as never }
       });
+      if (count !== 1) throw conflict("Contrat déjà activé");
+      return tx.contract.findUniqueOrThrow({ where: { id } });
     });
     return this.mapContract(row);
   }
@@ -1315,7 +1329,28 @@ export class PrismaLodenRepository implements LodenRepository {
   }
 
   async deleteChatAppointment(id: string) {
-    await this.prisma.chatAppointment.delete({ where: { id } });
+    await this.prisma.$transaction(async (tx) => {
+      // On lit le RDV AVANT suppression pour connaître le créneau à libérer.
+      const appointment = await tx.chatAppointment.findUnique({ where: { id } });
+      await tx.chatAppointment.delete({ where: { id } });
+      if (!appointment) return;
+      // Miroir de l'incrément fait à la création : on décrémente le compteur du
+      // créneau correspondant (min 0) et on le réactive s'il repasse sous sa capacité,
+      // sinon les créneaux du chatbot restent « complets » à tort après une suppression.
+      const slot = await tx.chatAvailabilitySlot.findFirst({
+        where: { startsAt: appointment.startsAt, endsAt: appointment.endsAt }
+      });
+      if (slot) {
+        const nextBookedCount = Math.max(0, slot.bookedCount - 1);
+        await tx.chatAvailabilitySlot.update({
+          where: { id: slot.id },
+          data: {
+            bookedCount: nextBookedCount,
+            active: nextBookedCount < slot.capacity
+          }
+        });
+      }
+    });
   }
 
   private mapChatTask(row: {
