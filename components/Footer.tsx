@@ -1,247 +1,294 @@
-import Link from "next/link";
 import Image from "next/image";
-import { ArrowRight, Facebook, Instagram, Link2, Mail, MapPin, MessageCircle, Phone } from "lucide-react";
-import { contactInfo, legalLinks, localSeoPages, navItems, socialLinks } from "@/data/site";
+import Link from "next/link";
+import type { ComponentType, SVGProps } from "react";
+import {
+  ArrowRight,
+  CalendarCheck,
+  Mail,
+  MapPin,
+  MessageCircle,
+  MonitorCheck,
+  Phone,
+  ShieldCheck,
+  Sparkles,
+  UsersRound,
+  type LucideIcon
+} from "lucide-react";
+import { FacebookIcon, InstagramIcon, TiktokIcon, YoutubeIcon } from "@/components/SocialIcons";
+import { contactInfo, navItems } from "@/data/site";
 
-function socialIcon(label: string) {
-  const value = label.toLowerCase();
-  if (value.includes("facebook")) return Facebook;
-  if (value.includes("instagram")) return Instagram;
-  return Link2;
+type FooterLinkItem = {
+  href: string;
+  label: string;
+};
+
+type SocialIcon = ComponentType<SVGProps<SVGSVGElement>>;
+
+const brandSignals: { label: string; icon: LucideIcon }[] = [
+  { label: "Pédagogie de qualité", icon: ShieldCheck },
+  { label: "Suivi digital personnalisé", icon: MonitorCheck },
+  { label: "Équipe à votre écoute", icon: UsersRound },
+  { label: "Conflans-Sainte-Honorine", icon: MapPin }
+];
+
+const formationLinks: FooterLinkItem[] = [
+  { href: "/formations/permis-b-manuel-essentiel", label: "Permis B Conflans-Sainte-Honorine" },
+  { href: "/cpf", label: "Auto-école CPF Conflans-Sainte-Honorine" },
+  { href: "/formations/permis-b-auto-declic", label: "CPF permis" },
+  { href: "/tarifs", label: "Tarifs" }
+];
+
+const financeLinks: FooterLinkItem[] = [
+  { href: "/cpf", label: "CPF" },
+  { href: "/financement", label: "Aides au permis" },
+  { href: "/financement", label: "Financement personnel" },
+  { href: "/financement", label: "Paiement en plusieurs fois" },
+  { href: "/contact?objet=documents", label: "Documents nécessaires" }
+];
+
+const practicalLinks: FooterLinkItem[] = [
+  { href: "/formations/permis-b-manuel-essentiel", label: "Permis B" },
+  { href: "/cpf", label: "CPF" },
+  { href: "/permis-b-paris-11", label: "Auto-école à Conflans-Sainte-Honorine" },
+  { href: "/contact?objet=horaires", label: "Horaires" },
+  { href: "/tarifs", label: "Tarifs" },
+  { href: "/contact", label: "Nous écrire" }
+];
+
+const legalBottomLinks: FooterLinkItem[] = [
+  { href: "/mentions-legales", label: "Mentions légales" },
+  { href: "/confidentialite", label: "Politique de confidentialité" },
+  { href: "/mentions-legales", label: "CGV" },
+  { href: "/sitemap.xml", label: "Plan du site" }
+];
+
+const socialButtons: { label: string; href: string; Icon: SocialIcon }[] = [
+  { label: "Facebook", href: "/contact", Icon: FacebookIcon },
+  { label: "Instagram", href: "/contact", Icon: InstagramIcon },
+  { label: "TikTok", href: "/contact", Icon: TiktokIcon },
+  { label: "YouTube", href: "/contact", Icon: YoutubeIcon }
+];
+
+function normalizePhone(source: string) {
+  return source.replace(/\s/g, "");
 }
 
-function MobileFooterLink({ href, label }: { href: string; label: string }) {
+function SectionTitle({ children }: { children: string }) {
+  return (
+    <div>
+      <p className="text-base font-black text-loden-ink">{children}</p>
+      <span className="mt-3 block h-0.5 w-7 rounded-full bg-loden-600" aria-hidden="true" />
+    </div>
+  );
+}
+
+function FooterLink({ href, label }: FooterLinkItem) {
   return (
     <Link
-      className="focus-ring flex min-h-12 items-center justify-between gap-4 rounded-2xl border border-slate-200/80 bg-white px-4 text-[15px] font-semibold text-loden-ink shadow-sm transition hover:border-loden-200 hover:bg-loden-50"
       href={href}
+      className="group/link flex min-w-0 items-start gap-3 rounded-xl py-1.5 text-sm font-semibold leading-6 text-loden-muted transition hover:translate-x-1 hover:text-loden-800"
     >
-      <span>{label}</span>
-      <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-loden-100 text-loden-700">
-        <ArrowRight className="h-4 w-4" aria-hidden="true" />
-      </span>
+      <ArrowRight className="mt-1 h-3.5 w-3.5 shrink-0 text-loden-600 transition group-hover/link:text-loden-800" aria-hidden="true" />
+      <span className="min-w-0">{label}</span>
     </Link>
+  );
+}
+
+function BrandSignal({ label, icon: Icon }: (typeof brandSignals)[number]) {
+  return (
+    <li className="flex items-center gap-3 text-sm font-semibold text-loden-muted">
+      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-loden-100 bg-white text-loden-700 shadow-sm">
+        <Icon className="h-5 w-5" aria-hidden="true" />
+      </span>
+      <span>{label}</span>
+    </li>
+  );
+}
+
+function ContactLine({
+  href,
+  icon: Icon,
+  label,
+  text,
+  external
+}: {
+  href: string;
+  icon: LucideIcon;
+  label: string;
+  text: string;
+  external?: boolean;
+}) {
+  return (
+    <a
+      href={href}
+      target={external ? "_blank" : undefined}
+      rel={external ? "noreferrer" : undefined}
+      className="group flex min-w-0 items-start gap-3 rounded-2xl p-2 transition hover:bg-loden-50"
+    >
+      <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-loden-50 text-loden-700">
+        <Icon className="h-5 w-5" aria-hidden="true" />
+      </span>
+      <span className="min-w-0">
+        <span className="block text-sm font-black leading-5 text-loden-ink">{text}</span>
+        <span className="mt-1 block text-xs font-semibold leading-5 text-loden-muted">{label}</span>
+      </span>
+    </a>
   );
 }
 
 export function Footer() {
   const directionsHref = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(contactInfo.mapQuery)}`;
-  const phoneHref = contactInfo.phone ? `tel:${contactInfo.phone.replaceAll(" ", "")}` : "";
-  const whatsappHref = contactInfo.whatsapp ? `https://wa.me/${contactInfo.whatsapp}` : "/contact";
-  const mobileEssentialLinks = [
-    { href: "/formations", label: "Formations" },
-    { href: "/tarifs", label: "Tarifs" },
-    { href: "/financement", label: "Financement" },
-    { href: "/faq", label: "FAQ" }
-  ];
+  const phoneHref = contactInfo.phone ? `tel:${normalizePhone(contactInfo.phone)}` : "/contact";
+  const emailHref = contactInfo.email ? `mailto:${contactInfo.email}` : "/contact";
+  const whatsappHref = contactInfo.whatsapp ? `https://wa.me/${contactInfo.whatsapp}` : phoneHref;
 
   return (
-    <footer className="border-t border-slate-200 bg-loden-petrol/70 pb-24 md:bg-white md:pb-0">
-      <div className="container-pad py-6 md:hidden">
-        <div className="overflow-hidden rounded-[1.35rem] border border-white/80 bg-white shadow-soft">
-          <div className="px-5 pb-5 pt-5">
-            <Link href="/" className="focus-ring inline-flex rounded-2xl" aria-label="LODENE - Accueil">
+    <footer className="relative overflow-hidden bg-white pb-[calc(6rem+env(safe-area-inset-bottom))] text-loden-ink md:pb-0">
+      <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(226,251,251,0.72)_0%,rgba(255,255,255,0.96)_28%,#ffffff_100%)]" aria-hidden="true" />
+      <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-loden-50/70 to-transparent" aria-hidden="true" />
+
+      <div className="container-pad relative py-10 md:py-12 lg:py-16">
+        <div className="grid gap-10 xl:grid-cols-[1.05fr_2.55fr_1.15fr] xl:gap-12">
+          <div className="lg:pr-4">
+            <Link href="/" className="focus-ring inline-flex rounded-3xl" aria-label="LODENE - Accueil">
               <Image
                 src="/lodene-logo-wordmark.png"
                 alt="LODENE Formation"
                 width={1320}
                 height={660}
-                className="h-16 w-auto max-w-[210px]"
+                className="h-24 w-auto max-w-[260px] sm:h-28"
               />
             </Link>
-            <p className="mt-3 max-w-xs text-sm leading-6 text-loden-muted">
-              Permis B, CPF et formations professionnelles à Conflans.
+            <p className="mt-5 max-w-sm text-base leading-7 text-loden-muted">
+              Une auto-école lumineuse, digitale et exigeante pour apprendre à conduire avec confiance.
             </p>
-            <div className="mt-5 grid grid-cols-3 gap-2">
-              {contactInfo.phone ? (
-                <a
-                  className="focus-ring flex min-h-[52px] items-center justify-center gap-1.5 rounded-2xl border border-loden-100 bg-loden-50 px-2 text-center text-xs font-bold text-loden-800 transition hover:bg-loden-100"
-                  href={phoneHref}
-                >
-                  <Phone className="h-4 w-4 shrink-0" aria-hidden="true" />
-                  <span>Appeler</span>
-                </a>
-              ) : null}
-              <a
-                className="focus-ring flex min-h-[52px] items-center justify-center gap-1.5 rounded-2xl bg-[#25D366] px-2 text-center text-xs font-bold text-white transition hover:bg-[#1fbd58]"
-                href={whatsappHref}
-              >
-                <MessageCircle className="h-4 w-4 shrink-0" aria-hidden="true" />
-                <span>WhatsApp</span>
-              </a>
-              <Link
-                className="focus-ring flex min-h-[52px] items-center justify-center gap-1.5 rounded-2xl bg-loden-700 px-2 text-center text-xs font-bold text-white shadow-soft transition hover:bg-loden-800"
-                href="/inscription"
-              >
-                <span>S&apos;inscrire</span>
-                <ArrowRight className="h-4 w-4 shrink-0" aria-hidden="true" />
-              </Link>
-            </div>
+            <ul className="mt-6 grid gap-3" aria-label="Points forts LODENE">
+              {brandSignals.map((item) => (
+                <BrandSignal key={item.label} {...item} />
+              ))}
+            </ul>
           </div>
 
-          <div className="border-y border-slate-100 bg-loden-fog/70 px-5 py-5">
-            <p className="text-base font-bold text-loden-ink">Liens utiles</p>
-            <nav className="mt-3" aria-label="Navigation secondaire mobile">
-              <ul className="grid grid-cols-2 gap-2">
-                {mobileEssentialLinks.map((item) => (
-                  <li key={item.href}>
-                    <MobileFooterLink href={item.href} label={item.label} />
-                  </li>
+          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4 xl:gap-10">
+            <div>
+              <SectionTitle>Navigation</SectionTitle>
+              <nav className="mt-5 grid gap-1" aria-label="Navigation du footer">
+                {navItems.map((item) => (
+                  <FooterLink key={item.href} href={item.href} label={item.label} />
                 ))}
-              </ul>
-            </nav>
-          </div>
-
-          <div className="border-t border-slate-100 bg-white px-5 pb-6 pt-5">
-            <p className="text-base font-bold text-loden-ink">Contact</p>
-            <div className="mt-4 grid gap-3 text-[15px] leading-6 text-loden-muted">
-              {contactInfo.phone ? (
-                <a className="flex gap-3 font-semibold hover:text-loden-700" href={phoneHref}>
-                  <Phone className="mt-0.5 h-5 w-5 shrink-0 text-loden-700" aria-hidden="true" />
-                  {contactInfo.phone}
-                </a>
-              ) : null}
-              {contactInfo.email ? (
-                <a className="flex gap-3 font-semibold hover:text-loden-700" href={`mailto:${contactInfo.email}`}>
-                  <Mail className="mt-0.5 h-5 w-5 shrink-0 text-loden-700" aria-hidden="true" />
-                  {contactInfo.email}
-                </a>
-              ) : null}
-              <a
-                className="flex gap-3 hover:text-loden-700"
-                href={directionsHref}
-                target="_blank"
-                rel="noreferrer"
-              >
-                <MapPin className="mt-0.5 h-5 w-5 shrink-0 text-loden-700" aria-hidden="true" />
-                <span>{contactInfo.address}</span>
-              </a>
+              </nav>
             </div>
-            <div className="mt-5 grid grid-cols-2 gap-2">
-              <a
-                className="focus-ring flex min-h-[50px] items-center justify-center gap-2 rounded-2xl border border-loden-100 bg-loden-50 px-3 text-sm font-bold text-loden-800 transition hover:bg-loden-100"
-                href={directionsHref}
-                target="_blank"
-                rel="noreferrer"
-              >
-                Itinéraire
-                <ArrowRight className="h-4 w-4" aria-hidden="true" />
-              </a>
-              <Link
-                className="focus-ring flex min-h-[50px] items-center justify-center gap-2 rounded-2xl bg-loden-700 px-3 text-sm font-bold text-white shadow-soft transition hover:bg-loden-800"
-                href="/contact"
-              >
-                Nous écrire
-                <ArrowRight className="h-4 w-4" aria-hidden="true" />
-              </Link>
+
+            <div>
+              <SectionTitle>Formations</SectionTitle>
+              <nav className="mt-5 grid gap-1" aria-label="Formations du footer">
+                {formationLinks.map((item) => (
+                  <FooterLink key={`${item.href}-${item.label}`} href={item.href} label={item.label} />
+                ))}
+              </nav>
+            </div>
+
+            <div>
+              <SectionTitle>Financement & aides</SectionTitle>
+              <nav className="mt-5 grid gap-1" aria-label="Financement et aides du footer">
+                {financeLinks.map((item) => (
+                  <FooterLink key={`${item.href}-${item.label}`} href={item.href} label={item.label} />
+                ))}
+              </nav>
+            </div>
+
+            <div>
+              <SectionTitle>Infos pratiques</SectionTitle>
+              <nav className="mt-5 grid gap-1" aria-label="Informations pratiques du footer">
+                {practicalLinks.map((item) => (
+                  <FooterLink key={`${item.href}-${item.label}`} href={item.href} label={item.label} />
+                ))}
+              </nav>
             </div>
           </div>
-        </div>
 
-        <div className="mt-5 text-center text-xs leading-5 text-loden-muted">
-          <p>© 2026 LODENE Auto-École. Tous droits réservés.</p>
-          <div className="mt-3 flex flex-wrap justify-center gap-x-4 gap-y-2">
-            {legalLinks.map((item) => (
-              <Link key={item.href} className="font-medium hover:text-loden-700" href={item.href}>
-                {item.label}
-              </Link>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      <div className="container-pad hidden gap-10 py-12 md:grid lg:grid-cols-[1.2fr_0.8fr_0.8fr_1fr]">
-        <div>
-          <Link href="/" className="focus-ring inline-flex rounded-2xl" aria-label="LODENE - Accueil">
-            <Image
-              src="/lodene-logo-wordmark.png"
-              alt="LODENE Formation"
-              width={1320}
-              height={660}
-              className="h-24 w-auto"
-            />
-          </Link>
-          <p className="mt-5 max-w-sm text-sm leading-6 text-loden-muted">
-            Une auto-école lumineuse, digitale et exigeante pour apprendre à conduire avec confiance.
-          </p>
-          {socialLinks.length > 0 ? (
-            <div className="mt-5 flex items-center gap-3">
-              {socialLinks.map((social) => {
-                const Icon = socialIcon(social.label);
-                return (
-                  <a
-                    key={social.href}
-                    className="rounded-full border border-slate-200 p-2 text-loden-muted hover:text-loden-700 focus-ring"
-                    href={social.href}
-                    target="_blank"
-                    rel="noreferrer"
-                    aria-label={social.label}
-                  >
-                    <Icon className="h-4 w-4" />
-                  </a>
-                );
-              })}
+          <aside className="rounded-3xl border border-slate-200 bg-white p-5 shadow-[0_20px_55px_rgba(15,45,60,0.10)]">
+            <SectionTitle>Contact</SectionTitle>
+            <div className="mt-5 grid gap-3">
+              <ContactLine href={phoneHref} icon={Phone} text={contactInfo.phone || "Nous appeler"} label="Du lundi au samedi" />
+              <ContactLine href={emailHref} icon={Mail} text={contactInfo.email || "Nous écrire"} label="Réponse rapide" />
+              <ContactLine href={directionsHref} icon={MapPin} text={contactInfo.address} label="Facile d’accès" external />
             </div>
-          ) : null}
-        </div>
-
-        <div>
-          <p className="font-semibold text-loden-ink">Navigation</p>
-          <div className="mt-4 grid gap-3 text-sm text-loden-muted">
-            {navItems.map((item) => (
-              <Link key={item.href} className="hover:text-loden-700" href={item.href}>
-                {item.label}
+            <div className="mt-5 border-t border-slate-200 pt-5">
+              <Link href="/contact" className="group flex items-center gap-3 rounded-2xl p-2 transition hover:bg-loden-50">
+                <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-loden-50 text-loden-700">
+                  <ArrowRight className="h-5 w-5" aria-hidden="true" />
+                </span>
+                <span>
+                  <span className="block text-sm font-semibold text-loden-muted">Une question ?</span>
+                  <span className="mt-1 inline-flex items-center gap-2 text-sm font-black text-loden-700">
+                    Nous écrire <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" aria-hidden="true" />
+                  </span>
+                </span>
               </Link>
-            ))}
-          </div>
+            </div>
+          </aside>
         </div>
 
-        <div>
-          <p className="font-semibold text-loden-ink">Guides locaux</p>
-          <div className="mt-4 grid gap-3 text-sm text-loden-muted">
-            {localSeoPages.map((item) => (
-              <Link key={item.href} className="hover:text-loden-700" href={item.href}>
-                {item.label}
-              </Link>
-            ))}
-            <Link className="hover:text-loden-700" href="/cpf">CPF permis</Link>
-            <Link className="hover:text-loden-700" href="/tarifs">Tarifs</Link>
-          </div>
-        </div>
+        <div className="mt-10 rounded-3xl border border-slate-200 bg-white p-5 shadow-[0_18px_55px_rgba(15,45,60,0.10)] md:p-6">
+          <div className="grid gap-5 lg:grid-cols-[1.1fr_0.75fr_0.75fr] lg:items-center">
+            <div className="flex min-w-0 gap-4">
+              <span className="grid h-14 w-14 shrink-0 place-items-center rounded-full bg-loden-50 text-loden-700">
+                <CalendarCheck className="h-6 w-6" aria-hidden="true" />
+              </span>
+              <span>
+                <span className="block text-base font-black text-loden-ink">Prêt à prendre le volant ?</span>
+                <span className="mt-1 block text-sm leading-6 text-loden-muted">
+                  Notre équipe vous accompagne à chaque étape de votre réussite.
+                </span>
+              </span>
+            </div>
 
-        <div>
-          <p className="font-semibold text-loden-ink">Contact</p>
-          <div className="mt-4 grid gap-3 text-sm text-loden-muted">
-            {contactInfo.phone ? (
-              <a className="flex gap-2 hover:text-loden-700" href={`tel:${contactInfo.phone.replaceAll(" ", "")}`}>
-                <Phone className="mt-0.5 h-4 w-4 text-loden-500" aria-hidden="true" />
-                {contactInfo.phone}
-              </a>
-            ) : null}
-            {contactInfo.email ? (
-              <a className="flex gap-2 hover:text-loden-700" href={`mailto:${contactInfo.email}`}>
-                <Mail className="mt-0.5 h-4 w-4 text-loden-500" aria-hidden="true" />
-                {contactInfo.email}
-              </a>
-            ) : null}
-            <a className="flex gap-2 hover:text-loden-700" href={directionsHref} target="_blank" rel="noreferrer">
-              <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-loden-500" aria-hidden="true" />
-              {contactInfo.address}
+            <a
+              href={whatsappHref}
+              target="_blank"
+              rel="noreferrer"
+              className="focus-ring inline-flex min-h-14 w-full items-center justify-center gap-3 rounded-full bg-[#25D366] px-6 py-3 text-sm font-black text-white shadow-[0_18px_45px_rgba(37,211,102,0.22)] transition hover:-translate-y-0.5 hover:bg-[#1fbd58]"
+            >
+              <MessageCircle className="h-5 w-5" aria-hidden="true" />
+              WhatsApp {contactInfo.phone}
+              <ArrowRight className="h-5 w-5" aria-hidden="true" />
             </a>
-            <Link className="flex gap-2 font-medium text-loden-700 hover:text-loden-800" href="/contact">
-              <Mail className="mt-0.5 h-4 w-4" aria-hidden="true" />
-              Nous écrire
+
+            <Link
+              href="/contact"
+              className="focus-ring inline-flex min-h-14 w-full items-center justify-center gap-3 rounded-full bg-gradient-to-r from-[#0b6f82] to-[#06485b] px-6 py-3 text-sm font-black text-white shadow-[0_18px_45px_rgba(7,72,91,0.22)] transition hover:-translate-y-0.5"
+            >
+              <Sparkles className="h-5 w-5" aria-hidden="true" />
+              Assistant LODENE
+              <ArrowRight className="h-5 w-5" aria-hidden="true" />
             </Link>
           </div>
         </div>
       </div>
-      <div className="hidden border-t border-slate-200 py-5 md:block">
-        <div className="container-pad flex flex-col gap-2 text-sm text-loden-muted sm:flex-row sm:items-center sm:justify-between">
-          <span>© 2026 LODENE Auto-École. Tous droits réservés.</span>
-          <div className="flex flex-wrap gap-x-4 gap-y-2">
-            {legalLinks.map((item) => (
-              <Link key={item.href} className="hover:text-loden-700" href={item.href}>
+
+      <div className="relative border-t border-white/10 bg-gradient-to-r from-[#043044] via-[#07566a] to-[#043044]">
+        <div className="container-pad grid gap-5 pb-[calc(6.5rem+env(safe-area-inset-bottom))] pt-6 text-sm text-white md:grid-cols-[1fr_auto_1fr] md:items-center md:pb-28">
+          <div>
+            <p className="font-semibold">© 2026 LODENE Auto-École. Tous droits réservés.</p>
+            <p className="mt-1 font-semibold text-loden-200">Apprendre à conduire, gagner en liberté.</p>
+          </div>
+          <nav className="flex flex-wrap gap-x-6 gap-y-2 md:justify-center" aria-label="Liens légaux">
+            {legalBottomLinks.map((item) => (
+              <Link key={`${item.href}-${item.label}`} href={item.href} className="font-semibold text-white/90 transition hover:text-loden-200">
                 {item.label}
+              </Link>
+            ))}
+          </nav>
+          <div className="flex flex-wrap gap-3 md:justify-end" aria-label="Réseaux sociaux">
+            {socialButtons.map(({ label, href, Icon }) => (
+              <Link
+                key={label}
+                href={href}
+                className="focus-ring grid h-11 w-11 place-items-center rounded-full bg-white/10 text-white transition hover:-translate-y-0.5 hover:bg-loden-300 hover:text-loden-950"
+                aria-label={label}
+              >
+                <Icon className="h-5 w-5" />
               </Link>
             ))}
           </div>
