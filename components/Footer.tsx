@@ -3,14 +3,11 @@ import Link from "next/link";
 import type { ComponentType, SVGProps } from "react";
 import {
   ArrowRight,
-  CalendarCheck,
   Mail,
   MapPin,
-  MessageCircle,
   MonitorCheck,
   Phone,
   ShieldCheck,
-  Sparkles,
   UsersRound,
   type LucideIcon
 } from "lucide-react";
@@ -140,7 +137,6 @@ export function Footer() {
   const directionsHref = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(contactInfo.mapQuery)}`;
   const phoneHref = contactInfo.phone ? `tel:${normalizePhone(contactInfo.phone)}` : "/contact";
   const emailHref = contactInfo.email ? `mailto:${contactInfo.email}` : "/contact";
-  const whatsappHref = contactInfo.whatsapp ? `https://wa.me/${contactInfo.whatsapp}` : phoneHref;
 
   return (
     <footer className="relative overflow-hidden bg-white pb-[calc(6rem+env(safe-area-inset-bottom))] text-loden-ink md:pb-0">
@@ -228,42 +224,6 @@ export function Footer() {
               </Link>
             </div>
           </aside>
-        </div>
-
-        <div className="mt-10 rounded-3xl border border-slate-200 bg-white p-5 shadow-[0_18px_55px_rgba(15,45,60,0.10)] md:p-6">
-          <div className="grid gap-5 lg:grid-cols-[1.1fr_0.75fr_0.75fr] lg:items-center">
-            <div className="flex min-w-0 gap-4">
-              <span className="grid h-14 w-14 shrink-0 place-items-center rounded-full bg-loden-50 text-loden-700">
-                <CalendarCheck className="h-6 w-6" aria-hidden="true" />
-              </span>
-              <span>
-                <span className="block text-base font-black text-loden-ink">Prêt à prendre le volant ?</span>
-                <span className="mt-1 block text-sm leading-6 text-loden-muted">
-                  Notre équipe vous accompagne à chaque étape de votre réussite.
-                </span>
-              </span>
-            </div>
-
-            <a
-              href={whatsappHref}
-              target="_blank"
-              rel="noreferrer"
-              className="focus-ring inline-flex min-h-14 w-full items-center justify-center gap-3 rounded-full bg-[#25D366] px-6 py-3 text-sm font-black text-white shadow-[0_18px_45px_rgba(37,211,102,0.22)] transition hover:-translate-y-0.5 hover:bg-[#1fbd58]"
-            >
-              <MessageCircle className="h-5 w-5" aria-hidden="true" />
-              WhatsApp {contactInfo.phone}
-              <ArrowRight className="h-5 w-5" aria-hidden="true" />
-            </a>
-
-            <Link
-              href="/contact"
-              className="focus-ring inline-flex min-h-14 w-full items-center justify-center gap-3 rounded-full bg-gradient-to-r from-[#0b6f82] to-[#06485b] px-6 py-3 text-sm font-black text-white shadow-[0_18px_45px_rgba(7,72,91,0.22)] transition hover:-translate-y-0.5"
-            >
-              <Sparkles className="h-5 w-5" aria-hidden="true" />
-              Assistant LODENE
-              <ArrowRight className="h-5 w-5" aria-hidden="true" />
-            </Link>
-          </div>
         </div>
       </div>
 
