@@ -15,7 +15,7 @@ import type { LodenRepository } from "../../repositories/loden-repository";
 import { asyncHandler } from "../../shared/async-handler";
 import { notFound } from "../../shared/http-error";
 import { emailSchema, phoneSchema, validateBody, validateQuery } from "../../shared/validation";
-import { bookChatAppointment, createFinancingFollowUpTask, createLeadFromChat, displayDate, displayTime, listAppointmentSlots } from "./chat-booking";
+import { bookChatAppointment, createCallbackAppointment, displayDate, displayTime, listAppointmentSlots } from "./chat-booking";
 
 const publicChatLimiter = rateLimit({
   windowMs: 60_000,
@@ -206,16 +206,16 @@ export function createChatRouter(repository: LodenRepository, config: ApiConfig,
     "/lead",
     asyncHandler(async (req, res) => {
       const body = validateBody(leadBodySchema, req);
-      const lead = await createLeadFromChat(repository, body);
-      await createFinancingFollowUpTask(repository, lead.id, body);
+      // Coordonnées sans créneau → RDV « À rappeler » dans le Centre RDV (pas un lead pipeline).
+      const { lead, appointment } = await createCallbackAppointment(repository, body);
       await repository.createAuditLog({
         userId: null,
-        action: "chatbot.lead.created",
-        entityType: "Lead",
-        entityId: lead.id,
-        metadata: { source: "chatbot", formation: body.formation, objective: body.objective, financingType: lead.financingType }
+        action: "chatbot.callback.created",
+        entityType: "Appointment",
+        entityId: appointment.id,
+        metadata: { source: "chatbot", leadId: lead.id, formation: body.formation, objective: body.objective }
       });
-      res.status(201).json({ data: { lead } });
+      res.status(201).json({ data: { lead, appointment } });
     })
   );
 

@@ -2,7 +2,7 @@ import { z } from "zod";
 import type { ApiConfig } from "../config/env";
 import type { Permission } from "../domain/permissions";
 import type { LeadRecord } from "../domain/types";
-import { bookChatAppointment, listAppointmentSlots } from "../modules/chat/chat-booking";
+import { bookChatAppointment, createCallbackAppointmentForLead, listAppointmentSlots } from "../modules/chat/chat-booking";
 import type { LodenRepository } from "../repositories/loden-repository";
 import { notifyNewLead, sendEmail } from "../shared/mailer";
 import { sendSms } from "../shared/sms";
@@ -262,10 +262,24 @@ export const publicTools: ToolEntry[] = [
         notes: parsed.data.message,
         status: "PROSPECT"
       });
+      // Centralisation : le contact atterrit aussi dans le Centre RDV (RDV « À rappeler ») ;
+      // le lead assistant-ia est masqué du pipeline côté CRM.
+      await createCallbackAppointmentForLead(ctx.repository, lead.id, {
+        firstName,
+        lastName,
+        email: parsed.data.email,
+        phone: parsed.data.phone ?? "",
+        formation: parsed.data.interest ?? "Je ne sais pas encore",
+        objective: "Être rappelé",
+        message: parsed.data.message,
+        consentContact: true,
+        consentWhatsApp: false,
+        source: "assistant-ia"
+      });
       void notifyNewLead(ctx.config, lead);
       void qualifyLead(ctx.aiProvider, ctx.repository, lead);
       await ctx.repository.createAuditLog({ action: "ai.create_lead", entityType: "Lead", entityId: lead.id, metadata: { source: "assistant-ia" }, userId: ctx.actorUserId ?? null });
-      return { ok: true, message: "Prospect enregistré. Un conseiller pourra recontacter." };
+      return { ok: true, message: "Vos coordonnées sont enregistrées. Un conseiller LODENE vous rappellera rapidement." };
     }
   },
   {
@@ -390,11 +404,11 @@ export const publicTools: ToolEntry[] = [
       const d = parsed.data;
       const placeholder = rejectPlaceholderIdentity(d.fullName, d.email);
       if (placeholder) return placeholder;
+      const { firstName, lastName } = splitFullName(d.fullName);
       const subject = d.formation ?? d.interest ?? "formation à préciser";
       const notes = ["Demande de devis", d.formation ? `Formation: ${d.formation}` : null, d.message]
         .filter(Boolean)
         .join(" | ");
-      const { firstName, lastName } = splitFullName(d.fullName);
       const lead = await ctx.repository.createLead({
         fullName: d.fullName,
         firstName,
@@ -414,6 +428,21 @@ export const publicTools: ToolEntry[] = [
         deadline: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
         note: `Établir un devis — ${subject}`,
         assignedToId: ctx.actorUserId ?? null
+      });
+      // Centralisation : la demande de devis apparaît aussi dans le Centre RDV (RDV « À rappeler »,
+      // type DEVIS) ; le lead assistant-ia-devis est masqué du pipeline côté CRM.
+      await createCallbackAppointmentForLead(ctx.repository, lead.id, {
+        firstName,
+        lastName,
+        email: d.email,
+        phone: d.phone ?? "",
+        formation: d.formation ?? d.interest ?? "Je ne sais pas encore",
+        objective: "Obtenir un devis",
+        message: d.message,
+        consentContact: true,
+        consentWhatsApp: false,
+        type: "DEVIS",
+        source: "assistant-ia-devis"
       });
       void notifyNewLead(ctx.config, lead);
       void qualifyLead(ctx.aiProvider, ctx.repository, lead);

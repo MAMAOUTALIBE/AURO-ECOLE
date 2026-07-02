@@ -37,6 +37,12 @@ function euros(cents?: number | null) {
   return new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(cents / 100);
 }
 
+// Les contacts issus du chatbot et des inscriptions sont gérés dans « Rendez-vous & Planning »
+// (Centre RDV), pas dans le pipeline. On les masque ici pour éviter le doublon.
+function isRdvManagedSource(source?: string | null) {
+  return !!source && (source === "inscription" || source.startsWith("chatbot") || source.startsWith("assistant-ia"));
+}
+
 export function Pipeline() {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
@@ -53,7 +59,7 @@ export function Pipeline() {
     fetch(`/api/leads${query}`)
       .then((response) => response.json())
       .then((payload) => {
-        if (Array.isArray(payload?.data)) setLeads(payload.data as Lead[]);
+        if (Array.isArray(payload?.data)) setLeads((payload.data as Lead[]).filter((lead) => !isRdvManagedSource(lead.source)));
         else setError(payload?.error?.message ?? "Impossible de charger le pipeline.");
       })
       .catch(() => setError("Le service LODENE est momentanément indisponible."))
