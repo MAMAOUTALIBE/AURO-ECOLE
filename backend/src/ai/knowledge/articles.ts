@@ -18,13 +18,16 @@ export const knowledgeArticles: KnowledgeArticle[] = [
       "permis", "permis b", "conduire", "conduite", "boite", "boîte", "automatique", "manuel", "manuelle",
       "bva", "passerelle", "stage accelere", "accelere", "intensif", "conduite accompagnee", "aac",
       "declic auto", "maitrise auto", "essentiel manuelle", "confort manuelle", "lecon", "lecons",
-      "heure de conduite", "code", "auto ecole", "evaluation de depart", "examen pratique"
+      "heure de conduite", "code", "auto ecole", "evaluation de depart", "examen pratique",
+      "post permis", "post-permis", "perfectionnement", "remorque", "permis remorque", "b96", "be",
+      "tracter", "recuperation de points", "recuperation points", "points", "stage points"
     ],
     body: [
       "LODENE prépare au permis B en boîte **automatique** et en boîte **manuelle**.",
       "- Boîte automatique : *Déclic Auto* (13 leçons) et *Maîtrise Auto* (20 leçons).",
       "- Boîte manuelle : *Essentiel Manuelle* (20 leçons) et *Confort Manuelle* (30 leçons).",
       "- Autres parcours : **conduite accompagnée (AAC) dès 15 ans**, **stage accéléré** (parcours intensif, sur devis selon le planning), **passerelle BVA → boîte manuelle**.",
+      "- Autres prestations conduite : **Post-permis** (7h, perfectionnement après l'examen), **permis remorque B96 / BE** (tracter caravane/remorque en sécurité, sur devis), **stage de récupération de points** (2 jours, sensibilisation à la sécurité routière).",
       "- Compléments : **heure de conduite supplémentaire à 60 € TTC**, **pack administratif + Code en ligne à 59 € TTC**, accompagnement à l'examen, évaluation de départ.",
       "Pour les prix exacts des formules, s'appuyer sur les tarifs publics à jour (outil get_formations / get_prices). CPF possible selon l'éligibilité du dossier sur les formules permis.",
       "Pour orienter : demander le niveau actuel, le budget et le délai souhaité, puis proposer un diagnostic / une demande de rendez-vous."
@@ -32,12 +35,13 @@ export const knowledgeArticles: KnowledgeArticle[] = [
   },
   {
     id: "public_formations_vtc",
-    title: "Formation VTC — préparation à l'examen CMA",
+    title: "VTC, Taxi & transport professionnel (FIMO/FCO)",
     scope: "public",
     keywords: [
       "vtc", "chauffeur", "cma", "chambre des metiers", "carte professionnelle", "carte pro",
       "distanciel eco", "intermediaire light", "confort pro", "excellence", "uber", "bolt",
-      "transport de personnes", "vsl", "taxi"
+      "transport de personnes", "vsl", "taxi", "chauffeur taxi", "carte taxi",
+      "fimo", "fco", "transport routier", "marchandises", "voyageurs", "poids lourd", "conducteur"
     ],
     body: [
       "LODENE prépare aux épreuves **théoriques et pratiques de l'examen VTC**, géré par la **Chambre de Métiers et de l'Artisanat (CMA)**, en vue de la carte professionnelle.",
@@ -46,7 +50,8 @@ export const knowledgeArticles: KnowledgeArticle[] = [
       "- *VTC Intermédiaire Light* : distanciel + 2 visios collectives.",
       "- *VTC Confort Pro* : préparation complète (sans conduite).",
       "- *VTC Excellence Haute Exigence* : pack clé en main **avec conduite** ; c'est la **seule formule incluant les frais d'inscription CMA**.",
-      "Les formules vont de 399 € à 2 499 € (voir tarifs publics à jour). Aide au dossier CMA selon la formule. CPF possible selon le dispositif — à confirmer avec un conseiller.",
+      "Les formules VTC vont de 399 € à 2 499 € (voir tarifs publics à jour). Aide au dossier CMA selon la formule. CPF possible selon le dispositif — à confirmer avec un conseiller.",
+      "Autres formations transport (sur devis) : **Formation Taxi** (préparation à l'examen et à la carte professionnelle de chauffeur de taxi) et **FIMO / FCO** (formation obligatoire des conducteurs du transport routier de **marchandises ou de voyageurs**).",
       "Proposer un diagnostic pour choisir entre distanciel, coaching ou formule complète."
     ].join("\n")
   },
@@ -57,12 +62,14 @@ export const knowledgeArticles: KnowledgeArticle[] = [
     keywords: [
       "sst", "sauveteur", "secouriste", "secours", "premiers secours", "mac sst", "recyclage",
       "sante au travail", "securite travail", "inter entreprise", "intra entreprise", "salaries",
-      "salarie", "entreprise", "certificat"
+      "salarie", "entreprise", "certificat", "gestes et postures", "gestes postures", "prap",
+      "tms", "ergonomie", "manutention manuelle", "risques physiques", "prevention"
     ],
     body: [
-      "Deux formations SST :",
+      "Formations **sécurité & secourisme (SST)** :",
       "- **SST Initial** : 14 heures (2 jours).",
       "- **MAC SST / Recyclage** : 7 heures (1 jour), maintien et actualisation des compétences.",
+      "- **Gestes & postures / PRAP** : prévention des risques liés à l'activité physique (TMS, manutention manuelle), 1 jour, sur devis.",
       "Organisation possible en **sessions inter-entreprises** (à LODENE) ou **intra-entreprise** (chez le client).",
       "Certificat officiel délivré selon la validation des compétences.",
       "Pour une demande entreprise : demander le nombre de salariés, le lieu et les dates souhaitées, puis créer une demande / un devis."
@@ -75,7 +82,9 @@ export const knowledgeArticles: KnowledgeArticle[] = [
     keywords: [
       "caces", "logistique", "securite", "chariot", "chariots", "elevateur", "gerbeur", "nacelle",
       "nacelles", "pemp", "pont roulant", "echafaudage", "terberg", "tracteur de parc",
-      "r489", "r485", "r486", "r484", "r457", "manutention", "entrepot", "btp", "engin"
+      "r489", "r485", "r486", "r484", "r457", "manutention", "entrepot", "btp", "engin",
+      "habilitation electrique", "electrique", "b0", "h0", "bs", "be", "nf c 18-510",
+      "incendie", "extincteur", "evacuation", "epi", "manipulation extincteur"
     ],
     body: [
       "Formations **logistique & sécurité**, le plus souvent en **intra-entreprise sur site client** :",
@@ -85,6 +94,8 @@ export const knowledgeArticles: KnowledgeArticle[] = [
       "- **Pont roulant — R484**",
       "- **Échafaudage roulant — R457**",
       "- **Terberg / tracteur de parc**",
+      "- **Habilitation électrique (B0/H0 – BS/BE)** : pour personnel non-électricien ou d'intervention (norme NF C 18-510).",
+      "- **Manipulation extincteur & évacuation** : prévention incendie (EPI, alerte, évacuation, équipiers de première intervention).",
       "Ces formations sont **sur devis** : le tarif dépend du matériel, du nombre de participants, du lieu, de la durée et des objectifs.",
       "Inviter à demander un devis (formation entreprise) en précisant l'engin, le nombre de personnes et le lieu."
     ].join("\n")
@@ -184,6 +195,46 @@ export const knowledgeArticles: KnowledgeArticle[] = [
       "R : Uniquement dans la formule Excellence Haute Exigence. Les autres formules préparent à l'examen, hors frais CMA.",
       "**Q : Puis-je réserver une leçon en ligne ?**",
       "R : Oui, l'espace élève permet de réserver, modifier ou annuler un créneau de conduite."
+    ].join("\n")
+  },
+  {
+    id: "public_formations_digital",
+    title: "Pôle Digital, IA & CRM — pour professionnels & entreprises",
+    scope: "public",
+    keywords: [
+      "digital", "ia", "intelligence artificielle", "crm", "automatisation", "no code", "no-code",
+      "prospection", "presence en ligne", "site web", "google", "reseaux sociaux", "chatgpt",
+      "outils numeriques", "tpe", "pme", "independant", "dirigeant", "productivite", "workflow",
+      "relance", "mini crm", "gagner du temps"
+    ],
+    body: [
+      "LODENE propose un pôle **Digital, IA & CRM** pour les professionnels, TPE/PME et indépendants (présentiel ou distanciel) :",
+      "- **Pack IA, CRM & Automatisation** (formation signature, 14h) — digitaliser, organiser et automatiser son activité.",
+      "- **L'IA pour les professionnels** (7h) — prendre en main les assistants IA au quotidien (rédaction, réponses, productivité).",
+      "- **Créer & piloter son mini-CRM** (7h) — suivi des prospects, devis et relances.",
+      "- **Automatisation no-code** (7h) — relances, notifications et workflows sans coder.",
+      "- **Prospection & présence en ligne** (7h) — site vitrine, fiche Google, réseaux sociaux.",
+      "Tarifs indicatifs de 590 € à 990 € selon le module (utiliser get_formations pour le prix exact). Financement **OPCO / entreprise** possible ; ce pôle n'est **pas éligible CPF**.",
+      "Pour orienter : demander l'objectif (gagner du temps, mieux suivre ses clients, se rendre visible) puis proposer un devis ou un rendez-vous."
+    ].join("\n")
+  },
+  {
+    id: "public_catalogue_complet",
+    title: "Catalogue complet — toutes les formations & prestations LODENE",
+    scope: "public",
+    keywords: [
+      "formations", "prestations", "catalogue", "liste", "que proposez vous", "quelles formations",
+      "vos formations", "vos prestations", "toutes les formations", "offre", "services",
+      "que faites vous", "domaines", "poles", "categories", "centre de formation"
+    ],
+    body: [
+      "LODENE est un **centre de formation multi-pôles** à Conflans-Sainte-Honorine. 5 catégories :",
+      "**1) Permis B & conduite** : permis B automatique (Déclic 13 leçons, Maîtrise 20 leçons), permis B manuel (Essentiel 20 leçons, Confort 30 leçons), stage accéléré code + conduite, conduite accompagnée (AAC), passerelle BVA → manuelle, permis remorque B96/BE, post-permis, stage de récupération de points.",
+      "**2) VTC & transport** : VTC (Distanciel Éco, Intermédiaire Light, Confort Pro, Excellence), formation Taxi, FIMO/FCO.",
+      "**3) Sécurité & secourisme (SST)** : SST Initial (14h), MAC SST / recyclage (7h), gestes & postures / PRAP.",
+      "**4) CACES & logistique** (le plus souvent en intra-entreprise, sur devis) : chariot R489, gerbeur R485, nacelle/PEMP R486, pont roulant R484, échafaudage roulant R457, tracteur de parc (Terberg), habilitation électrique, manipulation extincteur & évacuation.",
+      "**5) Digital, IA & CRM** : pack IA/CRM/automatisation (14h), L'IA pour les pros, mini-CRM, automatisation no-code, prospection & présence en ligne.",
+      "Pour un prix ou une durée exacts, utiliser get_formations / get_prices. Toujours proposer ensuite un diagnostic, un devis ou un rendez-vous selon le besoin."
     ].join("\n")
   }
 ];
