@@ -128,10 +128,10 @@ export function HomeFormationsCarousel({ formations }: { formations: Formation[]
             <article
               key={formation.slug}
               data-carousel-card
-              className="group flex min-w-0 shrink-0 basis-[86%] snap-start overflow-hidden rounded-xl border border-slate-200 bg-white shadow-soft transition duration-300 hover:-translate-y-1 hover:border-loden-200 hover:shadow-premium sm:basis-full sm:rounded-2xl md:basis-[calc((100%_-_1.25rem)_/_2)] md:rounded-[1.75rem] xl:basis-[calc((100%_-_2.5rem)_/_3)]"
+              className="group flex min-w-0 shrink-0 basis-[88%] snap-start overflow-hidden rounded-xl border border-slate-200 bg-white shadow-soft transition duration-300 hover:-translate-y-1 hover:border-loden-200 hover:shadow-premium sm:basis-full sm:rounded-2xl md:basis-[calc((100%_-_1.25rem)_/_2)] md:rounded-[1.75rem] xl:basis-[calc((100%_-_2.5rem)_/_3)]"
             >
               <Link href={`/formations/${formation.slug}`} className="focus-ring flex h-full w-full flex-col rounded-xl sm:rounded-2xl md:rounded-[1.75rem]">
-                <div className="relative h-32 overflow-hidden bg-loden-900 sm:h-40 md:h-48">
+                <div className="relative h-36 overflow-hidden bg-loden-900 sm:h-40 md:h-48">
                   <Image
                     src={image.src}
                     alt={image.alt}
@@ -143,16 +143,16 @@ export function HomeFormationsCarousel({ formations }: { formations: Formation[]
                     style={{ objectPosition: image.objectPosition ?? "50% 50%" }}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-loden-ink/55 via-transparent to-black/10" aria-hidden="true" />
-                  <span className="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-loden-700 shadow-soft">
+                  <span className="absolute left-3 top-3 rounded-full bg-white/90 px-3 py-1 text-[0.7rem] font-semibold text-loden-700 shadow-soft sm:left-4 sm:top-4 sm:text-xs">
                     {labels.category}
                   </span>
                 </div>
 
-                <div className="flex flex-1 flex-col p-4 md:p-6">
-                  <h3 className="text-lg font-semibold leading-tight text-loden-ink md:text-xl">{labels.title}</h3>
-                  <p className="mt-2 line-clamp-2 text-sm leading-6 text-loden-muted md:mt-3">{labels.description}</p>
+                <div className="flex min-w-0 flex-1 flex-col p-4 md:p-6">
+                  <h3 className="break-words text-[1.05rem] font-semibold leading-tight text-loden-ink md:text-xl">{labels.title}</h3>
+                  <p className="mt-2 line-clamp-2 text-[0.84rem] leading-5 text-loden-muted md:mt-3 md:text-sm md:leading-6">{labels.description}</p>
 
-                  <div className="mt-5 grid gap-2 text-sm text-loden-muted">
+                  <div className="mt-4 grid gap-2 text-[0.83rem] text-loden-muted md:mt-5 md:text-sm">
                     <span className="inline-flex items-center gap-2">
                       <Euro className="h-4 w-4 text-loden-600" aria-hidden="true" />
                       <strong className="font-semibold text-loden-ink">{price}</strong>
@@ -164,7 +164,7 @@ export function HomeFormationsCarousel({ formations }: { formations: Formation[]
                   </div>
 
                   <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-4 md:mt-5">
-                    <span className="inline-flex items-center gap-2 text-sm font-semibold text-loden-700">
+                    <span className="inline-flex items-center gap-2 text-[0.84rem] font-semibold text-loden-700 md:text-sm">
                       <Sparkles className="h-4 w-4" aria-hidden="true" />
                       Découvrir
                     </span>

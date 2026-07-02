@@ -109,6 +109,10 @@ function normalizeSuggestions(value: unknown): ChatSuggestion[] {
   return suggestions.length ? suggestions : DEFAULT_SUGGESTIONS;
 }
 
+// Message d'invitation proactive (après 30 s sur le site). Ton rassurant, sans jargon.
+const PROACTIVE_INVITE =
+  "👋 Un petit coup de main ? Vous pouvez vous inscrire en 1 minute — sans engagement, sans paiement et sans aucune obligation. Dites-moi simplement la formation qui vous intéresse (ou tapez « m'orienter »), et je m'occupe du reste. 🙂";
+
 export function AiChatWidget() {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([GREETING]);
@@ -121,6 +125,9 @@ export function AiChatWidget() {
   const [confirmedWhatsappUrl, setConfirmedWhatsappUrl] = useState<string | null>(null);
   const [conversationId, setConversationId] = useState<string | undefined>(undefined);
   const scrollRef = useRef<HTMLDivElement>(null);
+  // État courant lu par le déclencheur proactif (évite un setState imbriqué).
+  const proactiveRef = useRef({ open, count: messages.length });
+  proactiveRef.current = { open, count: messages.length };
 
   const compactMessages = useMemo(
     () => messages.filter((_, index) => index !== 0).slice(-10),
@@ -130,6 +137,27 @@ export function AiChatWidget() {
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, flow, open, slots, loading]);
+
+  useEffect(() => {
+    const openAssistant = () => setOpen(true);
+    window.addEventListener("lodene:open-assistant", openAssistant);
+    return () => window.removeEventListener("lodene:open-assistant", openAssistant);
+  }, []);
+
+  // Déclenchement proactif : 30 s après l'arrivée sur le site, ouvre l'assistant et invite
+  // à s'inscrire (sans engagement, sans paiement). UNE seule fois par session, et jamais si
+  // le visiteur a déjà ouvert le chat ou entamé une conversation.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (window.sessionStorage.getItem("lodene:proactive-invite") === "done") return;
+    const timer = window.setTimeout(() => {
+      window.sessionStorage.setItem("lodene:proactive-invite", "done");
+      if (proactiveRef.current.open || proactiveRef.current.count > 1) return;
+      setOpen(true);
+      setMessages((current) => (current.length > 1 ? current : [...current, { role: "assistant", content: PROACTIVE_INVITE }]));
+    }, 30_000);
+    return () => window.clearTimeout(timer);
+  }, []);
 
   const pushAssistant = (content: string) => setMessages((current) => [...current, { role: "assistant", content }]);
   const pushUser = (content: string) => setMessages((current) => [...current, { role: "user", content }]);
@@ -430,7 +458,7 @@ export function AiChatWidget() {
   return (
     <>
       {open ? (
-        <div className="fixed inset-x-3 bottom-24 z-40 flex h-[min(78svh,35rem)] flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-premium sm:bottom-24 md:left-auto md:right-5 md:w-[24rem]">
+        <div className="fixed inset-x-3 bottom-[calc(4.9rem+env(safe-area-inset-bottom))] z-[60] flex h-[min(72svh,34rem)] flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-premium sm:bottom-24 sm:h-[min(78svh,35rem)] sm:z-40 md:left-auto md:right-5 md:w-[24rem]">
           <div className="flex items-center justify-between gap-3 bg-loden-700 px-4 py-3 text-white">
             <div className="flex min-w-0 items-center gap-2">
               <Sparkles className="h-5 w-5 shrink-0" aria-hidden="true" />
@@ -518,7 +546,7 @@ export function AiChatWidget() {
         </div>
       ) : null}
 
-      <div className="fixed bottom-4 right-4 z-30 flex max-w-[calc(100vw-2rem)] items-center gap-2 sm:bottom-5 sm:right-5">
+      <div className="fixed bottom-4 right-4 z-30 hidden max-w-[calc(100vw-2rem)] items-center gap-2 sm:bottom-5 sm:right-5 sm:flex">
         <a
           href={whatsappHref()}
           target="_blank"

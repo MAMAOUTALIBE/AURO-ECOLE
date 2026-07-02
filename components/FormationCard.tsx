@@ -78,11 +78,11 @@ export function FormationCard({ formation }: { formation: Formation }) {
     <Link
       href={`/formations/${formation.slug}`}
       aria-label={`Voir la formation ${formation.title}`}
-      className="focus-ring group block h-full rounded-xl sm:rounded-2xl md:rounded-[1.75rem]"
+      className="focus-ring group block h-full min-w-0 rounded-xl sm:rounded-2xl md:rounded-[1.75rem]"
     >
-      <article className="flex h-full flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-soft transition duration-300 group-hover:-translate-y-1.5 group-hover:border-loden-200 group-hover:shadow-premium sm:rounded-2xl md:rounded-[1.75rem]">
+      <article className="flex h-full min-w-0 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-soft transition duration-300 group-hover:-translate-y-1.5 group-hover:border-loden-200 group-hover:shadow-premium sm:rounded-2xl md:rounded-[1.75rem]">
         {/* En-tête photo réaliste par formation */}
-        <div className="relative h-28 overflow-hidden sm:h-36 md:h-40" style={{ backgroundImage: visual.gradient }}>
+        <div className="relative h-32 overflow-hidden sm:h-36 md:h-40" style={{ backgroundImage: visual.gradient }}>
           <Image
             src={headerImage.src}
             alt={headerImage.alt}
@@ -95,8 +95,8 @@ export function FormationCard({ formation }: { formation: Formation }) {
           />
           {/* Voile sombre en haut pour la lisibilité des badges */}
           <div className="absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-black/25 to-transparent" aria-hidden="true" />
-          <div className="absolute left-3 top-3 flex flex-wrap gap-2 sm:left-4 sm:top-4">
-            <span className="rounded-full bg-white/20 px-3 py-1 text-xs font-semibold text-white ring-1 ring-white/40 backdrop-blur">
+          <div className="absolute left-3 right-3 top-3 flex min-w-0 flex-wrap gap-2 sm:left-4 sm:right-4 sm:top-4">
+            <span className="max-w-full truncate rounded-full bg-white/20 px-3 py-1 text-xs font-semibold text-white ring-1 ring-white/40 backdrop-blur">
               {badgeLabel}
             </span>
             {formation.cpf ? (
@@ -109,12 +109,12 @@ export function FormationCard({ formation }: { formation: Formation }) {
         </div>
 
         {/* Corps */}
-        <div className="flex flex-1 flex-col p-4 md:p-6">
-          <h3 className="text-lg font-semibold leading-tight text-loden-ink md:text-xl">{formation.title}</h3>
+        <div className="flex min-w-0 flex-1 flex-col p-4 md:p-6">
+          <h3 className="break-words text-[1.08rem] font-semibold leading-tight text-loden-ink md:text-xl">{formation.title}</h3>
           {formation.subtitle ? (
-            <p className="mt-1 text-sm font-semibold text-loden-600">{formation.subtitle}</p>
+            <p className="mt-1 line-clamp-1 text-sm font-semibold text-loden-600">{formation.subtitle}</p>
           ) : null}
-          <p className="mt-2 line-clamp-2 flex-1 text-sm leading-6 text-loden-muted md:mt-3 md:line-clamp-none">{formation.description}</p>
+          <p className="mt-2 line-clamp-2 flex-1 text-[0.84rem] leading-5 text-loden-muted md:mt-3 md:line-clamp-none md:text-sm md:leading-6">{formation.description}</p>
 
           <div className="mt-5 hidden flex-wrap gap-2 md:flex">
             {formation.tags.slice(0, 3).map((tag) => (
@@ -124,15 +124,15 @@ export function FormationCard({ formation }: { formation: Formation }) {
             ))}
           </div>
 
-          <div className="mt-4 flex items-end justify-between border-t border-slate-100 pt-4 md:mt-6 md:pt-5">
-            <div className="text-sm">
+          <div className="mt-4 flex items-end justify-between gap-3 border-t border-slate-100 pt-4 md:mt-6 md:pt-5">
+            <div className="min-w-0 text-[0.83rem] md:text-sm">
               <span className="flex items-center gap-2 font-semibold text-loden-ink">
                 <Clock3 className="h-4 w-4 text-loden-500" aria-hidden="true" />
-                {formation.duration}
+                <span className="truncate">{formation.duration}</span>
               </span>
               <span className="mt-1.5 flex items-center gap-2 text-loden-muted">
                 <BadgeCheck className="h-4 w-4 text-loden-500" aria-hidden="true" />
-                {formation.price > 0 ? `Dès ${formatCurrency(formation.price)}` : "Sur devis"}
+                <span className="truncate">{formation.price > 0 ? `Dès ${formatCurrency(formation.price)}` : "Sur devis"}</span>
               </span>
             </div>
             <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-loden-700 text-white shadow-soft transition group-hover:translate-x-0.5 group-hover:bg-loden-800 sm:h-11 sm:w-11">

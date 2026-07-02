@@ -63,20 +63,30 @@ export async function HeroSection() {
             </div>
           ))}
         </div>
+        <div className="absolute inset-0 z-[1] bg-gradient-to-b from-black/5 via-black/20 to-black/78 md:hidden" aria-hidden="true" />
 
         <div className="container-pad relative z-10 flex min-h-[inherit] items-end pb-[calc(6.5rem+env(safe-area-inset-bottom))] pt-8 md:hidden">
-          <div className="w-full max-w-xl">
-            <div className="flex flex-col gap-3 sm:flex-row">
+          <div className="w-full max-w-xl pb-3 text-white">
+            <p className="inline-flex rounded-full border border-white/25 bg-white/15 px-3 py-1.5 text-[0.68rem] font-black uppercase tracking-[0.12em] shadow-soft backdrop-blur">
+              Auto-école & centre de formation
+            </p>
+            <h2 className="mt-4 text-[2.05rem] font-black leading-[1.05] tracking-normal text-white drop-shadow-[0_4px_18px_rgba(0,0,0,0.35)] min-[380px]:text-[2.25rem]">
+              Passez votre permis avec LODENE
+            </h2>
+            <p className="mt-3 max-w-[22rem] text-sm font-semibold leading-6 text-white/90 drop-shadow-[0_2px_10px_rgba(0,0,0,0.35)]">
+              Auto-école, VTC, SST, logistique & sécurité à Conflans.
+            </p>
+            <div className="mt-5 grid gap-2 min-[360px]:grid-cols-2">
               <Link
                 href="/inscription"
-                className="focus-ring inline-flex min-h-12 items-center justify-center gap-3 rounded-full bg-loden-700 px-6 py-3.5 text-base font-black text-white shadow-[0_18px_45px_rgba(0,134,148,0.35)] transition hover:bg-loden-800 sm:w-auto sm:px-8"
+                className="focus-ring inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-loden-700 px-5 py-3 text-sm font-black text-white shadow-[0_18px_45px_rgba(0,134,148,0.35)] transition hover:bg-loden-800"
               >
                 Je m&apos;inscris
                 <ArrowRight className="h-5 w-5" aria-hidden="true" />
               </Link>
               <Link
                 href="/formations"
-                className="focus-ring inline-flex min-h-12 items-center justify-center gap-3 rounded-full border border-loden-500 bg-white/95 px-6 py-3.5 text-base font-black text-loden-ink shadow-soft transition hover:bg-white sm:w-auto sm:px-8"
+                className="focus-ring inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-white/60 bg-white/95 px-5 py-3 text-sm font-black text-loden-ink shadow-soft transition hover:bg-white"
               >
                 <BookOpen className="h-5 w-5 text-loden-700" aria-hidden="true" />
                 Voir les formations
