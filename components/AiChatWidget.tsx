@@ -109,7 +109,7 @@ function normalizeSuggestions(value: unknown): ChatSuggestion[] {
   return suggestions.length ? suggestions : DEFAULT_SUGGESTIONS;
 }
 
-// Message d'invitation proactive (après 30 s sur le site). Ton rassurant, sans jargon.
+// Message d'invitation proactive (après 8 s sur le site). Ton rassurant, sans jargon.
 const PROACTIVE_INVITE =
   "👋 Un petit coup de main ? Vous pouvez vous inscrire en 1 minute — sans engagement, sans paiement et sans aucune obligation. Dites-moi simplement la formation qui vous intéresse (ou tapez « m'orienter »), et je m'occupe du reste. 🙂";
 
@@ -144,7 +144,7 @@ export function AiChatWidget() {
     return () => window.removeEventListener("lodene:open-assistant", openAssistant);
   }, []);
 
-  // Déclenchement proactif : 30 s après l'arrivée sur le site, ouvre l'assistant et invite
+  // Déclenchement proactif : 8 s après l'arrivée sur le site, ouvre l'assistant et invite
   // à s'inscrire (sans engagement, sans paiement). UNE seule fois par session, et jamais si
   // le visiteur a déjà ouvert le chat ou entamé une conversation.
   useEffect(() => {
@@ -155,7 +155,7 @@ export function AiChatWidget() {
       if (proactiveRef.current.open || proactiveRef.current.count > 1) return;
       setOpen(true);
       setMessages((current) => (current.length > 1 ? current : [...current, { role: "assistant", content: PROACTIVE_INVITE }]));
-    }, 30_000);
+    }, 8_000);
     return () => window.clearTimeout(timer);
   }, []);
 
