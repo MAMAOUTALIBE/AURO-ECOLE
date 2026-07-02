@@ -501,6 +501,11 @@ export type LeadRecord = {
   phone?: string | null;
   status: LeadStatus;
   source?: string | null;
+  utmSource?: string | null;
+  utmMedium?: string | null;
+  utmCampaign?: string | null;
+  referrer?: string | null;
+  landingPage?: string | null;
   interest?: string | null;
   financingType?: string | null;
   notes?: string | null;

@@ -18,6 +18,7 @@ export function PricingCard({ plan, featured = false }: { plan: PricingPlan; fea
   // Tarifs sur devis tant qu'aucune grille officielle n'est confirmée -> CTA vers la demande de devis.
   const ctaHref = plan.price === 0 ? "/contact#demande" : `/paiement?plan=${encodeURIComponent(plan.id)}`;
   const ctaLabel = plan.price === 0 ? "Demander un devis" : plan.cta;
+  const ctaTrack = plan.price === 0 ? "click_devis" : "click_paiement";
   const visual = VISUALS[plan.slug] ?? FALLBACK;
   const Icon = visual.icon;
 
@@ -62,6 +63,7 @@ export function PricingCard({ plan, featured = false }: { plan: PricingPlan; fea
 
       <Link
         href={ctaHref}
+        data-track={ctaTrack}
         className={`focus-ring relative mt-5 inline-flex items-center justify-center gap-2 rounded-full px-5 py-3 text-sm font-semibold transition md:mt-7 ${
           featured ? "bg-white text-loden-ink hover:bg-loden-50" : "bg-loden-700 text-white hover:bg-loden-800"
         }`}

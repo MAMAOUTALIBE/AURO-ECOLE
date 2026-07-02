@@ -8,6 +8,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { formations } from "@/data/site";
 import { phoneInputProps, phoneSchema } from "@/lib/validation";
+import { trackConversion } from "@/lib/analytics";
 
 // Rapproche un slug de formation du libellé "Besoin" du diagnostic.
 const NEED_BY_FORMATION_SLUG: Record<string, string> = {
@@ -114,6 +115,7 @@ export function ContactForm() {
       return;
     }
 
+    trackConversion(isPro || values.company ? "devis_submit" : "form_submit", type);
     setSent(true);
     reset();
   };

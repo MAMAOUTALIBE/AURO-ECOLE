@@ -7,7 +7,7 @@ import type { LodenRepository } from "../../repositories/loden-repository";
 import { asyncHandler } from "../../shared/async-handler";
 import { notifyNewLead } from "../../shared/mailer";
 import { publicFormLimiter } from "../../shared/rate-limit";
-import { emailSchema, phoneSchema, validateBody } from "../../shared/validation";
+import { attributionSchema, emailSchema, phoneSchema, pickAttribution, validateBody } from "../../shared/validation";
 
 // Formulaire d'inscription public SIMPLIFIÉ : le visiteur laisse ses coordonnées et la
 // formation souhaitée. On ne crée AUCUN compte élève ici. La demande atterrit dans le
@@ -21,7 +21,7 @@ const inscriptionSchema = z.object({
   formationTitle: z.string().trim().min(2),
   formationSlug: z.string().trim().optional(),
   message: z.string().trim().max(1000).optional()
-});
+}).merge(attributionSchema);
 
 export function createInscriptionsRouter(repository: LodenRepository, config: ApiConfig, aiProvider?: AiProvider) {
   const router = Router();
@@ -49,7 +49,8 @@ export function createInscriptionsRouter(repository: LodenRepository, config: Ap
         source: "inscription",
         interest: body.formationTitle,
         notes,
-        status: "PROSPECT"
+        status: "PROSPECT",
+        ...pickAttribution(body)
       });
 
       // Crée aussi un RDV « inscription » (type=registration, statut Nouveau, sans moniteur)

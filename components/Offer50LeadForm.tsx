@@ -3,6 +3,7 @@
 import { type FormEvent, useMemo, useState } from "react";
 import { AlertCircle, CheckCircle2, MessageCircle, Send, ShieldCheck } from "lucide-react";
 import { contactInfo } from "@/data/site";
+import { trackConversion } from "@/lib/analytics";
 
 type FormationValue = "PERMIS_B" | "VTC" | "SST" | "LOGISTIQUE" | "SECURITE" | "AUTRE";
 type DeliveryValue = "EMAIL" | "WHATSAPP" | "BOTH";
@@ -95,6 +96,7 @@ export function Offer50LeadForm({ code, validCode }: { code: string; validCode: 
       return;
     }
 
+    trackConversion("offre50_submit", values.formation);
     setResult(payload?.data ?? null);
     setStatus("sent");
     setValues(initialState);

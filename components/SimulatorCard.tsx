@@ -82,6 +82,7 @@ export function SimulatorCard() {
         </p>
         <Link
           href="/contact#demande"
+          data-track="click_devis"
           className="focus-ring mt-4 inline-flex w-full items-center justify-center rounded-full bg-white px-5 py-3 text-sm font-semibold text-loden-ink transition hover:bg-loden-pearl sm:w-auto"
         >
           Demander mon devis

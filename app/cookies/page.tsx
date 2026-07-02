@@ -17,8 +17,9 @@ const cookieSections = [
   {
     title: "Mesure d'audience",
     content: [
-      "Une solution de mesure d'audience peut être ajoutée pour comprendre les pages consultées et améliorer le site.",
-      "Si elle n'est pas strictement exemptée de consentement, elle devra être intégrée à un bandeau de choix."
+      "LODENE utilise Matomo pour mesurer la fréquentation du site (pages consultées, sources de visite, appareils). Cette mesure est configurée SANS cookie et avec anonymisation des adresses IP : conformément aux recommandations de la CNIL, elle est exemptée de consentement.",
+      "Aucune donnée personnelle n'est collectée par cette mesure : elle ne recueille des informations de contact que lorsque vous remplissez volontairement un formulaire (inscription, demande de devis, prise de rendez-vous).",
+      "Un outil complémentaire (Google Analytics 4) peut être activé de façon optionnelle. Lorsqu'il l'est, il fonctionne par défaut sans stockage de cookie et sans personnalisation publicitaire, dans le respect du Consent Mode."
     ]
   },
   {

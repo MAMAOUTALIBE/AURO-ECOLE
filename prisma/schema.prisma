@@ -667,6 +667,11 @@ model Lead {
   phone               String?
   status              LeadStatus @default(PROSPECT)
   source              String?
+  utmSource           String?
+  utmMedium           String?
+  utmCampaign         String?
+  referrer            String?
+  landingPage         String?
   interest            String?
   financingType       String?
   notes               String?

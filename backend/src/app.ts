@@ -7,6 +7,7 @@ import { createAiProvider } from "./ai/provider-factory";
 import type { AiProvider } from "./ai/types";
 import { createAgenciesRouter } from "./modules/agencies/agencies.routes";
 import { createAiRouter } from "./modules/ai/ai.routes";
+import { createAnalyticsRouter } from "./modules/analytics/analytics.routes";
 import { createAuditRouter } from "./modules/audit/audit.routes";
 import { createAuthRouter } from "./modules/auth/auth.routes";
 import { createBookingsRouter } from "./modules/bookings/bookings.routes";
@@ -93,6 +94,7 @@ export function createApp(repository: LodenRepository, config: ApiConfig, deps: 
   app.use("/api/auth", createAuthRouter(repository, config));
   app.use("/api/agencies", createAgenciesRouter(repository, config));
   app.use("/api/admin", createStatsRouter(repository, config));
+  app.use("/api/admin", createAnalyticsRouter(repository, config));
   app.use("/api/admin", createChatAdminRouter(repository, config));
   // Centre rendez-vous & planning unifié (source unique de vérité, tous canaux).
   app.use("/api/admin/appointments", createAppointmentsAdminRouter(repository, config));
