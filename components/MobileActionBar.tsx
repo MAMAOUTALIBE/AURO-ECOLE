@@ -14,7 +14,7 @@ export function MobileActionBar() {
 
   return (
     <div className="fixed inset-x-0 bottom-0 z-50 border-t border-slate-200 bg-white/95 px-3 pb-[calc(0.45rem+env(safe-area-inset-bottom))] pt-1.5 shadow-[0_-16px_45px_rgba(20,33,38,0.12)] backdrop-blur-xl sm:hidden">
-      <div className="grid grid-cols-4 gap-2">
+      <div className="grid grid-cols-3 gap-2">
         {phoneHref ? (
           <a
             href={phoneHref}
@@ -60,13 +60,6 @@ export function MobileActionBar() {
           IA
         </button>
 
-        <Link
-          href="/inscription"
-          className="focus-ring inline-flex min-h-11 flex-col items-center justify-center gap-1 rounded-xl bg-loden-700 px-1.5 text-[0.68rem] font-bold text-white"
-        >
-          <Sparkles className="h-4 w-4" aria-hidden="true" />
-          S&apos;inscrire
-        </Link>
       </div>
     </div>
   );
