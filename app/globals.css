@@ -69,7 +69,7 @@ textarea {
 }
 
 .field-input {
-  @apply focus-ring w-full rounded-xl border border-slate-200 bg-loden-fog px-3.5 py-3 text-loden-ink outline-none transition placeholder:text-loden-muted hover:border-loden-200 focus:bg-white sm:rounded-2xl sm:px-4;
+  @apply focus-ring min-w-0 w-full max-w-full rounded-xl border border-slate-200 bg-loden-fog px-3.5 py-3 text-loden-ink outline-none transition placeholder:text-loden-muted hover:border-loden-200 focus:bg-white sm:rounded-2xl sm:px-4;
 }
 
 .motion-reveal {

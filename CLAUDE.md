@@ -55,12 +55,12 @@ The routes under `app/api/**/route.ts` are **thin proxies, not real handlers**. 
 
 ### Backend is layered: routes → repository abstraction → (memory | Prisma)
 
-- `backend/src/app.ts` wires Helmet + CORS + rate-limit and mounts one router per domain module under `backend/src/modules/<domain>/<domain>.routes.ts` (~30 modules: catalog, instructors, vehicles, leads, bookings, appointments, payments, installments, invoices, quotes, contracts, cpf, exams, contacts, reviews, media, notifications, automations, search, chat, ai, plus auth/users/students/agencies/permissions/audit/stats/site/content/cms). A few mounts don't match the module name 1:1:
+- `backend/src/app.ts` wires Helmet + CORS + rate-limit and mounts one router per domain module under `backend/src/modules/<domain>/<domain>.routes.ts` (~34 modules: catalog, instructors, vehicles, leads, inscriptions, bookings, appointments, payments, installments, invoices, quotes, contracts, cpf, exams, contacts, reviews, offers, media, notifications, automations, search, chat, ai, plus auth/users/students/agencies/permissions/audit/stats/site/content/cms). A few mounts don't match the module name 1:1:
   - **catalog** mounts at the `/api` root → owns `/api/formations`, `/api/pricing-plans`, `/api/tarifs`.
   - **content** router (`content.routes.ts`) is mounted at *both* `/api/faq` and `/api/content` (the latter serves `/api/content/company` = the `CompanyInfo` singleton).
   - **cms** router (`cms.routes.ts`) mounts at `/api/content-entries` (generic key/section `ContentEntry` records).
   - **stats** and **chat-admin** both mount under `/api/admin`.
-  - **appointments** mounts twice: `/api/admin/appointments` (admin) and `/api/appointments` (public). This is the **unified RDV center** — the `ChatAppointment` table is the single source of truth for all appointments; the `/admin/rendez-vous` page consumes it and the older booking pages redirect there.
+  - **appointments** mounts twice: `/api/admin/appointments` (admin) and `/api/appointments` (public). This is the **unified RDV center** — the `ChatAppointment` table is the single source of truth for all appointments; the `/admin/rendez-vous` page consumes it and the older booking pages redirect there. The **public inscription flow** (`/api/inscriptions`, `inscriptions.routes.ts`) creates a `Lead` (`source="inscription"`) **and** a `ChatAppointment` (`type="registration"`, `status="new"`, no instructor → lands in the RDV "Nouveau" column, not the per-moniteur planning until assigned). Provisioning the account is `POST /api/admin/appointments/:id/transform-to-student` → creates `User(ELEVE)` + `Student`, generates a one-time temporary password (via `shared/password.ts`), marks the lead `INSCRIT`.
 - All data access goes through the `LodenRepository` interface ([backend/src/repositories/loden-repository.ts](backend/src/repositories/loden-repository.ts)). Two implementations:
   - `MemoryLodenRepository` — in-memory, seeded from `backend/src/data/initial-data.ts` (demo data mirroring the frontend mocks).
   - `PrismaLodenRepository` — PostgreSQL via Prisma.
@@ -91,6 +91,8 @@ When editing CMS content, **keep `lib/site-content.ts` defaults in sync with `ba
 ### Frontend data: mocks with API fallback, and a cents→euros mapping boundary
 
 - [data/site.ts](data/site.ts) is the canonical mock content (nav, formations, pricing, instructors, reviews, copy). Pages render from it as the **fallback** when the backend public endpoints are unavailable.
+- Public formation pages read **live DB data** through [lib/catalog.ts](lib/catalog.ts) (`getFormations()`/`getFormationBySlug()`, `no-store`), falling back to `data/site.ts` only when the API is down. They render server-side so CRM catalog edits appear immediately — don't hardcode formation content back into `data/site.ts`.
+- The formation detail hero is a **slideshow**: [components/FormationHero.tsx](components/FormationHero.tsx) renders `formationHeroSlides(slug, productLine)` from [lib/formation-image.ts](lib/formation-image.ts) — real photos (`/formations/photos/<slug>.webp`, or per-slide `<slug>-1/-2/-3.webp` when present) with a per-pole fallback, or **illustrated** gradient+icon slides for poles without photos (e.g. DIGITAL). Adding dedicated photos requires no code change (drop the `<slug>-N.webp` files).
 - API responses use integer **cents** and backend enum values (`MANUEL`, `AUTOMATIQUE`…). The `lib/*-mappers.ts` files (`catalog-`, `social-`, `invoice-`, `quote-`, `contract-`) convert API DTOs into the frontend display shapes (euros, French labels). Always map API data through these before rendering — don't render raw API payloads.
 - `data/crm.ts` backs the admin/CRM dashboard views.
 

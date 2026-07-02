@@ -153,7 +153,7 @@ export function InvoiceDetail({ id }: { id: string }) {
       {error ? <p className="print-hidden mb-4 rounded-xl bg-rose-50 p-3 text-sm font-medium text-rose-700">{error}</p> : null}
 
       {/* Document imprimable */}
-      <div className="invoice-print relative mx-auto max-w-[210mm] rounded-2xl border border-slate-200 bg-white p-8 shadow-soft sm:p-10">
+      <div className="invoice-print relative mx-auto max-w-[210mm] rounded-2xl border border-slate-200 bg-white p-5 shadow-soft sm:p-10">
         {isDraft || invoice.status === "ANNULEE" ? (
           <span className={`pointer-events-none absolute inset-0 flex items-center justify-center text-7xl font-black opacity-[0.07] ${invoice.status === "ANNULEE" ? "text-rose-600" : "text-slate-500"}`} aria-hidden="true">
             {invoice.status === "ANNULEE" ? "ANNULÉE" : "BROUILLON"}
@@ -187,7 +187,21 @@ export function InvoiceDetail({ id }: { id: string }) {
           {client.address ? <p className="text-xs text-loden-muted">{client.address}</p> : null}
         </div>
 
-        <table className="mt-8 w-full text-left text-sm">
+        <div className="mt-8 grid gap-3 sm:hidden print:hidden">
+          {invoice.lines.map((line, i) => (
+            <article key={i} className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm">
+              <p className="font-semibold text-loden-ink">{line.label}</p>
+              <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-loden-muted">
+                <p>Qté : <span className="font-semibold text-loden-ink">{line.quantity}</span></p>
+                <p>TVA : <span className="font-semibold text-loden-ink">{line.vatRate}%</span></p>
+                <p>PU HT : <span className="font-semibold text-loden-ink">{euros(line.unitAmountCents)}</span></p>
+                <p>Total HT : <span className="font-semibold text-loden-ink">{euros(line.quantity * line.unitAmountCents)}</span></p>
+              </div>
+            </article>
+          ))}
+        </div>
+
+        <table className="mt-8 hidden w-full text-left text-sm sm:table print:table">
           <thead className="border-b-2 border-slate-200 text-xs uppercase tracking-wide text-loden-muted">
             <tr>
               <th className="py-2 pr-4 font-semibold">Désignation</th>

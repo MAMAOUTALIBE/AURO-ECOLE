@@ -50,11 +50,11 @@ export function CrmShell({ children }: { children: ReactNode }) {
   };
 
   return (
-    <div className="flex min-h-screen bg-[#f5f7f8] text-loden-ink">
+    <div className="flex h-screen overflow-hidden bg-[#f5f7f8] text-loden-ink">
       {/* Sidebar desktop */}
       <aside
         className={cn(
-          "sticky top-0 hidden h-screen shrink-0 flex-col border-r border-red-900 bg-red-800 transition-[width] duration-300 lg:flex",
+          "sticky top-0 hidden h-screen min-h-0 shrink-0 flex-col overflow-hidden border-r border-red-900 bg-red-800 transition-[width] duration-300 lg:flex",
           collapsed ? "w-[76px]" : "w-64"
         )}
       >
@@ -87,7 +87,7 @@ export function CrmShell({ children }: { children: ReactNode }) {
             aria-label="Fermer le menu"
             onClick={() => setMobileOpen(false)}
           />
-          <div className="absolute left-0 top-0 flex h-full w-72 flex-col border-r border-red-900 bg-red-800 shadow-premium">
+          <div className="absolute left-0 top-0 flex h-full w-72 min-w-0 flex-col overflow-hidden border-r border-red-900 bg-red-800 shadow-premium">
             <div className="flex h-16 items-center justify-between border-b border-red-600/40 px-4">
               <Brand />
               <button
@@ -105,11 +105,13 @@ export function CrmShell({ children }: { children: ReactNode }) {
       ) : null}
 
       {/* Colonne principale */}
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div className="flex h-screen min-w-0 flex-1 flex-col overflow-hidden">
         <CrmTopbar onOpenMobile={() => setMobileOpen(true)} />
-        {/* min-w-0 + overflow-x-clip : aucune page ne déborde horizontalement ni ne passe
-            sous la sidebar (les contenus larges scrollent dans leur propre conteneur). */}
-        <main className="min-w-0 max-w-full flex-1 overflow-x-clip px-4 py-6 sm:px-6 lg:px-8">{children}</main>
+        {/* Le contenu CRM scrolle ici, jamais sur le body : la sidebar reste stable et
+            les tableaux/cartes larges doivent rester contenus dans leurs wrappers. */}
+        <main className="min-h-0 min-w-0 max-w-full flex-1 overflow-y-auto overflow-x-hidden overscroll-contain px-4 py-6 sm:px-6 lg:px-8 [&_*]:min-w-0 [&>*]:max-w-full">
+          {children}
+        </main>
       </div>
     </div>
   );

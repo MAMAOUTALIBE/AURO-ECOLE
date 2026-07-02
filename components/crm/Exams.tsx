@@ -154,7 +154,7 @@ export function Exams() {
 
   return (
     <div className="grid gap-6">
-      <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-soft">
+      <div className="min-w-0 rounded-3xl border border-slate-200 bg-white p-4 shadow-soft sm:p-6">
         <div className="flex items-center gap-3">
           <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-loden-50 text-loden-700">
             <Plus className="h-5 w-5" aria-hidden="true" />
@@ -184,7 +184,7 @@ export function Exams() {
         {error ? <p className="mt-4 rounded-2xl bg-red-50 p-4 text-sm font-medium text-red-700">{error}</p> : null}
       </div>
 
-      <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-soft">
+      <div className="min-w-0 rounded-3xl border border-slate-200 bg-white p-4 shadow-soft sm:p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-loden-50 text-loden-700">
@@ -211,7 +211,47 @@ export function Exams() {
         </div>
         {loading ? <p className="mt-6 text-sm text-loden-muted">Chargement…</p> : null}
         {!loading ? (
-          <div className="mt-6 overflow-x-auto">
+          <div className="mt-6">
+            <div className="grid gap-3 md:hidden">
+              {pagedExams.map((exam) => (
+                <article key={exam.id} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-soft">
+                  <div className="flex min-w-0 items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="truncate font-semibold text-loden-ink">{studentName(exam.studentId)}</p>
+                      <p className="mt-1 text-xs text-loden-muted">{TYPES.find((t) => t.key === exam.type)?.label ?? exam.type} · {fmtDate(exam.scheduledAt)}</p>
+                    </div>
+                    <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${RESULT_STYLES[exam.result]}`}>
+                      {RESULTS.find((r) => r.key === exam.result)?.label ?? exam.result}
+                    </span>
+                  </div>
+                  <div className="mt-4 grid gap-2">
+                    <select
+                      aria-label="Changer le résultat"
+                      className="focus-ring w-full cursor-pointer rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-loden-ink outline-none"
+                      value={exam.result}
+                      onChange={(e) => updateResult(exam, e.target.value)}
+                    >
+                      {RESULTS.map((r) => <option key={r.key} value={r.key}>{r.label}</option>)}
+                    </select>
+                    {exam.result === "REUSSI" || exam.result === "ECHOUE" ? (
+                      <input
+                        type="number"
+                        min={0}
+                        max={100}
+                        defaultValue={exam.score ?? ""}
+                        onBlur={(e) => updateScore(exam, e.target.value)}
+                        placeholder="Score /100"
+                        aria-label="Score sur 100"
+                        className="focus-ring w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-loden-ink outline-none"
+                      />
+                    ) : exam.score != null ? (
+                      <span className="text-xs font-semibold text-loden-muted">{exam.score}/100</span>
+                    ) : null}
+                  </div>
+                </article>
+              ))}
+            </div>
+            <div className="hidden overflow-x-auto md:block">
             <table className="w-full text-left text-sm">
               <thead className="text-xs uppercase tracking-wide text-loden-muted">
                 <tr className="border-b border-slate-200">
@@ -265,6 +305,7 @@ export function Exams() {
                 ) : null}
               </tbody>
             </table>
+            </div>
             <Pagination page={page} pageSize={PAGE_SIZE} total={filteredExams.length} onPage={setPage} />
           </div>
         ) : null}

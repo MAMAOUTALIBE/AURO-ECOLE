@@ -194,7 +194,7 @@ export function StudentsList() {
   }
 
   return (
-    <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-soft">
+    <div className="min-w-0 rounded-3xl border border-slate-200 bg-white p-4 shadow-soft sm:p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-loden-50 text-loden-700">
@@ -296,7 +296,53 @@ export function StudentsList() {
       {error ? <p className="mt-6 rounded-2xl bg-red-50 p-4 text-sm font-medium text-red-700">{error}</p> : null}
 
       {!loading && !error ? (
-        <div className="mt-6 overflow-x-auto">
+        <div className="mt-6">
+          <div className="grid gap-3 lg:hidden">
+            {paged.map((student) => (
+              <article key={student.id} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-soft">
+                <div className="flex min-w-0 items-start gap-3">
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-loden-50 text-xs font-bold text-loden-700">
+                    {initials(student)}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-semibold text-loden-ink">
+                      {student.user ? `${student.user.firstName} ${student.user.lastName}` : "—"}
+                    </p>
+                    <p className="truncate text-xs text-loden-muted">{student.user?.email}</p>
+                  </div>
+                  <span className="shrink-0 rounded-full bg-loden-50 px-2.5 py-1 text-xs font-semibold text-loden-700">
+                    {FILE_STATUS_LABELS[student.fileStatus] ?? student.fileStatus}
+                  </span>
+                </div>
+                <div className="mt-3 grid gap-2 text-sm text-loden-muted">
+                  <p>
+                    <span className="font-semibold text-loden-ink">Formation : </span>
+                    {student.formationId ? formationById.get(student.formationId) ?? "—" : "—"}
+                  </p>
+                  <p>
+                    <span className="font-semibold text-loden-ink">Inscription : </span>
+                    {fmtDate(student.registeredAt)}
+                  </p>
+                </div>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {student.user?.phone ? (
+                    <a href={`tel:${student.user.phone}`} className="focus-ring inline-flex flex-1 items-center justify-center gap-1 rounded-full border border-slate-200 px-3 py-2 text-xs font-semibold text-loden-ink hover:bg-loden-50">
+                      <Phone className="h-3.5 w-3.5" aria-hidden="true" /> Appeler
+                    </a>
+                  ) : null}
+                  {student.user?.email ? (
+                    <a href={`mailto:${student.user.email}`} className="focus-ring inline-flex flex-1 items-center justify-center gap-1 rounded-full border border-slate-200 px-3 py-2 text-xs font-semibold text-loden-ink hover:bg-loden-50">
+                      <Mail className="h-3.5 w-3.5" aria-hidden="true" /> Email
+                    </a>
+                  ) : null}
+                  <Link href={`/admin/eleves/${student.id}`} className="focus-ring inline-flex flex-1 items-center justify-center gap-1 rounded-full bg-loden-700 px-3 py-2 text-xs font-semibold text-white hover:bg-loden-800">
+                    Ouvrir <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+                  </Link>
+                </div>
+              </article>
+            ))}
+          </div>
+          <div className="hidden overflow-x-auto lg:block">
           <table className="w-full text-left text-sm">
             <thead className="text-xs uppercase tracking-wide text-loden-muted">
               <tr className="border-b border-slate-200">
@@ -366,6 +412,7 @@ export function StudentsList() {
               ) : null}
             </tbody>
           </table>
+          </div>
           <Pagination page={page} pageSize={PAGE_SIZE} total={filtered.length} onPage={setPage} />
         </div>
       ) : null}

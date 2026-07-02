@@ -93,7 +93,27 @@ export function AuditLogViewer() {
             compact
           />
         ) : (
-          <div className="overflow-x-auto">
+          <>
+          <div className="grid gap-3 md:hidden">
+            {paged.map((log) => (
+              <article key={log.id} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-soft">
+                <div className="flex min-w-0 items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <Badge variant={actionVariant(log.action)}>{log.action}</Badge>
+                    <p className="mt-2 truncate text-sm font-semibold text-loden-ink">{log.entityType}</p>
+                  </div>
+                  <time className="shrink-0 text-right text-xs font-medium text-loden-muted">
+                    {new Date(log.createdAt).toLocaleString("fr-FR", { dateStyle: "short", timeStyle: "short" })}
+                  </time>
+                </div>
+                <div className="mt-3 grid gap-1 text-xs text-loden-muted">
+                  <p className="break-all"><span className="font-semibold text-loden-ink">Référence : </span>{log.entityId ?? "—"}</p>
+                  <p className="break-all"><span className="font-semibold text-loden-ink">Auteur : </span>{log.userId ?? "système"}</p>
+                </div>
+              </article>
+            ))}
+          </div>
+          <div className="hidden overflow-x-auto md:block">
             <table className="w-full text-left text-sm">
               <thead className="text-xs uppercase tracking-wide text-loden-muted">
                 <tr className="border-b border-slate-200">
@@ -118,8 +138,9 @@ export function AuditLogViewer() {
                 ))}
               </tbody>
             </table>
-            <Pagination page={page} pageSize={PAGE_SIZE} total={filtered.length} onPage={setPage} />
           </div>
+          <Pagination page={page} pageSize={PAGE_SIZE} total={filtered.length} onPage={setPage} />
+          </>
         )}
       </div>
     </Card>

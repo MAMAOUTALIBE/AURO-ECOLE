@@ -224,7 +224,33 @@ export function ContractsManager() {
           </div>
         ) : (
           <>
-            <div className="overflow-x-auto">
+            <div className="grid gap-3 p-4 md:hidden">
+              {paged.map((c) => (
+                <article key={c.id} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-soft">
+                  <div className="flex min-w-0 items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="truncate font-semibold text-loden-ink">{clientName(c)}</p>
+                      <p className="mt-1 font-mono text-xs text-loden-muted">{c.number ?? "Brouillon sans numéro"}</p>
+                    </div>
+                    <Badge variant={STATUS_VARIANT[c.status]}>{CONTRACT_STATUS_LABELS[c.status]}</Badge>
+                  </div>
+                  <div className="mt-3 grid gap-3 text-sm">
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-wide text-loden-muted">Objet</p>
+                      <p className="mt-1 line-clamp-2 font-medium text-loden-ink">{c.title}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-wide text-loden-muted">Montant</p>
+                      <p className="mt-1 font-bold text-loden-ink">{c.totalCents > 0 ? euros(c.totalCents) : "—"}</p>
+                    </div>
+                  </div>
+                  <Link href={`/admin/contrats/${c.id}`} className="focus-ring mt-4 inline-flex w-full items-center justify-center gap-1 rounded-full border border-slate-200 px-3 py-2 text-sm font-semibold text-loden-ink hover:bg-loden-50">
+                    Ouvrir <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+                  </Link>
+                </article>
+              ))}
+            </div>
+            <div className="hidden overflow-x-auto md:block">
               <table className="w-full text-left text-sm">
                 <thead className="text-xs uppercase tracking-wide text-loden-muted">
                   <tr className="border-b border-slate-200">
