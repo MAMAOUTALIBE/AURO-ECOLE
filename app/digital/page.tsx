@@ -24,6 +24,7 @@ import { getFormations } from "@/lib/catalog";
 import { formatCurrency } from "@/lib/utils";
 import { safeJsonLd } from "@/lib/json-ld";
 import { SITE_NAME, SITE_URL, absoluteUrl } from "@/lib/seo";
+import { PageHeroSlideshow, type PageHeroSlideshowSlide } from "@/components/PageHeroSlideshow";
 
 export const metadata: Metadata = {
   title: "Formation IA, CRM & Automatisation — 14H | LODENE Centre de formation",
@@ -43,6 +44,33 @@ const highlights = [
   { icon: Wallet, title: "Financement possible", text: "OPCO · FAF · entreprise" },
   { icon: MonitorPlay, title: "Présentiel ou distanciel", text: "adapté à votre organisation" },
   { icon: Users, title: "Dirigeants, TPE, PME, indépendants", text: "public concerné" }
+];
+
+const digitalHeroSlides: PageHeroSlideshowSlide[] = [
+  {
+    src: "/formations/photos/vtc-distanciel-eco.webp",
+    alt: "Formation digitale LODENE sur ordinateur avec accompagnement pédagogique.",
+    label: "Digital",
+    objectPosition: "50% 45%"
+  },
+  {
+    src: "/loden-hero.jpg",
+    alt: "Formateur LODENE accompagnant une apprenante avec une tablette.",
+    label: "Accompagnement",
+    objectPosition: "62% 50%"
+  },
+  {
+    src: "/formations/photos/stage-accelere.webp",
+    alt: "Organisation d'un parcours de formation avec outils numériques.",
+    label: "Organisation",
+    objectPosition: "50% 45%"
+  },
+  {
+    src: "/formations/photos/vtc-intermediaire-light.webp",
+    alt: "Échange entre formateur et professionnel autour d'un parcours digital.",
+    label: "CRM",
+    objectPosition: "50% 45%"
+  }
 ];
 
 const objectives = [
@@ -130,47 +158,15 @@ export default async function DigitalPage() {
     <main>
       <script type="application/ld+json" suppressHydrationWarning dangerouslySetInnerHTML={{ __html: safeJsonLd(courseSchema) }} />
 
-      {/* HERO */}
-      <section className="bg-loden-900 py-10 text-white md:py-14">
-        <div className="container-pad">
-          <p className="inline-flex rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.14em] text-loden-100">
-            Pôle Digital — Centre de formation
-          </p>
-          <h1 className="mt-4 max-w-3xl text-[2rem] font-extrabold leading-tight sm:text-4xl md:text-5xl">
-            Formation IA, CRM &amp; Automatisation
-          </h1>
-          <p className="mt-3 max-w-2xl text-base leading-7 text-white/85 md:text-lg">
-            Une formation courte pour <strong className="text-white">digitaliser, organiser et automatiser</strong> votre activité.
-            Mieux suivre vos prospects, mettre en place un mini-CRM clair et utiliser l&apos;IA au quotidien.
-          </p>
-          <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-            <Link
-              href="/contact?formation=ia-crm-automatisation#demande"
-              className="focus-ring inline-flex w-full items-center justify-center gap-2 rounded-full bg-white px-6 py-3.5 font-semibold text-loden-ink shadow-soft transition hover:bg-loden-50 sm:w-auto"
-            >
-              Demander un devis <ArrowRight className="h-5 w-5" aria-hidden="true" />
-            </Link>
-            <Link
-              href="/contact#demande"
-              className="focus-ring inline-flex w-full items-center justify-center gap-2 rounded-full border border-white/30 px-6 py-3.5 font-semibold text-white transition hover:bg-white/10 sm:w-auto"
-            >
-              Être rappelé
-            </Link>
-          </div>
-          <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {highlights.map((h) => {
-              const Icon = h.icon;
-              return (
-                <div key={h.title} className="rounded-2xl border border-white/15 bg-white/5 p-4">
-                  <Icon className="h-6 w-6 text-loden-200" aria-hidden="true" />
-                  <p className="mt-2 text-lg font-bold">{h.title}</p>
-                  <p className="text-sm text-white/70">{h.text}</p>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
+      <PageHeroSlideshow
+        eyebrow="Pôle Digital — Centre de formation"
+        title="Formation IA, CRM & Automatisation"
+        text="Une formation courte pour digitaliser, organiser et automatiser votre activité. Mieux suivre vos prospects, mettre en place un mini-CRM clair et utiliser l'IA au quotidien."
+        slides={digitalHeroSlides}
+        primaryCta={{ href: "/contact?formation=ia-crm-automatisation#demande", label: "Demander un devis" }}
+        secondaryCta={{ href: "/contact#demande", label: "Être rappelé" }}
+        badges={highlights.map((highlight) => highlight.title)}
+      />
 
       {/* POURQUOI / OBJECTIFS */}
       <section className="bg-white py-9 md:py-12">

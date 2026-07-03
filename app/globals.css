@@ -182,6 +182,102 @@ textarea {
   }
 }
 
+.loden-formations-hero-slide {
+  animation: loden-formations-hero-slide 24s ease-in-out infinite;
+  will-change: opacity, transform;
+}
+
+.loden-formations-hero-dot {
+  animation: loden-formations-hero-dot 24s ease-in-out infinite;
+}
+
+@keyframes loden-formations-hero-slide {
+  0%,
+  20% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  25%,
+  100% {
+    opacity: 0;
+    transform: scale(1.035);
+  }
+}
+
+@keyframes loden-formations-hero-dot {
+  0%,
+  20% {
+    transform: scaleX(1.15);
+    background: #08aeb8;
+  }
+
+  25%,
+  100% {
+    transform: scaleX(1);
+    background: rgba(255, 255, 255, 0.75);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loden-formations-hero-slide,
+  .loden-formations-hero-dot {
+    animation: none;
+  }
+
+  .loden-formations-hero-slide:not(:first-child) {
+    opacity: 0 !important;
+  }
+}
+
+.loden-marketing-hero-slide {
+  animation: loden-marketing-hero-slide 24s ease-in-out infinite;
+  will-change: opacity, transform;
+}
+
+.loden-marketing-hero-dot {
+  animation: loden-marketing-hero-dot 24s ease-in-out infinite;
+}
+
+@keyframes loden-marketing-hero-slide {
+  0%,
+  20% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  25%,
+  100% {
+    opacity: 0;
+    transform: scale(1.035);
+  }
+}
+
+@keyframes loden-marketing-hero-dot {
+  0%,
+  20% {
+    transform: scaleX(1.15);
+    background: #08aeb8;
+  }
+
+  25%,
+  100% {
+    transform: scaleX(1);
+    background: rgba(255, 255, 255, 0.75);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loden-marketing-hero-slide,
+  .loden-marketing-hero-dot {
+    animation: none;
+  }
+
+  .loden-marketing-hero-slide:not(:first-child) {
+    opacity: 0 !important;
+  }
+}
+
 /* Impression d'une facture : on masque tout sauf le document. */
 @media print {
   body * {

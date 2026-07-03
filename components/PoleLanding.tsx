@@ -1,17 +1,105 @@
 import Link from "next/link";
 import { ArrowRight, CheckCircle2 } from "lucide-react";
 import { FormationCard } from "@/components/FormationCard";
-import { PageHero } from "@/components/PageHero";
+import { PageHeroSlideshow, type PageHeroSlideshowSlide } from "@/components/PageHeroSlideshow";
 import { SectionHeader } from "@/components/SectionHeader";
 import { formations, poleLandings, productLineLabels } from "@/data/site";
 import { safeJsonLd } from "@/lib/json-ld";
 import { SITE_NAME, SITE_URL, absoluteUrl } from "@/lib/seo";
+
+const poleHeroSlides: Record<"VTC" | "SST" | "LOGISTIQUE_SECURITE", PageHeroSlideshowSlide[]> = {
+  VTC: [
+    {
+      src: "/formations/photos/vtc-excellence.webp",
+      alt: "Formation chauffeur VTC avec remise des clés et véhicule professionnel.",
+      label: "VTC excellence",
+      objectPosition: "50% 48%"
+    },
+    {
+      src: "/formations/photos/vtc-confort-pro.webp",
+      alt: "Chauffeur VTC en préparation professionnelle près d'une berline.",
+      label: "Confort Pro",
+      objectPosition: "50% 48%"
+    },
+    {
+      src: "/formations/photos/vtc-intermediaire-light.webp",
+      alt: "Futur chauffeur VTC accompagné par un formateur LODENE.",
+      label: "Intermédiaire",
+      objectPosition: "50% 45%"
+    },
+    {
+      src: "/formations/photos/vtc-distanciel-eco.webp",
+      alt: "Formation VTC à distance sur ordinateur.",
+      label: "Distanciel",
+      objectPosition: "50% 45%"
+    }
+  ],
+  SST: [
+    {
+      src: "/formations/photos/sst-initial.webp",
+      alt: "Formation SST initiale avec apprenants et mannequin de secourisme.",
+      label: "SST initial",
+      objectPosition: "50% 45%"
+    },
+    {
+      src: "/formations/photos/mac-sst.webp",
+      alt: "Recyclage MAC SST avec groupe d'apprenants et matériel de premiers secours.",
+      label: "MAC SST",
+      objectPosition: "50% 45%"
+    },
+    {
+      src: "/formations/photos/sst-initial.webp",
+      alt: "Mise en situation de prévention et gestes de secours SST.",
+      label: "Gestes de secours",
+      objectPosition: "44% 45%"
+    },
+    {
+      src: "/formations/photos/mac-sst.webp",
+      alt: "Actualisation des compétences SST en centre de formation.",
+      label: "Prévention",
+      objectPosition: "56% 45%"
+    }
+  ],
+  LOGISTIQUE_SECURITE: [
+    {
+      src: "/formations/photos/chariots-elevateurs-r489.webp",
+      alt: "Formation chariots élévateurs R489 en entrepôt sécurisé.",
+      label: "Chariots",
+      objectPosition: "50% 48%"
+    },
+    {
+      src: "/formations/photos/nacelles-pemp-r486.webp",
+      alt: "Formation nacelles PEMP R486 avec zone sécurisée.",
+      label: "Nacelles",
+      objectPosition: "50% 50%"
+    },
+    {
+      src: "/formations/photos/terberg-tracteur-parc.webp",
+      alt: "Formation tracteur de parc en environnement logistique.",
+      label: "Tracteur",
+      objectPosition: "50% 48%"
+    },
+    {
+      src: "/formations/photos/gerbeur-r485.webp",
+      alt: "Formation gerbeur accompagnant R485 sous supervision.",
+      label: "Gerbeur",
+      objectPosition: "50% 48%"
+    }
+  ]
+};
+
+const poleHeroBadges: Record<"VTC" | "SST" | "LOGISTIQUE_SECURITE", string[]> = {
+  VTC: ["Examen T3P", "Carte professionnelle", "CPF possible", "Accompagnement CMA"],
+  SST: ["SST initial", "MAC SST", "Inter ou intra", "Prévention"],
+  LOGISTIQUE_SECURITE: ["R489", "R485", "R486", "Sur devis"]
+};
 
 // Page d'atterrissage d'un pôle professionnel (VTC / CACES) : hero, atouts,
 // catalogue filtré du pôle et appel au devis. Server component (SSG, bon pour le SEO).
 export function PoleLanding({ pole }: { pole: "VTC" | "SST" | "LOGISTIQUE_SECURITE" }) {
   const content = poleLandings[pole];
   const poleFormations = formations.filter((formation) => formation.productLine === pole);
+  const formationsAnchor = `formations-${pole.toLowerCase().replace(/_/g, "-")}`;
 
   const itemListSchema = {
     "@context": "https://schema.org",
@@ -42,12 +130,14 @@ export function PoleLanding({ pole }: { pole: "VTC" | "SST" | "LOGISTIQUE_SECURI
         suppressHydrationWarning
         dangerouslySetInnerHTML={{ __html: safeJsonLd(itemListSchema) }}
       />
-      <PageHero
+      <PageHeroSlideshow
         eyebrow={content.eyebrow}
         title={content.title}
         text={content.text}
-        cta="Demander un devis"
-        ctaHref={`/contact?pole=${pole}#demande`}
+        slides={poleHeroSlides[pole]}
+        primaryCta={{ href: `/contact?pole=${pole}#demande`, label: "Demander un devis" }}
+        secondaryCta={{ href: `#${formationsAnchor}`, label: "Voir les formations" }}
+        badges={poleHeroBadges[pole]}
       />
 
       <section className="bg-white py-8 md:py-10 xl:py-14">
@@ -65,7 +155,7 @@ export function PoleLanding({ pole }: { pole: "VTC" | "SST" | "LOGISTIQUE_SECURI
         </div>
       </section>
 
-      <section className="bg-loden-pearl py-8 md:py-10 xl:py-14">
+      <section id={formationsAnchor} className="bg-loden-pearl py-8 md:py-10 xl:py-14">
         <div className="container-pad">
           <SectionHeader
             eyebrow="Nos formations"

@@ -64,7 +64,7 @@ export function FormationExplorer() {
   }, [activeFilter, activePole, query, sourceFormations]);
 
   return (
-    <section className="bg-white pb-[calc(6rem+env(safe-area-inset-bottom))] pt-8 md:py-10 xl:py-14">
+    <section id="catalogue-formations" className="bg-white pb-[calc(6rem+env(safe-area-inset-bottom))] pt-8 md:py-10 xl:py-14">
       <div className="container-pad">
         <div className="mb-3 grid gap-3 md:hidden">
           <Link
