@@ -220,7 +220,7 @@ export function Exams() {
                       <p className="truncate font-semibold text-loden-ink">{studentName(exam.studentId)}</p>
                       <p className="mt-1 text-xs text-loden-muted">{TYPES.find((t) => t.key === exam.type)?.label ?? exam.type} · {fmtDate(exam.scheduledAt)}</p>
                     </div>
-                    <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${RESULT_STYLES[exam.result]}`}>
+                    <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${RESULT_STYLES[exam.result] ?? "bg-slate-100 text-slate-600"}`}>
                       {RESULTS.find((r) => r.key === exam.result)?.label ?? exam.result}
                     </span>
                   </div>
@@ -269,7 +269,7 @@ export function Exams() {
                     <td className="py-3 pr-4 text-loden-muted">{fmtDate(exam.scheduledAt)}</td>
                     <td className="py-3 pr-4">
                       <div className="flex items-center gap-2">
-                        <span className={`rounded-full px-3 py-1 text-xs font-semibold ${RESULT_STYLES[exam.result]}`}>
+                        <span className={`rounded-full px-3 py-1 text-xs font-semibold ${RESULT_STYLES[exam.result] ?? "bg-slate-100 text-slate-600"}`}>
                           {RESULTS.find((r) => r.key === exam.result)?.label ?? exam.result}
                         </span>
                         <select

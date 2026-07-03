@@ -297,7 +297,7 @@ export function ReviewsManager() {
           ) : (
             <ul className="space-y-3">
               {visible.map((review) => {
-                const meta = STATUS_META[review.status];
+                const meta = STATUS_META[review.status] ?? { label: review.status, variant: "neutral" as BadgeVariant };
                 return (
                   <li key={review.id} className="rounded-2xl border border-slate-200/70 p-4">
                     <div className="flex flex-wrap items-center justify-between gap-2">

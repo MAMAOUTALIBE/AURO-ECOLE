@@ -62,7 +62,8 @@ export function FormationCard({ formation }: { formation: Formation }) {
   const visual =
     BY_SLUG[formation.slug] ??
     (formation.productLine ? BY_PRODUCT_LINE[formation.productLine] : undefined) ??
-    BY_MODE[formation.mode];
+    BY_MODE[formation.mode] ??
+    BY_MODE.Manuel; // repli terminal : un mode DB inconnu ne doit jamais casser la carte (visual.icon)
   const Icon = visual.icon;
   // Image choisie au CMS (médiathèque) si définie, sinon photo réaliste par slug/pôle.
   const headerImage = formation.imageUrl

@@ -261,7 +261,7 @@ export function Finance() {
                       <p className="truncate font-semibold text-loden-ink">{payerName(payment)}</p>
                       <p className="mt-1 text-xs text-loden-muted">{KINDS.find((k) => k.key === payment.kind)?.label ?? payment.kind}</p>
                     </div>
-                    <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${STATUS_STYLES[payment.status]}`}>
+                    <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${STATUS_STYLES[payment.status] ?? "bg-slate-100 text-slate-600"}`}>
                       {STATUSES.find((s) => s.key === payment.status)?.label ?? payment.status}
                     </span>
                   </div>
@@ -307,7 +307,7 @@ export function Finance() {
                     <td className="py-3 pr-4 text-loden-muted">{fmtDate(payment.createdAt)}</td>
                     <td className="py-3 pr-4">
                       <div className="flex items-center gap-2">
-                        <span className={`rounded-full px-3 py-1 text-xs font-semibold ${STATUS_STYLES[payment.status]}`}>
+                        <span className={`rounded-full px-3 py-1 text-xs font-semibold ${STATUS_STYLES[payment.status] ?? "bg-slate-100 text-slate-600"}`}>
                           {STATUSES.find((s) => s.key === payment.status)?.label ?? payment.status}
                         </span>
                         <select

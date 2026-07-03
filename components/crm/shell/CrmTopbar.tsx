@@ -19,7 +19,9 @@ const ROLE_LABELS: Record<string, string> = {
   SECRETAIRE: "Secrétaire",
   COMPTABLE: "Comptable",
   MONITEUR: "Moniteur",
-  EDITEUR: "Éditeur de contenu"
+  EDITEUR: "Éditeur de contenu",
+  ELEVE: "Élève",
+  VISITEUR: "Visiteur"
 };
 
 /** Recherche-commande : filtre la navigation du CRM (fonctionnel, sans backend). */
