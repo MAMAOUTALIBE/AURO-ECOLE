@@ -45,7 +45,7 @@ type FlowState = {
 const GREETING: Message = {
   role: "assistant",
   content:
-    "Bonjour 👋\nJe suis l'assistant LODENE.\nJe peux vous aider à choisir une formation, demander un devis ou prendre rendez-vous."
+    "Bonjour 👋 Je suis l'assistant LODENE. Je vous aide à choisir votre formation, obtenir un devis ou prendre rendez-vous — en 1 minute, sans engagement ni paiement. Dites-moi ce qui vous intéresse (ou tapez « m'orienter »), et je m'occupe du reste. 🙂"
 };
 
 const FORMATIONS = [
@@ -111,10 +111,6 @@ function normalizeSuggestions(value: unknown): ChatSuggestion[] {
   return suggestions.length ? suggestions : DEFAULT_SUGGESTIONS;
 }
 
-// Message d'invitation proactive (après 8 s sur le site). Ton rassurant, sans jargon.
-const PROACTIVE_INVITE =
-  "👋 Un petit coup de main ? Vous pouvez vous inscrire en 1 minute — sans engagement, sans paiement et sans aucune obligation. Dites-moi simplement la formation qui vous intéresse (ou tapez « m'orienter »), et je m'occupe du reste. 🙂";
-
 export function AiChatWidget() {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([GREETING]);
@@ -160,8 +156,8 @@ export function AiChatWidget() {
     const timer = window.setTimeout(() => {
       window.sessionStorage.setItem("lodene:proactive-invite", "done");
       if (proactiveRef.current.open || proactiveRef.current.count > 1) return;
+      // Ouvre simplement l'assistant : le message d'accueil (GREETING) contient déjà l'invitation.
       setOpen(true);
-      setMessages((current) => (current.length > 1 ? current : [...current, { role: "assistant", content: PROACTIVE_INVITE }]));
     }, 8_000);
     return () => window.clearTimeout(timer);
   }, []);
