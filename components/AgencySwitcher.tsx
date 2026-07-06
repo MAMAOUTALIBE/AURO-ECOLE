@@ -38,13 +38,13 @@ export function AgencySwitcher() {
   if (agencies.length < 2) return null;
 
   return (
-    <label className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-loden-ink shadow-soft">
+    <label className="hidden min-w-0 max-w-[13rem] items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-loden-ink shadow-soft sm:inline-flex md:max-w-[18rem] xl:max-w-none xl:px-4">
       <Building2 className="h-4 w-4 shrink-0 text-loden-700" aria-hidden="true" />
       <span className="sr-only">Agence active</span>
       <select
         value={active}
         onChange={(event) => handleChange(event.target.value)}
-        className="focus-ring cursor-pointer bg-transparent pr-1 outline-none"
+        className="focus-ring min-w-0 max-w-full cursor-pointer truncate bg-transparent pr-1 outline-none"
         aria-label="Agence active"
       >
         <option value="all">Toutes les agences</option>

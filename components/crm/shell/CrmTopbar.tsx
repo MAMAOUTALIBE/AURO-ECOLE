@@ -59,7 +59,7 @@ function CommandSearch() {
   };
 
   return (
-    <div className="relative w-full max-w-md">
+    <div className="relative min-w-0 flex-1 max-w-md">
       <div className="relative">
         <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" aria-hidden="true" />
         <input
@@ -167,7 +167,7 @@ export function CrmTopbar({ onOpenMobile }: { onOpenMobile: () => void }) {
   const initials = user ? `${user.firstName?.[0] ?? ""}${user.lastName?.[0] ?? ""}`.toUpperCase() || "?" : "?";
 
   return (
-    <header className="sticky top-0 z-20 flex h-16 shrink-0 items-center gap-3 border-b border-slate-200 bg-white/85 px-4 backdrop-blur-md sm:px-6">
+    <header className="sticky top-0 z-20 flex h-16 shrink-0 items-center gap-2 border-b border-slate-200 bg-white/85 px-3 backdrop-blur-md sm:gap-3 sm:px-6">
       <button
         type="button"
         onClick={onOpenMobile}
@@ -179,10 +179,10 @@ export function CrmTopbar({ onOpenMobile }: { onOpenMobile: () => void }) {
 
       <CommandSearch />
 
-      <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
+      <div className="ml-auto flex min-w-0 shrink-0 items-center gap-1.5 sm:gap-2">
         <Link
           href="/admin/assistant"
-          className="focus-ring hidden items-center gap-1.5 rounded-lg border border-loden-200 bg-loden-50 px-3 py-1.5 text-sm font-semibold text-loden-700 transition hover:bg-loden-100 sm:inline-flex"
+          className="focus-ring hidden items-center gap-1.5 rounded-lg border border-loden-200 bg-loden-50 px-3 py-1.5 text-sm font-semibold text-loden-700 transition hover:bg-loden-100 lg:inline-flex"
         >
           <Sparkles className="h-4 w-4" aria-hidden="true" />
           Assistant IA
@@ -240,7 +240,7 @@ export function CrmTopbar({ onOpenMobile }: { onOpenMobile: () => void }) {
             <span className="flex h-8 w-8 items-center justify-center rounded-full bg-loden-700 text-xs font-bold text-white">
               {initials}
             </span>
-            <span className="hidden text-left md:block">
+            <span className="hidden text-left lg:block">
               <span className="block text-sm font-semibold leading-tight text-loden-ink">
                 {user ? `${user.firstName} ${user.lastName}` : "—"}
               </span>
@@ -248,7 +248,7 @@ export function CrmTopbar({ onOpenMobile }: { onOpenMobile: () => void }) {
                 {user ? ROLE_LABELS[user.role] ?? user.role : ""}
               </span>
             </span>
-            <ChevronDown className="hidden h-4 w-4 text-slate-400 md:block" aria-hidden="true" />
+            <ChevronDown className="hidden h-4 w-4 text-slate-400 lg:block" aria-hidden="true" />
           </button>
           {menuOpen ? (
             <>

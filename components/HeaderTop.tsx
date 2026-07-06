@@ -52,13 +52,13 @@ function OfferQrTickerItem({ hidden }: { hidden?: boolean }) {
         alt=""
         width={56}
         height={56}
-        className="h-12 w-12 rounded-lg bg-white object-contain"
+        className="h-9 w-9 rounded-lg bg-white object-contain sm:h-12 sm:w-12"
       />
     </>
   );
 
   const className =
-    "focus-ring inline-flex h-16 items-center gap-2 rounded-2xl border border-white/70 bg-white px-3 text-loden-900 shadow-[0_12px_28px_rgba(5,50,74,0.18)] lg:h-20";
+    "focus-ring inline-flex h-12 items-center gap-2 rounded-xl border border-white/70 bg-white px-2.5 text-loden-900 shadow-[0_12px_28px_rgba(5,50,74,0.18)] sm:h-16 sm:rounded-2xl sm:px-3 lg:h-20";
 
   if (hidden) {
     return <span className={className}>{content}</span>;
@@ -78,11 +78,11 @@ function FormationTickerItem({ item, hidden }: { item: (typeof formationTickerIt
         src={item.image}
         alt=""
         fill
-        sizes="(min-width: 1024px) 190px, 148px"
+        sizes="(min-width: 1024px) 190px, (min-width: 640px) 148px, 128px"
         className="object-cover"
       />
       <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-loden-900/90 via-loden-900/55 to-transparent px-3 pb-2 pt-5">
-        <span className="block whitespace-nowrap text-center text-sm font-black uppercase tracking-[0.08em] text-white drop-shadow lg:text-base">
+        <span className="block whitespace-nowrap text-center text-xs font-black uppercase tracking-[0.08em] text-white drop-shadow sm:text-sm lg:text-base">
           {item.label}
         </span>
       </span>
@@ -90,7 +90,7 @@ function FormationTickerItem({ item, hidden }: { item: (typeof formationTickerIt
   );
 
   const className =
-    "focus-ring relative block h-16 w-36 overflow-hidden rounded-2xl border border-white/20 bg-white/10 text-white shadow-[0_14px_34px_rgba(5,50,74,0.22)] transition hover:border-white/40 lg:h-20 lg:w-48";
+    "focus-ring relative block h-12 w-32 overflow-hidden rounded-xl border border-white/20 bg-white/10 text-white shadow-[0_14px_34px_rgba(5,50,74,0.22)] transition hover:border-white/40 sm:h-16 sm:w-36 sm:rounded-2xl lg:h-20 lg:w-48";
 
   if (hidden) {
     return <span className={className}>{content}</span>;
@@ -119,8 +119,8 @@ function TickerGroup({ hidden }: { hidden?: boolean }) {
 
 export function HeaderTop() {
   return (
-    <div className="border-b border-loden-300/30 bg-loden-900 text-xs text-white shadow-[0_10px_28px_rgba(5,50,74,0.22)] lg:text-sm">
-      <div className="container-pad flex h-20 items-center gap-3 lg:h-24 lg:gap-6">
+    <div className="hidden border-b border-loden-300/30 bg-loden-900 text-xs text-white shadow-[0_10px_28px_rgba(5,50,74,0.22)] sm:block lg:text-sm">
+      <div className="container-pad flex h-16 items-center gap-3 sm:h-20 lg:h-24 lg:gap-6">
         <div className="marquee min-w-0 flex-1" role="marquee" aria-label="Informations LODENE">
           <div className="marquee-track">
             <TickerGroup />

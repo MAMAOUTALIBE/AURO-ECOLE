@@ -1,5 +1,6 @@
 import { ExternalLink, PenLine, Star } from "lucide-react";
 import { TestimonialCard } from "@/components/TestimonialCard";
+import { PaginatedReviews } from "@/components/PaginatedReviews";
 import { firstName, getGoogleReviews, getPublishedInternalReviews, type GoogleReviewItem } from "@/lib/google-reviews";
 
 // Étoiles avec remplissage partiel (ex. 4,7/5). Deux rangées superposées :
@@ -116,17 +117,17 @@ export async function GoogleReviewsSection() {
         </div>
 
         {usingGoogle ? (
-          <div className="mt-5 grid gap-3 md:grid-cols-2 md:gap-4 xl:grid-cols-3">
+          <PaginatedReviews className="mt-5" pageSize={6}>
             {reviews.map((review) => (
               <ReviewCard key={review.id || review.authorName + review.publishTime} review={review} />
             ))}
-          </div>
+          </PaginatedReviews>
         ) : internal.length > 0 ? (
-          <div className="mt-5 grid gap-3 md:grid-cols-2 md:gap-4 xl:grid-cols-3">
+          <PaginatedReviews className="mt-5" pageSize={6}>
             {internal.map((testimonial, index) => (
               <TestimonialCard key={`${testimonial.name}-${index}`} testimonial={testimonial} />
             ))}
-          </div>
+          </PaginatedReviews>
         ) : null}
 
         <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">

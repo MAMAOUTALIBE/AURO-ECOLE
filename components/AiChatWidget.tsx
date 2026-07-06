@@ -556,12 +556,12 @@ export function AiChatWidget() {
           href={whatsappHref()}
           target="_blank"
           rel="noreferrer"
-          className="focus-ring inline-flex h-14 items-center justify-center gap-2 rounded-full bg-[#25D366] px-4 text-sm font-semibold text-white shadow-premium transition hover:bg-[#1fbd58]"
+          className="focus-ring inline-flex h-12 w-12 items-center justify-center gap-2 rounded-full bg-[#25D366] px-0 text-sm font-semibold text-white shadow-premium transition hover:bg-[#1fbd58] lg:h-14 lg:w-auto lg:px-4"
           aria-label={`Continuer la conversation sur WhatsApp au ${whatsappDisplay()}`}
         >
           <MessageCircle className="h-5 w-5 shrink-0" aria-hidden="true" />
-          <span className="hidden sm:inline">WhatsApp</span>
-          <span className="hidden md:inline">{whatsappDisplay()}</span>
+          <span className="hidden lg:inline">WhatsApp</span>
+          <span className="hidden xl:inline">{whatsappDisplay()}</span>
         </a>
         <button
           type="button"
@@ -571,11 +571,11 @@ export function AiChatWidget() {
               return !value;
             })
           }
-          className="focus-ring inline-flex h-14 items-center justify-center gap-2 rounded-full bg-loden-700 px-4 text-sm font-semibold text-white shadow-premium transition hover:bg-loden-800"
+          className="focus-ring inline-flex h-12 w-12 items-center justify-center gap-2 rounded-full bg-loden-700 px-0 text-sm font-semibold text-white shadow-premium transition hover:bg-loden-800 lg:h-14 lg:w-auto lg:px-4"
           aria-label={open ? "Fermer l'assistant LODENE" : "Ouvrir l'assistant LODENE"}
         >
           {open ? <X className="h-5 w-5 shrink-0" aria-hidden="true" /> : <Sparkles className="h-5 w-5 shrink-0" aria-hidden="true" />}
-          <span>{open ? "Fermer" : "Assistant LODENE"}</span>
+          <span className="hidden lg:inline">{open ? "Fermer" : "Assistant LODENE"}</span>
         </button>
       </div>
     </>

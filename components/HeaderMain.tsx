@@ -4,10 +4,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { LucideIcon } from "lucide-react";
-import { ArrowRight, BookOpenCheck, ChevronDown, CreditCard, GraduationCap, Menu, MessageCircle, Phone, Sparkles, Star, UserRound, X } from "lucide-react";
+import { ArrowRight, BookOpenCheck, ChevronDown, CreditCard, GraduationCap, Menu, MessageCircle, Sparkles, Star, UserRound, X } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { contactInfo } from "@/data/site";
 import {
   defaultNavCtas,
   defaultNavPrimary,
@@ -200,8 +199,6 @@ export function HeaderMain({ nav, ctas }: { nav?: NavPrimary; ctas?: NavCtas }) 
   const keyFormationLinks = (formationItem?.children ?? [])
     .filter((child) => ["permis", "vtc", "securite", "caces", "digital"].includes(child.id))
     .slice(0, 5);
-  const phoneHref = contactInfo.phone ? `tel:${contactInfo.phone.replaceAll(" ", "")}` : "/contact";
-  const whatsappHref = contactInfo.whatsapp ? `https://wa.me/${contactInfo.whatsapp}` : "/contact";
   const mobileMainLinks = [
     { href: "/formations", label: "Formations", icon: GraduationCap },
     { href: "/tarifs", label: "Tarifs", icon: CreditCard },
@@ -212,9 +209,9 @@ export function HeaderMain({ nav, ctas }: { nav?: NavPrimary; ctas?: NavCtas }) 
   ];
 
   return (
-    <header className="relative z-40 border-b border-slate-200/80 bg-white/95 shadow-[0_8px_26px_rgba(20,33,38,0.08)] backdrop-blur-xl md:border-0 md:bg-transparent md:pb-2 md:pt-0 md:shadow-none">
+    <header className="relative z-40 border-b border-slate-200/80 bg-white/95 shadow-[0_8px_26px_rgba(20,33,38,0.08)] backdrop-blur-xl xl:border-0 xl:bg-transparent xl:pb-2 xl:pt-0 xl:shadow-none">
       <div className="w-full px-4 md:px-0">
-        <div className="flex min-h-16 items-center justify-between gap-3 md:hidden">
+        <div className="flex min-h-16 items-center justify-between gap-3 xl:hidden">
           <MobileLogo />
 
           <div className="flex shrink-0 items-center gap-2">
@@ -236,7 +233,7 @@ export function HeaderMain({ nav, ctas }: { nav?: NavPrimary; ctas?: NavCtas }) 
           </div>
         </div>
 
-        <div className="hidden min-h-14 items-center gap-3 rounded-none border border-[#f97316]/55 bg-white px-5 py-2 shadow-[0_18px_55px_rgba(20,33,38,0.10),0_0_0_1px_rgba(249,115,22,0.18),0_0_32px_rgba(249,115,22,0.18)] ring-1 ring-white md:flex sm:min-h-16 sm:gap-5 sm:px-8">
+        <div className="hidden min-h-16 items-center gap-5 rounded-none border border-[#f97316]/55 bg-white px-8 py-2 shadow-[0_18px_55px_rgba(20,33,38,0.10),0_0_0_1px_rgba(249,115,22,0.18),0_0_32px_rgba(249,115,22,0.18)] ring-1 ring-white xl:flex">
           <Logo />
 
           <nav className="hidden flex-1 items-center justify-center gap-1 xl:flex" aria-label="Navigation principale">
@@ -302,37 +299,10 @@ export function HeaderMain({ nav, ctas }: { nav?: NavPrimary; ctas?: NavCtas }) 
 
         {menuOpen ? (
           <div className="mt-2 max-h-[calc(100dvh-4.75rem)] overflow-y-auto rounded-[1.35rem] border border-slate-200/80 bg-white p-3 shadow-premium xl:hidden md:mt-3 sm:rounded-[1.75rem]">
-            <nav className="grid gap-4" aria-label="Navigation mobile">
-              <div className="grid grid-cols-3 gap-2">
-                <a
-                  href={phoneHref}
-                  onClick={() => setMenuOpen(false)}
-                  className="focus-ring inline-flex min-h-14 flex-col items-center justify-center gap-1 rounded-2xl bg-loden-fog px-2 text-xs font-bold text-loden-ink"
-                >
-                  <Phone className="h-4 w-4 text-loden-700" aria-hidden="true" />
-                  Appeler
-                </a>
-                <a
-                  href={whatsappHref}
-                  onClick={() => setMenuOpen(false)}
-                  className="focus-ring inline-flex min-h-14 flex-col items-center justify-center gap-1 rounded-2xl bg-[#25D366] px-2 text-xs font-bold text-white"
-                >
-                  <MessageCircle className="h-4 w-4" aria-hidden="true" />
-                  WhatsApp
-                </a>
-                <Link
-                  href="/inscription"
-                  onClick={() => setMenuOpen(false)}
-                  className="focus-ring inline-flex min-h-14 flex-col items-center justify-center gap-1 rounded-2xl bg-loden-700 px-2 text-xs font-bold text-white"
-                >
-                  <Sparkles className="h-4 w-4" aria-hidden="true" />
-                  Inscription
-                </Link>
-              </div>
-
-              <div>
+            <nav className="grid min-w-0 gap-4" aria-label="Navigation mobile">
+              <div className="min-w-0">
                 <p className="px-1 text-xs font-bold uppercase tracking-[0.12em] text-loden-700">Aller à l&apos;essentiel</p>
-                <div className="mt-2 grid gap-2">
+                <div className="mt-2 grid min-w-0 gap-2">
                   {mobileMainLinks.map((item) => {
                     const Icon = item.icon;
                     return (
@@ -341,15 +311,15 @@ export function HeaderMain({ nav, ctas }: { nav?: NavPrimary; ctas?: NavCtas }) 
                         href={item.href}
                         onClick={() => setMenuOpen(false)}
                         className={cn(
-                          "focus-ring flex min-h-12 items-center justify-between gap-3 rounded-2xl border px-4 text-sm font-bold transition",
+                          "focus-ring flex min-h-12 min-w-0 items-center justify-between gap-3 rounded-2xl border px-4 text-sm font-bold transition",
                           matchPath(pathname, item.href)
                             ? "border-loden-200 bg-loden-50 text-loden-800"
                             : "border-slate-200 bg-white text-loden-ink hover:border-loden-200 hover:bg-loden-50"
                         )}
                       >
-                        <span className="flex items-center gap-3">
+                        <span className="flex min-w-0 items-center gap-3">
                           <Icon className="h-4 w-4 text-loden-700" aria-hidden="true" />
-                          {item.label}
+                          <span className="min-w-0 truncate">{item.label}</span>
                         </span>
                         <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-loden-100 text-loden-700">
                           <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
@@ -361,7 +331,7 @@ export function HeaderMain({ nav, ctas }: { nav?: NavPrimary; ctas?: NavCtas }) 
               </div>
 
               {keyFormationLinks.length > 0 ? (
-                <div className="rounded-2xl bg-loden-fog p-3">
+                <div className="min-w-0 rounded-2xl bg-loden-fog p-3">
                   <p className="text-xs font-bold uppercase tracking-[0.12em] text-loden-700">Choix rapides</p>
                   <div className="mt-2 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                     {keyFormationLinks.map((child) => {
