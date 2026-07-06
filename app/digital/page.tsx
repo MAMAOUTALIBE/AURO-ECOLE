@@ -41,13 +41,6 @@ export const metadata: Metadata = {
   }
 };
 
-const highlights = [
-  { icon: Globe2, title: "Sites web", text: "vitrine, landing page, tunnel de contact" },
-  { icon: Users, title: "CRM & pipeline", text: "prospects, devis, relances, suivi client" },
-  { icon: Bot, title: "Agents IA", text: "assistant client, qualification, réponses" },
-  { icon: Workflow, title: "Automatisations", text: "WhatsApp, email, RDV, notifications" }
-];
-
 const digitalHeroSlides: PageHeroSlideshowSlide[] = [
   {
     src: "/formations/photos/digital-ai-agent-training.webp",
@@ -228,13 +221,12 @@ export default async function DigitalPage() {
       <script type="application/ld+json" suppressHydrationWarning dangerouslySetInnerHTML={{ __html: safeJsonLd(serviceSchema) }} />
 
       <PageHeroSlideshow
-        eyebrow="Pôle Tech — Digital, IA & Croissance"
-        title="Pôle Tech, IA & Automatisation"
-        text="Création de sites web, CRM, agents IA, automatisations et prospection digitale pour attirer plus de demandes, mieux suivre vos clients et convertir plus vite."
+        eyebrow="Pôle Tech"
+        title="Tech, IA & Web"
+        text="Sites web · CRM · agents IA · automatisations"
         slides={digitalHeroSlides}
-        primaryCta={{ href: "/contact?formation=pole-tech-ia-automatisation#demande", label: "Demander un audit digital" }}
+        primaryCta={{ href: "/contact?formation=pole-tech-ia-automatisation#demande", label: "Audit digital" }}
         secondaryCta={{ href: "/contact#demande", label: "Être rappelé" }}
-        badges={highlights.map((highlight) => highlight.title)}
       />
 
       {/* SERVICES */}

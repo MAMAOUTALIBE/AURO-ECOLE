@@ -88,12 +88,6 @@ const poleHeroSlides: Record<"VTC" | "SST" | "LOGISTIQUE_SECURITE", PageHeroSlid
   ]
 };
 
-const poleHeroBadges: Record<"VTC" | "SST" | "LOGISTIQUE_SECURITE", string[]> = {
-  VTC: ["Examen T3P", "Carte professionnelle", "CPF possible", "Accompagnement CMA"],
-  SST: ["SST initial", "MAC SST", "Inter ou intra", "Prévention"],
-  LOGISTIQUE_SECURITE: ["R489", "R485", "R486", "Sur devis"]
-};
-
 // Page d'atterrissage d'un pôle professionnel (VTC / CACES) : hero, atouts,
 // catalogue filtré du pôle et appel au devis. Server component (SSG, bon pour le SEO).
 export function PoleLanding({ pole }: { pole: "VTC" | "SST" | "LOGISTIQUE_SECURITE" }) {
@@ -137,7 +131,6 @@ export function PoleLanding({ pole }: { pole: "VTC" | "SST" | "LOGISTIQUE_SECURI
         slides={poleHeroSlides[pole]}
         primaryCta={{ href: `/contact?pole=${pole}#demande`, label: "Demander un devis" }}
         secondaryCta={{ href: `#${formationsAnchor}`, label: "Voir les formations" }}
-        badges={poleHeroBadges[pole]}
       />
 
       <section className="bg-white py-8 md:py-10 xl:py-14">

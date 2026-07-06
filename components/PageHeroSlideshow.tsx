@@ -53,19 +53,19 @@ export function PageHeroSlideshow({
         <div className="absolute inset-0 bg-gradient-to-t from-loden-950/50 via-transparent to-loden-950/10" />
       </div>
 
-      <div className="container-pad relative z-10 flex min-h-[440px] items-end py-8 sm:min-h-[480px] md:min-h-[540px] md:items-center md:py-12 xl:min-h-[580px]">
-        <div className="max-w-3xl pb-3 md:pb-0">
-          <p className="inline-flex rounded-full border border-white/20 bg-white/12 px-4 py-2 text-[0.72rem] font-black uppercase tracking-[0.14em] text-white shadow-soft sm:text-sm">
+      <div className="container-pad relative z-10 flex min-h-[430px] items-end py-8 sm:min-h-[470px] md:min-h-[520px] md:items-center md:py-12 xl:min-h-[560px]">
+        <div className="w-full min-w-0 max-w-3xl pb-3 md:pb-0">
+          <p className="inline-flex max-w-full overflow-hidden text-ellipsis whitespace-nowrap rounded-full border border-white/20 bg-white/12 px-3.5 py-2 text-[0.72rem] font-black uppercase tracking-[0.12em] text-white shadow-soft sm:text-sm">
             {eyebrow}
           </p>
-          <h1 className="mt-4 text-[2.2rem] font-black leading-[1.04] text-white drop-shadow-[0_5px_24px_rgba(0,0,0,0.35)] sm:text-5xl lg:text-6xl">
+          <h1 className="mt-4 max-w-full overflow-hidden text-ellipsis whitespace-nowrap text-[2.2rem] font-black leading-[1.04] text-white drop-shadow-[0_5px_24px_rgba(0,0,0,0.35)] sm:text-5xl lg:text-6xl">
             {title}
           </h1>
-          <p className="mt-4 max-w-2xl text-base font-semibold leading-7 text-white/90 drop-shadow-[0_3px_16px_rgba(0,0,0,0.28)] md:text-lg md:leading-8">
+          <p className="mt-3 max-w-full overflow-hidden text-ellipsis whitespace-nowrap text-sm font-semibold leading-6 text-white/90 drop-shadow-[0_3px_16px_rgba(0,0,0,0.28)] sm:max-w-2xl md:text-base">
             {text}
           </p>
 
-          <div className="mt-6 grid gap-3 sm:flex sm:flex-wrap">
+          <div className="mt-5 grid gap-3 sm:flex sm:flex-wrap">
             <Link
               href={primaryCta.href}
               className="focus-ring inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-loden-700 px-6 py-3 text-sm font-black text-white shadow-[0_18px_45px_rgba(0,134,148,0.35)] transition hover:bg-loden-800 sm:w-auto"
@@ -85,7 +85,7 @@ export function PageHeroSlideshow({
           </div>
 
           {badges.length > 0 ? (
-            <div className="mt-5 flex max-w-2xl flex-wrap gap-2">
+            <div className="mt-5 hidden max-w-2xl flex-wrap gap-2 lg:flex">
               {badges.map((badge) => (
                 <span key={badge} className="inline-flex min-h-10 items-center rounded-full border border-white/16 bg-white/12 px-3.5 py-2 text-xs font-black text-white shadow-soft">
                   {badge}

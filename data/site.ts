@@ -472,9 +472,9 @@ export const poleLandings: Record<
   }
 > = {
   VTC: {
-    eyebrow: "Centre de formation VTC",
-    title: "Deviens chauffeur VTC avec une formation reconnue",
-    text: "Préparation à l'examen CMA, carte professionnelle et accompagnement administratif : un parcours clair pour te lancer dans le transport de personnes.",
+    eyebrow: "Formation VTC",
+    title: "Formation VTC",
+    text: "Examen CMA · carte pro · accompagnement",
     intro:
       "Le métier de chauffeur VTC attire de nombreuses reconversions. LODENE te prépare aux épreuves officielles VTC (gérées par la Chambre de Métiers et de l'Artisanat) avec 4 formules, de la préparation distancielle au pack clé en main avec conduite et véhicule d'examen.",
     benefits: [
@@ -485,9 +485,9 @@ export const poleLandings: Record<
     ]
   },
   SST: {
-    eyebrow: "Sauveteur Secouriste du Travail",
-    title: "Formez vos salariés au SST avec LODENE",
-    text: "SST Initial (14 h) et MAC SST (7 h) : des sessions inter-entreprises ou intra-entreprise pour la prévention des risques au travail.",
+    eyebrow: "Formation SST",
+    title: "SST pour salariés",
+    text: "Initial 14 h · MAC 7 h · inter ou intra",
     intro:
       "Le SST permet à vos salariés de maîtriser les gestes de premiers secours et de participer à la prévention des risques professionnels. LODENE assure le SST Initial et le recyclage (MAC SST), en inter-entreprises ou directement chez vous.",
     benefits: [
@@ -498,9 +498,9 @@ export const poleLandings: Record<
     ]
   },
   LOGISTIQUE_SECURITE: {
-    eyebrow: "Logistique, manutention & sécurité",
-    title: "Formez vos équipes à la conduite en sécurité",
-    text: "Chariots, gerbeur, nacelles, pont roulant, échafaudage, tracteur de parc : des formations intra-entreprise proposées sur devis.",
+    eyebrow: "Logistique & sécurité",
+    title: "CACES & sécurité",
+    text: "Chariots · nacelles · pont roulant · sur devis",
     intro:
       "LODENE forme vos équipes à l'utilisation en sécurité des équipements de logistique et de manutention, directement sur votre site. Le tarif est établi sur devis car il dépend du matériel, du nombre de participants, du lieu et des objectifs.",
     benefits: [
