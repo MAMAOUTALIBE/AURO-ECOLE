@@ -88,10 +88,6 @@ function whatsappHref(text = "Bonjour LODENE, je souhaite des informations sur v
   return `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
 }
 
-function whatsappDisplay() {
-  return contactInfo.phone;
-}
-
 function optionButtonClass(active?: boolean) {
   return cn(
     "focus-ring rounded-2xl border px-3 py-2 text-left text-xs font-semibold transition",
@@ -552,17 +548,6 @@ export function AiChatWidget() {
       ) : null}
 
       <div className="fixed bottom-4 right-4 z-30 hidden max-w-[calc(100vw-2rem)] items-center gap-2 sm:bottom-5 sm:right-5 sm:flex">
-        <a
-          href={whatsappHref()}
-          target="_blank"
-          rel="noreferrer"
-          className="focus-ring inline-flex h-12 w-12 items-center justify-center gap-2 rounded-full bg-[#25D366] px-0 text-sm font-semibold text-white shadow-premium transition hover:bg-[#1fbd58] lg:h-14 lg:w-auto lg:px-4"
-          aria-label={`Continuer la conversation sur WhatsApp au ${whatsappDisplay()}`}
-        >
-          <MessageCircle className="h-5 w-5 shrink-0" aria-hidden="true" />
-          <span className="hidden lg:inline">WhatsApp</span>
-          <span className="hidden xl:inline">{whatsappDisplay()}</span>
-        </a>
         <button
           type="button"
           onClick={() =>
