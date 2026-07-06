@@ -60,23 +60,13 @@ function FormationsHero() {
               src={slide.src}
               alt=""
               fill
-              sizes="100vw"
-              className="scale-105 object-cover blur-xl"
-              style={{ objectPosition: slide.objectPosition }}
-            />
-            <Image
-              src={slide.src}
-              alt=""
-              fill
               priority={index === 0}
               sizes="100vw"
-              className="object-contain"
+              className="object-cover"
               style={{ objectPosition: slide.objectPosition }}
             />
           </div>
         ))}
-        <div className="absolute inset-0 bg-gradient-to-r from-loden-950/90 via-loden-900/68 to-loden-900/12" />
-        <div className="absolute inset-0 bg-gradient-to-t from-loden-950/45 via-transparent to-loden-950/10" />
       </div>
 
       <div className="container-pad relative z-10 flex min-h-[440px] items-end py-8 sm:min-h-[480px] md:min-h-[540px] md:items-center md:py-12 xl:min-h-[580px]">

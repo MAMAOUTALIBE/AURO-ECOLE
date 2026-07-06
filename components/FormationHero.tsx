@@ -97,27 +97,16 @@ export function FormationHero({
               )}
             >
               {slide.kind === "image" ? (
-                <>
-                  <Image
-                    src={slide.src}
-                    alt=""
-                    fill
-                    unoptimized
-                    sizes="100vw"
-                    className="scale-105 object-cover blur-xl"
-                    style={{ objectPosition: slide.objectPosition ?? "50% 50%" }}
-                  />
-                  <Image
-                    src={slide.src}
-                    alt={index === 0 ? slide.alt : ""}
-                    fill
-                    priority={index === 0}
-                    unoptimized
-                    sizes="100vw"
-                    className="object-contain"
-                    style={{ objectPosition: slide.objectPosition ?? "50% 50%" }}
-                  />
-                </>
+                <Image
+                  src={slide.src}
+                  alt={index === 0 ? slide.alt : ""}
+                  fill
+                  priority={index === 0}
+                  unoptimized
+                  sizes="100vw"
+                  className="object-cover"
+                  style={{ objectPosition: slide.objectPosition ?? "50% 50%" }}
+                />
               ) : (
                 <div className={cn("absolute inset-0 bg-gradient-to-br", slide.gradient ?? "from-loden-700 to-loden-900")}>
                   <div className="absolute inset-y-0 right-0 flex w-[58%] items-center justify-center opacity-25">
@@ -131,15 +120,6 @@ export function FormationHero({
             </div>
           );
         })}
-        <div
-          className={cn(
-            "absolute inset-0",
-            compactImage
-              ? "bg-gradient-to-r from-white via-white/88 to-white/15"
-              : "bg-gradient-to-r from-black/65 via-black/40 to-black/10"
-          )}
-          aria-hidden="true"
-        />
         {!compactImage && visibleSlides[displayedIndex]?.kind === "image" && visibleSlides[displayedIndex]?.keyword ? (
           <div className="absolute bottom-7 right-4 max-w-[calc(100%-2rem)] text-right text-3xl font-black uppercase leading-[0.95] text-white/20 sm:bottom-8 sm:right-6 sm:text-4xl md:right-10 md:text-5xl lg:text-6xl">
             {visibleSlides[displayedIndex].keyword}
@@ -159,7 +139,7 @@ export function FormationHero({
               "inline-flex rounded-full px-4 py-2 text-xs font-black uppercase tracking-[0.16em] shadow-soft sm:text-sm",
               compactImage
                 ? "border border-loden-100 bg-white text-loden-700"
-                : "border border-white/20 bg-white/10 text-white backdrop-blur-sm"
+                : "border border-white/20 bg-white/10 text-white"
             )}
           >
             {kicker}
@@ -200,7 +180,7 @@ export function FormationHero({
                     "inline-flex min-h-10 items-center gap-2 rounded-full px-3.5 py-2 text-xs font-black shadow-soft",
                     compactImage
                       ? "border border-loden-100 bg-white text-loden-ink"
-                      : "border border-white/15 bg-white/12 text-white backdrop-blur-sm"
+                      : "border border-white/15 bg-white/12 text-white"
                   )}
                 >
                   <BadgeIcon className="h-4 w-4 text-[#08AEB8]" aria-hidden="true" />

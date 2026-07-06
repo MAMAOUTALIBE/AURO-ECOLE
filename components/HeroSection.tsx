@@ -54,27 +54,18 @@ export async function HeroSection() {
             >
               <Image
                 src={slide.src}
-                fill
-                sizes="100vw"
-                alt=""
-                className="scale-105 object-cover object-center blur-xl"
-              />
-              <Image
-                src={slide.src}
                 alt={index === 0 ? slide.alt : ""}
                 fill
                 priority={index === 0}
                 sizes="100vw"
-                className="object-contain object-center"
+                className="object-cover object-center"
               />
             </div>
           ))}
         </div>
-        <div className="absolute inset-0 z-[1] bg-gradient-to-b from-black/5 via-black/20 to-black/78 md:hidden" aria-hidden="true" />
-
         <div className="container-pad relative z-10 flex min-h-[inherit] items-end pb-[calc(6.5rem+env(safe-area-inset-bottom))] pt-8 md:hidden">
           <div className="w-full max-w-xl pb-3 text-white">
-            <p className="inline-flex rounded-full border border-white/25 bg-white/15 px-3 py-1.5 text-[0.68rem] font-black uppercase tracking-[0.12em] shadow-soft backdrop-blur">
+            <p className="inline-flex rounded-full border border-white/25 bg-white/15 px-3 py-1.5 text-[0.68rem] font-black uppercase tracking-[0.12em] shadow-soft">
               Auto-école & centre de formation
             </p>
             <h2 className="mt-4 text-[2.05rem] font-black leading-[1.05] tracking-normal text-white drop-shadow-[0_4px_18px_rgba(0,0,0,0.35)] min-[380px]:text-[2.25rem]">

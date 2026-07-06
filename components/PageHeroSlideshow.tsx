@@ -42,23 +42,13 @@ export function PageHeroSlideshow({
               src={slide.src}
               alt=""
               fill
-              sizes="100vw"
-              className="scale-105 object-cover blur-xl"
-              style={{ objectPosition: slide.objectPosition ?? "50% 50%" }}
-            />
-            <Image
-              src={slide.src}
-              alt=""
-              fill
               priority={index === 0}
               sizes="100vw"
-              className="object-contain"
+              className="object-cover"
               style={{ objectPosition: slide.objectPosition ?? "50% 50%" }}
             />
           </div>
         ))}
-        <div className="absolute inset-0 bg-gradient-to-r from-loden-950/92 via-loden-900/68 to-loden-900/12" />
-        <div className="absolute inset-0 bg-gradient-to-t from-loden-950/50 via-transparent to-loden-950/10" />
       </div>
 
       <div className="container-pad relative z-10 flex min-h-[430px] items-end py-8 sm:min-h-[470px] md:min-h-[520px] md:items-center md:py-12 xl:min-h-[560px]">
