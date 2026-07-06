@@ -50,28 +50,28 @@ const highlights = [
 
 const digitalHeroSlides: PageHeroSlideshowSlide[] = [
   {
-    src: "/formations/photos/vtc-distanciel-eco.webp",
-    alt: "Accompagnement digital LODENE sur ordinateur avec outils web, CRM et IA.",
-    label: "Tech & IA",
-    objectPosition: "50% 45%"
+    src: "/formations/photos/digital-ai-agent-training.webp",
+    alt: "Formation professionnelle autour d'un agent IA, d'un CRM et d'un workflow d'automatisation.",
+    label: "Agent IA",
+    objectPosition: "50% 50%"
   },
   {
-    src: "/loden-hero.jpg",
-    alt: "Accompagnement professionnel autour d'une stratégie digitale.",
-    label: "Stratégie",
-    objectPosition: "62% 50%"
+    src: "/formations/photos/digital-transformation-training.webp",
+    alt: "Session de formation à la digitalisation avec un formateur, des ordinateurs et un tableau de parcours client.",
+    label: "Formation digitale",
+    objectPosition: "50% 50%"
   },
   {
-    src: "/formations/photos/stage-accelere.webp",
-    alt: "Organisation d'un parcours client avec outils numériques.",
-    label: "Automatisation",
-    objectPosition: "50% 45%"
+    src: "/formations/photos/digital-internet-crm-automation.webp",
+    alt: "Poste de travail montrant un CRM, des tableaux de bord et des connexions internet automatisées.",
+    label: "Internet & CRM",
+    objectPosition: "50% 50%"
   },
   {
-    src: "/formations/photos/vtc-intermediaire-light.webp",
-    alt: "Échange entre formateur et professionnel autour d'un CRM et d'un agent IA.",
-    label: "CRM",
-    objectPosition: "50% 45%"
+    src: "/formations/photos/digital-code-web-development.webp",
+    alt: "Accompagnement autour du code, du développement web et d'un workflow d'automatisation.",
+    label: "Code & web",
+    objectPosition: "50% 50%"
   }
 ];
 
