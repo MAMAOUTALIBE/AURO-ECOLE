@@ -3,22 +3,24 @@ import Link from "next/link";
 import {
   ArrowRight,
   BadgeCheck,
+  BarChart3,
   Bot,
-  Brain,
   CalendarCheck,
   CheckCircle2,
   Clock3,
   CreditCard,
   FileText,
+  Globe2,
   GraduationCap,
   Lightbulb,
+  Megaphone,
   MonitorPlay,
   Rocket,
   Settings,
   ShieldCheck,
   Target,
   Users,
-  Wallet
+  Workflow
 } from "lucide-react";
 import { getFormations } from "@/lib/catalog";
 import { formatCurrency } from "@/lib/utils";
@@ -27,72 +29,120 @@ import { SITE_NAME, SITE_URL, absoluteUrl } from "@/lib/seo";
 import { PageHeroSlideshow, type PageHeroSlideshowSlide } from "@/components/PageHeroSlideshow";
 
 export const metadata: Metadata = {
-  title: "Formation IA, CRM & Automatisation — 14H | LODENE Centre de formation",
+  title: "Pôle Tech, IA & Automatisation | Sites web, CRM & agents IA",
   description:
-    "Formation courte (14H) pour digitaliser, organiser et automatiser son activité : mini-CRM, IA au quotidien et automatisations. Présentiel ou distanciel, financement OPCO/FAF/entreprise. Pour dirigeants, TPE, PME et indépendants.",
+    "Sites web, CRM, agents IA, automatisations, prospection digitale et formation pour aider les TPE, PME, indépendants et dirigeants à attirer, suivre et convertir plus de clients.",
   alternates: { canonical: "/digital" },
   openGraph: {
-    title: "Formation IA, CRM & Automatisation — LODENE",
-    description: "Digitalisez, organisez et automatisez votre activité en 14H. Présentiel ou distanciel, financement possible.",
+    title: "Pôle Tech, IA & Automatisation — LODENE",
+    description: "Création de sites web, CRM, agents IA, automatisations et prospection digitale pour développer votre activité.",
     url: "/digital",
     type: "website"
   }
 };
 
 const highlights = [
-  { icon: Clock3, title: "14H", text: "format court et concret" },
-  { icon: Wallet, title: "Financement possible", text: "OPCO · FAF · entreprise" },
-  { icon: MonitorPlay, title: "Présentiel ou distanciel", text: "adapté à votre organisation" },
-  { icon: Users, title: "Dirigeants, TPE, PME, indépendants", text: "public concerné" }
+  { icon: Globe2, title: "Sites web", text: "vitrine, landing page, tunnel de contact" },
+  { icon: Users, title: "CRM & pipeline", text: "prospects, devis, relances, suivi client" },
+  { icon: Bot, title: "Agents IA", text: "assistant client, qualification, réponses" },
+  { icon: Workflow, title: "Automatisations", text: "WhatsApp, email, RDV, notifications" }
 ];
 
 const digitalHeroSlides: PageHeroSlideshowSlide[] = [
   {
     src: "/formations/photos/vtc-distanciel-eco.webp",
-    alt: "Formation digitale LODENE sur ordinateur avec accompagnement pédagogique.",
-    label: "Digital",
+    alt: "Accompagnement digital LODENE sur ordinateur avec outils web, CRM et IA.",
+    label: "Tech & IA",
     objectPosition: "50% 45%"
   },
   {
     src: "/loden-hero.jpg",
-    alt: "Formateur LODENE accompagnant une apprenante avec une tablette.",
-    label: "Accompagnement",
+    alt: "Accompagnement professionnel autour d'une stratégie digitale.",
+    label: "Stratégie",
     objectPosition: "62% 50%"
   },
   {
     src: "/formations/photos/stage-accelere.webp",
-    alt: "Organisation d'un parcours de formation avec outils numériques.",
-    label: "Organisation",
+    alt: "Organisation d'un parcours client avec outils numériques.",
+    label: "Automatisation",
     objectPosition: "50% 45%"
   },
   {
     src: "/formations/photos/vtc-intermediaire-light.webp",
-    alt: "Échange entre formateur et professionnel autour d'un parcours digital.",
+    alt: "Échange entre formateur et professionnel autour d'un CRM et d'un agent IA.",
     label: "CRM",
     objectPosition: "50% 45%"
   }
 ];
 
-const objectives = [
-  { icon: Target, title: "Vision claire de l'activité", items: ["prospects", "demandes", "devis", "relances"] },
-  { icon: Users, title: "CRM & suivi client", items: ["pipeline simple", "fiches contacts", "statuts", "historique"] },
-  { icon: Brain, title: "IA utile au quotidien", items: ["réponses", "messages", "qualification", "productivité"] },
-  { icon: Settings, title: "Automatisations simples", items: ["notifications", "rappels", "relances", "rendez-vous"] }
+const services = [
+  {
+    icon: Globe2,
+    title: "Création de sites web",
+    items: ["site vitrine", "landing page", "formulaire intelligent", "SEO local"]
+  },
+  {
+    icon: Users,
+    title: "CRM & suivi commercial",
+    items: ["pipeline prospects", "devis", "relances", "historique client"]
+  },
+  {
+    icon: Bot,
+    title: "Agent IA & assistant client",
+    items: ["qualification", "réponses", "prise de contact", "aide à la vente"]
+  },
+  {
+    icon: Workflow,
+    title: "Automatisations métier",
+    items: ["emails", "WhatsApp", "rappels RDV", "notifications équipe"]
+  },
+  {
+    icon: Megaphone,
+    title: "Prospection digitale",
+    items: ["scripts", "campagnes", "scoring", "suivi des leads"]
+  },
+  {
+    icon: BarChart3,
+    title: "Pilotage & performance",
+    items: ["tableaux de bord", "trafic", "conversions", "plan d'action"]
+  }
 ];
 
 const modules = [
-  { hours: "2H", title: "Module 1 — Diagnostic digital", items: ["identifier les points de blocage", "repérer les pertes de temps", "cartographier le parcours client", "définir les priorités"], icon: Target },
-  { hours: "4H", title: "Module 2 — Structurer son mini-CRM", items: ["créer une base prospects / clients", "définir les statuts et le pipeline", "suivre demandes, devis et relances", "mettre en place un tableau de bord"], icon: Users },
-  { hours: "4H", title: "Module 3 — Utiliser l'IA dans la relation client", items: ["rédiger des réponses et messages", "qualifier les demandes", "gagner du temps sur les tâches récurrentes", "améliorer la réactivité commerciale"], icon: Brain },
-  { hours: "4H", title: "Module 4 — Automatisations essentielles", items: ["notifications et rappels", "relances automatiques simples", "prise de rendez-vous", "plan d'action opérationnel"], icon: Settings }
+  {
+    hours: "2H",
+    title: "Module 1 — Audit tech & stratégie",
+    items: ["identifier les pertes de prospects", "cartographier le parcours client", "prioriser site, CRM, IA ou automatisation", "définir les gains rapides"],
+    icon: Target
+  },
+  {
+    hours: "4H",
+    title: "Module 2 — Site web & acquisition",
+    items: ["structurer une offre claire", "préparer une landing page", "brancher formulaires et tracking", "optimiser la visibilité locale"],
+    icon: Globe2
+  },
+  {
+    hours: "4H",
+    title: "Module 3 — CRM, pipeline & prospection",
+    items: ["organiser prospects et clients", "suivre devis et relances", "mettre en place des scripts commerciaux", "piloter les conversions"],
+    icon: Users
+  },
+  {
+    hours: "4H",
+    title: "Module 4 — Agent IA & automatisations",
+    items: ["créer des scénarios d'agent IA", "automatiser les réponses récurrentes", "déclencher emails, WhatsApp et rappels", "construire une feuille de route"],
+    icon: Bot
+  }
 ];
 
 const deliverables = [
-  "Une trame de mini-CRM",
-  "Des modèles de messages et relances",
-  "Un scénario simple d'agent IA",
+  "Une feuille de route tech priorisée",
+  "Une structure de site ou landing page",
+  "Une trame CRM prospects / clients",
+  "Des scripts de prospection et relance",
+  "Un scénario d'agent IA",
   "Une checklist d'automatisations",
-  "Un support de formation",
+  "Un tableau de suivi des performances",
   "Un plan d'action sur 30 jours"
 ];
 
@@ -105,84 +155,102 @@ const financing = [
 
 const offers = [
   {
-    name: "Essentiel",
-    pitch: "Je structure mes bases",
-    target: "indépendant / dirigeant",
-    price: "990 €",
-    features: ["14H de formation", "programme standard", "support pédagogique", "plan d'action"],
+    name: "Pack Présence Web",
+    pitch: "Je rends mon offre claire et visible",
+    target: "site vitrine / landing page",
+    price: "Sur devis",
+    features: ["structure de page", "formulaire de contact", "SEO local", "appel à l'action clair"],
     featured: false
   },
   {
-    name: "Pro",
-    pitch: "Je professionnalise mon organisation",
-    target: "TPE / PME",
-    price: "1 490 € à 1 990 €",
-    features: ["14H de formation", "cas concrets métier", "travail sur CRM & IA", "livrables personnalisés"],
+    name: "Pack CRM & Prospection",
+    pitch: "Je ne perds plus mes prospects",
+    target: "TPE / PME / indépendant",
+    price: "À partir de 990 €",
+    features: ["pipeline commercial", "fiches prospects", "modèles de relance", "tableau de bord"],
     featured: true
   },
   {
-    name: "Intra / sur-mesure",
-    pitch: "J'adapte la formation à mon équipe",
-    target: "entreprise",
+    name: "Pack Agent IA",
+    pitch: "Je réponds plus vite et je qualifie mieux",
+    target: "service client / vente",
     price: "Sur devis",
-    features: ["contenu personnalisé", "exemples liés à l'activité", "format équipe", "accompagnement renforcé"],
+    features: ["scénario d'agent IA", "réponses types", "qualification des demandes", "guide d'utilisation"],
+    featured: false
+  },
+  {
+    name: "Pack Croissance Digitale",
+    pitch: "Je connecte site, CRM, IA et relances",
+    target: "entreprise en développement",
+    price: "Sur devis",
+    features: ["audit complet", "système sur-mesure", "automatisations", "formation de l'équipe"],
     featured: false
   }
 ];
 
 const steps = [
-  { n: 1, icon: Target, title: "Audit des besoins", text: "échange initial pour comprendre le contexte et les objectifs" },
-  { n: 2, icon: Settings, title: "Personnalisation", text: "adaptation des exemples, cas pratiques et priorités" },
-  { n: 3, icon: MonitorPlay, title: "Formation", text: "animation de la session avec démonstrations et ateliers" },
-  { n: 4, icon: CalendarCheck, title: "Suivi", text: "recommandations et accompagnement pour la mise en œuvre" }
+  { n: 1, icon: Target, title: "Audit des besoins", text: "on identifie les points de blocage, les objectifs et les priorités commerciales" },
+  { n: 2, icon: Settings, title: "Architecture de solution", text: "on choisit les bons outils : site, CRM, agent IA, formulaires, automatisations" },
+  { n: 3, icon: MonitorPlay, title: "Mise en place ou formation", text: "on construit, démontre et forme vos équipes sur des cas concrets" },
+  { n: 4, icon: CalendarCheck, title: "Suivi & optimisation", text: "on suit l'adoption, les relances, les conversions et les améliorations" }
+];
+
+const useCases = [
+  "Recevoir plus de demandes depuis Google et le site",
+  "Ne plus oublier les prospects à rappeler",
+  "Répondre automatiquement aux questions simples",
+  "Qualifier les demandes avant un appel commercial",
+  "Relancer par email ou WhatsApp au bon moment",
+  "Piloter les leads, devis et conversions dans un tableau clair"
 ];
 
 export default async function DigitalPage() {
   const formations = (await getFormations()).filter((formation) => formation.productLine === "DIGITAL");
 
-  const courseSchema = {
+  const serviceSchema = {
     "@context": "https://schema.org",
-    "@type": "Course",
-    name: "Formation IA, CRM & Automatisation",
-    description: "Formation courte (14H) pour digitaliser, organiser et automatiser son activité : mini-CRM, IA au quotidien et automatisations.",
+    "@type": "Service",
+    name: "Pôle Tech, IA & Automatisation",
+    serviceType: "Sites web, CRM, agents IA, automatisations et prospection digitale",
+    description: "Accompagnement tech pour créer des sites web, structurer un CRM, mettre en place des agents IA, automatiser les relances et développer la prospection digitale.",
     provider: {
       "@type": ["LocalBusiness", "ProfessionalService"],
       "@id": `${SITE_URL}/#organization`,
       name: SITE_NAME,
       sameAs: SITE_URL
     },
-    offers: { "@type": "Offer", price: 990, priceCurrency: "EUR", url: absoluteUrl("/digital") }
+    areaServed: "France",
+    offers: { "@type": "Offer", priceSpecification: { "@type": "PriceSpecification", priceCurrency: "EUR" }, url: absoluteUrl("/digital") }
   };
 
   return (
     <main>
-      <script type="application/ld+json" suppressHydrationWarning dangerouslySetInnerHTML={{ __html: safeJsonLd(courseSchema) }} />
+      <script type="application/ld+json" suppressHydrationWarning dangerouslySetInnerHTML={{ __html: safeJsonLd(serviceSchema) }} />
 
       <PageHeroSlideshow
-        eyebrow="Pôle Digital — Centre de formation"
-        title="Formation IA, CRM & Automatisation"
-        text="Une formation courte pour digitaliser, organiser et automatiser votre activité. Mieux suivre vos prospects, mettre en place un mini-CRM clair et utiliser l'IA au quotidien."
+        eyebrow="Pôle Tech — Digital, IA & Croissance"
+        title="Pôle Tech, IA & Automatisation"
+        text="Création de sites web, CRM, agents IA, automatisations et prospection digitale pour attirer plus de demandes, mieux suivre vos clients et convertir plus vite."
         slides={digitalHeroSlides}
-        primaryCta={{ href: "/contact?formation=ia-crm-automatisation#demande", label: "Demander un devis" }}
+        primaryCta={{ href: "/contact?formation=pole-tech-ia-automatisation#demande", label: "Demander un audit digital" }}
         secondaryCta={{ href: "/contact#demande", label: "Être rappelé" }}
         badges={highlights.map((highlight) => highlight.title)}
       />
 
-      {/* POURQUOI / OBJECTIFS */}
+      {/* SERVICES */}
       <section className="bg-white py-9 md:py-12">
         <div className="container-pad">
           <div className="max-w-2xl">
-            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-loden-700 sm:text-sm">Pourquoi cette formation ?</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-loden-700 sm:text-sm">Ce qu&apos;on peut mettre en place</p>
             <h2 className="mt-2 text-[1.5rem] font-semibold leading-tight text-loden-ink sm:text-3xl">
-              Votre activité ne doit pas seulement être digitale. Elle doit être structurée, simple et rentable.
+              Un système digital complet pour attirer, suivre et convertir vos clients.
             </h2>
             <p className="mt-3 text-sm leading-6 text-loden-muted md:text-base">
-              Trop d&apos;entreprises perdent des prospects, oublient des relances et utilisent trop d&apos;outils dispersés.
-              LODENE vous aide à structurer une organisation digitale simple.
+              Beaucoup d&apos;entreprises ont un site, des messages, des prospects et des relances dispersés. LODENE vous aide à relier les bons outils pour créer un parcours plus clair et plus rentable.
             </p>
           </div>
-          <div className="mt-6 grid gap-3 md:grid-cols-2 md:gap-4 xl:grid-cols-4">
-            {objectives.map((o) => {
+          <div className="mt-6 grid gap-3 md:grid-cols-2 md:gap-4 xl:grid-cols-3">
+            {services.map((o) => {
               const Icon = o.icon;
               return (
                 <article key={o.title} className="rounded-2xl border border-slate-200 bg-loden-pearl/40 p-5 shadow-soft">
@@ -204,16 +272,39 @@ export default async function DigitalPage() {
         </div>
       </section>
 
-      {/* PROGRAMME */}
+      {/* CAS D'USAGE */}
       <section className="bg-loden-pearl py-9 md:py-12">
+        <div className="container-pad grid gap-6 lg:grid-cols-[0.85fr_1.15fr] lg:items-start">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-loden-700 sm:text-sm">Cas d&apos;usage clients</p>
+            <h2 className="mt-2 text-[1.5rem] font-semibold leading-tight text-loden-ink sm:text-3xl">
+              On ne vend pas seulement de la tech. On règle des problèmes commerciaux.
+            </h2>
+            <p className="mt-3 text-sm leading-6 text-loden-muted md:text-base">
+              Le but est simple : moins de temps perdu, plus de suivi, plus de réponses et une meilleure conversion des demandes.
+            </p>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {useCases.map((useCase) => (
+              <div key={useCase} className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-soft">
+                <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-loden-600" aria-hidden="true" />
+                <p className="text-sm font-semibold leading-6 text-loden-ink">{useCase}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* PROGRAMME */}
+      <section className="bg-white py-9 md:py-12">
         <div className="container-pad">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-loden-700 sm:text-sm">Le programme détaillé</p>
-              <h2 className="mt-2 text-[1.5rem] font-semibold leading-tight text-loden-ink sm:text-3xl">Une formation courte, structurée et applicable</h2>
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-loden-700 sm:text-sm">Parcours formation & accompagnement</p>
+              <h2 className="mt-2 text-[1.5rem] font-semibold leading-tight text-loden-ink sm:text-3xl">Un format concret pour passer de l&apos;idée au système opérationnel</h2>
             </div>
             <span className="inline-flex items-center gap-2 rounded-full bg-loden-900 px-4 py-2 text-sm font-bold text-white">
-              <GraduationCap className="h-4 w-4" aria-hidden="true" /> Total : 14 heures
+              <GraduationCap className="h-4 w-4" aria-hidden="true" /> Format formation : 14 heures
             </span>
           </div>
           <div className="mt-6 grid gap-3 md:gap-4 lg:grid-cols-2">
@@ -248,14 +339,14 @@ export default async function DigitalPage() {
       <section className="bg-white py-9 md:py-12">
         <div className="container-pad grid gap-6 lg:grid-cols-2">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-loden-700 sm:text-sm">Méthode pédagogique</p>
-            <h2 className="mt-2 text-[1.45rem] font-semibold leading-tight text-loden-ink sm:text-2xl">Comprendre vite, pratiquer, repartir avec du concret</h2>
+            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-loden-700 sm:text-sm">Méthode de travail</p>
+            <h2 className="mt-2 text-[1.45rem] font-semibold leading-tight text-loden-ink sm:text-2xl">Clarifier, construire, former et mesurer</h2>
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
               {[
-                { icon: Lightbulb, t: "Explication claire", d: "concepts essentiels structurés" },
-                { icon: MonitorPlay, t: "Démonstration", d: "exemples concrets d'outils, CRM et IA" },
-                { icon: Users, t: "Atelier pratique", d: "mise en application sur cas réels" },
-                { icon: BadgeCheck, t: "Plan d'action", d: "feuille de route personnalisée" }
+                { icon: Lightbulb, t: "Diagnostic clair", d: "besoins, priorités et irritants métier" },
+                { icon: MonitorPlay, t: "Démonstration", d: "site, CRM, IA et automatisations sur cas réels" },
+                { icon: Users, t: "Atelier pratique", d: "mise en application avec vos données et vos offres" },
+                { icon: BadgeCheck, t: "Plan d'action", d: "feuille de route personnalisée et mesurable" }
               ].map((x) => {
                 const Icon = x.icon;
                 return (
@@ -269,7 +360,7 @@ export default async function DigitalPage() {
             </div>
           </div>
           <div className="rounded-2xl border border-slate-200 bg-loden-900 p-6 text-white shadow-premium">
-            <p className="text-sm font-semibold uppercase tracking-[0.12em] text-loden-100">Chaque participant repart avec</p>
+            <p className="text-sm font-semibold uppercase tracking-[0.12em] text-loden-100">Livrables possibles</p>
             <ul className="mt-4 grid gap-2 sm:grid-cols-2">
               {deliverables.map((d) => (
                 <li key={d} className="flex items-start gap-2 text-sm leading-6 text-white/90">
@@ -285,8 +376,8 @@ export default async function DigitalPage() {
       <section className="bg-loden-pearl py-9 md:py-12">
         <div className="container-pad">
           <div className="max-w-2xl">
-            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-loden-700 sm:text-sm">Financement & modalités</p>
-            <h2 className="mt-2 text-[1.5rem] font-semibold leading-tight text-loden-ink sm:text-3xl">Des solutions de prise en charge selon votre situation</h2>
+            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-loden-700 sm:text-sm">Formation & modalités</p>
+            <h2 className="mt-2 text-[1.5rem] font-semibold leading-tight text-loden-ink sm:text-3xl">Des formats adaptables : accompagnement, formation ou prestation sur-mesure</h2>
           </div>
           <div className="mt-6 grid gap-3 md:grid-cols-2 md:gap-4">
             {financing.map((f) => (
@@ -309,10 +400,10 @@ export default async function DigitalPage() {
       <section className="bg-white py-9 md:py-12">
         <div className="container-pad">
           <div className="max-w-2xl">
-            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-loden-700 sm:text-sm">Offres & formats</p>
-            <h2 className="mt-2 text-[1.5rem] font-semibold leading-tight text-loden-ink sm:text-3xl">Des tarifs à personnaliser selon le besoin</h2>
+            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-loden-700 sm:text-sm">Packs commerciaux</p>
+            <h2 className="mt-2 text-[1.5rem] font-semibold leading-tight text-loden-ink sm:text-3xl">Choisissez le bon levier : visibilité, suivi client, IA ou croissance complète</h2>
           </div>
-          <div className="mt-6 grid gap-4 lg:grid-cols-3">
+          <div className="mt-6 grid gap-4 lg:grid-cols-2 xl:grid-cols-4">
             {offers.map((o) => (
               <article
                 key={o.name}
@@ -333,7 +424,7 @@ export default async function DigitalPage() {
                 </ul>
                 <p className="mt-5 text-2xl font-extrabold text-loden-ink">{o.price}</p>
                 <Link
-                  href="/contact?formation=ia-crm-automatisation#demande"
+                  href="/contact?formation=pole-tech-ia-automatisation#demande"
                   className={`focus-ring mt-4 inline-flex items-center justify-center gap-2 rounded-full px-5 py-3 text-sm font-semibold shadow-soft transition ${o.featured ? "bg-loden-700 text-white hover:bg-loden-800" : "border border-slate-200 bg-white text-loden-ink hover:border-loden-200 hover:text-loden-700"}`}
                 >
                   Demander un devis <ArrowRight className="h-4 w-4" aria-hidden="true" />
@@ -343,7 +434,7 @@ export default async function DigitalPage() {
           </div>
           <div className="mt-4 grid gap-3 rounded-2xl border border-slate-200 bg-loden-pearl/40 p-4 sm:grid-cols-2">
             <p className="flex items-center gap-2 text-sm text-loden-muted"><FileText className="h-4 w-4 text-loden-700" aria-hidden="true" /> Audit express — analyse des besoins : <strong className="text-loden-ink">290 €</strong></p>
-            <p className="flex items-center gap-2 text-sm text-loden-muted"><CalendarCheck className="h-4 w-4 text-loden-700" aria-hidden="true" /> Support post-formation — session de suivi : <strong className="text-loden-ink">190 €</strong></p>
+            <p className="flex items-center gap-2 text-sm text-loden-muted"><CalendarCheck className="h-4 w-4 text-loden-700" aria-hidden="true" /> Session de suivi — optimisation et réglages : <strong className="text-loden-ink">190 €</strong></p>
           </div>
         </div>
       </section>
@@ -379,7 +470,7 @@ export default async function DigitalPage() {
           <div className="container-pad">
             <div className="max-w-2xl">
               <p className="text-xs font-semibold uppercase tracking-[0.12em] text-loden-700 sm:text-sm">Toutes les formations du pôle</p>
-              <h2 className="mt-2 text-[1.45rem] font-semibold leading-tight text-loden-ink sm:text-2xl">Digital, IA &amp; CRM</h2>
+              <h2 className="mt-2 text-[1.45rem] font-semibold leading-tight text-loden-ink sm:text-2xl">Tech, IA &amp; automatisation</h2>
             </div>
             <div className="mt-5 grid gap-3 md:grid-cols-2 md:gap-4 xl:grid-cols-3">
               {formations.map((f) => (
@@ -409,15 +500,15 @@ export default async function DigitalPage() {
           <div className="flex items-center gap-4">
             <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-white/10"><Rocket className="h-6 w-6 text-loden-200" aria-hidden="true" /></span>
             <div>
-              <h2 className="text-xl font-bold sm:text-2xl">Prêt à lancer votre formation ?</h2>
-              <p className="mt-1 text-sm text-white/80">Digitalisez, organisez et accélérez votre activité avec une formation pensée pour le terrain.</p>
+              <h2 className="text-xl font-bold sm:text-2xl">Prêt à moderniser votre activité ?</h2>
+              <p className="mt-1 text-sm text-white/80">Site web, CRM, agent IA, automatisations ou prospection : on part de votre besoin et on construit le bon système.</p>
             </div>
           </div>
           <Link
-            href="/contact?formation=ia-crm-automatisation#demande"
+            href="/contact?formation=pole-tech-ia-automatisation#demande"
             className="focus-ring inline-flex w-full items-center justify-center gap-2 rounded-full bg-white px-6 py-3.5 font-semibold text-loden-ink shadow-soft transition hover:bg-loden-50 md:w-auto"
           >
-            Contacter LODENE Formation <ArrowRight className="h-5 w-5" aria-hidden="true" />
+            Demander un audit digital <ArrowRight className="h-5 w-5" aria-hidden="true" />
           </Link>
         </div>
       </section>

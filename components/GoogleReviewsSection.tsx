@@ -32,7 +32,23 @@ function Avatar({ name }: { name: string }) {
   );
 }
 
+function formatReviewDate(value: string): string | null {
+  if (!value) return null;
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+
+  return new Intl.DateTimeFormat("fr-FR", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric"
+  }).format(date);
+}
+
 export function ReviewCard({ review }: { review: GoogleReviewItem }) {
+  const publishedDate = formatReviewDate(review.publishTime);
+
   return (
     <article className="flex h-full flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-soft">
       <div className="flex items-center gap-3">
@@ -46,7 +62,16 @@ export function ReviewCard({ review }: { review: GoogleReviewItem }) {
         </div>
       </div>
       <p className="mt-3 line-clamp-5 text-[15px] leading-6 text-loden-ink">“{review.text}”</p>
-      <p className="mt-auto pt-3 text-xs font-medium text-loden-muted">Avis publié sur Google</p>
+      <div className="mt-auto pt-4">
+        <div className="border-t border-slate-200 pt-3">
+          <p className="text-xs font-medium text-loden-muted">
+            {publishedDate ? `Publié le ${publishedDate}` : "Avis publié sur Google"}
+          </p>
+          <p className="mt-1 inline-flex rounded-full bg-loden-50 px-2.5 py-1 text-[0.7rem] font-bold uppercase tracking-[0.08em] text-loden-700">
+            Avis Google vérifié
+          </p>
+        </div>
+      </div>
     </article>
   );
 }

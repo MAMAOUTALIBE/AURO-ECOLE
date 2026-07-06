@@ -211,7 +211,7 @@ export const productLineLabels: Record<ProductLine, string> = {
   CACES: "CACES",
   SST: "SST",
   LOGISTIQUE_SECURITE: "Logistique & sécurité",
-  DIGITAL: "Digital & IA"
+  DIGITAL: "Tech, Digital & IA"
 };
 
 // Catalogue public (SSR/SEO/accueil) — aligné sur la base (backend/src/data/initial-data.ts).
