@@ -97,16 +97,27 @@ export function FormationHero({
               )}
             >
               {slide.kind === "image" ? (
-                <Image
-                  src={slide.src}
-                  alt={index === 0 ? slide.alt : ""}
-                  fill
-                  priority={index === 0}
-                  unoptimized
-                  sizes="100vw"
-                  className="object-cover"
-                  style={{ objectPosition: slide.objectPosition ?? "50% 50%" }}
-                />
+                <>
+                  <Image
+                    src={slide.src}
+                    alt=""
+                    fill
+                    unoptimized
+                    sizes="100vw"
+                    className="scale-105 object-cover blur-xl"
+                    style={{ objectPosition: slide.objectPosition ?? "50% 50%" }}
+                  />
+                  <Image
+                    src={slide.src}
+                    alt={index === 0 ? slide.alt : ""}
+                    fill
+                    priority={index === 0}
+                    unoptimized
+                    sizes="100vw"
+                    className="object-contain"
+                    style={{ objectPosition: slide.objectPosition ?? "50% 50%" }}
+                  />
+                </>
               ) : (
                 <div className={cn("absolute inset-0 bg-gradient-to-br", slide.gradient ?? "from-loden-700 to-loden-900")}>
                   <div className="absolute inset-y-0 right-0 flex w-[58%] items-center justify-center opacity-25">

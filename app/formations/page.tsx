@@ -60,9 +60,17 @@ function FormationsHero() {
               src={slide.src}
               alt=""
               fill
+              sizes="100vw"
+              className="scale-105 object-cover blur-xl"
+              style={{ objectPosition: slide.objectPosition }}
+            />
+            <Image
+              src={slide.src}
+              alt=""
+              fill
               priority={index === 0}
               sizes="100vw"
-              className="object-cover"
+              className="object-contain"
               style={{ objectPosition: slide.objectPosition }}
             />
           </div>

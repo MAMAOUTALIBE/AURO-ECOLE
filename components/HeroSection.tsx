@@ -54,11 +54,18 @@ export async function HeroSection() {
             >
               <Image
                 src={slide.src}
+                fill
+                sizes="100vw"
+                alt=""
+                className="scale-105 object-cover object-center blur-xl"
+              />
+              <Image
+                src={slide.src}
                 alt={index === 0 ? slide.alt : ""}
                 fill
                 priority={index === 0}
                 sizes="100vw"
-                className="object-cover object-center"
+                className="object-contain object-center"
               />
             </div>
           ))}

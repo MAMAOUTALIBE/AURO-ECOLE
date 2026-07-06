@@ -186,7 +186,7 @@ textarea {
 
 .loden-formations-hero-slide {
   animation: loden-formations-hero-slide 24s ease-in-out infinite;
-  will-change: opacity, transform;
+  will-change: opacity;
 }
 
 .loden-formations-hero-dot {
@@ -197,13 +197,11 @@ textarea {
   0%,
   20% {
     opacity: 1;
-    transform: scale(1);
   }
 
   25%,
   100% {
     opacity: 0;
-    transform: scale(1.035);
   }
 }
 
@@ -234,7 +232,7 @@ textarea {
 
 .loden-marketing-hero-slide {
   animation: loden-marketing-hero-slide 24s ease-in-out infinite;
-  will-change: opacity, transform;
+  will-change: opacity;
 }
 
 .loden-marketing-hero-dot {
@@ -245,13 +243,11 @@ textarea {
   0%,
   20% {
     opacity: 1;
-    transform: scale(1);
   }
 
   25%,
   100% {
     opacity: 0;
-    transform: scale(1.035);
   }
 }
 
