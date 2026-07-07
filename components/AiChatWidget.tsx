@@ -62,7 +62,7 @@ type FlowState = {
 const GREETING: Message = {
   role: "assistant",
   content:
-    "Bonjour, je suis l'assistant LODENE. Avant de commencer, vous pouvez réserver votre bon de réduction de 50 € avec le QR code. Laissez vos coordonnées et un conseiller pourra vous rappeler pour finaliser l'inscription."
+    "Bonjour, je suis l'assistant LODENE. Avant de commencer, vous pouvez réserver votre bon de réduction de 50 € avec le QR code. Vous pouvez aussi continuer la conversation dans le champ en bas pour poser toutes vos questions liées à LODENE Formation."
 };
 
 const FORMATIONS = [
