@@ -22,6 +22,9 @@ const EMPTY_FORM = {
   commissionType: "FLAT" as CommissionType,
   commissionValue: "",
   notes: "",
+  logoUrl: "",
+  websiteUrl: "",
+  publicVisible: false,
   createAccount: true
 };
 
@@ -114,6 +117,9 @@ export function PartnersList() {
           commissionType: form.commissionType,
           commissionValue,
           notes: form.notes.trim() || undefined,
+          logoUrl: form.logoUrl.trim() || undefined,
+          websiteUrl: form.websiteUrl.trim() || undefined,
+          publicVisible: form.publicVisible,
           createAccount: form.createAccount,
           ...(agency ? { agencyId: agency } : {})
         })
@@ -290,6 +296,35 @@ export function PartnersList() {
                 className="focus-ring w-full rounded-lg border border-slate-200 px-3 py-2"
               />
             </label>
+            <label className="text-sm">
+              <span className="mb-1 block font-medium text-loden-ink">Logo (URL)</span>
+              <input
+                value={form.logoUrl}
+                onChange={(event) => setForm({ ...form, logoUrl: event.target.value })}
+                placeholder="https://… ou /uploads/logo.png"
+                className="focus-ring w-full rounded-lg border border-slate-200 px-3 py-2"
+              />
+            </label>
+            <label className="text-sm">
+              <span className="mb-1 block font-medium text-loden-ink">Site web</span>
+              <input
+                value={form.websiteUrl}
+                onChange={(event) => setForm({ ...form, websiteUrl: event.target.value })}
+                placeholder="https://…"
+                className="focus-ring w-full rounded-lg border border-slate-200 px-3 py-2"
+              />
+            </label>
+            <label className="flex items-center gap-2 text-sm sm:col-span-2">
+              <input
+                type="checkbox"
+                checked={form.publicVisible}
+                onChange={(event) => setForm({ ...form, publicVisible: event.target.checked })}
+                className="h-4 w-4 rounded border-slate-300 text-loden-600"
+              />
+              <span className="text-loden-muted">
+                Afficher ce partenaire sur le site public (section « Ils nous font confiance »).
+              </span>
+            </label>
             <label className="flex items-center gap-2 text-sm sm:col-span-2">
               <input
                 type="checkbox"
@@ -382,6 +417,11 @@ export function PartnersList() {
                       <Badge variant={partner.status === "ACTIF" ? "success" : "warning"} dot>
                         {partner.statusLabel}
                       </Badge>
+                      {partner.publicVisible ? (
+                        <Badge variant="info" className="ml-1">
+                          En ligne
+                        </Badge>
+                      ) : null}
                       {!partner.hasAccount ? (
                         <Badge variant="neutral" className="ml-1">
                           Sans compte

@@ -9,8 +9,8 @@ const OFFER_CODE = "LODENE50";
 const OFFER_URL = `/offre-50?code=${OFFER_CODE}`;
 
 export const metadata: Metadata = {
-  title: "Offre spéciale LODENE -50 €",
-  description: "Offre spéciale LODENE Formation : remplissez le formulaire et recevez votre bon de réduction de 50 €.",
+  title: "Offre Permis B LODENE -50 €",
+  description: "Offre spéciale LODENE Permis B : remplissez le formulaire et recevez votre bon de réduction de 50 €.",
   alternates: { canonical: "/offre-50" }
 };
 
@@ -39,13 +39,13 @@ export default async function Offer50Page({ searchParams }: { searchParams: Prom
             />
             <p className="mt-6 inline-flex items-center gap-2 rounded-full border border-loden-100 bg-white px-4 py-2 text-sm font-black uppercase tracking-[0.14em] text-loden-700 shadow-soft">
               <BadgeEuro className="h-4 w-4" aria-hidden="true" />
-              Offre spéciale LODENE
+              Offre Permis B LODENE
             </p>
             <h1 className="mt-5 text-4xl font-black leading-tight text-loden-ink md:text-6xl">
-              50 € de réduction
+              50 € de réduction sur le Permis B
             </h1>
             <p className="mt-4 max-w-2xl text-lg leading-8 text-loden-muted">
-              Remplissez le formulaire et recevez votre bon de réduction par email ou WhatsApp.
+              Remplissez le formulaire et recevez votre bon de réduction Permis B par email ou WhatsApp.
             </p>
 
             <div className="mt-6 flex flex-wrap items-center gap-3">
@@ -71,7 +71,7 @@ export default async function Offer50Page({ searchParams }: { searchParams: Prom
             </div>
 
             <div className="mt-6 grid gap-3 sm:grid-cols-3">
-              {["Une demande par personne", "Code vérifié", "Suivi CRM LODENE"].map((item) => (
+              {["Permis B uniquement", "Une demande par personne", "Suivi CRM LODENE"].map((item) => (
                 <p key={item} className="flex items-center gap-2 rounded-2xl bg-white/85 px-4 py-3 text-sm font-black text-loden-800 shadow-soft">
                   <CheckCircle2 className="h-4 w-4 shrink-0 text-loden-700" aria-hidden="true" />
                   {item}
@@ -83,10 +83,10 @@ export default async function Offer50Page({ searchParams }: { searchParams: Prom
           <div className="grid gap-4">
             <div className="rounded-[1.5rem] border border-white bg-white p-3 shadow-premium">
               <Image
-                src="/offre-50/affiche_offre_50_propre.png"
+                src="/offre-50/bon50.jpeg"
                 alt="Affiche LODENE offre spéciale 50 euros de réduction"
-                width={1200}
-                height={1697}
+                width={1087}
+                height={1447}
                 priority
                 className="h-auto w-full rounded-[1.1rem]"
               />
@@ -120,10 +120,10 @@ export default async function Offer50Page({ searchParams }: { searchParams: Prom
           <aside className="grid gap-4">
             <div className="rounded-[1.25rem] border border-slate-200 bg-white p-5 shadow-soft">
               <Image
-                src="/offre-50/bon_reduction_50_propre.png"
+                src="/offre-50/bon50.jpeg"
                 alt="Bon de réduction LODENE de 50 euros"
-                width={1200}
-                height={800}
+                width={1087}
+                height={1447}
                 className="h-auto w-full rounded-xl"
               />
             </div>

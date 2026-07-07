@@ -5,15 +5,13 @@ import { AlertCircle, CheckCircle2, MessageCircle, Send, ShieldCheck } from "luc
 import { contactInfo } from "@/data/site";
 import { trackConversion } from "@/lib/analytics";
 
-type FormationValue = "PERMIS_B" | "VTC" | "SST" | "LOGISTIQUE" | "SECURITE" | "AUTRE";
 type DeliveryValue = "EMAIL" | "WHATSAPP" | "BOTH";
+const OFFER_50_FORMATION = "PERMIS_B";
 
 type FormState = {
-  lastName: string;
-  firstName: string;
+  fullName: string;
   phone: string;
   email: string;
-  formation: FormationValue;
   delivery: DeliveryValue;
   consent: boolean;
 };
@@ -29,23 +27,12 @@ type OfferResponse = {
 };
 
 const initialState: FormState = {
-  lastName: "",
-  firstName: "",
+  fullName: "",
   phone: "",
   email: "",
-  formation: "PERMIS_B",
   delivery: "BOTH",
   consent: false
 };
-
-const formations: { value: FormationValue; label: string }[] = [
-  { value: "PERMIS_B", label: "Permis B" },
-  { value: "VTC", label: "VTC" },
-  { value: "SST", label: "SST" },
-  { value: "LOGISTIQUE", label: "Logistique" },
-  { value: "SECURITE", label: "Sécurité" },
-  { value: "AUTRE", label: "Autre" }
-];
 
 const deliveries: { value: DeliveryValue; label: string }[] = [
   { value: "EMAIL", label: "Email" },
@@ -79,11 +66,10 @@ export function Offer50LeadForm({ code, validCode }: { code: string; validCode: 
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         code,
-        firstName: values.firstName,
-        lastName: values.lastName,
+        fullName: values.fullName,
         phone: values.phone,
         email: values.email,
-        formation: values.formation,
+        formation: OFFER_50_FORMATION,
         delivery: values.delivery,
         consent: values.consent
       })
@@ -96,7 +82,7 @@ export function Offer50LeadForm({ code, validCode }: { code: string; validCode: 
       return;
     }
 
-    trackConversion("offre50_submit", values.formation);
+    trackConversion("offre50_submit", OFFER_50_FORMATION);
     setResult(payload?.data ?? null);
     setStatus("sent");
     setValues(initialState);
@@ -160,7 +146,7 @@ export function Offer50LeadForm({ code, validCode }: { code: string; validCode: 
         <p className="text-sm font-black uppercase tracking-[0.14em] text-loden-700">Formulaire prospect</p>
         <h2 className="mt-2 text-[1.35rem] font-black leading-tight text-loden-ink sm:text-2xl">Je récupère mon bon -50 €</h2>
         <p className="mt-2 text-sm leading-6 text-loden-muted">
-          Une demande par personne. Le bon est envoyé après validation du formulaire.
+          Offre réservée au Permis B. Une demande par personne. Le bon est envoyé après validation du formulaire.
         </p>
       </div>
 
@@ -171,32 +157,18 @@ export function Offer50LeadForm({ code, validCode }: { code: string; validCode: 
         </p>
       ) : null}
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <label className="grid gap-2">
-          <span className="text-sm font-semibold text-loden-ink">Nom</span>
-          <input
-            required
-            minLength={2}
-            autoComplete="family-name"
-            className="field-input"
-            value={values.lastName}
-            onChange={(event) => updateField("lastName", event.target.value)}
-            placeholder="Votre nom"
-          />
-        </label>
-        <label className="grid gap-2">
-          <span className="text-sm font-semibold text-loden-ink">Prénom</span>
-          <input
-            required
-            minLength={2}
-            autoComplete="given-name"
-            className="field-input"
-            value={values.firstName}
-            onChange={(event) => updateField("firstName", event.target.value)}
-            placeholder="Votre prénom"
-          />
-        </label>
-      </div>
+      <label className="grid gap-2">
+        <span className="text-sm font-semibold text-loden-ink">Nom complet</span>
+        <input
+          required
+          minLength={2}
+          autoComplete="name"
+          className="field-input"
+          value={values.fullName}
+          onChange={(event) => updateField("fullName", event.target.value)}
+          placeholder="Prénom Nom"
+        />
+      </label>
 
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="grid gap-2">
@@ -225,22 +197,6 @@ export function Offer50LeadForm({ code, validCode }: { code: string; validCode: 
           />
         </label>
       </div>
-
-      <label className="grid gap-2">
-        <span className="text-sm font-semibold text-loden-ink">Formation souhaitée</span>
-        <select
-          required
-          className="field-input"
-          value={values.formation}
-          onChange={(event) => updateField("formation", event.target.value as FormationValue)}
-        >
-          {formations.map((formation) => (
-            <option key={formation.value} value={formation.value}>
-              {formation.label}
-            </option>
-          ))}
-        </select>
-      </label>
 
       <fieldset className="grid gap-2">
         <legend className="text-sm font-semibold text-loden-ink">Choix d&apos;envoi</legend>

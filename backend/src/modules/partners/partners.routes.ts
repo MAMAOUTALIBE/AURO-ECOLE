@@ -44,6 +44,9 @@ const partnerCreateSchema = z.object({
   commissionType: commissionTypeSchema.default("FLAT"),
   commissionValue: z.number().int().nonnegative().default(0),
   notes: z.string().trim().optional(),
+  publicVisible: z.boolean().optional(),
+  logoUrl: z.string().trim().max(1000).optional(),
+  websiteUrl: z.string().trim().max(500).optional(),
   agencyId: z.string().trim().optional(),
   // Provisionne un compte de connexion (rôle PARTENAIRE) : mot de passe temporaire renvoyé UNE fois.
   createAccount: z.boolean().default(true)
@@ -58,6 +61,9 @@ const partnerUpdateSchema = z.object({
   commissionType: commissionTypeSchema.optional(),
   commissionValue: z.number().int().nonnegative().optional(),
   notes: z.string().trim().nullable().optional(),
+  publicVisible: z.boolean().optional(),
+  logoUrl: z.string().trim().max(1000).nullable().optional(),
+  websiteUrl: z.string().trim().max(500).nullable().optional(),
   agencyId: z.string().trim().nullable().optional()
 });
 
@@ -86,6 +92,24 @@ const commissionUpdateSchema = z.object({
 
 export function createPartnersRouter(repository: LodenRepository, config: ApiConfig, aiProvider?: AiProvider) {
   const router = Router();
+
+  // ── Vitrine publique (AUCUNE auth) — déclarée AVANT le middleware d'authentification.
+  // N'expose que les champs publics des partenaires opt-in actifs (jamais email/tél/commission).
+  router.get(
+    "/public",
+    asyncHandler(async (_req, res) => {
+      const partners = await repository.listPartners({ publicVisible: true, status: "ACTIF" });
+      res.json({
+        data: partners.map((partner) => ({
+          id: partner.id,
+          companyName: partner.companyName,
+          logoUrl: partner.logoUrl ?? null,
+          websiteUrl: partner.websiteUrl ?? null
+        }))
+      });
+    })
+  );
+
   router.use(authenticate(repository, config.JWT_SECRET));
 
   // Résout le partenaire du compte connecté (scoping strict des routes /me/* — anti-IDOR).
@@ -231,6 +255,9 @@ export function createPartnersRouter(repository: LodenRepository, config: ApiCon
         commissionType: body.commissionType,
         commissionValue: body.commissionValue,
         notes: body.notes,
+        publicVisible: body.publicVisible,
+        logoUrl: body.logoUrl,
+        websiteUrl: body.websiteUrl,
         agencyId: body.agencyId
       });
       void repository.createAuditLog({

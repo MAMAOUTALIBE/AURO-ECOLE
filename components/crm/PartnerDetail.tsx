@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, BadgeEuro, Building2, Mail, Phone, Users } from "lucide-react";
+import { ArrowLeft, BadgeEuro, Building2, Globe, Mail, Phone, Users } from "lucide-react";
 import { Badge, Card, EmptyState, Skeleton, type BadgeVariant } from "@/components/crm/ui";
 import {
   formatEuros,
@@ -46,6 +46,9 @@ function fmtDate(iso?: string | null) {
 export function PartnerDetail({ partnerId }: { partnerId: string }) {
   const [state, setState] = useState<ViewState>({ status: "loading" });
   const [busy, setBusy] = useState<string | null>(null);
+  const [showcase, setShowcase] = useState({ publicVisible: false, logoUrl: "", websiteUrl: "" });
+  const [savingShowcase, setSavingShowcase] = useState(false);
+  const [showcaseSaved, setShowcaseSaved] = useState(false);
 
   async function load() {
     try {
@@ -56,16 +59,44 @@ export function PartnerDetail({ partnerId }: { partnerId: string }) {
         return;
       }
       const raw = payload.data as ApiPartner & { commissions?: ApiPartnerCommission[]; leads?: ApiLead[] };
+      const partner = mapApiPartner(raw);
+      setShowcase({
+        publicVisible: partner.publicVisible,
+        logoUrl: partner.logoUrl ?? "",
+        websiteUrl: partner.websiteUrl ?? ""
+      });
       setState({
         status: "ready",
         detail: {
-          partner: mapApiPartner(raw),
+          partner,
           commissions: (raw.commissions ?? []).map(mapApiCommission),
           leads: raw.leads ?? []
         }
       });
     } catch {
       setState({ status: "error", message: "Le service LODENE est momentanément indisponible." });
+    }
+  }
+
+  async function saveShowcase() {
+    setSavingShowcase(true);
+    setShowcaseSaved(false);
+    try {
+      const response = await fetch(`/api/partners/${partnerId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          publicVisible: showcase.publicVisible,
+          logoUrl: showcase.logoUrl.trim() || null,
+          websiteUrl: showcase.websiteUrl.trim() || null
+        })
+      });
+      if (response.ok) {
+        setShowcaseSaved(true);
+        await load();
+      }
+    } finally {
+      setSavingShowcase(false);
     }
   }
 
@@ -145,6 +176,69 @@ export function PartnerDetail({ partnerId }: { partnerId: string }) {
             <p className="text-xs font-semibold uppercase tracking-wide text-loden-muted">Barème</p>
             <p className="text-sm font-semibold text-loden-ink">{partner.commissionLabel}</p>
           </div>
+        </div>
+      </Card>
+
+      {/* Vitrine publique */}
+      <Card className="p-5">
+        <div className="flex items-center gap-2">
+          <Globe className="h-5 w-5 text-loden-700" />
+          <h3 className="font-semibold text-loden-ink">Vitrine publique</h3>
+        </div>
+        <p className="mt-1 text-sm text-loden-muted">
+          Affiche ce partenaire sur la page d&apos;accueil, section « Ils nous font confiance ».
+        </p>
+        <div className="mt-4 grid gap-4 sm:grid-cols-2">
+          <label className="text-sm">
+            <span className="mb-1 block font-medium text-loden-ink">Logo (URL)</span>
+            <input
+              value={showcase.logoUrl}
+              onChange={(event) => setShowcase({ ...showcase, logoUrl: event.target.value })}
+              placeholder="https://… ou /uploads/logo.png"
+              className="focus-ring w-full rounded-lg border border-slate-200 px-3 py-2"
+            />
+          </label>
+          <label className="text-sm">
+            <span className="mb-1 block font-medium text-loden-ink">Site web</span>
+            <input
+              value={showcase.websiteUrl}
+              onChange={(event) => setShowcase({ ...showcase, websiteUrl: event.target.value })}
+              placeholder="https://…"
+              className="focus-ring w-full rounded-lg border border-slate-200 px-3 py-2"
+            />
+          </label>
+        </div>
+        <label className="mt-3 flex items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            checked={showcase.publicVisible}
+            onChange={(event) => setShowcase({ ...showcase, publicVisible: event.target.checked })}
+            className="h-4 w-4 rounded border-slate-300 text-loden-600"
+          />
+          <span className="text-loden-muted">Afficher sur le site public</span>
+        </label>
+        {showcase.logoUrl.trim() ? (
+          <div className="mt-3">
+            <p className="text-xs font-semibold uppercase tracking-wide text-loden-muted">Aperçu</p>
+            {/* eslint-disable-next-line @next/next/no-img-element -- aperçu d'un logo arbitraire */}
+            <img
+              src={showcase.logoUrl}
+              alt="Aperçu du logo"
+              className="mt-1 h-12 w-auto max-w-[160px] rounded border border-slate-200 object-contain p-1"
+            />
+          </div>
+        ) : null}
+        <div className="mt-4 flex flex-wrap items-center gap-3">
+          <button
+            type="button"
+            onClick={saveShowcase}
+            disabled={savingShowcase}
+            className="focus-ring inline-flex items-center gap-2 rounded-lg bg-loden-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-loden-700 disabled:opacity-50"
+          >
+            {savingShowcase ? "Enregistrement…" : "Enregistrer"}
+          </button>
+          {showcaseSaved ? <span className="text-sm font-medium text-emerald-700">Enregistré ✓</span> : null}
+          {showcase.publicVisible ? <Badge variant="info">Visible sur le site</Badge> : <Badge variant="neutral">Masqué</Badge>}
         </div>
       </Card>
 

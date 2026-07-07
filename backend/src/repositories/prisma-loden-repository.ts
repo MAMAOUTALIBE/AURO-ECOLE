@@ -1216,6 +1216,7 @@ export class PrismaLodenRepository implements LodenRepository {
   async listPartners(filters?: Parameters<LodenRepository["listPartners"]>[0]) {
     const where = {
       ...(filters?.status ? { status: filters.status } : {}),
+      ...(filters?.publicVisible !== undefined ? { publicVisible: filters.publicVisible } : {}),
       ...(filters?.agencyId ? { OR: [{ agencyId: filters.agencyId }, { agencyId: null }] } : {})
     };
     return this.prisma.partner.findMany({ where, orderBy: { createdAt: "desc" } });

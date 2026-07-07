@@ -1,7 +1,8 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ArrowRight, CalendarDays, CheckCircle2, MessageCircle, Send, Sparkles, X } from "lucide-react";
+import { AlertCircle, ArrowRight, BadgeEuro, CalendarDays, CheckCircle2, MessageCircle, Send, Sparkles, X } from "lucide-react";
 import { contactInfo } from "@/data/site";
 import { cn } from "@/lib/utils";
 import { trackConversion, trackEvent } from "@/lib/analytics";
@@ -15,6 +16,23 @@ type ChatSuggestion = {
   formation?: string;
   objective?: string;
   message?: string;
+};
+type OfferDeliveryValue = "EMAIL" | "WHATSAPP" | "BOTH";
+type OfferStep = "promo" | "form" | "sent";
+type OfferFormState = {
+  fullName: string;
+  phone: string;
+  email: string;
+  delivery: OfferDeliveryValue;
+  consent: boolean;
+};
+type OfferResponse = {
+  voucherUrl?: string;
+  whatsappUrl?: string;
+  emailStatus?: "sent" | "skipped" | "failed";
+  whatsappStatus?: "sent" | "skipped" | "failed";
+  appointmentId?: string;
+  conversationId?: string;
 };
 type FlowStep = "formation" | "objective" | "contact" | "slot" | "done";
 type AppointmentSlot = {
@@ -32,8 +50,7 @@ type FlowState = {
   step: FlowStep;
   formation?: string;
   objective?: string;
-  firstName: string;
-  lastName: string;
+  fullName: string;
   phone: string;
   email: string;
   message: string;
@@ -45,7 +62,7 @@ type FlowState = {
 const GREETING: Message = {
   role: "assistant",
   content:
-    "Bonjour 👋 Je suis l'assistant LODENE. Je vous aide à choisir votre formation, obtenir un devis ou prendre rendez-vous — en 1 minute, sans engagement ni paiement. Dites-moi ce qui vous intéresse (ou tapez « m'orienter »), et je m'occupe du reste. 🙂"
+    "Bonjour, je suis l'assistant LODENE. Avant de commencer, vous pouvez réserver votre bon de réduction de 50 € avec le QR code. Laissez vos coordonnées et un conseiller pourra vous rappeler pour finaliser l'inscription."
 };
 
 const FORMATIONS = [
@@ -54,6 +71,7 @@ const FORMATIONS = [
   "VTC",
   "SST",
   "Logistique / sécurité",
+  "Digital IA",
   "Je ne sais pas encore"
 ];
 
@@ -66,10 +84,28 @@ const DEFAULT_SUGGESTIONS: ChatSuggestion[] = [
   { id: "appointment", label: "Prendre RDV", kind: "flow", objective: "Être rappelé" }
 ];
 
+const OFFER_50_CODE = "LODENE50";
+const OFFER_50_IMAGE = "/offre-50/bon50.jpeg";
+const OFFER_50_FORMATION = "PERMIS_B";
+const OFFER_50_FORMATION_LABEL = "Permis B";
+
+const OFFER_DELIVERIES: { value: OfferDeliveryValue; label: string }[] = [
+  { value: "EMAIL", label: "Email" },
+  { value: "WHATSAPP", label: "WhatsApp" },
+  { value: "BOTH", label: "Les deux" }
+];
+
+const EMPTY_OFFER_FORM: OfferFormState = {
+  fullName: "",
+  phone: "",
+  email: "",
+  delivery: "BOTH",
+  consent: true
+};
+
 const EMPTY_FLOW: FlowState = {
   step: "formation",
-  firstName: "",
-  lastName: "",
+  fullName: "",
   phone: "",
   email: "",
   message: "",
@@ -77,6 +113,46 @@ const EMPTY_FLOW: FlowState = {
   consentContact: true,
   consentWhatsApp: false
 };
+
+const TRAINING_DETECTION_RULES: { label: string; offerEligible: boolean; patterns: RegExp[] }[] = [
+  {
+    label: "VTC",
+    offerEligible: false,
+    patterns: [/\bvtc\b/, /\btaxi\b/, /chauffeur/, /carte professionnelle/, /\bt3p\b/, /\bcma\b/]
+  },
+  {
+    label: "SST",
+    offerEligible: false,
+    patterns: [/\bsst\b/, /sauveteur/, /secouriste/, /secourisme/, /gestes?\s+et\s+postures/, /\bmac\s+sst\b/]
+  },
+  {
+    label: "Logistique / sécurité",
+    offerEligible: false,
+    patterns: [
+      /\bcaces\b/,
+      /logistique/,
+      /securite/,
+      /chariots?/,
+      /nacelles?/,
+      /gerbeurs?/,
+      /pont\s+roulant/,
+      /echafaudage/,
+      /terberg/,
+      /\bfimo\b/,
+      /\bfco\b/
+    ]
+  },
+  {
+    label: "Digital IA",
+    offerEligible: false,
+    patterns: [/\bdigital\b/, /\bia\b/, /intelligence artificielle/, /\bcrm\b/, /site\s+web/, /landing\s+page/, /automatisation/, /no[-\s]?code/, /\bweb\b/]
+  },
+  {
+    label: "Permis B automatique",
+    offerEligible: true,
+    patterns: [/permis\s*b/, /\bpermis\b/, /auto[-\s]?ecole/, /conduite/, /boite\s+automatique/, /boite\s+manuelle/]
+  }
+];
 
 function normalizeWhatsappNumber(source: string) {
   const digits = source.replace(/\D/g, "");
@@ -107,17 +183,43 @@ function normalizeSuggestions(value: unknown): ChatSuggestion[] {
   return suggestions.length ? suggestions : DEFAULT_SUGGESTIONS;
 }
 
+function normalizeForDetection(value: string) {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+}
+
+function detectTrainingRequest(value: string) {
+  const normalized = normalizeForDetection(value);
+  return TRAINING_DETECTION_RULES.find((rule) => rule.patterns.some((pattern) => pattern.test(normalized))) ?? null;
+}
+
+function splitDisplayName(fullName: string) {
+  const normalized = fullName.trim().replace(/\s+/g, " ");
+  const [firstName = normalized, ...rest] = normalized.split(" ");
+  return {
+    firstName,
+    lastName: rest.join(" ") || "Non renseigné"
+  };
+}
+
 export function AiChatWidget() {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([GREETING]);
   const [input, setInput] = useState("");
   const [flow, setFlow] = useState<FlowState | null>(null);
-  const [suggestions, setSuggestions] = useState<ChatSuggestion[]>(DEFAULT_SUGGESTIONS);
+  const [, setSuggestions] = useState<ChatSuggestion[]>(DEFAULT_SUGGESTIONS);
   const [slots, setSlots] = useState<AppointmentSlot[]>([]);
   const [loading, setLoading] = useState(false);
   const [flowError, setFlowError] = useState<string | null>(null);
   const [confirmedWhatsappUrl, setConfirmedWhatsappUrl] = useState<string | null>(null);
   const [conversationId, setConversationId] = useState<string | undefined>(undefined);
+  const [offerStep, setOfferStep] = useState<OfferStep>("promo");
+  const [offerForm, setOfferForm] = useState<OfferFormState>(EMPTY_OFFER_FORM);
+  const [offerStatus, setOfferStatus] = useState<"idle" | "sending" | "error">("idle");
+  const [offerError, setOfferError] = useState<string | null>(null);
+  const [offerResult, setOfferResult] = useState<OfferResponse | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   // État courant lu par le déclencheur proactif (évite un setState imbriqué).
   const proactiveRef = useRef({ open, count: messages.length });
@@ -127,10 +229,16 @@ export function AiChatWidget() {
     () => messages.filter((_, index) => index !== 0).slice(-10),
     [messages]
   );
+  const visibleMessages = useMemo(
+    () => messages.filter((_, index) => index !== 0),
+    [messages]
+  );
 
   useEffect(() => {
-    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
-  }, [messages, flow, open, slots, loading]);
+    const target = scrollRef.current;
+    if (!target) return;
+    target.scrollTo({ top: offerStep === "form" ? 0 : target.scrollHeight, behavior: "smooth" });
+  }, [messages, flow, open, slots, loading, offerStep, offerStatus]);
 
   useEffect(() => {
     const openAssistant = () => {
@@ -161,20 +269,29 @@ export function AiChatWidget() {
   const pushAssistant = (content: string) => setMessages((current) => [...current, { role: "assistant", content }]);
   const pushUser = (content: string) => setMessages((current) => [...current, { role: "user", content }]);
 
-  const startFlow = (preset?: Partial<FlowState>) => {
+  const startEnrollmentFlow = (formation: string) => {
     setOpen(true);
     setFlowError(null);
     setConfirmedWhatsappUrl(null);
-    const next = { ...EMPTY_FLOW, ...preset };
-    next.step = next.formation ? next.objective ? "contact" : "objective" : "formation";
-    setFlow(next);
-    pushAssistant("Très bien. Je vais vous orienter en quelques étapes, puis proposer un créneau avec un conseiller LODENE.");
+    setOfferStatus("idle");
+    setOfferError(null);
+    setFlow({ ...EMPTY_FLOW, formation, objective: "M'inscrire", step: "contact" });
+    trackEvent("Assistant", "start_training_registration", formation);
   };
 
   const sendMessage = async (value: string) => {
     const text = value.trim();
     if (!text || loading) return;
     const next = [...messages, { role: "user" as const, content: text }];
+    const detectedTraining = detectTrainingRequest(text);
+    if (detectedTraining && !detectedTraining.offerEligible && !flow) {
+      const assistantContent = `Très bien, je vous accompagne pour votre inscription en formation ${detectedTraining.label}. Le bon -50 € est réservé au Permis B, donc je le retire de cette conversation. Laissez vos coordonnées et je prépare la demande pour un conseiller LODENE.`;
+      setMessages([...next, { role: "assistant", content: assistantContent }]);
+      setInput("");
+      startEnrollmentFlow(detectedTraining.label);
+      return;
+    }
+
     setMessages(next);
     setInput("");
     setLoading(true);
@@ -203,19 +320,77 @@ export function AiChatWidget() {
     await sendMessage(input);
   };
 
-  const applySuggestion = (suggestion: ChatSuggestion) => {
-    if (loading) return;
-    if (suggestion.kind === "message") {
-      void sendMessage(suggestion.message || suggestion.label);
+  const updateOfferForm = <Key extends keyof OfferFormState>(field: Key, value: OfferFormState[Key]) => {
+    setOfferForm((current) => ({ ...current, [field]: value }));
+    setOfferError(null);
+  };
+
+  const startOfferSignup = () => {
+    setOpen(true);
+    setFlow(null);
+    setOfferStep("form");
+    setOfferStatus("idle");
+    setOfferError(null);
+    pushUser("Je récupère mon bon -50 €");
+    pushAssistant("Parfait. Remplissez ces informations et je réserve le bon LODENE50 dans votre dossier de suivi.");
+    trackEvent("CTA", "offer50_chat_start", window.location.pathname);
+  };
+
+  const submitOffer = async () => {
+    if (offerStatus === "sending") return;
+    const fullName = offerForm.fullName.trim().replace(/\s+/g, " ");
+    if (!fullName || !offerForm.phone.trim() || !offerForm.email.trim()) {
+      setOfferError("Nom complet, téléphone et email sont requis pour réserver le bon.");
       return;
     }
-    if (suggestion.kind === "whatsapp") {
-      pushUser(suggestion.label);
-      window.open(whatsappHref(), "_blank", "noopener,noreferrer");
+    if (!offerForm.email.includes("@")) {
+      setOfferError("L'email semble invalide.");
       return;
     }
-    pushUser(suggestion.label);
-    startFlow({ formation: suggestion.formation, objective: suggestion.objective });
+    if (!offerForm.consent) {
+      setOfferError("Le consentement est nécessaire pour envoyer le bon et vous recontacter.");
+      return;
+    }
+
+    setOfferStatus("sending");
+    setOfferError(null);
+    try {
+      const offerConversation: Message[] = [
+        ...compactMessages,
+        { role: "assistant" as const, content: "Carte du bon de réduction -50 € proposée dans l'assistant LODENE." },
+        { role: "user" as const, content: `Demande du bon -50 € pour ${OFFER_50_FORMATION_LABEL}.` }
+      ].slice(-12);
+      const response = await fetch("/api/offers/qr-50", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          code: OFFER_50_CODE,
+          fullName,
+          phone: offerForm.phone,
+          email: offerForm.email,
+          formation: OFFER_50_FORMATION,
+          delivery: offerForm.delivery,
+          origin: "ASSISTANT_IA",
+          conversation: offerConversation,
+          conversationId,
+          consent: offerForm.consent
+        })
+      });
+      const payload = await response.json().catch(() => null);
+      if (!response.ok) throw new Error(payload?.error?.message ?? "La réservation du bon a échoué.");
+      const data = (payload?.data ?? {}) as OfferResponse;
+      if (data.conversationId) setConversationId(data.conversationId);
+      setOfferResult(data);
+      setOfferStep("sent");
+      setOfferForm(EMPTY_OFFER_FORM);
+      trackConversion("offre50_chat_submit", OFFER_50_FORMATION);
+      pushAssistant("Votre bon -50 € est réservé. La demande est dans l'espace rendez-vous LODENE pour qu'un conseiller puisse vous recontacter.");
+    } catch (error) {
+      setOfferStatus("error");
+      setOfferError(error instanceof Error ? error.message : "La demande n'a pas pu être envoyée.");
+      return;
+    }
+    setOfferStatus("idle");
   };
 
   const loadAvailability = async (nextFlow: FlowState) => {
@@ -241,8 +416,8 @@ export function AiChatWidget() {
 
   const submitContact = () => {
     if (!flow) return;
-    if (!flow.firstName.trim() || !flow.lastName.trim() || !flow.phone.trim() || !flow.email.trim()) {
-      setFlowError("Prénom, nom, téléphone et email sont requis.");
+    if (!flow.fullName.trim() || !flow.phone.trim() || !flow.email.trim()) {
+      setFlowError("Nom complet, téléphone et email sont requis.");
       return;
     }
     if (!flow.email.includes("@")) {
@@ -261,6 +436,7 @@ export function AiChatWidget() {
     setLoading(true);
     setFlowError(null);
     try {
+      const { firstName, lastName } = splitDisplayName(flow.fullName);
       const response = await fetch("/api/chat/appointment", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -268,8 +444,8 @@ export function AiChatWidget() {
           slotId: slot.id,
           formation: flow.formation,
           objective: flow.objective,
-          firstName: flow.firstName,
-          lastName: flow.lastName,
+          firstName,
+          lastName,
           phone: flow.phone,
           email: flow.email,
           message: flow.message,
@@ -300,6 +476,172 @@ export function AiChatWidget() {
   const updateFlow = (patch: Partial<FlowState>) => {
     setFlow((current) => (current ? { ...current, ...patch } : current));
     setFlowError(null);
+  };
+
+  const renderOfferCard = () => {
+    if (offerStep === "sent") {
+      return (
+        <div className="grid gap-2 rounded-2xl border border-emerald-100 bg-emerald-50 p-3 text-sm text-emerald-900 shadow-soft">
+          <div className="flex items-start gap-2">
+            <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0" aria-hidden="true" />
+            <div>
+              <p className="font-black">Bon -50 € réservé</p>
+              <p className="mt-1 leading-5">Demande enregistrée dans l&apos;espace rendez-vous.</p>
+            </div>
+          </div>
+          <div className="grid gap-2 sm:grid-cols-2">
+            <a
+              href={offerResult?.voucherUrl ?? OFFER_50_IMAGE}
+              target="_blank"
+              rel="noreferrer"
+              className="focus-ring inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-3 py-2.5 text-xs font-black text-loden-900 shadow-soft"
+            >
+              Voir le bon
+            </a>
+            <a
+              href={offerResult?.whatsappUrl ?? whatsappHref("Bonjour LODENE, je viens de réserver mon bon de réduction de 50 € depuis l'assistant IA.")}
+              target="_blank"
+              rel="noreferrer"
+              className="focus-ring inline-flex items-center justify-center gap-2 rounded-2xl bg-[#25D366] px-3 py-2.5 text-xs font-black text-white"
+            >
+              <MessageCircle className="h-4 w-4" aria-hidden="true" />
+              WhatsApp
+            </a>
+          </div>
+        </div>
+      );
+    }
+
+    if (offerStep === "form") {
+      return (
+        <form
+          onSubmit={(event) => {
+            event.preventDefault();
+            void submitOffer();
+          }}
+          className="grid gap-2 rounded-2xl border border-loden-100 bg-white p-3 shadow-soft"
+          noValidate
+        >
+          <div className="flex items-center justify-between gap-2">
+            <p className="inline-flex items-center gap-1.5 text-[11px] font-black uppercase tracking-[0.1em] text-loden-700">
+              <BadgeEuro className="h-4 w-4" aria-hidden="true" />
+              Bon -50 €
+            </p>
+            <span className="rounded-full bg-loden-50 px-2.5 py-1 text-[11px] font-black text-loden-800">LODENE50</span>
+          </div>
+          <p className="rounded-xl bg-loden-50 px-3 py-2 text-xs font-black text-loden-800">Offre réservée au Permis B.</p>
+
+          <label className="grid gap-1">
+            <span className="text-xs font-semibold text-loden-ink">Nom complet *</span>
+            <input
+              required
+              autoComplete="name"
+              className="field-input h-10 rounded-xl px-3 py-2 text-sm"
+              value={offerForm.fullName}
+              onChange={(event) => updateOfferForm("fullName", event.target.value)}
+              placeholder="Prénom Nom"
+            />
+          </label>
+
+          <div className="grid gap-2 sm:grid-cols-2">
+            <label className="grid gap-1">
+              <span className="text-xs font-semibold text-loden-ink">Téléphone *</span>
+              <input
+                required
+                type="tel"
+                inputMode="tel"
+                autoComplete="tel"
+                className="field-input h-10 rounded-xl px-3 py-2 text-sm"
+                value={offerForm.phone}
+                onChange={(event) => updateOfferForm("phone", event.target.value)}
+                placeholder="06 12 34 56 78"
+              />
+            </label>
+            <label className="grid gap-1">
+              <span className="text-xs font-semibold text-loden-ink">Email *</span>
+              <input
+                required
+                type="email"
+                autoComplete="email"
+                className="field-input h-10 rounded-xl px-3 py-2 text-sm"
+                value={offerForm.email}
+                onChange={(event) => updateOfferForm("email", event.target.value)}
+                placeholder="prenom@email.fr"
+              />
+            </label>
+          </div>
+
+          <div className="grid gap-2">
+            <label className="grid gap-1">
+              <span className="text-xs font-semibold text-loden-ink">Envoi du bon</span>
+              <select
+                className="field-input h-10 rounded-xl px-3 py-2 text-sm"
+                value={offerForm.delivery}
+                onChange={(event) => updateOfferForm("delivery", event.target.value as OfferDeliveryValue)}
+              >
+                {OFFER_DELIVERIES.map((delivery) => (
+                  <option key={delivery.value} value={delivery.value}>
+                    {delivery.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+
+          <label className="flex cursor-pointer items-start gap-2 rounded-xl bg-loden-50 p-2.5 text-xs font-semibold leading-5 text-loden-800">
+            <input
+              required
+              type="checkbox"
+              checked={offerForm.consent}
+              onChange={(event) => updateOfferForm("consent", event.target.checked)}
+              className="mt-1 h-4 w-4 shrink-0 accent-loden-700"
+            />
+            J&apos;accepte de recevoir le bon et d&apos;être rappelé.
+          </label>
+
+          {offerError ? (
+            <p className="flex items-start gap-2 rounded-2xl bg-red-50 p-3 text-xs font-semibold leading-5 text-red-700" role="alert">
+              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+              {offerError}
+            </p>
+          ) : null}
+
+          <button
+            type="submit"
+            disabled={offerStatus === "sending"}
+            className="focus-ring inline-flex items-center justify-center gap-2 rounded-2xl bg-loden-700 px-4 py-2.5 text-sm font-black text-white transition hover:bg-loden-800 disabled:opacity-60"
+          >
+            <Send className="h-4 w-4" aria-hidden="true" />
+            {offerStatus === "sending" ? "Réservation..." : "Recevoir mon bon -50 €"}
+          </button>
+        </form>
+      );
+    }
+
+    return (
+      <div className="overflow-hidden rounded-2xl border border-loden-100 bg-white shadow-soft">
+        <div className="relative bg-loden-900">
+          <Image
+            src={OFFER_50_IMAGE}
+            alt="Bon de réduction LODENE de 50 euros avec QR code"
+            width={1087}
+            height={1447}
+            priority={false}
+            className="max-h-40 w-full object-contain"
+          />
+        </div>
+        <div className="grid gap-2.5 p-3">
+          <button
+            type="button"
+            onClick={startOfferSignup}
+            className="focus-ring inline-flex items-center justify-center gap-2 rounded-2xl bg-loden-700 px-4 py-2.5 text-sm font-black text-white shadow-soft transition hover:bg-loden-800"
+          >
+            Je récupère mon bon -50 €
+            <ArrowRight className="h-4 w-4" aria-hidden="true" />
+          </button>
+        </div>
+      </div>
+    );
   };
 
   const renderFlow = () => {
@@ -355,9 +697,10 @@ export function AiChatWidget() {
       return (
         <div className="grid gap-3">
           <p className="text-xs font-semibold uppercase tracking-[0.12em] text-loden-700">Coordonnées</p>
+          <div className="grid gap-2">
+            <input className="field-input" value={flow.fullName} onChange={(e) => updateFlow({ fullName: e.target.value })} placeholder="Nom complet *" aria-label="Nom complet" />
+          </div>
           <div className="grid gap-2 sm:grid-cols-2">
-            <input className="field-input" value={flow.firstName} onChange={(e) => updateFlow({ firstName: e.target.value })} placeholder="Prénom *" aria-label="Prénom" />
-            <input className="field-input" value={flow.lastName} onChange={(e) => updateFlow({ lastName: e.target.value })} placeholder="Nom *" aria-label="Nom" />
             <input className="field-input" value={flow.phone} onChange={(e) => updateFlow({ phone: e.target.value })} placeholder="Téléphone *" aria-label="Téléphone" />
             <input className="field-input" type="email" value={flow.email} onChange={(e) => updateFlow({ email: e.target.value })} placeholder="Email *" aria-label="Email" />
           </div>
@@ -459,7 +802,7 @@ export function AiChatWidget() {
   return (
     <>
       {open ? (
-        <div className="fixed inset-x-3 bottom-[calc(4.9rem+env(safe-area-inset-bottom))] z-[60] flex h-[min(72svh,34rem)] flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-premium sm:bottom-24 sm:h-[min(78svh,35rem)] sm:z-40 md:left-auto md:right-5 md:w-[24rem]">
+        <div className="fixed inset-x-3 bottom-[calc(4.9rem+env(safe-area-inset-bottom))] z-[120] flex h-[min(82svh,38rem)] flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-premium sm:bottom-24 sm:h-[min(86svh,40rem)] md:left-auto md:right-5 md:w-[24rem]">
           <div className="flex items-center justify-between gap-3 bg-loden-700 px-4 py-3 text-white">
             <div className="flex min-w-0 items-center gap-2">
               <Sparkles className="h-5 w-5 shrink-0" aria-hidden="true" />
@@ -474,44 +817,30 @@ export function AiChatWidget() {
           </div>
 
           <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto bg-loden-pearl/60 p-3 sm:p-4">
-            {messages.map((message, index) => (
-              <div key={index} className={message.role === "user" ? "flex justify-end" : "flex justify-start"}>
-                <p
-                  className={cn(
-                    "max-w-[88%] whitespace-pre-wrap rounded-2xl px-3 py-2 text-sm leading-6 shadow-soft",
-                    message.role === "user" ? "bg-loden-700 text-white" : "bg-white text-loden-ink"
-                  )}
-                >
-                  {message.content}
-                </p>
-              </div>
-            ))}
+            {offerStep !== "form" && (flow || messages.length > 1)
+              ? visibleMessages.map((message, index) => (
+                  <div key={index} className={message.role === "user" ? "flex justify-end" : "flex justify-start"}>
+                    <p
+                      className={cn(
+                        "max-w-[88%] whitespace-pre-wrap rounded-2xl px-3 py-2 text-sm leading-6 shadow-soft",
+                        message.role === "user" ? "bg-loden-700 text-white" : "bg-white text-loden-ink"
+                      )}
+                    >
+                      {message.content}
+                    </p>
+                  </div>
+                ))
+              : null}
 
             {!flow ? (
-              <div className="grid gap-2 rounded-2xl border border-slate-200 bg-white p-3 shadow-soft">
-                <div className="grid grid-cols-2 gap-2">
-                  {suggestions.map((action) => (
-                    <button
-                      key={action.id}
-                      type="button"
-                      onClick={() => applySuggestion(action)}
-                      disabled={loading}
-                      className={optionButtonClass()}
-                    >
-                      {action.label}
-                    </button>
-                  ))}
-                </div>
-                <a
-                  href={whatsappHref()}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="focus-ring inline-flex items-center justify-center gap-2 rounded-2xl bg-[#25D366] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#1fbd58]"
-                >
-                  <MessageCircle className="h-4 w-4" aria-hidden="true" />
-                  Continuer sur WhatsApp
-                </a>
-              </div>
+              <>
+                {offerStep === "promo" ? (
+                  <div className="rounded-2xl border border-loden-100 bg-white p-3 text-sm font-semibold leading-6 text-loden-muted shadow-soft">
+                    <p>{GREETING.content}</p>
+                  </div>
+                ) : null}
+                {renderOfferCard()}
+              </>
             ) : (
               <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-soft">{renderFlow()}</div>
             )}
@@ -520,34 +849,36 @@ export function AiChatWidget() {
             {loading ? <p className="text-xs text-loden-muted">Traitement en cours…</p> : null}
           </div>
 
-          <form
-            onSubmit={(event) => {
-              event.preventDefault();
-              void send();
-            }}
-            className="flex items-center gap-2 border-t border-slate-200 p-3"
-          >
-            <input
-              value={input}
-              onChange={(event) => setInput(event.target.value)}
-              maxLength={2000}
-              placeholder="Votre question…"
-              aria-label="Votre question"
-              className="field-input flex-1"
-            />
-            <button
-              type="submit"
-              disabled={loading || !input.trim()}
-              className="focus-ring inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-loden-700 text-white transition hover:bg-loden-800 disabled:opacity-60"
-              aria-label="Envoyer"
+          {offerStep === "form" ? null : (
+            <form
+              onSubmit={(event) => {
+                event.preventDefault();
+                void send();
+              }}
+              className="flex items-center gap-2 border-t border-slate-200 p-3"
             >
-              <Send className="h-5 w-5" />
-            </button>
-          </form>
+              <input
+                value={input}
+                onChange={(event) => setInput(event.target.value)}
+                maxLength={2000}
+                placeholder="Votre question…"
+                aria-label="Votre question"
+                className="field-input flex-1"
+              />
+              <button
+                type="submit"
+                disabled={loading || !input.trim()}
+                className="focus-ring inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-loden-700 text-white transition hover:bg-loden-800 disabled:opacity-60"
+                aria-label="Envoyer"
+              >
+                <Send className="h-5 w-5" />
+              </button>
+            </form>
+          )}
         </div>
       ) : null}
 
-      <div className="fixed bottom-4 right-4 z-30 hidden max-w-[calc(100vw-2rem)] items-center gap-2 sm:bottom-5 sm:right-5 sm:flex">
+      <div className="fixed bottom-4 right-4 z-[110] hidden max-w-[calc(100vw-2rem)] items-center gap-2 sm:bottom-5 sm:right-5 sm:flex">
         <button
           type="button"
           onClick={() =>

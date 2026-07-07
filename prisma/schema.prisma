@@ -739,6 +739,10 @@ model Partner {
   commissionType  CommissionType @default(FLAT)
   commissionValue Int            @default(0)
   notes           String?
+  // Vitrine publique : affiché sur le site (« Ils nous font confiance ») uniquement si opt-in.
+  publicVisible   Boolean        @default(false)
+  logoUrl         String?
+  websiteUrl      String?
   agencyId        String?
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt

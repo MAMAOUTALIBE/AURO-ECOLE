@@ -39,6 +39,7 @@ const formationSchema = z.enum([
   "VTC",
   "SST",
   "Logistique / sécurité",
+  "Digital IA",
   "Je ne sais pas encore",
   "Formation entreprise"
 ]);

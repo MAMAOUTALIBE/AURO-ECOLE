@@ -1144,11 +1144,12 @@ export class MemoryLodenRepository implements LodenRepository {
     return lead;
   }
 
-  async listPartners(filters?: { status?: PartnerRecord["status"]; agencyId?: string }) {
+  async listPartners(filters?: { status?: PartnerRecord["status"]; agencyId?: string; publicVisible?: boolean }) {
     return this.store.partners
       .filter(
         (partner) =>
           (!filters?.status || partner.status === filters.status) &&
+          (filters?.publicVisible === undefined || partner.publicVisible === filters.publicVisible) &&
           (!filters?.agencyId || partner.agencyId === filters.agencyId || partner.agencyId == null)
       )
       .slice()
@@ -1172,6 +1173,7 @@ export class MemoryLodenRepository implements LodenRepository {
       status: input.status ?? "ACTIF",
       commissionType: input.commissionType ?? "FLAT",
       commissionValue: input.commissionValue ?? 0,
+      publicVisible: input.publicVisible ?? false,
       createdAt: now,
       updatedAt: now
     };

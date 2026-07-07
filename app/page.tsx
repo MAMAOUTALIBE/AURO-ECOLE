@@ -14,9 +14,11 @@ import {
 import { HeroSection } from "@/components/HeroSection";
 import { HomeFormationsCarousel } from "@/components/HomeFormationsCarousel";
 import { GoogleReviewsSection } from "@/components/GoogleReviewsSection";
+import { PartnersSection } from "@/components/PartnersSection";
 import { MotionReveal } from "@/components/MotionReveal";
 import { contactInfo } from "@/data/site";
 import { getFormations } from "@/lib/catalog";
+import { getPublicPartners } from "@/lib/partners-public";
 import { formatCurrency } from "@/lib/utils";
 
 export const metadata: Metadata = {
@@ -91,7 +93,7 @@ function whatsappHref() {
 }
 
 export default async function HomePage() {
-  const formations = await getFormations();
+  const [formations, partners] = await Promise.all([getFormations(), getPublicPartners()]);
   return (
     <main>
       <HeroSection />
@@ -220,6 +222,9 @@ export default async function HomePage() {
 
       {/* Avis clients — vrais avis Google synchronisés (note, étoiles, prénom, commentaire). */}
       <GoogleReviewsSection />
+
+      {/* Partenaires opt-in (« Ils nous font confiance ») — piloté depuis /admin/partenaires. */}
+      <PartnersSection partners={partners} />
 
       <section className="bg-loden-pearl py-7 md:py-10">
         <div className="container-pad">

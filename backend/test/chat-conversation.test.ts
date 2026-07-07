@@ -170,4 +170,102 @@ describe("liaison de la conversation au RDV (/api/chat/appointment)", () => {
     expect(conv.leadId).toBe(leadId);
     expect(conv.appointmentId).toBe(appointmentId);
   });
+
+  it("accepte une inscription Digital IA via le parcours rendez-vous classique", async () => {
+    const { app } = build();
+
+    const availability = await request(app).get("/api/appointments/availability");
+    expect(availability.status).toBe(200);
+    const slot = availability.body.data[0];
+    expect(slot?.id).toBeTruthy();
+
+    const booking = await request(app)
+      .post("/api/chat/appointment")
+      .send({
+        slotId: slot.id,
+        formation: "Digital IA",
+        objective: "M'inscrire",
+        firstName: "Aminata",
+        lastName: "Diallo",
+        phone: "0677889900",
+        email: "aminata.diallo@example.com",
+        message: "Je veux m'inscrire à la formation IA.",
+        consentContact: true,
+        consentWhatsApp: false
+      })
+      .expect(201);
+
+    expect(booking.body.data.lead.interest).toBe("Digital IA");
+    expect(booking.body.data.appointment.formation).toBe("Digital IA");
+    expect(booking.body.data.appointment.objective).toBe("M'inscrire");
+  });
+});
+
+describe("offre -50 € depuis l'assistant IA", () => {
+  it("crée une fiche rendez-vous, une tâche de rappel et relie la conversation", async () => {
+    const { app, repository } = build();
+
+    const conversation = await request(app)
+      .post("/api/chat/message")
+      .send({ messages: [{ role: "user", content: "Je veux m'inscrire et récupérer le bon de 50 euros" }] })
+      .expect(200);
+    const conversationId = conversation.body.data.conversationId as string;
+
+    const res = await request(app)
+      .post("/api/offers/qr-50")
+      .send({
+        code: "LODENE50",
+        fullName: "Nadia Benali",
+        phone: "0611223344",
+        email: "nadia.benali@example.com",
+        formation: "PERMIS_B",
+        delivery: "EMAIL",
+        origin: "ASSISTANT_IA",
+        consent: true,
+        conversationId,
+        conversation: [
+          { role: "assistant", content: "Carte du bon de réduction -50 € proposée dans l'assistant LODENE." },
+          { role: "user", content: "Demande du bon -50 € pour Permis B." }
+        ]
+      })
+      .expect(201);
+
+    expect(res.body.data.leadId).toBeTruthy();
+    expect(res.body.data.appointmentId).toBeTruthy();
+    expect(res.body.data.conversationId).toBe(conversationId);
+    expect(res.body.data.voucherUrl).toContain("/offre-50/bon50.jpeg");
+
+    const appointments = await repository.listChatAppointments({ source: "chatbot" });
+    const appointment = appointments.find((item) => item.id === res.body.data.appointmentId);
+    expect(appointment).toBeTruthy();
+    expect(appointment!.fullName).toBe("Nadia Benali");
+    expect(appointment!.formation).toBe("Permis B");
+    expect(appointment!.objective).toBe("Récupérer le bon -50 €");
+    expect(appointment!.notes).toContain("Canal: Assistant IA");
+
+    const tasks = await repository.listChatTasks({ leadId: res.body.data.leadId });
+    expect(tasks.some((task) => task.appointmentId === appointment!.id && task.type === "RELANCE")).toBe(true);
+
+    const linked = await repository.findChatConversationById(conversationId);
+    expect(linked?.leadId).toBe(res.body.data.leadId);
+    expect(linked?.appointmentId).toBe(appointment!.id);
+    expect(linked?.visitorName).toBe("Nadia Benali");
+  });
+
+  it("refuse le bon -50 € pour une autre formation que Permis B", async () => {
+    const { app } = build();
+
+    await request(app)
+      .post("/api/offers/qr-50")
+      .send({
+        code: "LODENE50",
+        fullName: "Client VTC",
+        phone: "0699887766",
+        email: "client.vtc@example.com",
+        formation: "VTC",
+        delivery: "EMAIL",
+        consent: true
+      })
+      .expect(400);
+  });
 });

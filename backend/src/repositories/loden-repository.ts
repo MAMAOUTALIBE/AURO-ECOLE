@@ -234,12 +234,13 @@ export type CreateLeadInput = Omit<LeadRecord, "id" | "status" | "createdAt" | "
 
 export type CreatePartnerInput = Omit<
   PartnerRecord,
-  "id" | "type" | "status" | "commissionType" | "commissionValue" | "createdAt" | "updatedAt"
+  "id" | "type" | "status" | "commissionType" | "commissionValue" | "publicVisible" | "createdAt" | "updatedAt"
 > & {
   type?: PartnerRecord["type"];
   status?: PartnerStatus;
   commissionType?: PartnerRecord["commissionType"];
   commissionValue?: number;
+  publicVisible?: boolean;
 };
 
 export type CreateCommissionInput = Omit<PartnerCommissionRecord, "id" | "status" | "createdAt" | "updatedAt"> & {
@@ -477,7 +478,7 @@ export interface LodenRepository {
   createLead(input: CreateLeadInput): Promise<LeadRecord>;
   updateLead(id: string, input: Partial<LeadRecord>): Promise<LeadRecord>;
 
-  listPartners(filters?: { status?: PartnerStatus; agencyId?: string }): Promise<PartnerRecord[]>;
+  listPartners(filters?: { status?: PartnerStatus; agencyId?: string; publicVisible?: boolean }): Promise<PartnerRecord[]>;
   findPartnerById(id: string): Promise<PartnerRecord | null>;
   findPartnerByUserId(userId: string): Promise<PartnerRecord | null>;
   createPartner(input: CreatePartnerInput): Promise<PartnerRecord>;

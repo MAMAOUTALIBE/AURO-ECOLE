@@ -541,6 +541,9 @@ export type PartnerRecord = {
   commissionType: CommissionType;
   commissionValue: number;
   notes?: string | null;
+  publicVisible: boolean;
+  logoUrl?: string | null;
+  websiteUrl?: string | null;
   agencyId?: string | null;
   createdAt: Date;
   updatedAt: Date;

@@ -153,6 +153,44 @@ describe("Partenaires prescripteurs", () => {
     expect(detail.body.data.commissions).toHaveLength(1);
   });
 
+  it("n'expose sur /public que les partenaires opt-in, avec des champs sûrs", async () => {
+    const app = testApp();
+    const admin = await adminToken(app);
+
+    // Masqué par défaut (publicVisible absent).
+    await request(app)
+      .post("/api/partners")
+      .set("Authorization", `Bearer ${admin}`)
+      .send({ companyName: "Partenaire Masqué", email: "masque@example.com", createAccount: false })
+      .expect(201);
+
+    // Opt-in visible + logo + site.
+    await request(app)
+      .post("/api/partners")
+      .set("Authorization", `Bearer ${admin}`)
+      .send({
+        companyName: "Partenaire Vitrine",
+        email: "vitrine@example.com",
+        createAccount: false,
+        publicVisible: true,
+        logoUrl: "https://cdn.example/logo.png",
+        websiteUrl: "https://example.com"
+      })
+      .expect(201);
+
+    // Endpoint public : AUCUNE authentification requise.
+    const pub = await request(app).get("/api/partners/public").expect(200);
+    expect(pub.body.data).toHaveLength(1);
+    const shown = pub.body.data[0];
+    expect(shown.companyName).toBe("Partenaire Vitrine");
+    expect(shown.logoUrl).toBe("https://cdn.example/logo.png");
+    expect(shown.websiteUrl).toBe("https://example.com");
+    // Aucune fuite de champ sensible.
+    expect(shown.email).toBeUndefined();
+    expect(shown.phone).toBeUndefined();
+    expect(shown.commissionValue).toBeUndefined();
+  });
+
   it("cloisonne les accès (RBAC)", async () => {
     const app = testApp();
     const admin = await adminToken(app);

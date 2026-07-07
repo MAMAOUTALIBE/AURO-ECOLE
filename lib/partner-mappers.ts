@@ -51,9 +51,20 @@ export type ApiPartner = {
   commissionType: CommissionType;
   commissionValue: number;
   notes?: string | null;
+  publicVisible?: boolean;
+  logoUrl?: string | null;
+  websiteUrl?: string | null;
   agencyId?: string | null;
   createdAt: string;
   user?: ApiUser | null;
+};
+
+// Forme publique (endpoint /api/partners/public) — aucun champ sensible.
+export type PublicPartner = {
+  id: string;
+  companyName: string;
+  logoUrl?: string | null;
+  websiteUrl?: string | null;
 };
 
 export type ApiPartnerCommission = {
@@ -80,6 +91,9 @@ export type Partner = {
   commissionValue: number;
   commissionLabel: string;
   notes?: string | null;
+  publicVisible: boolean;
+  logoUrl?: string | null;
+  websiteUrl?: string | null;
   agencyId?: string | null;
   hasAccount: boolean;
   createdAt: string;
@@ -113,6 +127,9 @@ export function mapApiPartner(partner: ApiPartner): Partner {
     commissionValue: partner.commissionValue,
     commissionLabel: describeCommission(partner.commissionType, partner.commissionValue),
     notes: partner.notes ?? undefined,
+    publicVisible: Boolean(partner.publicVisible),
+    logoUrl: partner.logoUrl ?? undefined,
+    websiteUrl: partner.websiteUrl ?? undefined,
     agencyId: partner.agencyId ?? undefined,
     hasAccount: Boolean(partner.userId),
     createdAt: partner.createdAt,

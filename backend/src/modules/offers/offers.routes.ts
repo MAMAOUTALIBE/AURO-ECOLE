@@ -13,16 +13,9 @@ import { buildWhatsAppUrl, sendWhatsAppMessage } from "../../shared/whatsapp";
 
 const OFFER_50_CODE = "LODENE50";
 const OFFER_50_SOURCE = "QR_CODE_OFFRE_50";
-const VOUCHER_PATH = "/offre-50/bon_reduction_50_propre.png";
-
-const formationLabels = {
-  PERMIS_B: "Permis B",
-  VTC: "VTC",
-  SST: "SST",
-  LOGISTIQUE: "Logistique",
-  SECURITE: "Sécurité",
-  AUTRE: "Autre"
-} as const;
+const VOUCHER_PATH = "/offre-50/bon50.jpeg";
+const OFFER_50_FORMATION = "PERMIS_B";
+const OFFER_50_FORMATION_LABEL = "Permis B";
 
 const deliveryLabels = {
   EMAIL: "Email",
@@ -30,16 +23,34 @@ const deliveryLabels = {
   BOTH: "Email et WhatsApp"
 } as const;
 
-const offerLeadSchema = z.object({
-  code: z.string().trim(),
-  firstName: z.string().trim().min(2),
-  lastName: z.string().trim().min(2),
-  phone: z.string().trim().min(8).max(30),
-  email: emailSchema,
-  formation: z.enum(["PERMIS_B", "VTC", "SST", "LOGISTIQUE", "SECURITE", "AUTRE"]),
-  delivery: z.enum(["EMAIL", "WHATSAPP", "BOTH"]),
-  consent: z.literal(true)
+const conversationMessageSchema = z.object({
+  role: z.enum(["user", "assistant"]),
+  content: z.string().trim().min(1).max(2000)
 });
+
+const offerLeadSchema = z
+  .object({
+    code: z.string().trim(),
+    fullName: z.string().trim().min(2).max(180).optional(),
+    firstName: z.string().trim().min(1).max(80).optional(),
+    lastName: z.string().trim().min(1).max(100).optional(),
+    phone: z.string().trim().min(8).max(30),
+    email: emailSchema,
+    formation: z.literal(OFFER_50_FORMATION).default(OFFER_50_FORMATION),
+    delivery: z.enum(["EMAIL", "WHATSAPP", "BOTH"]),
+    origin: z.enum(["PAGE_QR", "ASSISTANT_IA"]).default("PAGE_QR"),
+    conversation: z.array(conversationMessageSchema).max(12).optional(),
+    conversationId: z.string().trim().min(1).max(60).optional(),
+    consent: z.literal(true)
+  })
+  .superRefine((value, ctx) => {
+    if (value.fullName || (value.firstName && value.lastName)) return;
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Le nom complet est requis.",
+      path: ["fullName"]
+    });
+  });
 
 function normalizePhoneForCompare(phone?: string | null) {
   return phone?.replace(/\D/g, "") ?? "";
@@ -53,10 +64,12 @@ function buildOffer50Notes(input: {
   formationLabel: string;
   deliveryLabel: string;
   voucherUrl: string;
+  originLabel: string;
 }) {
   return [
     "Campagne: Offre QR Code -50 €",
     `Source: ${OFFER_50_SOURCE}`,
+    `Canal: ${input.originLabel}`,
     `Code promo: ${OFFER_50_CODE}`,
     `Formation souhaitée: ${input.formationLabel}`,
     `Envoi demandé: ${input.deliveryLabel}`,
@@ -64,6 +77,72 @@ function buildOffer50Notes(input: {
     "Statut bon: ENVOYE",
     "Consentement RGPD: oui"
   ].join("\n");
+}
+
+function splitFullName(fullName: string) {
+  const normalized = fullName.trim().replace(/\s+/g, " ");
+  const [firstName = normalized, ...rest] = normalized.split(" ");
+  return {
+    fullName: normalized,
+    firstName,
+    lastName: rest.join(" ") || "Non renseigné"
+  };
+}
+
+function resolveName(input: z.infer<typeof offerLeadSchema>) {
+  if (input.fullName) return splitFullName(input.fullName);
+  const firstName = (input.firstName ?? "").trim();
+  const lastName = (input.lastName ?? "").trim();
+  return {
+    fullName: `${firstName} ${lastName}`.trim().replace(/\s+/g, " "),
+    firstName,
+    lastName
+  };
+}
+
+function formatLocalDateTime(date: Date) {
+  const pad = (value: number) => String(value).padStart(2, "0");
+  return {
+    date: `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`,
+    time: `${pad(date.getHours())}:${pad(date.getMinutes())}`
+  };
+}
+
+async function linkOfferConversation(
+  repository: LodenRepository,
+  input: {
+    leadId: string;
+    appointmentId: string;
+    visitorName: string;
+    conversationId?: string;
+    conversation?: z.infer<typeof conversationMessageSchema>[];
+  }
+) {
+  if (input.conversationId) {
+    const existing = await repository.findChatConversationById(input.conversationId);
+    if (existing) {
+      const updated = await repository.updateChatConversation(input.conversationId, {
+        leadId: input.leadId,
+        appointmentId: input.appointmentId,
+        visitorName: input.visitorName
+      });
+      return updated.id;
+    }
+  }
+
+  if (input.conversation?.length) {
+    const created = await repository.createChatConversation({
+      leadId: input.leadId,
+      appointmentId: input.appointmentId,
+      visitorName: input.visitorName,
+      messages: input.conversation.map((message) => ({ ...message, createdAt: new Date().toISOString() })),
+      intent: "offre_50",
+      summary: "Demande du bon de réduction -50 € depuis l'assistant LODENE."
+    });
+    return created.id;
+  }
+
+  return undefined;
 }
 
 function buildWhatsAppOfferText(firstName: string, voucherUrl: string) {
@@ -110,15 +189,16 @@ export function createOffersRouter(repository: LodenRepository, config: ApiConfi
       }
 
       const voucherUrl = new URL(VOUCHER_PATH, config.appBaseUrl).toString();
-      const formationLabel = formationLabels[body.formation];
+      const formationLabel = OFFER_50_FORMATION_LABEL;
       const deliveryLabel = deliveryLabels[body.delivery];
-      const fullName = `${body.firstName} ${body.lastName}`.trim();
-      const notes = buildOffer50Notes({ formationLabel, deliveryLabel, voucherUrl });
+      const originLabel = body.origin === "ASSISTANT_IA" ? "Assistant IA" : "Page QR code";
+      const { fullName, firstName, lastName } = resolveName(body);
+      const notes = buildOffer50Notes({ formationLabel, deliveryLabel, voucherUrl, originLabel });
 
       const lead = await repository.createLead({
         fullName,
-        firstName: body.firstName,
-        lastName: body.lastName,
+        firstName,
+        lastName,
         email: body.email,
         phone: body.phone,
         source: OFFER_50_SOURCE,
@@ -130,17 +210,60 @@ export function createOffersRouter(repository: LodenRepository, config: ApiConfi
         consentWhatsapp: body.delivery === "WHATSAPP" || body.delivery === "BOTH"
       });
 
+      const now = new Date();
+      const { date, time } = formatLocalDateTime(now);
+      const appointment = await repository.createChatAppointment({
+        leadId: lead.id,
+        fullName,
+        firstName,
+        lastName,
+        phone: body.phone,
+        email: body.email,
+        formation: formationLabel,
+        objective: "Récupérer le bon -50 €",
+        message: `Demande du bon LODENE50 depuis ${originLabel}.`,
+        notes,
+        date,
+        time,
+        requestedAt: now,
+        startsAt: now,
+        endsAt: new Date(now.getTime() + 30 * 60_000),
+        type: "registration",
+        status: "new",
+        priority: "high",
+        source: "chatbot",
+        consentContact: true,
+        consentWhatsApp: body.delivery === "WHATSAPP" || body.delivery === "BOTH"
+      });
+
+      const task = await repository.createChatTask({
+        leadId: lead.id,
+        appointmentId: appointment.id,
+        type: "RELANCE",
+        priority: "HAUTE",
+        deadline: new Date(Date.now() + 24 * 60 * 60_000),
+        note: `Rappeler ${fullName} (${body.phone}) — bon -50 € LODENE50 · ${formationLabel}.`
+      });
+
+      const conversationId = await linkOfferConversation(repository, {
+        leadId: lead.id,
+        appointmentId: appointment.id,
+        visitorName: fullName,
+        conversationId: body.conversationId,
+        conversation: body.conversation
+      });
+
       const emailStatus =
         body.delivery === "EMAIL" || body.delivery === "BOTH"
           ? await sendOffer50VoucherEmail(config, {
               to: body.email,
-              firstName: body.firstName,
+              firstName,
               voucherUrl,
               code: OFFER_50_CODE
             })
           : "skipped";
 
-      const whatsappText = buildWhatsAppOfferText(body.firstName, voucherUrl);
+      const whatsappText = buildWhatsAppOfferText(firstName, voucherUrl);
       const whatsappStatus =
         body.delivery === "WHATSAPP" || body.delivery === "BOTH"
           ? await sendWhatsAppMessage(config, {
@@ -155,11 +278,15 @@ export function createOffersRouter(repository: LodenRepository, config: ApiConfi
       void repository.createAuditLog({
         userId: null,
         action: "offer50.lead.created",
-        entityType: "Lead",
-        entityId: lead.id,
+        entityType: "Appointment",
+        entityId: appointment.id,
         metadata: {
+          leadId: lead.id,
+          taskId: task.id,
+          conversationId,
           source: OFFER_50_SOURCE,
           promoCode: OFFER_50_CODE,
+          origin: body.origin,
           delivery: body.delivery,
           emailStatus,
           whatsappStatus
@@ -169,6 +296,8 @@ export function createOffersRouter(repository: LodenRepository, config: ApiConfi
       res.status(201).json({
         data: {
           leadId: lead.id,
+          appointmentId: appointment.id,
+          conversationId,
           code: OFFER_50_CODE,
           source: OFFER_50_SOURCE,
           voucherUrl,
