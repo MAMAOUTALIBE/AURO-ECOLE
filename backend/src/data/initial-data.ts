@@ -443,6 +443,130 @@ export const initialFormations: FormationRecord[] = [
     cpfEligible: false,
     cpfStatus: "NON_RENSEIGNE",
     active: true
+  },
+
+  // ---------------------------------------------------------------------------
+  // 5. Tech, Web & IA
+  // ---------------------------------------------------------------------------
+  {
+    id: "formation-ia-crm-automatisation",
+    title: "Formation IA, CRM & Automatisation",
+    slug: "ia-crm-automatisation",
+    subtitle: "Pack signature — 14H",
+    description:
+      "Formation courte et concrète pour digitaliser, organiser et automatiser son activité : structurer un mini-CRM, utiliser l'IA au quotidien et automatiser les relances et tâches répétitives.",
+    mode: "MIXTE",
+    productLine: "DIGITAL",
+    priceCents: 99000,
+    taxMode: "HT",
+    quoteOnly: false,
+    durationLabel: "14 heures",
+    defaultHours: 14,
+    imageUrl: "/formations/photos/digital-internet-crm-automation.webp",
+    tags: ["IA", "CRM", "Automatisation", "Présentiel", "Distanciel"],
+    cpfEligible: false,
+    cpfStatus: "NON_ELIGIBLE",
+    active: true
+  },
+  {
+    id: "formation-site-web-landing-page",
+    title: "Site web & landing page",
+    slug: "site-web-landing-page",
+    subtitle: "Créer une présence web qui convertit",
+    description:
+      "Construire ou refondre une page web professionnelle : message clair, structure de landing page, formulaire de contact, SEO local, suivi des conversions et parcours de demande de devis.",
+    mode: "MIXTE",
+    productLine: "DIGITAL",
+    priceCents: 69000,
+    taxMode: "HT",
+    quoteOnly: false,
+    durationLabel: "7 heures",
+    defaultHours: 7,
+    imageUrl: "/formations/photos/digital-code-web-development.webp",
+    tags: ["Web", "Landing page", "SEO local", "Conversion"],
+    cpfEligible: false,
+    cpfStatus: "NON_ELIGIBLE",
+    active: true
+  },
+  {
+    id: "formation-ia-professionnels",
+    title: "L'IA pour les professionnels",
+    slug: "ia-professionnels",
+    subtitle: "Gagner du temps au quotidien",
+    description:
+      "Prendre en main les assistants IA avec des prompts métier prêts à l'emploi pour rédiger, répondre, qualifier les demandes et gagner en productivité.",
+    mode: "MIXTE",
+    productLine: "DIGITAL",
+    priceCents: 59000,
+    taxMode: "HT",
+    quoteOnly: false,
+    durationLabel: "7 heures",
+    defaultHours: 7,
+    imageUrl: "/formations/photos/digital-ai-agent-training.webp",
+    tags: ["IA", "Productivité", "Présentiel", "Distanciel"],
+    cpfEligible: false,
+    cpfStatus: "NON_ELIGIBLE",
+    active: true
+  },
+  {
+    id: "formation-mini-crm",
+    title: "Créer & piloter son mini-CRM",
+    slug: "mini-crm",
+    subtitle: "Suivi prospects, devis & relances",
+    description:
+      "Mettre en place un CRM simple et efficace : base prospects/clients, statuts, pipeline commercial, suivi des devis, relances et tableau de bord.",
+    mode: "MIXTE",
+    productLine: "DIGITAL",
+    priceCents: 69000,
+    taxMode: "HT",
+    quoteOnly: false,
+    durationLabel: "7 heures",
+    defaultHours: 7,
+    imageUrl: "/formations/photos/digital-internet-crm-automation.webp",
+    tags: ["CRM", "Prospection", "Organisation"],
+    cpfEligible: false,
+    cpfStatus: "NON_ELIGIBLE",
+    active: true
+  },
+  {
+    id: "formation-automatisation-no-code",
+    title: "Automatisation no-code",
+    slug: "automatisation-no-code",
+    subtitle: "Relances, notifications, workflows",
+    description:
+      "Automatiser les tâches répétitives sans coder : notifications, rappels, relances automatiques, prises de rendez-vous et workflows simples.",
+    mode: "MIXTE",
+    productLine: "DIGITAL",
+    priceCents: 69000,
+    taxMode: "HT",
+    quoteOnly: false,
+    durationLabel: "7 heures",
+    defaultHours: 7,
+    imageUrl: "/formations/photos/digital-transformation-training.webp",
+    tags: ["Automatisation", "No-code", "Workflows"],
+    cpfEligible: false,
+    cpfStatus: "NON_ELIGIBLE",
+    active: true
+  },
+  {
+    id: "formation-prospection-presence-en-ligne",
+    title: "Prospection & présence en ligne",
+    slug: "prospection-presence-en-ligne",
+    subtitle: "Site, Google, réseaux sociaux",
+    description:
+      "Développer sa visibilité et sa prospection : fiche Google, site vitrine, réseaux sociaux et messages commerciaux efficaces pour générer plus de demandes.",
+    mode: "MIXTE",
+    productLine: "DIGITAL",
+    priceCents: 59000,
+    taxMode: "HT",
+    quoteOnly: false,
+    durationLabel: "7 heures",
+    defaultHours: 7,
+    imageUrl: "/formations/photos/digital-transformation-training.webp",
+    tags: ["Prospection", "Web", "Réseaux sociaux"],
+    cpfEligible: false,
+    cpfStatus: "NON_ELIGIBLE",
+    active: true
   }
 ];
 
@@ -770,7 +894,7 @@ export const initialSiteSettings: SiteSettingRecord[] = [
             { id: "vtc", label: "VTC & transport", href: "/vtc", active: true, icon: "CarTaxiFront" },
             { id: "securite", label: "Sécurité & secourisme (SST)", href: "/sst", active: true, icon: "ShieldCheck" },
             { id: "caces", label: "CACES & logistique", href: "/logistique-securite", active: true, icon: "HardHat" },
-            { id: "digital", label: "Tech, IA & Digital", href: "/digital", active: true, icon: "Sparkles" },
+            { id: "digital", label: "Tech, Web & IA", href: "/digital", active: true, icon: "Sparkles" },
             { id: "toutes", label: "Toutes les formations", href: "/formations", active: true, icon: "GraduationCap" }
           ]
         },

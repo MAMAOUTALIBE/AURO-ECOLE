@@ -211,7 +211,7 @@ export const productLineLabels: Record<ProductLine, string> = {
   CACES: "CACES",
   SST: "SST",
   LOGISTIQUE_SECURITE: "Logistique & sécurité",
-  DIGITAL: "Tech, Digital & IA"
+  DIGITAL: "Tech, Web & IA"
 };
 
 // Catalogue public (SSR/SEO/accueil) — aligné sur la base (backend/src/data/initial-data.ts).
@@ -304,6 +304,85 @@ export const formations: Formation[] = [
     cpf: false,
     tags: ["Permis B", "Jeune conducteur", "Famille"],
     description: "Accompagnement dès 15 ans pour gagner en expérience de conduite avant le passage de l'examen."
+  },
+  // ——— Pôle Tech, Web & IA ———
+  {
+    title: "Formation IA, CRM & Automatisation",
+    slug: "ia-crm-automatisation",
+    subtitle: "Pack signature — 14H",
+    mode: "Mixte",
+    productLine: "DIGITAL",
+    duration: "14 heures",
+    price: 990,
+    cpf: false,
+    tags: ["IA", "CRM", "Automatisation", "Présentiel", "Distanciel"],
+    description: "Formation courte et concrète pour digitaliser, organiser et automatiser son activité : mini-CRM, IA au quotidien, relances et tâches répétitives.",
+    imageUrl: "/formations/photos/digital-internet-crm-automation.webp"
+  },
+  {
+    title: "Site web & landing page",
+    slug: "site-web-landing-page",
+    subtitle: "Créer une présence web qui convertit",
+    mode: "Mixte",
+    productLine: "DIGITAL",
+    duration: "7 heures",
+    price: 690,
+    cpf: false,
+    tags: ["Web", "Landing page", "SEO local", "Conversion"],
+    description: "Construire ou refondre une page web professionnelle : message clair, landing page, formulaire de contact, SEO local et suivi des conversions.",
+    imageUrl: "/formations/photos/digital-code-web-development.webp"
+  },
+  {
+    title: "L'IA pour les professionnels",
+    slug: "ia-professionnels",
+    subtitle: "Gagner du temps au quotidien",
+    mode: "Mixte",
+    productLine: "DIGITAL",
+    duration: "7 heures",
+    price: 590,
+    cpf: false,
+    tags: ["IA", "Productivité", "Présentiel", "Distanciel"],
+    description: "Prendre en main les assistants IA avec des prompts métier prêts à l'emploi pour rédiger, répondre, qualifier les demandes et gagner du temps.",
+    imageUrl: "/formations/photos/digital-ai-agent-training.webp"
+  },
+  {
+    title: "Créer & piloter son mini-CRM",
+    slug: "mini-crm",
+    subtitle: "Suivi prospects, devis & relances",
+    mode: "Mixte",
+    productLine: "DIGITAL",
+    duration: "7 heures",
+    price: 690,
+    cpf: false,
+    tags: ["CRM", "Prospection", "Organisation"],
+    description: "Mettre en place un CRM simple : base prospects/clients, pipeline commercial, suivi des devis, relances et tableau de bord.",
+    imageUrl: "/formations/photos/digital-internet-crm-automation.webp"
+  },
+  {
+    title: "Automatisation no-code",
+    slug: "automatisation-no-code",
+    subtitle: "Relances, notifications, workflows",
+    mode: "Mixte",
+    productLine: "DIGITAL",
+    duration: "7 heures",
+    price: 690,
+    cpf: false,
+    tags: ["Automatisation", "No-code", "Workflows"],
+    description: "Automatiser les tâches répétitives sans coder : notifications, rappels, relances automatiques, rendez-vous et workflows simples.",
+    imageUrl: "/formations/photos/digital-transformation-training.webp"
+  },
+  {
+    title: "Prospection & présence en ligne",
+    slug: "prospection-presence-en-ligne",
+    subtitle: "Site, Google, réseaux sociaux",
+    mode: "Mixte",
+    productLine: "DIGITAL",
+    duration: "7 heures",
+    price: 590,
+    cpf: false,
+    tags: ["Prospection", "Web", "Réseaux sociaux"],
+    description: "Développer sa visibilité et sa prospection : fiche Google, site vitrine, réseaux sociaux et messages commerciaux efficaces.",
+    imageUrl: "/formations/photos/digital-transformation-training.webp"
   },
   // ——— Pôle VTC ———
   {

@@ -48,6 +48,20 @@ const FORMATIONS: Seed[] = [
     cpfStatus: "NON_ELIGIBLE"
   },
   {
+    slug: "site-web-landing-page",
+    title: "Site web & landing page",
+    subtitle: "Créer une présence web qui convertit",
+    description:
+      "Construire ou refondre une page web professionnelle : message clair, structure de landing page, formulaire de contact, SEO local, suivi des conversions et parcours de demande de devis.",
+    mode: "MIXTE",
+    productLine: "DIGITAL",
+    priceEuros: 690,
+    durationLabel: "7 heures",
+    defaultHours: 7,
+    tags: ["Web", "Landing page", "SEO local", "Conversion"],
+    cpfStatus: "NON_ELIGIBLE"
+  },
+  {
     slug: "ia-professionnels",
     title: "L'IA pour les professionnels",
     subtitle: "Gagner du temps au quotidien",

@@ -43,7 +43,7 @@ const PRODUCT_LINES: { key: ProductLine; label: string }[] = [
   { key: "SST", label: "SST" },
   { key: "LOGISTIQUE_SECURITE", label: "Logistique & sécurité" },
   { key: "CACES", label: "CACES" },
-  { key: "DIGITAL", label: "Digital & IA" }
+  { key: "DIGITAL", label: "Tech, Web & IA" }
 ];
 
 const TAX_MODES: { key: TaxMode; label: string }[] = [

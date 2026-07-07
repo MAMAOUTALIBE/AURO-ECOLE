@@ -20,6 +20,12 @@ export type FormationHeroSlide =
       gradient?: string;
     };
 
+type FormationHeroImageOverride = {
+  src?: string | null;
+  alt: string;
+  objectPosition?: string;
+};
+
 // Photos réalistes par formation, avec repli par pôle pour les contenus CMS inconnus.
 const BY_SLUG: Record<string, FormationImage> = {
   "permis-b-auto-declic": {
@@ -184,6 +190,29 @@ function dedupeImages(images: FormationImage[]) {
   });
 }
 
+function dedupeSlides(slides: FormationHeroSlide[]) {
+  const seen = new Set<string>();
+  return slides.filter((slide) => {
+    const key = slide.kind === "image" ? `image:${slide.src}` : `illustration:${slide.icon}:${slide.keyword}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+function overridePhotoSlide(image?: FormationHeroImageOverride): FormationHeroSlide[] {
+  if (!image) return [];
+  const src = image?.src?.trim();
+  if (!src) return [];
+  return [
+    toImageSlide({
+      src,
+      alt: image.alt,
+      objectPosition: image.objectPosition ?? "50% 50%"
+    })
+  ];
+}
+
 function loadNodeModule<T>(moduleName: string): T | null {
   if (typeof window !== "undefined") return null;
   try {
@@ -257,7 +286,7 @@ function digitalIllustrationSlides(slug: string): FormationHeroSlide[] {
   if (curated) return curated;
 
   return [
-    { kind: "illustration", icon: "Sparkles", keyword: "Digital & IA", gradient: "from-loden-700 via-[#08AEB8] to-loden-900" },
+    { kind: "illustration", icon: "Sparkles", keyword: "Tech, Web & IA", gradient: "from-loden-700 via-[#08AEB8] to-loden-900" },
     { kind: "illustration", icon: "Users", keyword: "Suivi client", gradient: "from-loden-800 via-loden-700 to-loden-900" },
     { kind: "illustration", icon: "Zap", keyword: "Automatisation", gradient: "from-[#08AEB8] via-loden-700 to-loden-900" }
   ];
@@ -724,21 +753,23 @@ function curatedPhotoSlides(slug: string): FormationHeroSlide[] {
     .filter(Boolean) as FormationHeroSlide[];
 }
 
-export function formationHeroSlides(slug: string, productLine?: ProductLine): FormationHeroSlide[] {
+export function formationHeroSlides(slug: string, productLine?: ProductLine, imageOverride?: FormationHeroImageOverride): FormationHeroSlide[] {
+  const withImageOverride = (slides: FormationHeroSlide[]) => dedupeSlides([...overridePhotoSlide(imageOverride), ...slides]).slice(0, 3);
+
   const dedicated = dedicatedPhotoSlides(slug);
-  if (dedicated.length > 0) return dedicated;
+  if (dedicated.length > 0) return withImageOverride(dedicated);
 
   const curated = curatedPhotoSlides(slug);
-  if (curated.length > 0) return curated;
+  if (curated.length > 0) return withImageOverride(curated);
 
   const ownImage = BY_SLUG[slug];
   if (ownImage) {
     const fallbackImages = BY_PRODUCT_LINE_SLIDES[productLine ?? "AUTO_ECOLE"] ?? BY_PRODUCT_LINE_SLIDES.AUTO_ECOLE;
-    return dedupeImages([ownImage, ...fallbackImages]).slice(0, 3).map((image) => toImageSlide(image));
+    return withImageOverride(dedupeImages([ownImage, ...fallbackImages]).slice(0, 3).map((image) => toImageSlide(image)));
   }
 
-  if (productLine === "DIGITAL") return digitalIllustrationSlides(slug);
+  if (productLine === "DIGITAL") return withImageOverride(digitalIllustrationSlides(slug));
 
   const fallbackImages = BY_PRODUCT_LINE_SLIDES[productLine ?? "AUTO_ECOLE"] ?? BY_PRODUCT_LINE_SLIDES.AUTO_ECOLE;
-  return fallbackImages.slice(0, 3).map((image) => toImageSlide(image));
+  return withImageOverride(fallbackImages.slice(0, 3).map((image) => toImageSlide(image)));
 }

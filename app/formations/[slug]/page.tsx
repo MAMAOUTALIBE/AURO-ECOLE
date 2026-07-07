@@ -418,6 +418,21 @@ const CURATED_FORMATION_CONTENT: Record<string, CuratedFormationContent> = {
       "Adaptation au site et aux flux de l'entreprise"
     ]
   },
+  "site-web-landing-page": {
+    kicker: "Pôle Tech · Web",
+    title: "Site web & landing page",
+    subtitle: "Construisez une page claire, crédible et pensée pour générer des demandes.",
+    priceLabel: "690 € HT",
+    fundingLabel: "Entreprise / OPCO",
+    fundingIcon: "Building2",
+    description: "Une formation-action pour clarifier votre offre, structurer une page web, brancher un formulaire utile et suivre les demandes générées.",
+    keyPoints: [
+      "Clarifier l'offre, la cible et le message principal.",
+      "Construire une structure de landing page orientée conversion.",
+      "Préparer formulaire, CTA, SEO local et suivi des demandes.",
+      "Repartir avec une base directement exploitable."
+    ]
+  },
   "ia-professionnels": {
     kicker: "Pôle Digital",
     title: "IA pour professionnels",
@@ -543,7 +558,11 @@ export default async function FormationDetailPage({ params }: PageProps) {
   const priceLabel = curatedContent?.priceLabel ?? (formation.price > 0 ? `Dès ${formatCurrency(formation.price)}` : "Sur devis");
   const fundingLabel = curatedContent?.fundingLabel ?? (formation.cpf ? "CPF possible" : "Financement accompagné");
   const fundingIcon = curatedContent?.fundingIcon ?? (formation.cpf ? "WalletCards" : "Building2");
-  const heroSlides = formationHeroSlides(formation.slug, productLine);
+  const heroSlides = formationHeroSlides(
+    formation.slug,
+    productLine,
+    formation.imageUrl ? { src: formation.imageUrl, alt: `Visuel de la formation ${formation.title}` } : undefined
+  );
   const primaryCta = { href: `/contact?formation=${formation.slug}#demande`, label: "Demander un devis" };
   const secondaryCta = { href: `/inscription?formation=${formation.slug}`, label: "Pré-inscription" };
   const bodyDescription = curatedContent?.description ?? formation.description;
