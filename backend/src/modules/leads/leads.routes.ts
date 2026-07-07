@@ -10,6 +10,7 @@ import type { LodenRepository } from "../../repositories/loden-repository";
 import { asyncHandler } from "../../shared/async-handler";
 import { conflict, notFound } from "../../shared/http-error";
 import { notifyNewLead } from "../../shared/mailer";
+import { attributePartnerOnConversion } from "../partners/attribution";
 import { generateTempPassword } from "../../shared/password";
 import { emailSchema, phoneSchema, validateBody, validateQuery } from "../../shared/validation";
 import bcrypt from "bcryptjs";
@@ -119,6 +120,9 @@ export function createLeadsRouter(repository: LodenRepository, config: ApiConfig
       });
       const student = await repository.createStudent({ userId: user.id });
       const updatedLead = await repository.updateLead(lead.id, { status: "INSCRIT" });
+
+      // Attribution partenaire : rattache l'élève + génère la commission ESTIMEE le cas échéant.
+      await attributePartnerOnConversion(repository, lead, student);
 
       void repository.createAuditLog({
         userId: (req as AuthenticatedRequest).user?.id ?? null,

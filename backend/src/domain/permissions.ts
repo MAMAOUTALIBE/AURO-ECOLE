@@ -30,6 +30,8 @@ export type Permission =
   | "contacts.manage"
   | "leads.read"
   | "leads.manage"
+  | "partners.read"
+  | "partners.manage"
   | "reviews.read"
   | "reviews.moderate"
   | "users.read"
@@ -74,6 +76,8 @@ const OPERATIONS: Permission[] = [
   "contacts.manage",
   "leads.read",
   "leads.manage",
+  "partners.read",
+  "partners.manage",
   "reviews.read",
   "reviews.moderate",
   "users.read",
@@ -122,6 +126,7 @@ export const ROLE_PERMISSIONS: Partial<Record<UserRole, Permission[]>> = {
     "exams.manage",
     "contacts.read",
     "leads.read",
+    "partners.read",
     "reviews.read",
     "reviews.moderate",
     "users.read",
@@ -140,6 +145,8 @@ export const ROLE_PERMISSIONS: Partial<Record<UserRole, Permission[]>> = {
     "contacts.manage",
     "leads.read",
     "leads.manage",
+    "partners.read",
+    "partners.manage",
     "reviews.read",
     "payments.read",
     "invoices.read",
@@ -162,6 +169,7 @@ export const ROLE_PERMISSIONS: Partial<Record<UserRole, Permission[]>> = {
     "cpf.manage",
     "students.read",
     "leads.read",
+    "partners.read",
     "contacts.read"
   ],
   MONITEUR: ["dashboard.read", "bookings.read", "bookings.manage", "students.read", "exams.read", "reviews.read"],
@@ -200,6 +208,8 @@ export const ALL_PERMISSIONS: Permission[] = [
   "contacts.manage",
   "leads.read",
   "leads.manage",
+  "partners.read",
+  "partners.manage",
   "reviews.read",
   "reviews.moderate",
   "users.read",
@@ -229,5 +239,6 @@ export const ALL_ROLES: UserRole[] = [
   "MONITEUR",
   "EDITEUR",
   "ELEVE",
+  "PARTENAIRE",
   "VISITEUR"
 ];

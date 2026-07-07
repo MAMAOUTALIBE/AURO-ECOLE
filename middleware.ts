@@ -12,7 +12,8 @@ const JWT_SECRET =
 
 // Protège les zones authentifiées : la signature ET l'expiration du JWT sont
 // vérifiées côté serveur (un cookie au rôle forgé ou expiré -> redirection).
-// - /espace-eleve et /espace-formateur exigent une session valide.
+// - /espace-eleve, /espace-formateur et /espace-partenaire exigent une session valide
+//   (le rôle précis est vérifié côté client dans chaque dashboard).
 // - /admin (CRM) exige en plus un rôle admin.
 // La sécurité des données reste assurée par le RBAC de l'API ; ce middleware
 // évite surtout d'afficher la coquille d'une zone protégée à un visiteur anonyme.
@@ -41,6 +42,8 @@ export const config = {
     "/espace-eleve",
     "/espace-eleve/:path*",
     "/espace-formateur",
-    "/espace-formateur/:path*"
+    "/espace-formateur/:path*",
+    "/espace-partenaire",
+    "/espace-partenaire/:path*"
   ]
 };

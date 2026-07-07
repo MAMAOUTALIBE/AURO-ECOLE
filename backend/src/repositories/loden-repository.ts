@@ -35,6 +35,10 @@ import type {
   InstructorRecord,
   LeadRecord,
   LeadStatus,
+  PartnerRecord,
+  PartnerStatus,
+  PartnerCommissionRecord,
+  CommissionStatus,
   MediaRecord,
   MeetingPointRecord,
   PaymentRecord,
@@ -228,6 +232,20 @@ export type CreateLeadInput = Omit<LeadRecord, "id" | "status" | "createdAt" | "
   status?: LeadStatus;
 };
 
+export type CreatePartnerInput = Omit<
+  PartnerRecord,
+  "id" | "type" | "status" | "commissionType" | "commissionValue" | "createdAt" | "updatedAt"
+> & {
+  type?: PartnerRecord["type"];
+  status?: PartnerStatus;
+  commissionType?: PartnerRecord["commissionType"];
+  commissionValue?: number;
+};
+
+export type CreateCommissionInput = Omit<PartnerCommissionRecord, "id" | "status" | "createdAt" | "updatedAt"> & {
+  status?: CommissionStatus;
+};
+
 export type CreateChatAppointmentInput = Omit<
   ChatAppointmentRecord,
   | "id"
@@ -381,7 +399,7 @@ export interface LodenRepository {
   createUser(input: CreateUserInput): Promise<UserRecord>;
   updateUser(id: string, input: Partial<UserRecord>): Promise<UserRecord>;
 
-  listStudents(filters?: { agencyId?: string }): Promise<StudentRecord[]>;
+  listStudents(filters?: { agencyId?: string; partnerId?: string }): Promise<StudentRecord[]>;
   findStudentById(id: string): Promise<StudentRecord | null>;
   findStudentByUserId(userId: string): Promise<StudentRecord | null>;
   createStudent(input: CreateStudentInput): Promise<StudentRecord>;
@@ -453,11 +471,21 @@ export interface LodenRepository {
   updateReview(id: string, input: Partial<ReviewRecord>): Promise<ReviewRecord>;
   deleteReview(id: string): Promise<void>;
 
-  listLeads(filters?: { status?: LeadStatus; agencyId?: string }): Promise<LeadRecord[]>;
+  listLeads(filters?: { status?: LeadStatus; agencyId?: string; partnerId?: string }): Promise<LeadRecord[]>;
   findLeadByEmail(email: string): Promise<LeadRecord | null>;
   findLeadById(id: string): Promise<LeadRecord | null>;
   createLead(input: CreateLeadInput): Promise<LeadRecord>;
   updateLead(id: string, input: Partial<LeadRecord>): Promise<LeadRecord>;
+
+  listPartners(filters?: { status?: PartnerStatus; agencyId?: string }): Promise<PartnerRecord[]>;
+  findPartnerById(id: string): Promise<PartnerRecord | null>;
+  findPartnerByUserId(userId: string): Promise<PartnerRecord | null>;
+  createPartner(input: CreatePartnerInput): Promise<PartnerRecord>;
+  updatePartner(id: string, input: Partial<PartnerRecord>): Promise<PartnerRecord>;
+  listPartnerCommissions(filters?: { partnerId?: string; status?: CommissionStatus }): Promise<PartnerCommissionRecord[]>;
+  findCommissionById(id: string): Promise<PartnerCommissionRecord | null>;
+  createCommission(input: CreateCommissionInput): Promise<PartnerCommissionRecord>;
+  updateCommission(id: string, input: Partial<PartnerCommissionRecord>): Promise<PartnerCommissionRecord>;
 
   listChatAppointments(filters?: {
     status?: string;

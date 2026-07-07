@@ -18,6 +18,7 @@ enum UserRole {
   MONITEUR
   EDITEUR
   ELEVE
+  PARTENAIRE
   VISITEUR
 }
 
@@ -126,6 +127,30 @@ enum LeadStatus {
   DEVIS_ENVOYE
   INSCRIT
   PERDU
+}
+
+// Partenaires prescripteurs / apporteurs d'affaires (voir models Partner / PartnerCommission).
+enum PartnerType {
+  PRESCRIPTEUR
+}
+
+enum PartnerStatus {
+  ACTIF
+  SUSPENDU
+}
+
+// Barème de commission d'un partenaire : FLAT = montant fixe (en cents),
+// PERCENT = pourcentage exprimé en points de base (1 % = 100) du prix de la formation.
+enum CommissionType {
+  FLAT
+  PERCENT
+}
+
+enum CommissionStatus {
+  ESTIMEE
+  VALIDEE
+  PAYEE
+  ANNULEE
 }
 
 enum ExamType {
@@ -325,52 +350,53 @@ model AutomationRule {
 }
 
 model User {
-  id                 String     @id @default(cuid())
-  firstName          String
-  lastName           String
-  email              String     @unique
-  phone              String?
-  address            String?
-  role               UserRole   @default(ELEVE)
-  status             UserStatus @default(PENDING_EMAIL)
-  passwordHash       String?
-  preferences        Json?
-  emailVerifiedAt    DateTime?
-  lastLoginAt        DateTime?
-  resetTokenHash     String?
+  id                  String     @id @default(cuid())
+  firstName           String
+  lastName            String
+  email               String     @unique
+  phone               String?
+  address             String?
+  role                UserRole   @default(ELEVE)
+  status              UserStatus @default(PENDING_EMAIL)
+  passwordHash        String?
+  preferences         Json?
+  emailVerifiedAt     DateTime?
+  lastLoginAt         DateTime?
+  resetTokenHash      String?
   resetTokenExpiresAt DateTime?
   // Incrémenté à chaque réinitialisation de mot de passe : invalide tous les JWT
   // émis avant (révocation de session stateless).
-  tokenVersion       Int        @default(0)
-  createdAt          DateTime   @default(now())
-  updatedAt          DateTime   @updatedAt
+  tokenVersion        Int        @default(0)
+  createdAt           DateTime   @default(now())
+  updatedAt           DateTime   @updatedAt
 
-  student            Student?
-  instructor         Instructor?
-  contactRequests    ContactRequest[]
-  payments           Payment[]
-  reviews            Review[]
-  auditLogs          AuditLog[]
-  agencyMemberships  AgencyMembership[]
-  invoices           Invoice[]          @relation("InvoiceClient")
-  quotes             Quote[]            @relation("QuoteClient")
-  contracts          Contract[]         @relation("ContractClient")
+  student           Student?
+  instructor        Instructor?
+  partner           Partner?
+  contactRequests   ContactRequest[]
+  payments          Payment[]
+  reviews           Review[]
+  auditLogs         AuditLog[]
+  agencyMemberships AgencyMembership[]
+  invoices          Invoice[]          @relation("InvoiceClient")
+  quotes            Quote[]            @relation("QuoteClient")
+  contracts         Contract[]         @relation("ContractClient")
 }
 
 model Agency {
-  id          String   @id @default(cuid())
-  name        String
-  slug        String   @unique
-  address     String?
-  latitude    Float?
-  longitude   Float?
-  phone       String?
-  email       String?
+  id           String   @id @default(cuid())
+  name         String
+  slug         String   @unique
+  address      String?
+  latitude     Float?
+  longitude    Float?
+  phone        String?
+  email        String?
   openingHours Json?
-  brand       Json?
-  active      Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  brand        Json?
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   memberships     AgencyMembership[]
   students        Student[]
@@ -383,6 +409,7 @@ model Agency {
   cpfRequests     CpfRequest[]
   contactRequests ContactRequest[]
   leads           Lead[]
+  partners        Partner[]
   reviews         Review[]
   exams           Exam[]
   installments    Installment[]
@@ -399,79 +426,82 @@ model AgencyMembership {
   isPrimary Boolean  @default(false)
   createdAt DateTime @default(now())
 
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  agency    Agency   @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  agency Agency @relation(fields: [agencyId], references: [id], onDelete: Cascade)
 
   @@unique([userId, agencyId])
   @@index([agencyId])
 }
 
 model Student {
-  id                 String            @id @default(cuid())
-  userId             String            @unique
-  formationId        String?
-  progressPercent    Int               @default(0)
-  purchasedHours     Int               @default(0)
-  consumedHours      Int               @default(0)
-  examDate           DateTime?
-  fileStatus         StudentFileStatus @default(NOUVEAU)
-  internalNotes      String?
+  id              String            @id @default(cuid())
+  userId          String            @unique
+  formationId     String?
+  progressPercent Int               @default(0)
+  purchasedHours  Int               @default(0)
+  consumedHours   Int               @default(0)
+  examDate        DateTime?
+  fileStatus      StudentFileStatus @default(NOUVEAU)
+  internalNotes   String?
   // État civil & gestion auto-école (style Kréno2) — structuré pour liste/filtres/fiche.
-  civility           String?
-  birthName          String?
-  birthDate          DateTime?
-  birthPlace         String?
-  neph               String?
-  filiere            String?
-  financingType      String?
-  registeredAt       DateTime?
-  createdAt          DateTime          @default(now())
-  updatedAt          DateTime          @updatedAt
+  civility        String?
+  birthName       String?
+  birthDate       DateTime?
+  birthPlace      String?
+  neph            String?
+  filiere         String?
+  financingType   String?
+  registeredAt    DateTime?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
 
-  agencyId           String?
+  agencyId String?
+  // Partenaire prescripteur à l'origine de l'inscription (attribution propagée du Lead).
+  partnerId String?
 
-  user               User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  formation          Formation?        @relation(fields: [formationId], references: [id])
-  agency             Agency?           @relation(fields: [agencyId], references: [id], onDelete: SetNull)
-  documents          StudentDocument[]
-  bookings           Booking[]
-  cpfRequests        CpfRequest[]
-  exams              Exam[]
-  skills             StudentSkill[]
-  installments       Installment[]
-  invoices           Invoice[]
-  quotes             Quote[]
-  contracts          Contract[]
+  user         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  formation    Formation?        @relation(fields: [formationId], references: [id])
+  agency       Agency?           @relation(fields: [agencyId], references: [id], onDelete: SetNull)
+  partner      Partner?          @relation(fields: [partnerId], references: [id], onDelete: SetNull)
+  documents    StudentDocument[]
+  bookings     Booking[]
+  cpfRequests  CpfRequest[]
+  exams        Exam[]
+  skills       StudentSkill[]
+  installments Installment[]
+  invoices     Invoice[]
+  quotes       Quote[]
+  contracts    Contract[]
 }
 
 model StudentDocument {
-  id          String   @id @default(cuid())
-  studentId   String
-  type        String
-  url         String
-  verifiedAt  DateTime?
-  createdAt   DateTime @default(now())
+  id         String    @id @default(cuid())
+  studentId  String
+  type       String
+  url        String
+  verifiedAt DateTime?
+  createdAt  DateTime  @default(now())
 
-  student     Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
 }
 
 model Instructor {
-  id             String   @id @default(cuid())
-  userId         String   @unique
-  photoUrl       String?
-  bio            String?
-  specialties    String[]
+  id                String   @id @default(cuid())
+  userId            String   @unique
+  photoUrl          String?
+  bio               String?
+  specialties       String[]
   interventionZones String[]
-  ratingAverage  Float    @default(0)
-  ratingCount    Int      @default(0)
-  active         Boolean  @default(true)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  ratingAverage     Float    @default(0)
+  ratingCount       Int      @default(0)
+  active            Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 
-  agencyId       String?
+  agencyId String?
 
-  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  agency         Agency?  @relation(fields: [agencyId], references: [id], onDelete: SetNull)
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  agency         Agency?        @relation(fields: [agencyId], references: [id], onDelete: SetNull)
   vehicles       Vehicle[]
   availabilities Availability[]
   bookings       Booking[]
@@ -479,16 +509,16 @@ model Instructor {
 }
 
 model Vehicle {
-  id            String     @id @default(cuid())
-  instructorId  String?
-  label         String
-  transmission  FormationMode
-  registration  String?
-  active        Boolean    @default(true)
-  agencyId      String?
+  id           String        @id @default(cuid())
+  instructorId String?
+  label        String
+  transmission FormationMode
+  registration String?
+  active       Boolean       @default(true)
+  agencyId     String?
 
-  instructor    Instructor? @relation(fields: [instructorId], references: [id], onDelete: SetNull)
-  agency        Agency?     @relation(fields: [agencyId], references: [id], onDelete: SetNull)
+  instructor Instructor? @relation(fields: [instructorId], references: [id], onDelete: SetNull)
+  agency     Agency?     @relation(fields: [agencyId], references: [id], onDelete: SetNull)
 }
 
 model Formation {
@@ -515,147 +545,147 @@ model Formation {
   createdAt          DateTime      @default(now())
   updatedAt          DateTime      @updatedAt
 
-  students        Student[]
-  pricingPlans    PricingPlan[]
-  bookings        Booking[]
-  cpfRequests     CpfRequest[]
+  students     Student[]
+  pricingPlans PricingPlan[]
+  bookings     Booking[]
+  cpfRequests  CpfRequest[]
 }
 
 model PricingPlan {
-  id                    String   @id @default(cuid())
-  formationId            String?
-  title                 String
-  slug                  String   @unique
-  description           String?
-  priceCents            Int
-  features              String[]
-  allowOneShotPayment   Boolean  @default(true)
-  allowThreeTimes       Boolean  @default(false)
-  allowFourTimes        Boolean  @default(false)
-  discountCents         Int      @default(0)
-  promotionalLabel      String?
-  active                Boolean  @default(true)
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
+  id                  String   @id @default(cuid())
+  formationId         String?
+  title               String
+  slug                String   @unique
+  description         String?
+  priceCents          Int
+  features            String[]
+  allowOneShotPayment Boolean  @default(true)
+  allowThreeTimes     Boolean  @default(false)
+  allowFourTimes      Boolean  @default(false)
+  discountCents       Int      @default(0)
+  promotionalLabel    String?
+  active              Boolean  @default(true)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
 
-  formation             Formation? @relation(fields: [formationId], references: [id], onDelete: SetNull)
-  payments              Payment[]
+  formation Formation? @relation(fields: [formationId], references: [id], onDelete: SetNull)
+  payments  Payment[]
 }
 
 model MeetingPoint {
-  id          String   @id @default(cuid())
-  name        String
-  address     String
-  latitude    Float?
-  longitude   Float?
-  active      Boolean  @default(true)
-  agencyId    String?
-  createdAt   DateTime @default(now())
+  id        String   @id @default(cuid())
+  name      String
+  address   String
+  latitude  Float?
+  longitude Float?
+  active    Boolean  @default(true)
+  agencyId  String?
+  createdAt DateTime @default(now())
 
-  agency      Agency?  @relation(fields: [agencyId], references: [id], onDelete: SetNull)
-  bookings    Booking[]
+  agency   Agency?   @relation(fields: [agencyId], references: [id], onDelete: SetNull)
+  bookings Booking[]
 }
 
 model Availability {
-  id            String     @id @default(cuid())
-  instructorId  String
-  startsAt      DateTime
-  endsAt        DateTime
-  isAvailable   Boolean    @default(true)
-  reason        String?
-  agencyId      String?
-  createdAt     DateTime   @default(now())
+  id           String   @id @default(cuid())
+  instructorId String
+  startsAt     DateTime
+  endsAt       DateTime
+  isAvailable  Boolean  @default(true)
+  reason       String?
+  agencyId     String?
+  createdAt    DateTime @default(now())
 
-  instructor    Instructor @relation(fields: [instructorId], references: [id], onDelete: Cascade)
-  agency        Agency?    @relation(fields: [agencyId], references: [id], onDelete: SetNull)
+  instructor Instructor @relation(fields: [instructorId], references: [id], onDelete: Cascade)
+  agency     Agency?    @relation(fields: [agencyId], references: [id], onDelete: SetNull)
 
   @@index([instructorId, startsAt, endsAt])
 }
 
 model Booking {
-  id              String        @id @default(cuid())
-  studentId       String
-  instructorId    String
-  formationId     String
-  meetingPointId  String?
-  startsAt        DateTime
-  endsAt          DateTime
-  status          BookingStatus @default(EN_ATTENTE)
+  id                 String        @id @default(cuid())
+  studentId          String
+  instructorId       String
+  formationId        String
+  meetingPointId     String?
+  startsAt           DateTime
+  endsAt             DateTime
+  status             BookingStatus @default(EN_ATTENTE)
   cancellationReason String?
   notificationSentAt DateTime?
-  agencyId        String?
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
+  agencyId           String?
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
 
-  student         Student       @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  instructor      Instructor    @relation(fields: [instructorId], references: [id], onDelete: Restrict)
-  formation       Formation     @relation(fields: [formationId], references: [id], onDelete: Restrict)
-  meetingPoint    MeetingPoint? @relation(fields: [meetingPointId], references: [id], onDelete: SetNull)
-  agency          Agency?       @relation(fields: [agencyId], references: [id], onDelete: SetNull)
+  student      Student       @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  instructor   Instructor    @relation(fields: [instructorId], references: [id], onDelete: Restrict)
+  formation    Formation     @relation(fields: [formationId], references: [id], onDelete: Restrict)
+  meetingPoint MeetingPoint? @relation(fields: [meetingPointId], references: [id], onDelete: SetNull)
+  agency       Agency?       @relation(fields: [agencyId], references: [id], onDelete: SetNull)
 
   @@index([instructorId, startsAt, endsAt])
   @@index([studentId, startsAt])
 }
 
 model Payment {
-  id              String        @id @default(cuid())
-  userId          String
-  pricingPlanId   String?
-  kind            PaymentKind
-  status          PaymentStatus @default(EN_ATTENTE)
-  amountCents     Int
-  currency        String        @default("EUR")
+  id                    String        @id @default(cuid())
+  userId                String
+  pricingPlanId         String?
+  kind                  PaymentKind
+  status                PaymentStatus @default(EN_ATTENTE)
+  amountCents           Int
+  currency              String        @default("EUR")
   stripePaymentIntentId String?
-  stripeCustomerId String?
-  invoiceUrl      String?
-  metadata        Json?
-  paidAt          DateTime?
-  agencyId        String?
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
+  stripeCustomerId      String?
+  invoiceUrl            String?
+  metadata              Json?
+  paidAt                DateTime?
+  agencyId              String?
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
 
-  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  pricingPlan     PricingPlan?  @relation(fields: [pricingPlanId], references: [id], onDelete: SetNull)
-  agency          Agency?       @relation(fields: [agencyId], references: [id], onDelete: SetNull)
-  invoice         Invoice?
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  pricingPlan PricingPlan? @relation(fields: [pricingPlanId], references: [id], onDelete: SetNull)
+  agency      Agency?      @relation(fields: [agencyId], references: [id], onDelete: SetNull)
+  invoice     Invoice?
 }
 
 model CpfRequest {
-  id              String           @id @default(cuid())
-  studentId       String?
-  formationId     String?
-  fullName        String
-  email           String
-  phone           String?
-  status          CpfRequestStatus @default(NOUVELLE_DEMANDE)
+  id                   String           @id @default(cuid())
+  studentId            String?
+  formationId          String?
+  fullName             String
+  email                String
+  phone                String?
+  status               CpfRequestStatus @default(NOUVELLE_DEMANDE)
   requestedAmountCents Int?
-  missingDocuments String[]
-  internalNotes    String?
-  agencyId        String?
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
+  missingDocuments     String[]
+  internalNotes        String?
+  agencyId             String?
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @updatedAt
 
-  student         Student?         @relation(fields: [studentId], references: [id], onDelete: SetNull)
-  formation       Formation?       @relation(fields: [formationId], references: [id], onDelete: SetNull)
-  agency          Agency?          @relation(fields: [agencyId], references: [id], onDelete: SetNull)
+  student   Student?   @relation(fields: [studentId], references: [id], onDelete: SetNull)
+  formation Formation? @relation(fields: [formationId], references: [id], onDelete: SetNull)
+  agency    Agency?    @relation(fields: [agencyId], references: [id], onDelete: SetNull)
 }
 
 model ContactRequest {
-  id          String               @id @default(cuid())
-  userId      String?
-  fullName    String
-  email       String
-  phone       String?
-  type        ContactRequestType   @default(INFORMATION)
-  source      String?
-  message     String
-  status      ContactRequestStatus @default(NOUVELLE)
-  agencyId    String?
-  createdAt   DateTime             @default(now())
-  updatedAt   DateTime             @updatedAt
+  id        String               @id @default(cuid())
+  userId    String?
+  fullName  String
+  email     String
+  phone     String?
+  type      ContactRequestType   @default(INFORMATION)
+  source    String?
+  message   String
+  status    ContactRequestStatus @default(NOUVELLE)
+  agencyId  String?
+  createdAt DateTime             @default(now())
+  updatedAt DateTime             @updatedAt
 
-  user        User?                @relation(fields: [userId], references: [id], onDelete: SetNull)
-  agency      Agency?              @relation(fields: [agencyId], references: [id], onDelete: SetNull)
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+  agency Agency? @relation(fields: [agencyId], references: [id], onDelete: SetNull)
 }
 
 model Lead {
@@ -685,10 +715,60 @@ model Lead {
   createdAt           DateTime   @default(now())
   updatedAt           DateTime   @updatedAt
 
-  agency              Agency?    @relation(fields: [agencyId], references: [id], onDelete: SetNull)
+  agency    Agency?  @relation(fields: [agencyId], references: [id], onDelete: SetNull)
+  partner   Partner? @relation(fields: [partnerId], references: [id], onDelete: SetNull)
+  partnerId String?
 
   @@index([status, createdAt])
   @@index([email])
+  @@index([partnerId])
+}
+
+// Partenaire prescripteur : structure qui recommande des candidats (CFA, mission locale,
+// France Travail, comité d'entreprise, garage, assureur…). Provisionné et piloté depuis le CRM.
+model Partner {
+  id              String         @id @default(cuid())
+  userId          String?        @unique
+  companyName     String
+  type            PartnerType    @default(PRESCRIPTEUR)
+  status          PartnerStatus  @default(ACTIF)
+  contactName     String?
+  email           String
+  phone           String?
+  // Barème (voir enum CommissionType) : cents si FLAT, points de base si PERCENT.
+  commissionType  CommissionType @default(FLAT)
+  commissionValue Int            @default(0)
+  notes           String?
+  agencyId        String?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  user        User?               @relation(fields: [userId], references: [id], onDelete: SetNull)
+  agency      Agency?             @relation(fields: [agencyId], references: [id], onDelete: SetNull)
+  leads       Lead[]
+  students    Student[]
+  commissions PartnerCommission[]
+
+  @@index([status])
+  @@index([email])
+  @@index([agencyId])
+}
+
+// Commission générée par un lead apporté qui se convertit en inscription.
+model PartnerCommission {
+  id        String           @id @default(cuid())
+  partnerId String
+  leadId    String?
+  studentId String?
+  amount    Int // en cents
+  status    CommissionStatus @default(ESTIMEE)
+  note      String?
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  partner Partner @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+
+  @@index([partnerId, status])
 }
 
 // Rendez-vous unifié (source unique de vérité). Le nom de table reste
@@ -703,7 +783,7 @@ model Lead {
 // scalaires : les libellés (moniteur, conseiller, formation) sont résolus côté API/CRM
 // depuis les listes existantes — pas de relations Prisma pour limiter le couplage.
 model ChatAppointment {
-  id                String   @id @default(cuid())
+  id                String    @id @default(cuid())
   leadId            String
   fullName          String
   firstName         String
@@ -720,9 +800,9 @@ model ChatAppointment {
   startsAt          DateTime
   endsAt            DateTime
   type              String
-  status            String   @default("pending_confirmation")
-  priority          String   @default("normal")
-  source            String   @default("chatbot")
+  status            String    @default("pending_confirmation")
+  priority          String    @default("normal")
+  source            String    @default("chatbot")
   assignedToId      String?
   studentId         String?
   formationId       String?
@@ -731,14 +811,14 @@ model ChatAppointment {
   agencyId          String?
   createdById       String?
   updatedById       String?
-  consentContact    Boolean  @default(true)
-  consentWhatsApp   Boolean  @default(false)
+  consentContact    Boolean   @default(true)
+  consentWhatsApp   Boolean   @default(false)
   whatsappMessage   String?
-  adminEmailStatus  String   @default("pending")
-  clientEmailStatus String   @default("pending")
-  whatsappStatus    String   @default("pending")
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  adminEmailStatus  String    @default("pending")
+  clientEmailStatus String    @default("pending")
+  whatsappStatus    String    @default("pending")
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 
   @@index([status, createdAt])
   @@index([leadId])
@@ -786,49 +866,49 @@ model ChatConversation {
 }
 
 model ChatAvailabilitySlot {
-  id            String   @id @default(cuid())
-  label         String
-  startsAt      DateTime
-  endsAt        DateTime
-  type          String
-  agencyId      String?
-  assignedToId  String?
-  active        Boolean  @default(true)
-  capacity      Int      @default(1)
-  bookedCount   Int      @default(0)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id           String   @id @default(cuid())
+  label        String
+  startsAt     DateTime
+  endsAt       DateTime
+  type         String
+  agencyId     String?
+  assignedToId String?
+  active       Boolean  @default(true)
+  capacity     Int      @default(1)
+  bookedCount  Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   @@index([active, startsAt])
 }
 
 model Review {
-  id            String       @id @default(cuid())
-  userId        String?
-  instructorId  String?
+  id             String       @id @default(cuid())
+  userId         String?
+  instructorId   String?
   rating         Int
   comment        String
   authorName     String?
   authorLocation String?
-  status        ReviewStatus @default(EN_ATTENTE)
-  publishedAt   DateTime?
-  agencyId      String?
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
+  status         ReviewStatus @default(EN_ATTENTE)
+  publishedAt    DateTime?
+  agencyId       String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
 
-  user          User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
-  instructor    Instructor?  @relation(fields: [instructorId], references: [id], onDelete: SetNull)
-  agency        Agency?      @relation(fields: [agencyId], references: [id], onDelete: SetNull)
+  user       User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+  instructor Instructor? @relation(fields: [instructorId], references: [id], onDelete: SetNull)
+  agency     Agency?     @relation(fields: [agencyId], references: [id], onDelete: SetNull)
 }
 
 model FaqEntry {
-  id          String   @id @default(cuid())
-  question    String
-  answer      String
-  category    String?
-  active      Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        String   @id @default(cuid())
+  question  String
+  answer    String
+  category  String?
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Installment {
@@ -843,8 +923,8 @@ model Installment {
   createdAt   DateTime          @default(now())
   updatedAt   DateTime          @updatedAt
 
-  student     Student           @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  agency      Agency?           @relation(fields: [agencyId], references: [id], onDelete: SetNull)
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  agency  Agency? @relation(fields: [agencyId], references: [id], onDelete: SetNull)
 
   @@index([studentId])
   @@index([agencyId, dueDate])
@@ -857,7 +937,7 @@ model StudentSkill {
   level     Int      @default(0)
   updatedAt DateTime @updatedAt
 
-  student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   @@unique([studentId, skillCode])
   @@index([studentId])
@@ -876,23 +956,23 @@ model Exam {
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 
-  student     Student    @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  agency      Agency?    @relation(fields: [agencyId], references: [id], onDelete: SetNull)
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  agency  Agency? @relation(fields: [agencyId], references: [id], onDelete: SetNull)
 
   @@index([agencyId, scheduledAt])
   @@index([studentId])
 }
 
 model AuditLog {
-  id          String   @id @default(cuid())
-  userId      String?
-  action      String
-  entityType  String
-  entityId    String?
-  metadata    Json?
-  createdAt   DateTime @default(now())
+  id         String   @id @default(cuid())
+  userId     String?
+  action     String
+  entityType String
+  entityId   String?
+  metadata   Json?
+  createdAt  DateTime @default(now())
 
-  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
 }
 
 // Informations société (singleton, id = "company"), éditables depuis le CMS.

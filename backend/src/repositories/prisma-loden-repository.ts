@@ -30,6 +30,8 @@ import type {
   CreateCpfRequestInput,
   CreateFormationInput,
   CreateLeadInput,
+  CreatePartnerInput,
+  CreateCommissionInput,
   CreatePaymentInput,
   CreateReviewInput,
   CreateAgencyInput,
@@ -651,10 +653,11 @@ export class PrismaLodenRepository implements LodenRepository {
     return this.prisma.user.update({ where: { id }, data: input as never }) as Promise<Awaited<ReturnType<LodenRepository["updateUser"]>>>;
   }
 
-  async listStudents(filters?: { agencyId?: string }) {
-    const where = filters?.agencyId
-      ? { OR: [{ agencyId: filters.agencyId }, { agencyId: null }] }
-      : {};
+  async listStudents(filters?: { agencyId?: string; partnerId?: string }) {
+    const where = {
+      ...(filters?.partnerId ? { partnerId: filters.partnerId } : {}),
+      ...(filters?.agencyId ? { OR: [{ agencyId: filters.agencyId }, { agencyId: null }] } : {})
+    };
     return this.prisma.student.findMany({ where, orderBy: { createdAt: "desc" } });
   }
 
@@ -1134,6 +1137,7 @@ export class PrismaLodenRepository implements LodenRepository {
   async listLeads(filters?: Parameters<LodenRepository["listLeads"]>[0]) {
     const where = {
       ...(filters?.status ? { status: filters.status } : {}),
+      ...(filters?.partnerId ? { partnerId: filters.partnerId } : {}),
       ...(filters?.agencyId
         ? { OR: [{ agencyId: filters.agencyId }, { agencyId: null }] }
         : {})
@@ -1207,6 +1211,64 @@ export class PrismaLodenRepository implements LodenRepository {
       estimatedValueCents: row.estimatedValueCents ?? undefined,
       nextFollowUpAt: row.nextFollowUpAt ?? undefined
     };
+  }
+
+  async listPartners(filters?: Parameters<LodenRepository["listPartners"]>[0]) {
+    const where = {
+      ...(filters?.status ? { status: filters.status } : {}),
+      ...(filters?.agencyId ? { OR: [{ agencyId: filters.agencyId }, { agencyId: null }] } : {})
+    };
+    return this.prisma.partner.findMany({ where, orderBy: { createdAt: "desc" } });
+  }
+
+  async findPartnerById(id: string) {
+    if (!id.trim()) return null;
+    return this.prisma.partner.findUnique({ where: { id } });
+  }
+
+  async findPartnerByUserId(userId: string) {
+    return this.prisma.partner.findUnique({ where: { userId } });
+  }
+
+  async createPartner(input: CreatePartnerInput) {
+    return this.prisma.partner.create({
+      data: {
+        ...input,
+        type: input.type ?? "PRESCRIPTEUR",
+        status: input.status ?? "ACTIF",
+        commissionType: input.commissionType ?? "FLAT",
+        commissionValue: input.commissionValue ?? 0
+      }
+    });
+  }
+
+  async updatePartner(id: string, input: Parameters<LodenRepository["updatePartner"]>[1]) {
+    return this.prisma.partner.update({ where: { id }, data: input as never }) as Promise<
+      Awaited<ReturnType<LodenRepository["updatePartner"]>>
+    >;
+  }
+
+  async listPartnerCommissions(filters?: Parameters<LodenRepository["listPartnerCommissions"]>[0]) {
+    const where = {
+      ...(filters?.partnerId ? { partnerId: filters.partnerId } : {}),
+      ...(filters?.status ? { status: filters.status } : {})
+    };
+    return this.prisma.partnerCommission.findMany({ where, orderBy: { createdAt: "desc" } });
+  }
+
+  async findCommissionById(id: string) {
+    if (!id.trim()) return null;
+    return this.prisma.partnerCommission.findUnique({ where: { id } });
+  }
+
+  async createCommission(input: CreateCommissionInput) {
+    return this.prisma.partnerCommission.create({ data: { ...input, status: input.status ?? "ESTIMEE" } });
+  }
+
+  async updateCommission(id: string, input: Parameters<LodenRepository["updateCommission"]>[1]) {
+    return this.prisma.partnerCommission.update({ where: { id }, data: input as never }) as Promise<
+      Awaited<ReturnType<LodenRepository["updateCommission"]>>
+    >;
   }
 
   private mapChatAppointment(row: {

@@ -9,6 +9,7 @@ export type UserRole =
   | "MONITEUR"
   | "EDITEUR"
   | "ELEVE"
+  | "PARTENAIRE"
   | "VISITEUR";
 
 // Réglage dynamique du site public (clé/valeur JSON), piloté depuis le CMS.
@@ -148,6 +149,7 @@ export type StudentRecord = {
   id: string;
   userId: string;
   agencyId?: string | null;
+  partnerId?: string | null;
   formationId?: string | null;
   progressPercent: number;
   purchasedHours: number;
@@ -515,6 +517,43 @@ export type LeadRecord = {
   score?: number | null;
   consentEmail?: boolean;
   consentWhatsapp?: boolean;
+  partnerId?: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+// ── Partenaires prescripteurs / apporteurs d'affaires ──────────────────────
+export type PartnerType = "PRESCRIPTEUR";
+export type PartnerStatus = "ACTIF" | "SUSPENDU";
+// FLAT = montant fixe (cents) ; PERCENT = pourcentage en points de base (1 % = 100).
+export type CommissionType = "FLAT" | "PERCENT";
+export type CommissionStatus = "ESTIMEE" | "VALIDEE" | "PAYEE" | "ANNULEE";
+
+export type PartnerRecord = {
+  id: string;
+  userId?: string | null;
+  companyName: string;
+  type: PartnerType;
+  status: PartnerStatus;
+  contactName?: string | null;
+  email: string;
+  phone?: string | null;
+  commissionType: CommissionType;
+  commissionValue: number;
+  notes?: string | null;
+  agencyId?: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export type PartnerCommissionRecord = {
+  id: string;
+  partnerId: string;
+  leadId?: string | null;
+  studentId?: string | null;
+  amount: number; // cents
+  status: CommissionStatus;
+  note?: string | null;
   createdAt: Date;
   updatedAt: Date;
 };

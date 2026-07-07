@@ -26,6 +26,7 @@ import { createContractsRouter } from "./modules/contracts/contracts.routes";
 import { createCmsRouter } from "./modules/cms/cms.routes";
 import { createAutomationsRouter } from "./modules/automations/automations.routes";
 import { createLeadsRouter } from "./modules/leads/leads.routes";
+import { createPartnersRouter } from "./modules/partners/partners.routes";
 import { createInscriptionsRouter } from "./modules/inscriptions/inscriptions.routes";
 import { createMediaRouter } from "./modules/media/media.routes";
 import { createNotificationsRouter } from "./modules/notifications/notifications.routes";
@@ -104,6 +105,7 @@ export function createApp(repository: LodenRepository, config: ApiConfig, deps: 
   app.use("/api/instructors", createInstructorsRouter(repository, config));
   app.use("/api/vehicles", createVehiclesRouter(repository, config));
   app.use("/api/leads", createLeadsRouter(repository, config, aiProvider));
+  app.use("/api/partners", createPartnersRouter(repository, config, aiProvider));
   app.use("/api/offers", createOffersRouter(repository, config, aiProvider));
   app.use("/api/users", createUsersRouter(repository, config));
   app.use("/api/students", createStudentsRouter(repository, config));

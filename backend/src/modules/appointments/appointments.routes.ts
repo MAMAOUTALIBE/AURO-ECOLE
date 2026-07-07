@@ -9,6 +9,7 @@ import { asyncHandler } from "../../shared/async-handler";
 import { badRequest, conflict, notFound } from "../../shared/http-error";
 import bcrypt from "bcryptjs";
 import { generateTempPassword } from "../../shared/password";
+import { attributePartnerOnConversion } from "../partners/attribution";
 import { emailSchema, validateBody, validateQuery } from "../../shared/validation";
 import { sendChatAppointmentAdminAlert, sendChatAppointmentClientConfirmation } from "../../shared/mailer";
 import { buildWhatsAppAppointmentText, buildWhatsAppUrl, sendWhatsAppMessage } from "../../shared/whatsapp";
@@ -824,6 +825,9 @@ export function createAppointmentsAdminRouter(repository: LodenRepository, confi
       const updated = await repository.updateChatAppointment(id, { studentId: student.id, updatedById: req.user?.id ?? null });
       if (appointment.leadId) {
         await repository.updateLead(appointment.leadId, { status: "INSCRIT" }).catch(() => undefined);
+        // Attribution partenaire : rattache l'élève + commission ESTIMEE si lead apporté.
+        const lead = await repository.findLeadById(appointment.leadId).catch(() => null);
+        await attributePartnerOnConversion(repository, lead, student);
       }
       const task = await repository.createChatTask({
         leadId: appointment.leadId,

@@ -28,6 +28,8 @@ import type {
   FormationRecord,
   InstructorRecord,
   LeadRecord,
+  PartnerRecord,
+  PartnerCommissionRecord,
   MeetingPointRecord,
   PaymentRecord,
   PricingPlanRecord,
@@ -60,6 +62,8 @@ import type {
   CreateCpfRequestInput,
   CreateFormationInput,
   CreateLeadInput,
+  CreatePartnerInput,
+  CreateCommissionInput,
   CreatePaymentInput,
   CreateReviewInput,
   CreateAgencyInput,
@@ -107,6 +111,8 @@ export type MutableStore = {
   contactRequests: ContactRequestRecord[];
   reviews: ReviewRecord[];
   leads: LeadRecord[];
+  partners: PartnerRecord[];
+  partnerCommissions: PartnerCommissionRecord[];
   chatAppointments: ChatAppointmentRecord[];
   chatTasks: ChatTaskRecord[];
   chatConversations: ChatConversationRecord[];
@@ -184,6 +190,8 @@ export class MemoryLodenRepository implements LodenRepository {
       contactRequests: [],
       reviews: [...initialReviews],
       leads: [],
+      partners: [],
+      partnerCommissions: [],
       chatAppointments: [],
       chatTasks: [],
       chatConversations: [],
@@ -708,10 +716,11 @@ export class MemoryLodenRepository implements LodenRepository {
     return user;
   }
 
-  async listStudents(filters?: { agencyId?: string }) {
+  async listStudents(filters?: { agencyId?: string; partnerId?: string }) {
     return this.store.students.filter(
       (student) =>
-        !filters?.agencyId || student.agencyId === filters.agencyId || student.agencyId == null
+        (!filters?.partnerId || student.partnerId === filters.partnerId) &&
+        (!filters?.agencyId || student.agencyId === filters.agencyId || student.agencyId == null)
     );
   }
 
@@ -1091,11 +1100,12 @@ export class MemoryLodenRepository implements LodenRepository {
     this.store.reviews.splice(index, 1);
   }
 
-  async listLeads(filters?: { status?: LeadRecord["status"]; agencyId?: string }) {
+  async listLeads(filters?: { status?: LeadRecord["status"]; agencyId?: string; partnerId?: string }) {
     return this.store.leads
       .filter(
         (lead) =>
           (!filters?.status || lead.status === filters.status) &&
+          (!filters?.partnerId || lead.partnerId === filters.partnerId) &&
           // Inclut les leads non encore rattachés à une agence (transition).
           (!filters?.agencyId || lead.agencyId === filters.agencyId || lead.agencyId == null)
       )
@@ -1132,6 +1142,83 @@ export class MemoryLodenRepository implements LodenRepository {
     if (!lead) throw notFound("Lead introuvable");
     Object.assign(lead, input, { updatedAt: new Date() });
     return lead;
+  }
+
+  async listPartners(filters?: { status?: PartnerRecord["status"]; agencyId?: string }) {
+    return this.store.partners
+      .filter(
+        (partner) =>
+          (!filters?.status || partner.status === filters.status) &&
+          (!filters?.agencyId || partner.agencyId === filters.agencyId || partner.agencyId == null)
+      )
+      .slice()
+      .sort((left, right) => right.createdAt.getTime() - left.createdAt.getTime());
+  }
+
+  async findPartnerById(id: string) {
+    return this.store.partners.find((partner) => partner.id === id) ?? null;
+  }
+
+  async findPartnerByUserId(userId: string) {
+    return this.store.partners.find((partner) => partner.userId === userId) ?? null;
+  }
+
+  async createPartner(input: CreatePartnerInput) {
+    const now = new Date();
+    const partner: PartnerRecord = {
+      ...input,
+      id: randomUUID(),
+      type: input.type ?? "PRESCRIPTEUR",
+      status: input.status ?? "ACTIF",
+      commissionType: input.commissionType ?? "FLAT",
+      commissionValue: input.commissionValue ?? 0,
+      createdAt: now,
+      updatedAt: now
+    };
+    this.store.partners.push(partner);
+    return partner;
+  }
+
+  async updatePartner(id: string, input: Partial<PartnerRecord>) {
+    const partner = this.store.partners.find((item) => item.id === id);
+    if (!partner) throw notFound("Partenaire introuvable");
+    Object.assign(partner, input, { updatedAt: new Date() });
+    return partner;
+  }
+
+  async listPartnerCommissions(filters?: { partnerId?: string; status?: PartnerCommissionRecord["status"] }) {
+    return this.store.partnerCommissions
+      .filter(
+        (commission) =>
+          (!filters?.partnerId || commission.partnerId === filters.partnerId) &&
+          (!filters?.status || commission.status === filters.status)
+      )
+      .slice()
+      .sort((left, right) => right.createdAt.getTime() - left.createdAt.getTime());
+  }
+
+  async findCommissionById(id: string) {
+    return this.store.partnerCommissions.find((commission) => commission.id === id) ?? null;
+  }
+
+  async createCommission(input: CreateCommissionInput) {
+    const now = new Date();
+    const commission: PartnerCommissionRecord = {
+      ...input,
+      id: randomUUID(),
+      status: input.status ?? "ESTIMEE",
+      createdAt: now,
+      updatedAt: now
+    };
+    this.store.partnerCommissions.push(commission);
+    return commission;
+  }
+
+  async updateCommission(id: string, input: Partial<PartnerCommissionRecord>) {
+    const commission = this.store.partnerCommissions.find((item) => item.id === id);
+    if (!commission) throw notFound("Commission introuvable");
+    Object.assign(commission, input, { updatedAt: new Date() });
+    return commission;
   }
 
   async listChatAppointments(filters?: {

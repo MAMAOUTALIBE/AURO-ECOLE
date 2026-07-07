@@ -48,7 +48,14 @@ export function LoginForm() {
     // La session est dans le cookie httpOnly (posé par /api/auth/login).
     // Le rôle vient de la réponse `user` (le token n'est plus exposé au navigateur).
     const role = payload.user.role;
-    const destination = role === "MONITEUR" ? "/espace-formateur" : isAdminRole(role) ? "/admin" : "/espace-eleve";
+    const destination =
+      role === "MONITEUR"
+        ? "/espace-formateur"
+        : role === "PARTENAIRE"
+          ? "/espace-partenaire"
+          : isAdminRole(role)
+            ? "/admin"
+            : "/espace-eleve";
     router.push(destination);
     router.refresh();
   };
