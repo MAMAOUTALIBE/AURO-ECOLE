@@ -3,7 +3,7 @@ import { PartnerDashboard } from "@/components/PartnerDashboard";
 
 export const metadata: Metadata = {
   title: "Nos partenaire",
-  description: "Nos partenaire LODENE : venez recuperer le bon de 50 euro.",
+  description: "Nos partenaire LODENE : venez recuperer le bon de 50 euros.",
   robots: { index: false, follow: false }
 };
 
@@ -17,7 +17,7 @@ export default function EspacePartenairePage() {
               NOS PARTENAIRE
             </p>
             <h1 className="mt-2 text-[1.85rem] font-semibold leading-tight text-loden-ink sm:text-4xl md:mt-3 md:text-[2.8rem] xl:text-5xl">
-              VENEZ RECUPERER LE BON DE 50 EURO
+              VENEZ RECUPERER LE BON DE 50 EUROS
             </h1>
           </div>
         </div>

@@ -39,7 +39,7 @@ export function PartnersSection({ partners }: { partners: PublicPartner[] }) {
           <div className="max-w-2xl">
             <p className="text-[0.7rem] font-semibold uppercase tracking-[0.12em] text-loden-100 sm:text-sm">NOS PARTENAIRE</p>
             <h2 id="partners-title" className="mt-1.5 text-xl font-semibold leading-tight text-white sm:mt-2 sm:text-3xl">
-              VENEZ RECUPERER LE BON DE 50 EURO
+              VENEZ RECUPERER LE BON DE 50 EUROS
             </h2>
           </div>
         </div>
