@@ -18,6 +18,15 @@ function normalizeUrl(url: string) {
   return /^https?:\/\//i.test(url) ? url : `https://${url}`;
 }
 
+function isOdelicePartner(name: string) {
+  return name
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[’']/g, "")
+    .toLowerCase()
+    .includes("odelice");
+}
+
 export function PartnersSection({ partners }: { partners: PublicPartner[] }) {
   if (!partners.length) return null;
   const visiblePartners = Array.from({ length: Math.max(1, Math.ceil(10 / partners.length)) }, () => partners).flat();
@@ -53,13 +62,16 @@ export function PartnersSection({ partners }: { partners: PublicPartner[] }) {
 }
 
 function PartnerBadge({ partner }: { partner: PublicPartner }) {
+  const logoClass = isOdelicePartner(partner.companyName)
+    ? "h-10 w-auto max-w-[130px] object-contain sm:h-12 sm:max-w-[150px] md:h-14"
+    : "h-8 w-auto max-w-[120px] object-contain sm:h-10 sm:max-w-[150px] md:h-12";
   const content = partner.logoUrl ? (
     // eslint-disable-next-line @next/next/no-img-element -- logo partenaire arbitraire (URL externe possible)
     <img
       src={partner.logoUrl}
       alt={partner.companyName}
       loading="lazy"
-      className="h-8 w-auto max-w-[120px] object-contain sm:h-10 sm:max-w-[150px] md:h-12"
+      className={logoClass}
     />
   ) : (
     <span className="flex items-center gap-2 whitespace-nowrap sm:gap-2.5">
