@@ -37,14 +37,11 @@ export function PartnersSection({ partners }: { partners: PublicPartner[] }) {
       <div className="container-pad">
         <div className="flex flex-col gap-2.5 md:flex-row md:items-end md:justify-between md:gap-5">
           <div className="max-w-2xl">
-            <p className="text-[0.7rem] font-semibold uppercase tracking-[0.12em] text-loden-100 sm:text-sm">Ils nous font confiance</p>
+            <p className="text-[0.7rem] font-semibold uppercase tracking-[0.12em] text-loden-100 sm:text-sm">NOS PARTENAIRE</p>
             <h2 id="partners-title" className="mt-1.5 text-xl font-semibold leading-tight text-white sm:mt-2 sm:text-3xl">
-              Un réseau de partenaires autour de la formation
+              VENEZ RECUPERER LE BON DE 50 EURO
             </h2>
           </div>
-          <p className="max-w-md text-sm font-medium leading-5 text-loden-100/90 sm:leading-6">
-            Entreprises, prescripteurs et acteurs locaux accompagnent les parcours LODENE.
-          </p>
         </div>
 
         <div className="mt-3 overflow-hidden py-2.5 sm:mt-4 sm:py-3 md:mt-5 md:py-4">
