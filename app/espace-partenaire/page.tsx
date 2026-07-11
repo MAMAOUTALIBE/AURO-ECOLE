@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 export default function EspacePartenairePage() {
   return (
     <main>
-      <section className="bg-loden-pearl py-6 md:py-10 xl:py-14">
+      <section className="border-b border-slate-100 bg-white py-6 md:py-10 xl:py-14">
         <div className="container-pad">
           <div className="max-w-2xl md:max-w-3xl">
             <p className="text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-loden-700 sm:text-xs md:text-sm md:tracking-[0.14em]">
@@ -22,7 +22,7 @@ export default function EspacePartenairePage() {
           </div>
         </div>
       </section>
-      <section className="bg-loden-pearl py-8 md:py-12 xl:py-16">
+      <section className="bg-white py-8 md:py-12 xl:py-16">
         <div className="container-pad">
           <PartnerDashboard />
         </div>
