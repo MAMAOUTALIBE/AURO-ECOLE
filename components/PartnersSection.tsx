@@ -34,18 +34,18 @@ export function PartnersSection({ partners }: { partners: PublicPartner[] }) {
   const marqueePartners = [...visiblePartners, ...visiblePartners];
 
   return (
-    <section className="block w-full bg-loden-800 py-4 text-white sm:py-5 md:py-7" aria-labelledby="partners-title">
+    <section className="block w-full border-y border-slate-100 bg-white py-4 text-loden-ink sm:py-5 md:py-7" aria-labelledby="partners-title">
       <div className="container-pad">
         <div className="flex flex-col gap-2.5 md:flex-row md:items-end md:justify-between md:gap-5">
           <div className="max-w-2xl">
-            <p className="text-[0.7rem] font-semibold uppercase tracking-[0.12em] text-loden-100 sm:text-sm">NOS PARTENAIRE</p>
-            <h2 id="partners-title" className="mt-1.5 text-xl font-semibold leading-tight text-white sm:mt-2 sm:text-3xl">
+            <p className="text-[0.7rem] font-semibold uppercase tracking-[0.12em] text-loden-700 sm:text-sm">NOS PARTENAIRE</p>
+            <h2 id="partners-title" className="mt-1.5 text-xl font-semibold leading-tight text-loden-ink sm:mt-2 sm:text-3xl">
               VENEZ RECUPERER LE BON DE 50 EUROS
             </h2>
           </div>
-          <p className="max-w-md text-sm font-medium leading-5 text-loden-100/90 sm:leading-6">
+          <p className="max-w-md text-sm font-medium leading-5 text-loden-muted sm:leading-6">
             Entreprises, prescripteurs et acteurs locaux accompagnent les parcours LODENE.
-            <Link href="/partenaires" className="focus-ring ml-2 inline-flex rounded font-bold text-white underline decoration-loden-300 underline-offset-4 hover:text-loden-100">Découvrir le réseau</Link>
+            <Link href="/partenaires" className="focus-ring ml-2 inline-flex rounded font-bold text-loden-700 underline decoration-loden-300 underline-offset-4 hover:text-loden-900">Découvrir le réseau</Link>
           </p>
         </div>
 
@@ -80,7 +80,7 @@ function PartnerBadge({ partner }: { partner: PublicPartner }) {
       <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-white text-xs font-bold text-loden-700 sm:h-9 sm:w-9 sm:text-sm">
         {initials(partner.companyName)}
       </span>
-      <span className="text-xs font-semibold text-white sm:text-sm md:text-base">{partner.companyName}</span>
+      <span className="text-xs font-semibold text-loden-ink sm:text-sm md:text-base">{partner.companyName}</span>
     </span>
   );
 
