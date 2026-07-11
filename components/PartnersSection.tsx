@@ -1,4 +1,5 @@
 import type { PublicPartner } from "@/lib/partner-mappers";
+import Link from "next/link";
 
 // Vitrine « Ils nous font confiance » sur la page d'accueil. Rendue uniquement s'il
 // existe au moins un partenaire opt-in (sinon la section disparaît, jamais de bloc vide).
@@ -35,6 +36,7 @@ export function PartnersSection({ partners }: { partners: PublicPartner[] }) {
           </div>
           <p className="max-w-md text-sm font-medium leading-5 text-loden-100/90 sm:leading-6">
             Entreprises, prescripteurs et acteurs locaux accompagnent les parcours LODENE.
+            <Link href="/partenaires" className="focus-ring ml-2 inline-flex rounded font-bold text-white underline decoration-loden-300 underline-offset-4 hover:text-loden-100">Découvrir le réseau</Link>
           </p>
         </div>
 
