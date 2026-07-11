@@ -63,6 +63,9 @@ export function createMediaRouter(repository: LodenRepository, config: ApiConfig
 
   const canRead = [authenticate(repository, config.JWT_SECRET), requirePermission("media.read", "media.manage")];
   const canManage = [authenticate(repository, config.JWT_SECRET), requirePermission("media.manage")];
+  // Les gestionnaires partenaires peuvent téléverser les logos utilisés dans le
+  // formulaire partenaire sans devoir disposer de tout le rôle CMS.
+  const canUpload = [authenticate(repository, config.JWT_SECRET), requirePermission("media.manage", "partners.manage")];
 
   // Liste (admin) — filtrable par catégorie.
   router.get(
@@ -77,7 +80,7 @@ export function createMediaRouter(repository: LodenRepository, config: ApiConfig
   // Upload d'un fichier.
   router.post(
     "/upload",
-    ...canManage,
+    ...canUpload,
     upload.single("file"),
     asyncHandler(async (req: AuthenticatedRequest, res) => {
       const file = req.file;

@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, BadgeEuro, Building2, Globe, Mail, Phone, Users } from "lucide-react";
+import { ArrowLeft, BadgeEuro, Building2, Globe, Mail, Phone, UploadCloud, Users } from "lucide-react";
 import { Badge, Card, EmptyState, Skeleton, type BadgeVariant } from "@/components/crm/ui";
 import {
   formatEuros,
@@ -14,6 +14,7 @@ import {
   type Partner,
   type PartnerCommission
 } from "@/lib/partner-mappers";
+import { uploadAdminMedia } from "@/lib/media-upload";
 
 type ApiLead = { id: string; fullName: string; status: string; interest?: string | null; createdAt: string };
 
@@ -49,6 +50,9 @@ export function PartnerDetail({ partnerId }: { partnerId: string }) {
   const [showcase, setShowcase] = useState({ publicVisible: false, logoUrl: "", websiteUrl: "" });
   const [savingShowcase, setSavingShowcase] = useState(false);
   const [showcaseSaved, setShowcaseSaved] = useState(false);
+  const [logoUploading, setLogoUploading] = useState(false);
+  const [logoUploadError, setLogoUploadError] = useState<string | null>(null);
+  const logoInputRef = useRef<HTMLInputElement>(null);
 
   async function load() {
     try {
@@ -97,6 +101,30 @@ export function PartnerDetail({ partnerId }: { partnerId: string }) {
       }
     } finally {
       setSavingShowcase(false);
+    }
+  }
+
+  async function uploadShowcaseLogo() {
+    const file = logoInputRef.current?.files?.[0];
+    if (!file) {
+      setLogoUploadError("Choisis une image à téléverser.");
+      return;
+    }
+    setLogoUploading(true);
+    setLogoUploadError(null);
+    try {
+      const partnerName = state.status === "ready" ? state.detail.partner.companyName : "";
+      const media = await uploadAdminMedia(file, {
+        altText: partnerName || file.name,
+        category: "partners"
+      });
+      setShowcase((current) => ({ ...current, logoUrl: media.url }));
+      setShowcaseSaved(false);
+      if (logoInputRef.current) logoInputRef.current.value = "";
+    } catch (error) {
+      setLogoUploadError(error instanceof Error ? error.message : "Téléversement impossible.");
+    } finally {
+      setLogoUploading(false);
     }
   }
 
@@ -189,6 +217,30 @@ export function PartnerDetail({ partnerId }: { partnerId: string }) {
           Affiche ce partenaire sur la page d&apos;accueil, section « Ils nous font confiance ».
         </p>
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-3 text-sm sm:col-span-2">
+            <span className="font-medium text-loden-ink">Logo du partenaire</span>
+            <div className="grid gap-3 rounded-xl bg-loden-pearl/60 p-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
+              <label className="grid gap-1">
+                <span className="text-xs font-semibold uppercase tracking-wide text-loden-muted">Fichier image</span>
+                <input
+                  ref={logoInputRef}
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp,image/gif"
+                  className="focus-ring w-full rounded-lg border border-slate-200 bg-white px-3 py-2"
+                />
+              </label>
+              <button
+                type="button"
+                onClick={uploadShowcaseLogo}
+                disabled={logoUploading}
+                className="focus-ring inline-flex items-center justify-center gap-2 rounded-lg bg-loden-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-loden-700 disabled:opacity-50"
+              >
+                <UploadCloud className="h-4 w-4" />
+                {logoUploading ? "Téléversement…" : "Téléverser"}
+              </button>
+            </div>
+            {logoUploadError ? <p className="text-sm text-rose-600">{logoUploadError}</p> : null}
+          </div>
           <label className="text-sm">
             <span className="mb-1 block font-medium text-loden-ink">Logo (URL)</span>
             <input

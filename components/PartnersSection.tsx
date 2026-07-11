@@ -19,6 +19,15 @@ function normalizeUrl(url: string) {
   return /^https?:\/\//i.test(url) ? url : `https://${url}`;
 }
 
+function isOdelicePartner(name: string) {
+  return name
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[’']/g, "")
+    .toLowerCase()
+    .includes("odelice");
+}
+
 export function PartnersSection({ partners }: { partners: PublicPartner[] }) {
   if (!partners.length) return null;
   const visiblePartners = Array.from({ length: Math.max(1, Math.ceil(10 / partners.length)) }, () => partners).flat();
@@ -29,9 +38,9 @@ export function PartnersSection({ partners }: { partners: PublicPartner[] }) {
       <div className="container-pad">
         <div className="flex flex-col gap-2.5 md:flex-row md:items-end md:justify-between md:gap-5">
           <div className="max-w-2xl">
-            <p className="text-[0.7rem] font-semibold uppercase tracking-[0.12em] text-loden-100 sm:text-sm">Ils nous font confiance</p>
+            <p className="text-[0.7rem] font-semibold uppercase tracking-[0.12em] text-loden-100 sm:text-sm">NOS PARTENAIRE</p>
             <h2 id="partners-title" className="mt-1.5 text-xl font-semibold leading-tight text-white sm:mt-2 sm:text-3xl">
-              Un réseau de partenaires autour de la formation
+              VENEZ RECUPERER LE BON DE 50 EUROS
             </h2>
           </div>
           <p className="max-w-md text-sm font-medium leading-5 text-loden-100/90 sm:leading-6">
@@ -40,9 +49,9 @@ export function PartnersSection({ partners }: { partners: PublicPartner[] }) {
           </p>
         </div>
 
-        <div className="mt-3 overflow-hidden rounded-xl border border-white/20 bg-white py-2 shadow-premium sm:mt-4 sm:py-2.5 md:mt-5 md:rounded-2xl md:py-3">
+        <div className="mt-3 overflow-hidden py-2.5 sm:mt-4 sm:py-3 md:mt-5 md:py-4">
           <div className="marquee" role="marquee" aria-label="Partenaires LODENE">
-            <div className="marquee-track gap-2.5 px-2.5 sm:gap-3 sm:px-3 md:gap-4 md:px-4" style={{ animationDuration: `${Math.max(34, marqueePartners.length * 3)}s` }}>
+            <div className="marquee-track gap-8 px-2 sm:gap-10 sm:px-3 md:gap-14 md:px-4" style={{ animationDuration: `${Math.max(34, marqueePartners.length * 3)}s` }}>
               {marqueePartners.map((partner, index) => (
                 <PartnerBadge key={`${partner.id}-${index}`} partner={partner} />
               ))}
@@ -55,25 +64,28 @@ export function PartnersSection({ partners }: { partners: PublicPartner[] }) {
 }
 
 function PartnerBadge({ partner }: { partner: PublicPartner }) {
+  const logoClass = isOdelicePartner(partner.companyName)
+    ? "h-14 w-auto max-w-[150px] object-contain drop-shadow-sm sm:h-16 sm:max-w-[170px] md:h-20"
+    : "h-10 w-auto max-w-[170px] object-contain drop-shadow-sm sm:h-12 sm:max-w-[210px] md:h-14 md:max-w-[250px]";
   const content = partner.logoUrl ? (
     // eslint-disable-next-line @next/next/no-img-element -- logo partenaire arbitraire (URL externe possible)
     <img
       src={partner.logoUrl}
       alt={partner.companyName}
       loading="lazy"
-      className="h-8 w-auto max-w-[120px] object-contain sm:h-10 sm:max-w-[150px] md:h-12"
+      className={logoClass}
     />
   ) : (
     <span className="flex items-center gap-2 whitespace-nowrap sm:gap-2.5">
-      <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-loden-50 text-xs font-bold text-loden-700 sm:h-9 sm:w-9 sm:text-sm">
+      <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-white text-xs font-bold text-loden-700 sm:h-9 sm:w-9 sm:text-sm">
         {initials(partner.companyName)}
       </span>
-      <span className="text-xs font-semibold text-loden-ink sm:text-sm md:text-base">{partner.companyName}</span>
+      <span className="text-xs font-semibold text-white sm:text-sm md:text-base">{partner.companyName}</span>
     </span>
   );
 
-  const cardClass =
-    "flex h-12 min-w-[7.5rem] items-center justify-center rounded-full border border-slate-200 bg-white px-3 shadow-soft transition hover:-translate-y-0.5 hover:border-loden-200 hover:shadow-premium sm:h-14 sm:min-w-[9rem] sm:px-4 md:h-16 md:min-w-[11rem] md:px-6";
+  const logoShellClass =
+    "flex h-16 min-w-[8rem] items-center justify-center px-1 transition-opacity hover:opacity-90 sm:h-20 sm:min-w-[9.5rem] md:h-24 md:min-w-[12rem]";
 
   if (partner.websiteUrl) {
     return (
@@ -82,14 +94,14 @@ function PartnerBadge({ partner }: { partner: PublicPartner }) {
         target="_blank"
         rel="noopener noreferrer nofollow"
         title={partner.companyName}
-        className={`focus-ring ${cardClass}`}
+        className={`focus-ring ${logoShellClass}`}
       >
         {content}
       </a>
     );
   }
   return (
-    <div title={partner.companyName} className={cardClass}>
+    <div title={partner.companyName} className={logoShellClass}>
       {content}
     </div>
   );

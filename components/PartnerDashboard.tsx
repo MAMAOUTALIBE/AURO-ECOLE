@@ -18,6 +18,7 @@ type PartnerProfile = {
   status: "ACTIF" | "SUSPENDU";
   commissionType: CommissionType;
   commissionValue: number;
+  logoUrl?: string | null;
 };
 type Lead = {
   id: string;
@@ -192,7 +193,11 @@ export function PartnerDashboard() {
 
   return (
     <div className="grid gap-6 lg:grid-cols-[0.85fr_1.15fr]">
-      <Panel title={`Bonjour ${user.firstName}`} text={`${partner.companyName} · Barème : ${describeCommission(partner.commissionType, partner.commissionValue)}`}>
+      <Panel
+        title={`Bonjour ${user.firstName}`}
+        text={`${partner.companyName} · Barème : ${describeCommission(partner.commissionType, partner.commissionValue)}`}
+        aside={partner.logoUrl ? <PartnerLogo src={partner.logoUrl} name={partner.companyName} /> : undefined}
+      >
         {partner.status === "SUSPENDU" ? (
           <p className="mt-4 rounded-xl bg-amber-50 p-3 text-sm font-medium text-amber-800">
             Votre compte est suspendu : la recommandation de candidats est désactivée. Contactez LODENE.
@@ -391,11 +396,29 @@ function formatDate(value: string) {
     : new Intl.DateTimeFormat("fr-FR", { dateStyle: "medium", timeZone: "UTC" }).format(date);
 }
 
-function Panel({ title, text, children }: { title: string; text: string; children?: React.ReactNode }) {
+function PartnerLogo({ src, name }: { src: string; name: string }) {
+  return (
+    <div className="flex shrink-0 justify-start sm:justify-end">
+      {/* eslint-disable-next-line @next/next/no-img-element -- logo partenaire arbitraire (URL externe possible) */}
+      <img
+        src={src}
+        alt={`Logo ${name}`}
+        className="h-16 w-auto max-w-[220px] rounded-xl border border-slate-200 bg-white object-contain p-2 shadow-soft"
+      />
+    </div>
+  );
+}
+
+function Panel({ title, text, children, aside }: { title: string; text: string; children?: React.ReactNode; aside?: React.ReactNode }) {
   return (
     <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-premium sm:rounded-3xl sm:p-6">
-      <h2 className="text-xl font-semibold text-loden-ink sm:text-2xl">{title}</h2>
-      <p className="mt-3 text-sm leading-6 text-loden-muted">{text}</p>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0">
+          <h2 className="text-xl font-semibold text-loden-ink sm:text-2xl">{title}</h2>
+          <p className="mt-3 text-sm leading-6 text-loden-muted">{text}</p>
+        </div>
+        {aside}
+      </div>
       {children}
     </section>
   );
