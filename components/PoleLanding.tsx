@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowRight, CheckCircle2 } from "lucide-react";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { FormationCard } from "@/components/FormationCard";
 import { PageHeroSlideshow, type PageHeroSlideshowSlide } from "@/components/PageHeroSlideshow";
 import { SectionHeader } from "@/components/SectionHeader";
@@ -90,6 +91,12 @@ const poleHeroSlides: Record<"VTC" | "SST" | "LOGISTIQUE_SECURITE", PageHeroSlid
 
 // Page d'atterrissage d'un pôle professionnel (VTC / CACES) : hero, atouts,
 // catalogue filtré du pôle et appel au devis. Server component (SSG, bon pour le SEO).
+const polePath: Record<"VTC" | "SST" | "LOGISTIQUE_SECURITE", string> = {
+  VTC: "/vtc",
+  SST: "/sst",
+  LOGISTIQUE_SECURITE: "/logistique-securite"
+};
+
 export function PoleLanding({ pole }: { pole: "VTC" | "SST" | "LOGISTIQUE_SECURITE" }) {
   const content = poleLandings[pole];
   const poleFormations = formations.filter((formation) => formation.productLine === pole);
@@ -123,6 +130,14 @@ export function PoleLanding({ pole }: { pole: "VTC" | "SST" | "LOGISTIQUE_SECURI
         type="application/ld+json"
         suppressHydrationWarning
         dangerouslySetInnerHTML={{ __html: safeJsonLd(itemListSchema) }}
+      />
+      <Breadcrumbs
+        className="container-pad py-3"
+        items={[
+          { name: "Accueil", path: "/" },
+          { name: "Formations", path: "/formations" },
+          { name: productLineLabels[pole], path: polePath[pole] }
+        ]}
       />
       <PageHeroSlideshow
         eyebrow={content.eyebrow}

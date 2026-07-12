@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, BadgeCheck, CalendarCheck, FileCheck2, WalletCards } from "lucide-react";
-import { BreadcrumbJsonLd } from "@/components/BreadcrumbJsonLd";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { CpfRequestForm } from "@/components/CpfRequestForm";
 import { PageHero } from "@/components/PageHero";
 import { SectionHeader } from "@/components/SectionHeader";
@@ -32,7 +32,8 @@ const cpfFaq = [
 export default function AutoEcoleCpfParisPage() {
   return (
     <main>
-      <BreadcrumbJsonLd
+      <Breadcrumbs
+        className="container-pad py-3"
         items={[
           { name: "Accueil", path: "/" },
           { name: "Auto-école CPF à Conflans-Sainte-Honorine", path: "/auto-ecole-cpf-conflans-sainte-honorine" }

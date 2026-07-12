@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
-import { BreadcrumbJsonLd } from "@/components/BreadcrumbJsonLd";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { formatDateFr, getContentBySlug, toParagraphs } from "@/lib/content";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
@@ -26,7 +26,8 @@ export default async function BlogArticlePage({ params }: { params: Promise<{ sl
 
   return (
     <main className="bg-white">
-      <BreadcrumbJsonLd
+      <Breadcrumbs
+        className="container-pad pt-6 sm:pt-8"
         items={[
           { name: "Accueil", path: "/" },
           { name: "Blog", path: "/blog" },

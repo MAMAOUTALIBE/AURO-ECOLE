@@ -81,6 +81,8 @@ export function FormationHero({
       )}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
+      onFocus={() => setPaused(true)}
+      onBlur={() => setPaused(false)}
       aria-label={`Formation ${title}`}
     >
       <div className="absolute inset-0" aria-hidden="true">
@@ -203,7 +205,8 @@ export function FormationHero({
                 "focus-ring h-2.5 w-8 rounded-full bg-white/55 transition hover:bg-white",
                 index === displayedIndex && "bg-[#08AEB8]"
               )}
-              aria-label={`Afficher le slide ${index + 1}`}
+              aria-current={index === displayedIndex ? "true" : undefined}
+              aria-label={`Afficher le slide ${index + 1} sur ${visibleSlides.length}`}
             />
           ))}
         </div>

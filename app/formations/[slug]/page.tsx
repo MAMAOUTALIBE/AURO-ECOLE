@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { BreadcrumbJsonLd } from "@/components/BreadcrumbJsonLd";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { FormationHero } from "@/components/FormationHero";
 import { formationHeroSlides } from "@/lib/formation-image";
 import { ArrowRight, BadgeCheck, CalendarCheck, CheckCircle2, Clock3, ShieldCheck } from "lucide-react";
@@ -627,7 +627,8 @@ export default async function FormationDetailPage({ params }: PageProps) {
         suppressHydrationWarning
         dangerouslySetInnerHTML={{ __html: safeJsonLd(courseSchema) }}
       />
-      <BreadcrumbJsonLd
+      <Breadcrumbs
+        className="container-pad py-3"
         items={[
           { name: "Accueil", path: "/" },
           { name: "Formations", path: "/formations" },

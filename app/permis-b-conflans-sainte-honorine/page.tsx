@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, BadgeCheck, MapPin, ShieldCheck } from "lucide-react";
-import { BreadcrumbJsonLd } from "@/components/BreadcrumbJsonLd";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { PageHero } from "@/components/PageHero";
 import { SectionHeader } from "@/components/SectionHeader";
 import { companyInfo, contactInfo } from "@/data/site";
@@ -24,7 +24,8 @@ const highlights = [
 export default function PermisBConflansPage() {
   return (
     <main>
-      <BreadcrumbJsonLd
+      <Breadcrumbs
+        className="container-pad py-3"
         items={[
           { name: "Accueil", path: "/" },
           { name: "Permis B à Conflans-Sainte-Honorine", path: "/permis-b-conflans-sainte-honorine" }

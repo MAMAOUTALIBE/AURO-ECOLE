@@ -4,7 +4,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, BookOpenCheck, Car, HeartPulse, Truck, WalletCards } from "lucide-react";
 import { FormationExplorer } from "@/components/FormationExplorer";
-import { buildMetadata } from "@/lib/seo";
+import { formations } from "@/data/site";
+import { safeJsonLd } from "@/lib/json-ld";
+import { SITE_NAME, SITE_URL, absoluteUrl, buildMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = buildMetadata({
   title: "Formations",
@@ -129,8 +131,37 @@ function FormationsHero() {
 }
 
 export default function FormationsPage() {
+  // Catalogue structuré (schema.org ItemList → Course) : aide Google à comprendre
+  // l'offre de formations. Pas d'Offer chiffrée ici (tarif sur devis pour plusieurs).
+  const catalogSchema = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: "Catalogue des formations LODENE",
+    itemListElement: formations.map((formation, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      item: {
+        "@type": "Course",
+        name: formation.title,
+        description: formation.description,
+        url: absoluteUrl(`/formations/${formation.slug}`),
+        provider: {
+          "@type": ["LocalBusiness", "DrivingSchool"],
+          "@id": `${SITE_URL}/#organization`,
+          name: SITE_NAME,
+          sameAs: SITE_URL
+        }
+      }
+    }))
+  };
+
   return (
     <main>
+      <script
+        type="application/ld+json"
+        suppressHydrationWarning
+        dangerouslySetInnerHTML={{ __html: safeJsonLd(catalogSchema) }}
+      />
       <FormationsHero />
       <FormationExplorer />
     </main>
