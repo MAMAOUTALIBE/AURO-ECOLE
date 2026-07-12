@@ -99,7 +99,7 @@ export function LoginForm() {
         className="focus-ring mt-5 inline-flex w-full items-center justify-center gap-2 rounded-full bg-loden-700 px-6 py-3.5 font-semibold text-white transition hover:bg-loden-800 disabled:cursor-not-allowed disabled:opacity-70 md:mt-6 md:py-4"
       >
         <LogIn className="h-5 w-5" />
-        {isSubmitting ? "Connexion..." : "Accéder à mon espace"}
+        {isSubmitting ? "Connexion…" : "Accéder à mon espace"}
       </button>
 
       {submitError ? (

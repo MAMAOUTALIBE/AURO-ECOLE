@@ -239,7 +239,7 @@ export function Offer50LeadForm({ code, validCode }: { code: string; validCode: 
         className="focus-ring inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-loden-700 px-6 py-3 font-black text-white shadow-[0_18px_45px_rgba(0,134,148,0.25)] transition hover:bg-loden-800 disabled:cursor-not-allowed disabled:opacity-60"
       >
         <Send className="h-5 w-5" aria-hidden="true" />
-        {status === "sending" ? "Envoi..." : "Je récupère mon bon"}
+        {status === "sending" ? "Envoi…" : "Je récupère mon bon"}
       </button>
 
       {status === "error" ? (

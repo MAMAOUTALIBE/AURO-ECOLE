@@ -128,7 +128,7 @@ export function CpfRequestForm() {
         <textarea
           {...register("note")}
           className="field-input min-h-28 resize-y"
-          placeholder="Disponibilités, date souhaitée, situation administrative..."
+          placeholder="Disponibilités, date souhaitée, situation administrative…"
         />
       </Field>
 

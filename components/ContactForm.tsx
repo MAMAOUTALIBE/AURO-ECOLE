@@ -201,7 +201,7 @@ export function ContactForm() {
       </div>
 
       <Field label="Message" error={errors.message?.message} className="mt-4 hidden md:grid">
-        <textarea {...register("message")} className="field-input min-h-32 resize-y" placeholder="Objectif, contraintes, date d'examen visée, solde CPF approximatif..." />
+        <textarea {...register("message")} className="field-input min-h-32 resize-y" placeholder="Objectif, contraintes, date d'examen visée, solde CPF approximatif…" />
       </Field>
       <button
         type="submit"

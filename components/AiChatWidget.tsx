@@ -612,7 +612,7 @@ export function AiChatWidget() {
             className="focus-ring inline-flex items-center justify-center gap-2 rounded-2xl bg-loden-700 px-4 py-2.5 text-sm font-black text-white transition hover:bg-loden-800 disabled:opacity-60"
           >
             <Send className="h-4 w-4" aria-hidden="true" />
-            {offerStatus === "sending" ? "Réservation..." : "Recevoir mon bon -50 €"}
+            {offerStatus === "sending" ? "Réservation…" : "Recevoir mon bon -50 €"}
           </button>
         </form>
       );
