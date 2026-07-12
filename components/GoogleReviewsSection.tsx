@@ -164,7 +164,7 @@ export async function GoogleReviewsSection() {
               className="focus-ring inline-flex w-full items-center justify-center gap-2 rounded-full bg-loden-700 px-6 py-3.5 font-semibold text-white shadow-soft transition hover:bg-loden-800 sm:w-auto"
             >
               <PenLine className="h-5 w-5" aria-hidden="true" />
-              Laisser un avis
+              Laisser un avis sur Google
             </a>
           ) : null}
           {config.profileUrl ? (

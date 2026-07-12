@@ -8,7 +8,7 @@ type ReviewPayload = {
   error?: { message?: string };
 };
 
-export function ReviewSubmissionForm() {
+export function ReviewSubmissionForm({ googleReviewUrl }: { googleReviewUrl?: string }) {
   const [name, setName] = useState("");
   const [city, setCity] = useState("");
   const [rating, setRating] = useState(5);
@@ -145,7 +145,22 @@ export function ReviewSubmissionForm() {
         </button>
       </div>
 
-      {success ? <p role="status" className="mt-3 rounded-xl bg-emerald-50 p-3 text-sm font-semibold text-emerald-700">Merci, l&apos;avis est reçu.</p> : null}
+      {success ? (
+        <div role="status" className="mt-3 rounded-xl bg-emerald-50 p-3 text-sm">
+          <p className="font-semibold text-emerald-700">Merci, votre avis est bien reçu.</p>
+          {googleReviewUrl ? (
+            <a
+              href={googleReviewUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="focus-ring mt-2 inline-flex items-center gap-1.5 rounded font-semibold text-loden-700 hover:text-loden-900"
+            >
+              <Star className="h-4 w-4" aria-hidden="true" />
+              Publiez aussi votre avis sur Google
+            </a>
+          ) : null}
+        </div>
+      ) : null}
       {error ? <p role="alert" className="mt-3 rounded-xl bg-rose-50 p-3 text-sm font-semibold text-rose-700">{error}</p> : null}
     </form>
   );
