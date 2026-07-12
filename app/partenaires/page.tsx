@@ -6,7 +6,8 @@ import { featuredPartners } from "@/data/partners";
 
 export const metadata: Metadata = {
   title: "Nos partenaires",
-  description: "Découvrez les entreprises et commerces locaux partenaires de LODENE Auto-École."
+  description: "Découvrez les entreprises et commerces locaux partenaires de LODENE Auto-École.",
+  alternates: { canonical: "/partenaires" }
 };
 
 function phoneHref(phone: string) {

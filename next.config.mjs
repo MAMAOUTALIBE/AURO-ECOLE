@@ -40,6 +40,23 @@ const nextConfig = {
   devIndicators: false,
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
+  },
+  // Redirections permanentes (301). Les anciens slugs « Paris » des pages locales
+  // ont été renommés vers des slugs « Conflans » (établissement réel : Conflans-
+  // Sainte-Honorine) : on préserve l'équité SEO et les liens externes existants.
+  async redirects() {
+    return [
+      {
+        source: "/permis-b-paris-11",
+        destination: "/permis-b-conflans-sainte-honorine",
+        permanent: true
+      },
+      {
+        source: "/auto-ecole-cpf-paris",
+        destination: "/auto-ecole-cpf-conflans-sainte-honorine",
+        permanent: true
+      }
+    ];
   }
 };
 

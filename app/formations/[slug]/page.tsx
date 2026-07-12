@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { BreadcrumbJsonLd } from "@/components/BreadcrumbJsonLd";
 import { FormationHero } from "@/components/FormationHero";
 import { formationHeroSlides } from "@/lib/formation-image";
 import { ArrowRight, BadgeCheck, CalendarCheck, CheckCircle2, Clock3, ShieldCheck } from "lucide-react";
@@ -625,6 +626,13 @@ export default async function FormationDetailPage({ params }: PageProps) {
         type="application/ld+json"
         suppressHydrationWarning
         dangerouslySetInnerHTML={{ __html: safeJsonLd(courseSchema) }}
+      />
+      <BreadcrumbJsonLd
+        items={[
+          { name: "Accueil", path: "/" },
+          { name: "Formations", path: "/formations" },
+          { name: formation.title, path: `/formations/${formation.slug}` }
+        ]}
       />
 
       <FormationHero

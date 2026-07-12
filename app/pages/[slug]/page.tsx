@@ -8,7 +8,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   if (!entry || entry.type !== "PAGE") return { title: "Page introuvable", robots: { index: false } };
   return {
     title: entry.seoTitle || entry.title,
-    description: entry.seoDescription || entry.excerpt || undefined
+    description: entry.seoDescription || entry.excerpt || undefined,
+    alternates: { canonical: `/pages/${slug}` }
   };
 }
 

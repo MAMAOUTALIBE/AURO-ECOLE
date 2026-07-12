@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, BadgeCheck, MapPin, ShieldCheck } from "lucide-react";
+import { BreadcrumbJsonLd } from "@/components/BreadcrumbJsonLd";
 import { PageHero } from "@/components/PageHero";
 import { SectionHeader } from "@/components/SectionHeader";
 import { companyInfo, contactInfo } from "@/data/site";
@@ -9,7 +10,7 @@ export const metadata: Metadata = {
   title: "Permis B à Conflans-Sainte-Honorine",
   description:
     "Passez votre permis B à Conflans-Sainte-Honorine (78) avec LODENE Auto-École : boîte manuelle ou automatique, CPF et planning flexible.",
-  alternates: { canonical: "/permis-b-paris-11" }
+  alternates: { canonical: "/permis-b-conflans-sainte-honorine" }
 };
 
 const highlights = [
@@ -22,6 +23,12 @@ const highlights = [
 export default function PermisBConflansPage() {
   return (
     <main>
+      <BreadcrumbJsonLd
+        items={[
+          { name: "Accueil", path: "/" },
+          { name: "Permis B à Conflans-Sainte-Honorine", path: "/permis-b-conflans-sainte-honorine" }
+        ]}
+      />
       <PageHero
         eyebrow="Permis B Conflans-Sainte-Honorine"
         title="Passe ton permis B à Conflans-Sainte-Honorine"

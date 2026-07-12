@@ -40,13 +40,13 @@ export const legalLinks = [
 
 export const localSeoPages = [
   {
-    href: "/permis-b-paris-11",
+    href: "/permis-b-conflans-sainte-honorine",
     label: "Permis B Conflans-Sainte-Honorine",
     title: "Permis B à Conflans-Sainte-Honorine",
     description: "Formation permis B manuel ou automatique à Conflans-Sainte-Honorine (78), avec planning flexible, CPF et suivi élève."
   },
   {
-    href: "/auto-ecole-cpf-paris",
+    href: "/auto-ecole-cpf-conflans-sainte-honorine",
     label: "Auto-école CPF Conflans-Sainte-Honorine",
     title: "Auto-école CPF à Conflans-Sainte-Honorine",
     description: "Accompagnement CPF pour financer le permis à Conflans-Sainte-Honorine et dans les Yvelines, avec diagnostic, devis et suivi administratif."
@@ -86,6 +86,37 @@ export const companyInfo = {
 // Réseaux sociaux : aucun compte officiel confirmé -> liste vide (l'UI n'affiche rien).
 // À renseigner via le CMS dès que les comptes officiels sont confirmés.
 export const socialLinks: { label: string; href: string }[] = [];
+
+// Horaires bureau structurés (schema.org OpeningHoursSpecification). Dérivés des
+// horaires réels ci-dessus (contactInfo.hours) — utilisés pour le JSON-LD LocalBusiness.
+// Les cours pratiques (7j/7 sur réservation) ne sont PAS des horaires d'ouverture au public.
+export const openingHoursSpec: { days: string[]; opens: string; closes: string }[] = [
+  { days: ["Tuesday", "Wednesday"], opens: "10:00", closes: "12:00" },
+  { days: ["Tuesday", "Wednesday"], opens: "14:00", closes: "18:00" },
+  { days: ["Thursday", "Friday"], opens: "10:00", closes: "12:00" },
+  { days: ["Thursday", "Friday"], opens: "14:00", closes: "20:00" },
+  { days: ["Saturday"], opens: "09:00", closes: "12:00" },
+  { days: ["Saturday"], opens: "13:00", closes: "17:00" }
+];
+
+// Zone réellement desservie autour de Conflans-Sainte-Honorine (~50 km) : communes
+// Yvelines / Val-d'Oise où LODENE propose formation et points de rendez-vous.
+// Sert le JSON-LD (areaServed) et le maillage éditorial local. Aucune donnée inventée :
+// ce sont des communes limitrophes réelles, pas une promesse de couverture exhaustive.
+export const servedAreas: string[] = [
+  "Conflans-Sainte-Honorine",
+  "Herblay-sur-Seine",
+  "Andrésy",
+  "Achères",
+  "Poissy",
+  "Maurecourt",
+  "Cergy",
+  "Pontoise",
+  "Saint-Germain-en-Laye",
+  "Sartrouville",
+  "Maisons-Laffitte",
+  "Argenteuil"
+];
 
 // Source unique des preuves chiffrées (affichage). Toutes les sections — hero,
 // page Avis, JSON-LD — lisent ces valeurs pour garantir des chiffres cohérents

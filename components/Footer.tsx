@@ -117,7 +117,7 @@ export function Footer() {
             <Link href="/" className="focus-ring inline-flex rounded-3xl" aria-label="LODENE - Accueil">
               <Image
                 src="/lodene-logo-wordmark.png"
-                alt="LODENE Formation"
+                alt="LODENE"
                 width={1320}
                 height={660}
                 className="h-24 w-auto max-w-[260px] sm:h-28"

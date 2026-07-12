@@ -82,13 +82,13 @@ export function FormationExplorer() {
         </div>
 
         <div className="rounded-xl border border-slate-200 bg-loden-pearl p-3 sm:rounded-2xl md:rounded-[1.75rem] md:p-5 lg:p-6">
-          <div className="flex items-center gap-3 rounded-xl bg-white px-4 py-3 shadow-soft md:rounded-2xl">
+          <div className="flex items-center gap-3 rounded-xl bg-white px-4 py-3 shadow-soft focus-within:ring-2 focus-within:ring-loden-500 focus-within:ring-offset-2 md:rounded-2xl">
             <Search className="h-5 w-5 text-loden-500" aria-hidden="true" />
             <input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               className="min-w-0 flex-1 bg-transparent outline-none placeholder:text-loden-muted"
-              placeholder="Rechercher une formation..."
+              placeholder="Rechercher une formation…"
               aria-label="Recherche avancée des formations"
             />
           </div>

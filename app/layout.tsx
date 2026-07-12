@@ -6,7 +6,7 @@ import { HeaderMain } from "@/components/HeaderMain";
 import { HeaderTop } from "@/components/HeaderTop";
 import { MobileActionBar } from "@/components/MobileActionBar";
 import { SiteChrome } from "@/components/SiteChrome";
-import { companyInfo, contactInfo, socialLinks } from "@/data/site";
+import { companyInfo, contactInfo, socialLinks, openingHoursSpec, servedAreas } from "@/data/site";
 import { safeJsonLd } from "@/lib/json-ld";
 import { SITE_URL, SITE_NAME, OG_IMAGE, absoluteUrl } from "@/lib/seo";
 import {
@@ -57,7 +57,10 @@ export const metadata: Metadata = {
     images: ["/loden-hero.jpg"]
   },
   icons: {
-    icon: "/favicon.png",
+    icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/favicon.png", type: "image/png" }
+    ],
     shortcut: "/favicon.png",
     apple: "/lodene-logo.png"
   },
@@ -77,7 +80,8 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
   ]);
 
   // JSON-LD bâti uniquement sur des données vérifiées : on n'émet que les champs renseignés
-  // (pas de téléphone/email/horaires/réseaux non confirmés, pas de note ni de fourchette de prix).
+  // (pas de note ni de fourchette de prix non confirmées ; pas de géolocalisation GPS car
+  // les coordonnées ne sont pas confirmées dans la fiche établissement).
   const organizationSchema = {
     "@context": "https://schema.org",
     "@type": ["LocalBusiness", "DrivingSchool"],
@@ -88,16 +92,50 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
     logo: absoluteUrl("/lodene-logo.png"),
     ...(contactInfo.phone ? { telephone: contactInfo.phone } : {}),
     ...(contactInfo.email ? { email: contactInfo.email } : {}),
+    ...(companyInfo.siret
+      ? { identifier: { "@type": "PropertyValue", propertyID: "SIRET", value: companyInfo.siret } }
+      : {}),
     address: {
       "@type": "PostalAddress",
       streetAddress: companyInfo.address,
       postalCode: companyInfo.postalCode,
       addressLocality: companyInfo.city,
+      addressRegion: "Yvelines",
       addressCountry: "FR"
     },
-    areaServed: ["Conflans-Sainte-Honorine", "Yvelines"],
-    ...(contactInfo.hours ? { openingHours: contactInfo.hours } : {}),
+    // Zone desservie réelle (Conflans + communes limitrophes ~50 km).
+    areaServed: servedAreas.map((name) => ({ "@type": "City", name })),
+    ...(contactInfo.phone
+      ? {
+          contactPoint: {
+            "@type": "ContactPoint",
+            telephone: contactInfo.phone,
+            contactType: "customer service",
+            areaServed: "FR",
+            availableLanguage: ["French"]
+          }
+        }
+      : {}),
+    // Horaires d'ouverture du bureau au format structuré (schema.org).
+    openingHoursSpecification: openingHoursSpec.map((slot) => ({
+      "@type": "OpeningHoursSpecification",
+      dayOfWeek: slot.days.map((day) => `https://schema.org/${day}`),
+      opens: slot.opens,
+      closes: slot.closes
+    })),
     ...(socialLinks.length > 0 ? { sameAs: socialLinks.map((social) => social.href) } : {})
+  };
+
+  // Entité WebSite (aide Google à consolider l'entité de marque). Pas de SearchAction :
+  // aucune page publique de résultats de recherche n'est exposée.
+  const websiteSchema = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "@id": `${SITE_URL}/#website`,
+    name: SITE_NAME,
+    url: SITE_URL,
+    inLanguage: "fr-FR",
+    publisher: { "@id": `${SITE_URL}/#organization` }
   };
 
   return (
@@ -108,6 +146,11 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
           type="application/ld+json"
           suppressHydrationWarning
           dangerouslySetInnerHTML={{ __html: safeJsonLd(organizationSchema) }}
+        />
+        <script
+          type="application/ld+json"
+          suppressHydrationWarning
+          dangerouslySetInnerHTML={{ __html: safeJsonLd(websiteSchema) }}
         />
         <SiteChrome
           header={

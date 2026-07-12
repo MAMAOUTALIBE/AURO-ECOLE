@@ -145,8 +145,8 @@ export function ReviewSubmissionForm() {
         </button>
       </div>
 
-      {success ? <p className="mt-3 rounded-xl bg-emerald-50 p-3 text-sm font-semibold text-emerald-700">Merci, l&apos;avis est reçu.</p> : null}
-      {error ? <p className="mt-3 rounded-xl bg-rose-50 p-3 text-sm font-semibold text-rose-700">{error}</p> : null}
+      {success ? <p role="status" className="mt-3 rounded-xl bg-emerald-50 p-3 text-sm font-semibold text-emerald-700">Merci, l&apos;avis est reçu.</p> : null}
+      {error ? <p role="alert" className="mt-3 rounded-xl bg-rose-50 p-3 text-sm font-semibold text-rose-700">{error}</p> : null}
     </form>
   );
 }

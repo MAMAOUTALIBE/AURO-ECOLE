@@ -22,7 +22,8 @@ import { getPublicPartners } from "@/lib/partners-public";
 import { formatCurrency } from "@/lib/utils";
 
 export const metadata: Metadata = {
-  title: "LODENE — Auto-école & centre de formation à Conflans",
+  // `absolute` évite le suffixe " | LODENE Auto-École" du template racine (double marque).
+  title: { absolute: "LODENE — Auto-école & centre de formation à Conflans-Sainte-Honorine (78)" },
   description:
     "Auto-école et centre de formation à Conflans-Sainte-Honorine : permis B, VTC, sécurité (SST, CACES) et formations professionnelles IA, CRM & automatisation. Financement OPCO/FAF/CPF, présentiel ou distanciel, accompagnement personnalisé.",
   alternates: { canonical: "/" },

@@ -7,6 +7,7 @@ import { hasPermission } from "../../domain/permissions";
 import type { LodenRepository } from "../../repositories/loden-repository";
 import { asyncHandler } from "../../shared/async-handler";
 import { forbidden } from "../../shared/http-error";
+import { publicFormLimiter } from "../../shared/rate-limit";
 import { validateBody, validateQuery } from "../../shared/validation";
 
 const reviewSchema = z.object({
@@ -62,6 +63,9 @@ export function createReviewsRouter(repository: LodenRepository, config: ApiConf
 
   router.post(
     "/",
+    // Soumission publique (anonyme possible) : même limite anti-abus que les autres
+    // formulaires publics, pour éviter le flood de la file de modération.
+    publicFormLimiter(config),
     optionalAuthenticate,
     asyncHandler(async (req: AuthenticatedRequest, res) => {
       const body = validateBody(reviewSchema, req);

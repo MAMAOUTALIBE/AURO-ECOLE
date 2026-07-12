@@ -16,6 +16,7 @@ export default function robots(): MetadataRoute.Robots {
           "/paiement",
           "/espace-eleve",
           "/espace-formateur",
+          "/espace-partenaire",
           "/mot-de-passe-oublie",
           "/reinitialiser-mot-de-passe",
           "/verifier-email",

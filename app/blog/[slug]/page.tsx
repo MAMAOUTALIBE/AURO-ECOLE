@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
+import { BreadcrumbJsonLd } from "@/components/BreadcrumbJsonLd";
 import { formatDateFr, getContentBySlug, toParagraphs } from "@/lib/content";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
@@ -11,6 +12,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   return {
     title: entry.seoTitle || entry.title,
     description: entry.seoDescription || entry.excerpt || undefined,
+    alternates: { canonical: `/blog/${slug}` },
     openGraph: entry.coverImageUrl ? { images: [{ url: entry.coverImageUrl }] } : undefined
   };
 }
@@ -24,6 +26,13 @@ export default async function BlogArticlePage({ params }: { params: Promise<{ sl
 
   return (
     <main className="bg-white">
+      <BreadcrumbJsonLd
+        items={[
+          { name: "Accueil", path: "/" },
+          { name: "Blog", path: "/blog" },
+          { name: entry.title, path: `/blog/${slug}` }
+        ]}
+      />
       <article className="container-pad py-8 sm:py-16">
         <div className="mx-auto max-w-3xl">
           <Link href="/blog" className="focus-ring inline-flex items-center gap-2 text-sm font-semibold text-loden-700 hover:text-loden-900">

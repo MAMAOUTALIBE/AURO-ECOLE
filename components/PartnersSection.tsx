@@ -38,9 +38,9 @@ export function PartnersSection({ partners }: { partners: PublicPartner[] }) {
       <div className="container-pad">
         <div className="flex flex-col gap-2.5 md:flex-row md:items-end md:justify-between md:gap-5">
           <div className="max-w-2xl">
-            <p className="text-[0.7rem] font-semibold uppercase tracking-[0.12em] text-loden-700 sm:text-sm">NOS PARTENAIRE</p>
+            <p className="text-[0.7rem] font-semibold uppercase tracking-[0.12em] text-loden-700 sm:text-sm">Nos partenaires</p>
             <h2 id="partners-title" className="mt-1.5 text-xl font-semibold leading-tight text-loden-ink sm:mt-2 sm:text-3xl">
-              VENEZ RECUPERER LE BON DE 50 EUROS
+              Récupérez votre bon de 50 € chez nos partenaires
             </h2>
           </div>
           <p className="max-w-md text-sm font-medium leading-5 text-loden-muted sm:leading-6">

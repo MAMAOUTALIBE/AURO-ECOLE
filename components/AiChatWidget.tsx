@@ -802,7 +802,15 @@ export function AiChatWidget() {
   return (
     <>
       {open ? (
-        <div className="fixed inset-x-3 bottom-[calc(4.9rem+env(safe-area-inset-bottom))] z-[120] flex h-[min(82svh,38rem)] flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-premium sm:bottom-24 sm:h-[min(86svh,40rem)] md:left-auto md:right-5 md:w-[24rem]">
+        <div
+          role="dialog"
+          aria-modal={false}
+          aria-label="Assistant LODENE"
+          onKeyDown={(event) => {
+            if (event.key === "Escape") setOpen(false);
+          }}
+          className="fixed inset-x-3 bottom-[calc(4.9rem+env(safe-area-inset-bottom))] z-[120] flex h-[min(82svh,38rem)] flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-premium sm:bottom-24 sm:h-[min(86svh,40rem)] md:left-auto md:right-5 md:w-[24rem]"
+        >
           <div className="flex items-center justify-between gap-3 bg-loden-700 px-4 py-3 text-white">
             <div className="flex min-w-0 items-center gap-2">
               <Sparkles className="h-5 w-5 shrink-0" aria-hidden="true" />
@@ -845,7 +853,7 @@ export function AiChatWidget() {
               <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-soft">{renderFlow()}</div>
             )}
 
-            {flowError ? <p className="rounded-2xl bg-red-50 p-3 text-sm font-medium text-red-700">{flowError}</p> : null}
+            {flowError ? <p role="alert" className="rounded-2xl bg-red-50 p-3 text-sm font-medium text-red-700">{flowError}</p> : null}
             {loading ? <p className="text-xs text-loden-muted">Traitement en cours…</p> : null}
           </div>
 

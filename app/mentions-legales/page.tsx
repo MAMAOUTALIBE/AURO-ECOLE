@@ -12,25 +12,29 @@ const legalSections = [
     content: [
       "LODENE Auto-École",
       contactInfo.address,
+      ...(companyInfo.legalName ? [`Dénomination : ${companyInfo.legalName}`] : []),
+      ...(companyInfo.legalForm ? [`Forme juridique : ${companyInfo.legalForm}`] : []),
+      ...(companyInfo.capital ? [`Capital social : ${companyInfo.capital}`] : []),
       `SIRET : ${companyInfo.siret}`,
       `Numéro d'agrément préfectoral : ${companyInfo.approvalNumber}`,
       ...(contactInfo.email ? [`Email : ${contactInfo.email}`] : []),
-      ...(contactInfo.phone ? [`Téléphone : ${contactInfo.phone}`] : []),
-      "Forme juridique et capital social : à compléter avec les informations officielles de l'établissement."
+      ...(contactInfo.phone ? [`Téléphone : ${contactInfo.phone}`] : [])
     ]
   },
   {
     title: "Directeur de la publication",
     content: [
-      "Direction LODENE Auto-École.",
-      "Cette information doit être confirmée avec le représentant légal avant publication définitive."
+      companyInfo.publicationDirector
+        ? companyInfo.publicationDirector
+        : "La direction de LODENE Auto-École."
     ]
   },
   {
     title: "Hébergement",
     content: [
-      "Hébergeur technique : à renseigner selon le prestataire retenu pour la mise en production.",
-      "Les coordonnées complètes de l'hébergeur doivent être ajoutées avant ouverture publique."
+      "Hébergeur : Hostinger International Ltd",
+      "61 Lordou Vironos Street, 6023 Larnaca, Chypre",
+      "https://www.hostinger.fr"
     ]
   },
   {
@@ -58,8 +62,8 @@ export default function LegalNoticePage() {
           <h1 className="mt-2 text-[1.85rem] font-semibold leading-tight text-loden-ink sm:text-4xl md:mt-3 md:text-[2.8rem]">
             Mentions légales
           </h1>
-          <p className="mt-3 hidden text-sm leading-6 text-loden-muted md:block md:text-base md:leading-7">
-            Les informations ci-dessous cadrent l&apos;éditeur du site, les responsabilités et les éléments à compléter avant la mise en production.
+          <p className="mt-3 text-sm leading-6 text-loden-muted md:text-base md:leading-7">
+            Les informations ci-dessous précisent l&apos;éditeur du site, l&apos;hébergement, la propriété intellectuelle et les responsabilités.
           </p>
         </div>
         <div className="mt-5 grid gap-3 md:mt-7 md:gap-4">
