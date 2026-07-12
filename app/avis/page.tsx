@@ -6,13 +6,13 @@ import { PaginatedReviews } from "@/components/PaginatedReviews";
 import { ReviewCard } from "@/components/GoogleReviewsSection";
 import { firstName, getGoogleReviews } from "@/lib/google-reviews";
 import { safeJsonLd } from "@/lib/json-ld";
-import { SITE_NAME, SITE_URL, absoluteUrl } from "@/lib/seo";
+import { SITE_NAME, SITE_URL, absoluteUrl, buildMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildMetadata({
   title: "Avis",
   description: "Avis des élèves de LODENE Auto-École. Laissez votre avis en quelques secondes, directement sur le site.",
-  alternates: { canonical: "/avis" }
-};
+  path: "/avis"
+});
 
 export default async function AvisPage() {
   const { config, stats, reviews } = await getGoogleReviews();

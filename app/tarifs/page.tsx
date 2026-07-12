@@ -5,12 +5,13 @@ import { PricingPlansGrid } from "@/components/PricingPlansGrid";
 import { PricingDecisionSection } from "@/components/PricingDecisionSection";
 import { SimulatorCard } from "@/components/SimulatorCard";
 import { SectionHeader } from "@/components/SectionHeader";
+import { buildMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildMetadata({
   title: "Tarifs",
   description: "Tarifs permis B, permis accéléré, boîte automatique, CPF et paiement en plusieurs fois chez LODENE.",
-  alternates: { canonical: "/tarifs" }
-};
+  path: "/tarifs"
+});
 
 export default function TarifsPage() {
   return (

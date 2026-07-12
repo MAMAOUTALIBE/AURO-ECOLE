@@ -5,6 +5,7 @@ import type { AuthenticatedRequest } from "../../http/request-context";
 import { authenticate, requirePermission } from "../../middleware/auth";
 import type { LodenRepository } from "../../repositories/loden-repository";
 import { asyncHandler } from "../../shared/async-handler";
+import { honeypotGuard } from "../../shared/anti-spam";
 import { publicFormLimiter } from "../../shared/rate-limit";
 import { emailSchema, phoneSchema, validateBody } from "../../shared/validation";
 
@@ -30,6 +31,7 @@ export function createCpfRouter(repository: LodenRepository, config: ApiConfig) 
   router.post(
     "/requests",
     publicFormLimiter(config),
+    honeypotGuard,
     asyncHandler(async (req, res) => {
       const body = validateBody(cpfRequestSchema, req);
       const cpfRequest = await repository.createCpfRequest(body);

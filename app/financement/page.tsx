@@ -4,13 +4,14 @@ import { ArrowRight, Banknote, Building2, GraduationCap, HandCoins, MapPin, Shie
 import { PageHero } from "@/components/PageHero";
 import { SectionHeader } from "@/components/SectionHeader";
 import { CpfRequestForm } from "@/components/CpfRequestForm";
+import { buildMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildMetadata({
   title: "Financement de votre formation — CPF, LABAZ, OPCO & aides | LODENE",
   description:
     "Financez votre permis ou votre formation professionnelle avec LODENE : CPF selon éligibilité, aide LABAZ (15-25 ans), OPCO/entreprises, aides régionales et accompagnement administratif.",
-  alternates: { canonical: "/financement" }
-};
+  path: "/financement"
+});
 
 const options = [
   {

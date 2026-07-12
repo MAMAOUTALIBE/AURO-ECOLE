@@ -5,13 +5,14 @@ import { PageHero } from "@/components/PageHero";
 import { SectionHeader } from "@/components/SectionHeader";
 import { InscriptionForm } from "@/components/InscriptionForm";
 import { getFormations } from "@/lib/catalog";
+import { buildMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildMetadata({
   title: "Inscription",
   description:
     "Demandez votre inscription à une formation LODENE. Un conseiller vous rappelle pour finaliser votre dossier.",
-  alternates: { canonical: "/inscription" }
-};
+  path: "/inscription"
+});
 
 export default async function InscriptionPage() {
   const formations = await getFormations();

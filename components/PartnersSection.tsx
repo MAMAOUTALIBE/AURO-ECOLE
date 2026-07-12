@@ -50,7 +50,9 @@ export function PartnersSection({ partners }: { partners: PublicPartner[] }) {
         </div>
 
         <div className="mt-3 overflow-hidden py-2.5 sm:mt-4 sm:py-3 md:mt-5 md:py-4">
-          <div className="marquee" role="marquee" aria-label="Partenaires LODENE">
+          {/* Bandeau logos décoratif (défilement) : masqué à l'AT et hors tabulation.
+              Le parcours accessible passe par le lien « Découvrir le réseau » ci-dessus. */}
+          <div className="marquee" aria-hidden="true">
             <div className="marquee-track gap-8 px-2 sm:gap-10 sm:px-3 md:gap-14 md:px-4" style={{ animationDuration: `${Math.max(34, marqueePartners.length * 3)}s` }}>
               {marqueePartners.map((partner, index) => (
                 <PartnerBadge key={`${partner.id}-${index}`} partner={partner} />
@@ -94,6 +96,7 @@ function PartnerBadge({ partner }: { partner: PublicPartner }) {
         target="_blank"
         rel="noopener noreferrer nofollow"
         title={partner.companyName}
+        tabIndex={-1}
         className={`focus-ring ${logoShellClass}`}
       >
         {content}

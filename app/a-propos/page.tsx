@@ -3,12 +3,13 @@ import { values } from "@/data/site";
 import { InstructorsGrid } from "@/components/InstructorsGrid";
 import { PageHero } from "@/components/PageHero";
 import { SectionHeader } from "@/components/SectionHeader";
+import { buildMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildMetadata({
   title: "À propos",
   description: "Découvrez l'histoire, la mission, les valeurs et l'équipe de LODENE Auto-École.",
-  alternates: { canonical: "/a-propos" }
-};
+  path: "/a-propos"
+});
 
 export default function AboutPage() {
   return (

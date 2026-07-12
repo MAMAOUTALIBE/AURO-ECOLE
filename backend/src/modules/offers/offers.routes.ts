@@ -7,6 +7,7 @@ import type { LodenRepository } from "../../repositories/loden-repository";
 import { asyncHandler } from "../../shared/async-handler";
 import { conflict, forbidden } from "../../shared/http-error";
 import { notifyNewLead, sendOffer50VoucherEmail } from "../../shared/mailer";
+import { honeypotGuard } from "../../shared/anti-spam";
 import { publicFormLimiter } from "../../shared/rate-limit";
 import { emailSchema, validateBody } from "../../shared/validation";
 import { buildWhatsAppUrl, sendWhatsAppMessage } from "../../shared/whatsapp";
@@ -163,6 +164,7 @@ export function createOffersRouter(repository: LodenRepository, config: ApiConfi
   router.post(
     "/qr-50",
     publicFormLimiter(config),
+    honeypotGuard,
     asyncHandler(async (req, res) => {
       const body = validateBody(offerLeadSchema, req);
       if (body.code !== OFFER_50_CODE) {

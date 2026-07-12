@@ -69,26 +69,28 @@ export async function HeroSection() {
               Auto-école & centre de formation
             </p>
             <h2 className="mt-4 text-[2.05rem] font-black leading-[1.05] tracking-normal text-white drop-shadow-[0_4px_18px_rgba(0,0,0,0.35)] min-[380px]:text-[2.25rem]">
-              Passez votre permis avec LODENE
+              {hero.scriptLine} {hero.connector} {hero.brand}
             </h2>
             <p className="mt-3 max-w-[22rem] text-sm font-semibold leading-6 text-white/90 drop-shadow-[0_2px_10px_rgba(0,0,0,0.35)]">
-              Auto-école, VTC, SST, logistique & sécurité à Conflans.
+              {hero.subtitle}
             </p>
             <div className="mt-5 grid gap-2 min-[360px]:grid-cols-2">
               <Link
-                href="/inscription"
+                href={hero.primaryCta.href}
                 className="focus-ring inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-loden-700 px-5 py-3 text-sm font-black text-white shadow-[0_18px_45px_rgba(0,134,148,0.35)] transition hover:bg-loden-800"
               >
-                Je m&apos;inscris
+                {hero.primaryCta.label}
                 <ArrowRight className="h-5 w-5" aria-hidden="true" />
               </Link>
-              <Link
-                href="/formations"
-                className="focus-ring inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-white/60 bg-white/95 px-5 py-3 text-sm font-black text-loden-ink shadow-soft transition hover:bg-white"
-              >
-                <BookOpen className="h-5 w-5 text-loden-700" aria-hidden="true" />
-                Voir les formations
-              </Link>
+              {hero.secondaryCta ? (
+                <Link
+                  href={hero.secondaryCta.href}
+                  className="focus-ring inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-white/60 bg-white/95 px-5 py-3 text-sm font-black text-loden-ink shadow-soft transition hover:bg-white"
+                >
+                  <BookOpen className="h-5 w-5 text-loden-700" aria-hidden="true" />
+                  {hero.secondaryCta.label}
+                </Link>
+              ) : null}
             </div>
           </div>
         </div>
@@ -96,19 +98,21 @@ export async function HeroSection() {
         <div className="container-pad pointer-events-none absolute inset-x-0 bottom-28 z-30 hidden md:block">
           <div className="pointer-events-auto flex max-w-xl gap-3">
             <Link
-              href="/inscription"
+              href={hero.primaryCta.href}
               className="focus-ring inline-flex min-h-12 items-center justify-center gap-3 rounded-full bg-loden-700 px-8 py-3.5 text-base font-black text-white shadow-[0_18px_45px_rgba(0,134,148,0.35)] transition hover:bg-loden-800"
             >
-              Je m&apos;inscris
+              {hero.primaryCta.label}
               <ArrowRight className="h-5 w-5" aria-hidden="true" />
             </Link>
-            <Link
-              href="/formations"
-              className="focus-ring inline-flex min-h-12 items-center justify-center gap-3 rounded-full border border-loden-500 bg-white/95 px-8 py-3.5 text-base font-black text-loden-ink shadow-soft transition hover:bg-white"
-            >
-              <BookOpen className="h-5 w-5 text-loden-700" aria-hidden="true" />
-              Voir les formations
-            </Link>
+            {hero.secondaryCta ? (
+              <Link
+                href={hero.secondaryCta.href}
+                className="focus-ring inline-flex min-h-12 items-center justify-center gap-3 rounded-full border border-loden-500 bg-white/95 px-8 py-3.5 text-base font-black text-loden-ink shadow-soft transition hover:bg-white"
+              >
+                <BookOpen className="h-5 w-5 text-loden-700" aria-hidden="true" />
+                {hero.secondaryCta.label}
+              </Link>
+            ) : null}
           </div>
         </div>
 

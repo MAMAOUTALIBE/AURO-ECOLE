@@ -4,12 +4,13 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, BookOpenCheck, Car, HeartPulse, Truck, WalletCards } from "lucide-react";
 import { FormationExplorer } from "@/components/FormationExplorer";
+import { buildMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildMetadata({
   title: "Formations",
   description: "Permis B manuel, automatique, accéléré, conduite accompagnée, code en ligne et perfectionnement avec LODENE.",
-  alternates: { canonical: "/formations" }
-};
+  path: "/formations"
+});
 
 const formationsHeroSlides = [
   {

@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { CheckCircle2, Send } from "lucide-react";
+import { HoneypotField, HONEYPOT_NAME } from "@/components/HoneypotField";
 import { phoneInputProps } from "@/lib/validation";
 import { trackConversion } from "@/lib/analytics";
 import { attributionPayload } from "@/lib/attribution";
@@ -25,7 +26,8 @@ export function InscriptionForm({ formations }: { formations: FormationOption[] 
     lastName: "",
     phone: "",
     email: "",
-    formationSlug: initialSlug
+    formationSlug: initialSlug,
+    [HONEYPOT_NAME]: ""
   });
   const [submitting, setSubmitting] = useState(false);
   const [sent, setSent] = useState(false);
@@ -66,6 +68,7 @@ export function InscriptionForm({ formations }: { formations: FormationOption[] 
           phone: values.phone.trim(),
           formationTitle: formation.title,
           formationSlug: formation.slug,
+          [HONEYPOT_NAME]: values[HONEYPOT_NAME],
           ...attributionPayload()
         })
       });
@@ -75,7 +78,7 @@ export function InscriptionForm({ formations }: { formations: FormationOption[] 
       }
       trackConversion("inscription_submit", formation.title);
       setSent(true);
-      setValues({ firstName: "", lastName: "", phone: "", email: "", formationSlug: initialSlug });
+      setValues({ firstName: "", lastName: "", phone: "", email: "", formationSlug: initialSlug, [HONEYPOT_NAME]: "" });
     } catch (e) {
       setError(e instanceof Error ? e.message : "Envoi impossible. Réessaie dans un instant.");
     } finally {
@@ -89,6 +92,7 @@ export function InscriptionForm({ formations }: { formations: FormationOption[] 
       className="rounded-xl border border-slate-200 bg-white p-4 shadow-premium sm:rounded-2xl md:rounded-3xl md:p-6"
       noValidate
     >
+      <HoneypotField field={{ name: HONEYPOT_NAME, value: values[HONEYPOT_NAME], onChange: set(HONEYPOT_NAME) }} />
       <div className="grid gap-3 sm:grid-cols-2 md:gap-4">
         <Field label="Prénom">
           <input className="field-input" value={values.firstName} onChange={set("firstName")} placeholder="Prénom" autoComplete="given-name" />
@@ -127,7 +131,7 @@ export function InscriptionForm({ formations }: { formations: FormationOption[] 
       {sent ? (
         <p className="mt-4 flex items-center gap-2 rounded-2xl bg-loden-50 p-3 text-sm font-medium text-loden-800" role="status">
           <CheckCircle2 className="h-5 w-5" />
-          Demande envoyée — nous vous rappelons pour finaliser l&apos;inscription.
+          Demande envoyée — nous te rappelons pour finaliser ton inscription.
         </p>
       ) : null}
       {error ? (

@@ -6,6 +6,7 @@ import { qualifyLead } from "../../ai/qualify";
 import type { LodenRepository } from "../../repositories/loden-repository";
 import { asyncHandler } from "../../shared/async-handler";
 import { notifyNewLead } from "../../shared/mailer";
+import { honeypotGuard } from "../../shared/anti-spam";
 import { publicFormLimiter } from "../../shared/rate-limit";
 import { attributionSchema, emailSchema, phoneSchema, pickAttribution, validateBody } from "../../shared/validation";
 
@@ -29,6 +30,7 @@ export function createInscriptionsRouter(repository: LodenRepository, config: Ap
   router.post(
     "/",
     publicFormLimiter(config),
+    honeypotGuard,
     asyncHandler(async (req, res) => {
       const body = validateBody(inscriptionSchema, req);
       const fullName = `${body.firstName} ${body.lastName}`.trim();

@@ -5,13 +5,14 @@ import { BreadcrumbJsonLd } from "@/components/BreadcrumbJsonLd";
 import { CpfRequestForm } from "@/components/CpfRequestForm";
 import { PageHero } from "@/components/PageHero";
 import { SectionHeader } from "@/components/SectionHeader";
+import { buildMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildMetadata({
   title: "Auto-école CPF Conflans-Sainte-Honorine",
   description:
     "Financez votre permis avec le CPF à Conflans-Sainte-Honorine (78) avec LODENE Auto-École : diagnostic, devis, accompagnement administratif et planning adapté.",
-  alternates: { canonical: "/auto-ecole-cpf-conflans-sainte-honorine" }
-};
+  path: "/auto-ecole-cpf-conflans-sainte-honorine"
+});
 
 const cpfFaq = [
   {

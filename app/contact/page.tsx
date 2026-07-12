@@ -5,12 +5,13 @@ import { ContactForm } from "@/components/ContactForm";
 import { LocalMapPanel } from "@/components/LocalMapPanel";
 import { PageHero } from "@/components/PageHero";
 import { contactInfo } from "@/data/site";
+import { buildMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildMetadata({
   title: "Contact",
   description: "Contacter LODENE Auto-École, demander une inscription, écrire ou trouver le point de rendez-vous à Conflans-Sainte-Honorine.",
-  alternates: { canonical: "/contact" }
-};
+  path: "/contact"
+});
 
 type ContactTile = { icon: LucideIcon; label: string; value: string; href?: string };
 

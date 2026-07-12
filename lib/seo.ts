@@ -14,3 +14,31 @@ export function absoluteUrl(path = "/"): string {
 
 /** Image Open Graph par défaut (absolue). */
 export const OG_IMAGE = absoluteUrl("/loden-hero.jpg");
+
+type PageMeta = {
+  title: string;
+  description: string;
+  /** Chemin canonique relatif (ex. `/tarifs`). */
+  path: string;
+};
+
+/**
+ * Construit les métadonnées d'une page publique : titre, description, canonique
+ * ET Open Graph unique (évite le repli sur l'OG générique du layout racine). Le
+ * suffixe de marque n'est ajouté à l'OG que si le titre ne contient pas déjà
+ * « LODENE » (pas de double marque). Retourne un objet compatible `Metadata`.
+ */
+export function buildMetadata({ title, description, path }: PageMeta) {
+  const ogTitle = title.includes("LODENE") ? title : `${title} | ${SITE_NAME}`;
+  return {
+    title,
+    description,
+    alternates: { canonical: path },
+    openGraph: {
+      title: ogTitle,
+      description,
+      url: path,
+      type: "website" as const
+    }
+  };
+}

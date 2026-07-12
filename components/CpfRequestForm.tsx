@@ -2,9 +2,10 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FileCheck2, Send } from "lucide-react";
-import { cloneElement, isValidElement, useState } from "react";
+import { cloneElement, isValidElement, useId, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { HoneypotField, HONEYPOT_NAME } from "@/components/HoneypotField";
 import { phoneInputProps, phoneSchema } from "@/lib/validation";
 import { trackConversion } from "@/lib/analytics";
 
@@ -28,7 +29,8 @@ const schema = z.object({
     .trim()
     .optional()
     .refine((value) => !value || Number(value) >= 0, "Montant invalide"),
-  note: z.string().trim().max(400, "Message trop long").optional()
+  note: z.string().trim().max(400, "Message trop long").optional(),
+  [HONEYPOT_NAME]: z.string().optional()
 });
 
 type CpfFormValues = z.infer<typeof schema>;
@@ -67,7 +69,8 @@ export function CpfRequestForm() {
         phone: values.phone,
         formationId: values.formationId,
         requestedAmountCents,
-        internalNotes: values.note || undefined
+        internalNotes: values.note || undefined,
+        [HONEYPOT_NAME]: values[HONEYPOT_NAME]
       })
     });
 
@@ -83,6 +86,7 @@ export function CpfRequestForm() {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="rounded-xl border border-slate-200 bg-white p-4 shadow-premium sm:rounded-2xl md:rounded-3xl md:p-6" noValidate>
+      <HoneypotField field={register(HONEYPOT_NAME)} />
       <div className="flex items-start gap-3 border-b border-slate-200 pb-4 md:pb-5">
         <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-loden-50 text-loden-700 md:h-11 md:w-11 md:rounded-2xl">
           <FileCheck2 className="h-5 w-5" />
@@ -134,7 +138,7 @@ export function CpfRequestForm() {
         className="focus-ring mt-5 inline-flex w-full items-center justify-center gap-2 rounded-full bg-loden-700 px-6 py-3.5 font-semibold text-white transition hover:bg-loden-800 disabled:cursor-not-allowed disabled:opacity-70 md:mt-6 md:py-4"
       >
         <Send className="h-5 w-5" />
-        {isSubmitting ? "Analyse en cours..." : "Envoyer ma demande CPF"}
+        {isSubmitting ? "Analyse en cours…" : "Envoyer ma demande CPF"}
       </button>
 
       {sent ? (
@@ -162,16 +166,20 @@ function Field({
   children: React.ReactNode;
   className?: string;
 }) {
+  const errorId = useId();
   const field =
     error && isValidElement(children)
-      ? cloneElement(children as React.ReactElement<{ "aria-invalid"?: boolean }>, { "aria-invalid": true })
+      ? cloneElement(children as React.ReactElement<{ "aria-invalid"?: boolean; "aria-describedby"?: string }>, {
+          "aria-invalid": true,
+          "aria-describedby": errorId
+        })
       : children;
   return (
     <label className={`grid gap-2 ${className}`}>
       <span className="text-sm font-semibold text-loden-ink">{label}</span>
       {field}
       {error ? (
-        <span className="text-sm font-medium text-red-600" role="alert">
+        <span id={errorId} className="text-sm font-medium text-red-600" role="alert">
           {error}
         </span>
       ) : null}

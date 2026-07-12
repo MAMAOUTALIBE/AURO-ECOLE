@@ -5,13 +5,14 @@ import { BreadcrumbJsonLd } from "@/components/BreadcrumbJsonLd";
 import { PageHero } from "@/components/PageHero";
 import { SectionHeader } from "@/components/SectionHeader";
 import { companyInfo, contactInfo } from "@/data/site";
+import { buildMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildMetadata({
   title: "Permis B à Conflans-Sainte-Honorine",
   description:
     "Passez votre permis B à Conflans-Sainte-Honorine (78) avec LODENE Auto-École : boîte manuelle ou automatique, CPF et planning flexible.",
-  alternates: { canonical: "/permis-b-conflans-sainte-honorine" }
-};
+  path: "/permis-b-conflans-sainte-honorine"
+});
 
 const highlights = [
   "Formation permis B manuel ou automatique",

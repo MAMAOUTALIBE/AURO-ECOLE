@@ -141,7 +141,7 @@ export function ReviewSubmissionForm() {
           className="focus-ring inline-flex w-full items-center justify-center gap-2 rounded-xl bg-loden-700 px-5 py-3 text-sm font-bold text-white shadow-soft transition hover:bg-loden-800 disabled:opacity-70 sm:w-auto"
         >
           <Send className="h-4 w-4" aria-hidden="true" />
-          {submitting ? "Envoi..." : "Envoyer l'avis"}
+          {submitting ? "Envoi…" : "Envoyer l'avis"}
         </button>
       </div>
 

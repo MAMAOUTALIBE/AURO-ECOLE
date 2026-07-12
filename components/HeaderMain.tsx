@@ -143,9 +143,14 @@ function DropdownPill({
           onClose();
         }
       }}
+      onKeyDown={(event) => {
+        if (event.key === "Escape") onClose();
+      }}
     >
       <Link
         href={item.href}
+        aria-haspopup="menu"
+        aria-expanded={open}
         className={cn(
           "focus-ring inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-transparent bg-transparent px-3.5 py-2 text-sm font-semibold text-loden-ink transition hover:border-loden-100 hover:bg-loden-fog hover:text-loden-800",
           active && "border-loden-200 bg-loden-petrol text-loden-800"
@@ -227,6 +232,7 @@ export function HeaderMain({ nav, ctas }: { nav?: NavPrimary; ctas?: NavCtas }) 
               className="focus-ring inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white text-loden-ink shadow-soft transition hover:border-loden-200 hover:bg-loden-50"
               aria-label={menuOpen ? "Fermer le menu" : "Ouvrir le menu"}
               aria-expanded={menuOpen}
+              aria-controls="mobile-nav-menu"
             >
               {menuOpen ? <X className="h-5 w-5" aria-hidden="true" /> : <Menu className="h-5 w-5" aria-hidden="true" />}
             </button>
@@ -291,6 +297,7 @@ export function HeaderMain({ nav, ctas }: { nav?: NavPrimary; ctas?: NavCtas }) 
               className="focus-ring inline-flex h-11 w-11 items-center justify-center rounded-full border border-loden-200 bg-white text-loden-800 shadow-[0_8px_24px_rgba(20,33,38,0.08)] transition hover:bg-loden-50 sm:h-12 sm:w-12"
               aria-label={menuOpen ? "Fermer le menu" : "Ouvrir le menu"}
               aria-expanded={menuOpen}
+              aria-controls="mobile-nav-menu"
             >
               {menuOpen ? <X className="h-5 w-5" aria-hidden="true" /> : <Menu className="h-5 w-5" aria-hidden="true" />}
             </button>
@@ -298,7 +305,13 @@ export function HeaderMain({ nav, ctas }: { nav?: NavPrimary; ctas?: NavCtas }) 
         </div>
 
         {menuOpen ? (
-          <div className="mt-2 max-h-[calc(100dvh-4.75rem)] overflow-y-auto rounded-[1.35rem] border border-slate-200/80 bg-white p-3 shadow-premium xl:hidden md:mt-3 sm:rounded-[1.75rem]">
+          <div
+            id="mobile-nav-menu"
+            onKeyDown={(event) => {
+              if (event.key === "Escape") setMenuOpen(false);
+            }}
+            className="mt-2 max-h-[calc(100dvh-4.75rem)] overflow-y-auto rounded-[1.35rem] border border-slate-200/80 bg-white p-3 shadow-premium xl:hidden md:mt-3 sm:rounded-[1.75rem]"
+          >
             <nav className="grid min-w-0 gap-4" aria-label="Navigation mobile">
               <div className="min-w-0">
                 <p className="px-1 text-xs font-bold uppercase tracking-[0.12em] text-loden-700">Aller à l&apos;essentiel</p>

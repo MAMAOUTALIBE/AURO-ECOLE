@@ -5,12 +5,13 @@ import { FaqSection } from "@/components/FaqSection";
 import { PageHero } from "@/components/PageHero";
 import { SectionHeader } from "@/components/SectionHeader";
 import { getFaqEntries } from "@/lib/faq";
+import { buildMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildMetadata({
   title: "CPF et financement",
   description: "Financer son permis avec le CPF, paiement en plusieurs fois, aides régionales et accompagnement administratif LODENE.",
-  alternates: { canonical: "/cpf" }
-};
+  path: "/cpf"
+});
 
 export default async function CpfPage() {
   const faqItems = await getFaqEntries();

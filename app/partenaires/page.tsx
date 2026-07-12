@@ -3,12 +3,13 @@ import Image from "next/image";
 import Link from "next/link";
 import { ExternalLink, Instagram, Mail, MapPin, Phone } from "lucide-react";
 import { featuredPartners } from "@/data/partners";
+import { buildMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildMetadata({
   title: "Nos partenaires",
   description: "Découvrez les entreprises et commerces locaux partenaires de LODENE Auto-École.",
-  alternates: { canonical: "/partenaires" }
-};
+  path: "/partenaires"
+});
 
 function phoneHref(phone: string) {
   return `tel:${phone.replace(/\s/g, "")}`;
