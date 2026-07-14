@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { ExternalLink, Star } from "lucide-react";
-import { ReviewSubmissionForm } from "@/components/ReviewSubmissionForm";
 import { ReviewsGrid } from "@/components/ReviewsGrid";
 import { PaginatedReviews } from "@/components/PaginatedReviews";
 import { ReviewCard } from "@/components/GoogleReviewsSection";
@@ -54,23 +53,23 @@ export default async function AvisPage() {
         dangerouslySetInnerHTML={{ __html: safeJsonLd(reviewSchema) }}
       />
       <section className="bg-loden-pearl py-5 md:py-10">
-        <div className="container-pad grid gap-5 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-loden-700 md:text-sm">Avis clients</p>
-            <h1 className="mt-2 text-[1.85rem] font-semibold leading-tight text-loden-ink sm:text-4xl md:text-[2.8rem]">
-              Votre avis compte
-            </h1>
-            {config.reviewUrl ? (
-              <>
-                <p className="mt-2 max-w-xl text-sm leading-6 text-loden-muted md:mt-3 md:text-base md:leading-7">
-                  Vous avez suivi une formation avec LODENE ? Publiez votre avis sur Google en quelques
-                  secondes : c&apos;est le plus utile pour les futurs élèves — et il s&apos;affiche ensuite ici.
-                </p>
+        <div className="container-pad mx-auto max-w-2xl text-center">
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-loden-700 md:text-sm">Avis clients</p>
+          <h1 className="mt-2 text-[1.85rem] font-semibold leading-tight text-loden-ink sm:text-4xl md:text-[2.8rem]">
+            Votre avis compte
+          </h1>
+          {config.reviewUrl ? (
+            <>
+              <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-loden-muted md:mt-3 md:text-base md:leading-7">
+                Vous avez suivi une formation avec LODENE ? Publiez votre avis sur Google en quelques
+                secondes : c&apos;est le plus utile pour les futurs élèves — et il s&apos;affiche ensuite ici.
+              </p>
+              <div className="mt-5 flex flex-col items-center gap-3">
                 <a
                   href={config.reviewUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="focus-ring mt-4 inline-flex items-center justify-center gap-2 rounded-full bg-loden-700 px-6 py-3.5 font-semibold text-white shadow-soft transition hover:bg-loden-800"
+                  className="focus-ring inline-flex items-center justify-center gap-2 rounded-full bg-loden-700 px-6 py-3.5 font-semibold text-white shadow-soft transition hover:bg-loden-800"
                 >
                   <Star className="h-5 w-5" aria-hidden="true" />
                   Laisser un avis sur Google
@@ -80,29 +79,20 @@ export default async function AvisPage() {
                     href={config.profileUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="focus-ring mt-3 flex w-fit items-center gap-1.5 rounded text-sm font-semibold text-loden-700 hover:text-loden-900"
+                    className="focus-ring inline-flex items-center gap-1.5 rounded text-sm font-semibold text-loden-700 hover:text-loden-900"
                   >
                     <ExternalLink className="h-4 w-4" aria-hidden="true" />
                     Voir tous nos avis Google
                   </a>
                 ) : null}
-              </>
-            ) : (
-              <p className="mt-2 max-w-xl text-sm leading-6 text-loden-muted md:mt-3 md:text-base md:leading-7">
-                Vous avez suivi une formation avec LODENE ? Partagez votre expérience en quelques secondes,
-                directement ici. Votre avis sera publié après validation.
-              </p>
-            )}
-          </div>
-
-          <div>
-            {config.reviewUrl ? (
-              <p className="mb-3 text-sm font-semibold text-loden-ink">
-                Pas de compte Google ? Laissez votre avis directement ici :
-              </p>
-            ) : null}
-            <ReviewSubmissionForm googleReviewUrl={config.reviewUrl} />
-          </div>
+              </div>
+            </>
+          ) : (
+            <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-loden-muted md:mt-3 md:text-base md:leading-7">
+              Vous avez suivi une formation avec LODENE ? Merci de votre confiance — vos avis nous aident
+              à accompagner les futurs élèves.
+            </p>
+          )}
         </div>
       </section>
 
