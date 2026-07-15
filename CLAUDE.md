@@ -99,7 +99,7 @@ When editing CMS content, **keep `lib/site-content.ts` defaults in sync with `ba
 
 ### SEO: one canonical URL drives everything
 
-[lib/seo.ts](lib/seo.ts) exports `SITE_URL` — the single source of the canonical domain (`NEXT_PUBLIC_SITE_URL`, default `https://lodene.org`). `absoluteUrl()` and `OG_IMAGE` derive from it; the dynamic [app/sitemap.ts](app/sitemap.ts) and [app/robots.ts](app/robots.ts) (which blocks private/tunnel routes), plus canonicals and Open Graph in page metadata, all flow from `SITE_URL`. To switch the canonical domain, set `NEXT_PUBLIC_SITE_URL` — no other code change. Structured data is emitted via `safeJsonLd()` in [lib/json-ld.ts](lib/json-ld.ts), which escapes `<`/`>`/`&` so API-sourced content (reviews, FAQ) can't break out of the `<script type="application/ld+json">` tag (XSS guard) — always serialize JSON-LD through it, never raw `JSON.stringify`.
+[lib/seo.ts](lib/seo.ts) exports `SITE_URL` — the single source of the canonical domain (`NEXT_PUBLIC_SITE_URL`, default `https://lodene.fr` since the 2026-06-26 migration; `lodene.org` now 301-redirects to it). `absoluteUrl()` and `OG_IMAGE` derive from it; the dynamic [app/sitemap.ts](app/sitemap.ts) and [app/robots.ts](app/robots.ts) (which blocks private/tunnel routes), plus canonicals and Open Graph in page metadata, all flow from `SITE_URL`. To switch the canonical domain, set `NEXT_PUBLIC_SITE_URL` — no other code change. Structured data is emitted via `safeJsonLd()` in [lib/json-ld.ts](lib/json-ld.ts), which escapes `<`/`>`/`&` so API-sourced content (reviews, FAQ) can't break out of the `<script type="application/ld+json">` tag (XSS guard) — always serialize JSON-LD through it, never raw `JSON.stringify`.
 
 ### Config & environment
 
