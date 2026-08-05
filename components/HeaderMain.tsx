@@ -201,14 +201,12 @@ export function HeaderMain({ nav, ctas }: { nav?: NavPrimary; ctas?: NavCtas }) 
   const items = publicNavItems(nav ?? defaultNavPrimary);
   const ctaItems: NavCta[] = (ctas ?? defaultNavCtas).items.filter((item) => item.active && !isStudentAccountHref(item.href));
   const formationItem = items.find((item) => item.id === "formations");
-  // « Choix rapides » du menu mobile : tous les sous-liens actifs de « Formations »,
-  // pilotés par le CMS. Une liste blanche d'ids figurait ici : toute entrée ajoutée
-  // au menu depuis le CRM disparaissait silencieusement du mobile. On écarte
-  // seulement « Toutes les formations », déjà présent dans la liste principale.
-  // La rangée défile horizontalement : le nombre d'entrées ne casse pas la mise en page.
-  const keyFormationLinks = (formationItem?.children ?? [])
-    .filter((child) => child.id !== "toutes")
-    .slice(0, 8);
+  // « Choix rapides » du menu mobile : miroir exact du sous-menu « Formations » du
+  // desktop, piloté par le CMS. Aucun filtrage ni troncature — une liste blanche
+  // d'ids figurait ici, et toute entrée ajoutée depuis le CRM disparaissait
+  // silencieusement du mobile. La rangée défile horizontalement, donc le nombre
+  // d'entrées ne casse pas la mise en page.
+  const keyFormationLinks = formationItem?.children ?? [];
   const mobileMainLinks = [
     { href: "/formations", label: "Formations", icon: GraduationCap },
     { href: "/tarifs", label: "Tarifs", icon: CreditCard },
