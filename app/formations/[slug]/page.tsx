@@ -10,6 +10,7 @@ import { getFormationBySlug, getFormations } from "@/lib/catalog";
 import { formatCurrency } from "@/lib/utils";
 import { safeJsonLd } from "@/lib/json-ld";
 import { SITE_NAME, SITE_URL, absoluteUrl } from "@/lib/seo";
+import { PASSERELLE_ANCIENNETE, PASSERELLE_DUREE, PASSERELLE_PATH } from "@/lib/passerelle";
 
 type PageProps = {
   params: Promise<{ slug: string }>;
@@ -26,6 +27,10 @@ type CuratedFormationContent = {
   fundingIcon: HeroBadgeIcon;
   description: string;
   keyPoints: string[];
+  /** Remplace les 4 étapes génériques du bloc « Programme » par un déroulé propre à la formation. */
+  programSteps?: { title: string; text: string }[];
+  /** Lien vers une page dédiée plus détaillée (ex. landing passerelle), affiché sous l'objectif. */
+  relatedPage?: { href: string; label: string };
 };
 
 const CURATED_FORMATION_CONTENT: Record<string, CuratedFormationContent> = {
@@ -42,7 +47,8 @@ const CURATED_FORMATION_CONTENT: Record<string, CuratedFormationContent> = {
       "13 h de conduite pour démarrer vite",
       "Rythme efficace et objectifs ciblés",
       "CPF possible selon dossier"
-    ]
+    ],
+    relatedPage: { href: PASSERELLE_PATH, label: "Passer en boîte manuelle plus tard ? La passerelle" }
   },
   "permis-b-auto-maitrise": {
     kicker: "Pôle Auto-école · Permis B",
@@ -57,7 +63,8 @@ const CURATED_FORMATION_CONTENT: Record<string, CuratedFormationContent> = {
       "20 h de conduite pour plus d'aisance",
       "Rythme progressif et serein",
       "CPF possible selon dossier"
-    ]
+    ],
+    relatedPage: { href: PASSERELLE_PATH, label: "Passer en boîte manuelle plus tard ? La passerelle" }
   },
   "permis-b-manuel-essentiel": {
     kicker: "Pôle Auto-école · Permis B",
@@ -107,17 +114,36 @@ const CURATED_FORMATION_CONTENT: Record<string, CuratedFormationContent> = {
   "passerelle-bva-manuelle": {
     kicker: "Pôle Auto-école · Permis B",
     title: "Passerelle BVA vers boîte manuelle",
-    subtitle: "Complément de formation — reprenez la main sur la boîte manuelle.",
+    subtitle: `Formation de ${PASSERELLE_DUREE} — levez la mention 78 de votre permis B.`,
     priceLabel: "Sur devis",
     fundingLabel: "Financement accompagné",
     fundingIcon: "Building2",
-    description: "Une formation courte pour évoluer d'un permis boîte automatique vers la boîte manuelle, avec un travail ciblé sur les bons réflexes.",
+    description: `Votre permis B a été obtenu sur boîte automatique : la mention « 78 » vous limite à ce type de véhicule. La formation passerelle de ${PASSERELLE_DUREE} lève cette restriction, sans repasser le code ni l'examen de conduite.`,
     keyPoints: [
-      "Transition de la BVA vers la boîte manuelle",
-      "Travail du levier et de l'embrayage",
-      "Formation courte et ciblée",
+      `${PASSERELLE_DUREE} de formation, sans nouvel examen`,
+      `Accessible dès ${PASSERELLE_ANCIENNETE} de permis boîte automatique`,
+      "Attestation remise en fin de formation",
       "Devis clair avant inscription"
-    ]
+    ],
+    programSteps: [
+      {
+        title: "Vérification de votre éligibilité",
+        text: `Contrôle de la mention 78 sur votre titre et de votre ancienneté (${PASSERELLE_ANCIENNETE} minimum), puis remise du devis.`
+      },
+      {
+        title: "Théorie : comprendre la boîte mécanique",
+        text: "Embrayage, point de patinage, choix des rapports et freinage moteur — ce qui change vraiment par rapport à l'automatique."
+      },
+      {
+        title: "Pratique : installer les automatismes",
+        text: "Démarrages, passages de rapports et manœuvres hors circulation, puis conduite en circulation jusqu'à l'autonomie."
+      },
+      {
+        title: "Attestation et nouveau permis",
+        text: "Remise de l'attestation de suivi le jour même, et accompagnement sur la demande de nouveau titre auprès de l'ANTS."
+      }
+    ],
+    relatedPage: { href: PASSERELLE_PATH, label: "Tout savoir sur la passerelle" }
   },
   "conduite-accompagnee": {
     kicker: "Pôle Auto-école · Permis B",
@@ -593,12 +619,18 @@ export default async function FormationDetailPage({ params }: PageProps) {
       : {})
   };
 
-  const programSteps = [
-    isIaCrm ? "Diagnostic des outils et priorités métier" : "Diagnostic du niveau et choix du rythme",
-    isIaCrm ? "Mise en place d'un mini-CRM simple" : "Créneaux planifiés avec un moniteur référent",
-    isIaCrm ? "Cas d'usage IA et relances automatisées" : "Suivi de progression et ajustement des objectifs",
-    isIaCrm ? "Plan d'action pour déployer en autonomie" : "Préparation à l'examen ou à l'objectif de conduite"
-  ];
+  // Déroulé générique par défaut ; une formation peut le remplacer via `programSteps`.
+  const genericStepText = "Une action claire, un livrable utile et une prochaine étape visible.";
+  const programSteps: { title: string; text: string }[] =
+    curatedContent?.programSteps ??
+    [
+      isIaCrm ? "Diagnostic des outils et priorités métier" : "Diagnostic du niveau et choix du rythme",
+      isIaCrm ? "Mise en place d'un mini-CRM simple" : "Créneaux planifiés avec un moniteur référent",
+      isIaCrm ? "Cas d'usage IA et relances automatisées" : "Suivi de progression et ajustement des objectifs",
+      isIaCrm ? "Plan d'action pour déployer en autonomie" : "Préparation à l'examen ou à l'objectif de conduite"
+    ].map((title) => ({ title, text: genericStepText }));
+
+  const relatedPage = curatedContent?.relatedPage ?? (isIaCrm ? { href: "/digital", label: "Voir le programme détaillé" } : undefined);
 
   const guarantees = [
     isIaCrm
@@ -678,9 +710,9 @@ export default async function FormationDetailPage({ params }: PageProps) {
             <p className="mt-3 max-w-3xl text-sm leading-7 text-loden-muted md:text-base">
               {bodyDescription}
             </p>
-            {isIaCrm ? (
-              <Link href="/digital" className="focus-ring mt-3 inline-flex rounded-full text-sm font-black text-loden-700 hover:text-loden-900">
-                Voir le programme détaillé
+            {relatedPage ? (
+              <Link href={relatedPage.href} className="focus-ring mt-3 inline-flex rounded-full text-sm font-black text-loden-700 hover:text-loden-900">
+                {relatedPage.label}
               </Link>
             ) : null}
           </div>
@@ -701,7 +733,7 @@ export default async function FormationDetailPage({ params }: PageProps) {
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
               <p className="text-xs font-black uppercase tracking-[0.14em] text-loden-700">Programme</p>
-              <h2 className="mt-2 text-2xl font-black text-loden-ink sm:text-3xl">4 étapes concrètes</h2>
+              <h2 className="mt-2 text-2xl font-black text-loden-ink sm:text-3xl">{programSteps.length} étapes concrètes</h2>
             </div>
             <span className="rounded-full bg-loden-50 px-4 py-2 text-sm font-black text-loden-700">
               {formation.duration}
@@ -710,14 +742,12 @@ export default async function FormationDetailPage({ params }: PageProps) {
 
           <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {programSteps.map((step, index) => (
-              <article key={step} className="rounded-2xl border border-slate-200 bg-loden-pearl p-4 shadow-soft">
+              <article key={step.title} className="rounded-2xl border border-slate-200 bg-loden-pearl p-4 shadow-soft">
                 <span className="grid h-9 w-9 place-items-center rounded-xl bg-white text-sm font-black text-loden-700 shadow-soft">
                   {index + 1}
                 </span>
-                <h3 className="mt-3 text-sm font-black leading-6 text-loden-ink">{step}</h3>
-                <p className="mt-2 text-xs font-semibold leading-5 text-loden-muted">
-                  Une action claire, un livrable utile et une prochaine étape visible.
-                </p>
+                <h3 className="mt-3 text-sm font-black leading-6 text-loden-ink">{step.title}</h3>
+                <p className="mt-2 text-xs font-semibold leading-5 text-loden-muted">{step.text}</p>
               </article>
             ))}
           </div>

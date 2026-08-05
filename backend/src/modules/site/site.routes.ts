@@ -76,6 +76,23 @@ const googleReviewsSchema = z.object({
   fallbackCount: z.number().int().min(0).max(100000).default(0)
 });
 
+// Page passerelle « boîte auto → boîte manuelle » : illustration et documents
+// téléchargeables, tous deux choisis dans la médiathèque depuis le CRM.
+const passerelleDocumentSchema = z.object({
+  id: z.string().trim().min(1).max(60),
+  label: z.string().trim().min(1).max(120),
+  description: z.string().trim().max(200).optional().default(""),
+  url: z.string().trim().min(1).max(300)
+});
+
+const passerellePageSchema = z.object({
+  image: z.string().trim().max(300).optional().default(""),
+  imageAlt: z.string().trim().max(200).optional().default(""),
+  documentsTitle: z.string().trim().max(120).optional().default("Documents à télécharger"),
+  documentsIntro: z.string().trim().max(300).optional().default(""),
+  documents: z.array(passerelleDocumentSchema).max(12).default([])
+});
+
 // Schéma générique pour les clés autorisées sans schéma dédié (phases ultérieures).
 const genericSchema = z.record(z.string(), z.unknown());
 
@@ -83,7 +100,8 @@ const KEY_SCHEMAS: Record<string, z.ZodTypeAny> = {
   "nav.primary": navPrimarySchema,
   "nav.ctas": navCtasSchema,
   "hero.home": heroHomeSchema,
-  "google.reviews": googleReviewsSchema
+  "google.reviews": googleReviewsSchema,
+  "page.passerelle": passerellePageSchema
 };
 
 // Liste blanche des clés pilotables depuis le CMS (évite l'écriture de clés arbitraires).
@@ -92,6 +110,7 @@ const ALLOWED_KEYS = new Set<string>([
   "nav.ctas",
   "hero.home",
   "google.reviews",
+  "page.passerelle",
   "footer",
   "sections.home",
   "hours",

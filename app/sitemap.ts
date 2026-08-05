@@ -12,6 +12,7 @@ const staticRoutes: { path: string; priority: number; changeFrequency: MetadataR
   { path: "/tarifs", priority: 0.9, changeFrequency: "monthly" },
   { path: "/cpf", priority: 0.8, changeFrequency: "monthly" },
   { path: "/financement", priority: 0.8, changeFrequency: "monthly" },
+  { path: "/passerelle-boite-automatique-manuelle", priority: 0.8, changeFrequency: "monthly" },
   { path: "/permis-b-conflans-sainte-honorine", priority: 0.8, changeFrequency: "monthly" },
   { path: "/auto-ecole-cpf-conflans-sainte-honorine", priority: 0.8, changeFrequency: "monthly" },
   { path: "/vtc", priority: 0.7, changeFrequency: "monthly" },
