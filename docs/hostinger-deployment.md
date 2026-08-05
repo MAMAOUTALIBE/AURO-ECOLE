@@ -155,16 +155,31 @@ Parcours manuels :
 
 ```bash
 cd /var/www/loden-auto-ecole
-git pull
+set -eo pipefail
+git pull --ff-only
 set -a
 . ./.env.production
 set +a
-npm ci
+npm ci --include=dev
 npm run db:migrate:deploy
 npm run deploy:build
 pm2 reload ecosystem.config.cjs --env production
 pm2 save
 ```
+
+⚠️ **`npm ci --include=dev` est obligatoire, pas une préférence.** `.env.production` contient
+`NODE_ENV=production` ; comme il est chargé juste avant, un `npm ci` nu **omet les
+`devDependencies`**. `npm run deploy:build` échoue alors à l'étape `api:build` sur des erreurs
+`TS7016: Could not find a declaration file for module 'express'` (TypeScript et les paquets
+`@types/*` sont des devDependencies nécessaires à la compilation).
+
+⚠️ **Ne jamais rediriger ces commandes dans un `| tail`** pour raccourcir la sortie : un pipe
+renvoie le code de sortie du *dernier* maillon, donc `set -e` ne se déclenche pas et un build
+cassé peut être suivi d'un `pm2 reload`. D'où le `set -eo pipefail` en tête.
+
+En cas de doute, séparer le build du rechargement : lancer `npm run deploy:build` seul, vérifier
+qu'il se termine bien, puis seulement `pm2 reload`. Tant que pm2 n'est pas rechargé, la production
+continue de servir la version précédente.
 
 ## Points non couverts par le code
 
