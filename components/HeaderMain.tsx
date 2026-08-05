@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { LucideIcon } from "lucide-react";
-import { ArrowRight, BookOpenCheck, ChevronDown, CreditCard, GraduationCap, Menu, MessageCircle, Sparkles, Star, UserRound, X } from "lucide-react";
+import { ArrowRight, ChevronDown, Menu, X } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import {
@@ -36,6 +36,19 @@ function isItemActive(pathname: string, item: NavItem) {
 function isStudentAccountHref(href: string) {
   return hrefPath(href) === "/espace-eleve";
 }
+
+/**
+ * Seule entrée de navigation non pilotée par le CMS, et volontairement :
+ * c'est la porte d'entrée d'authentification. La retirer depuis le CRM
+ * enfermerait les utilisateurs dehors — elle doit donc toujours exister.
+ */
+const ACCOUNT_LINK: NavItem = {
+  id: "connexion",
+  label: "Connexion",
+  href: "/connexion",
+  active: true,
+  icon: "UserRound"
+};
 
 function publicNavItems(nav: NavPrimary): NavItem[] {
   return nav.items
@@ -200,21 +213,11 @@ export function HeaderMain({ nav, ctas }: { nav?: NavPrimary; ctas?: NavCtas }) 
 
   const items = publicNavItems(nav ?? defaultNavPrimary);
   const ctaItems: NavCta[] = (ctas ?? defaultNavCtas).items.filter((item) => item.active && !isStudentAccountHref(item.href));
-  const formationItem = items.find((item) => item.id === "formations");
-  // « Choix rapides » du menu mobile : miroir exact du sous-menu « Formations » du
-  // desktop, piloté par le CMS. Aucun filtrage ni troncature — une liste blanche
-  // d'ids figurait ici, et toute entrée ajoutée depuis le CRM disparaissait
-  // silencieusement du mobile. La rangée défile horizontalement, donc le nombre
-  // d'entrées ne casse pas la mise en page.
-  const keyFormationLinks = formationItem?.children ?? [];
-  const mobileMainLinks = [
-    { href: "/formations", label: "Formations", icon: GraduationCap },
-    { href: "/tarifs", label: "Tarifs", icon: CreditCard },
-    { href: "/financement", label: "Financement", icon: BookOpenCheck },
-    { href: "/avis", label: "Avis", icon: Star },
-    { href: "/contact", label: "Contact", icon: MessageCircle },
-    { href: "/connexion", label: "Connexion", icon: UserRound }
-  ];
+  // Menu mobile = strict reflet du CMS, comme le desktop : mêmes entrées, même
+  // ordre, mêmes icônes. Aucune liste codée en dur ici — toute entrée ajoutée
+  // ou réordonnée depuis /admin/site/navigation se répercute sur les deux rendus.
+  const mobileMainLinks: NavItem[] = [...items, ACCOUNT_LINK];
+  const mobileSubMenus = items.filter((item) => (item.children ?? []).length > 0);
 
   return (
     <header className="relative z-40 border-b border-slate-200/80 bg-white/95 shadow-[0_8px_26px_rgba(20,33,38,0.08)] backdrop-blur-xl xl:border-0 xl:bg-transparent xl:pb-2 xl:pt-0 xl:shadow-none">
@@ -223,12 +226,15 @@ export function HeaderMain({ nav, ctas }: { nav?: NavPrimary; ctas?: NavCtas }) 
           <MobileLogo />
 
           <div className="flex shrink-0 items-center gap-2">
-            <Link
-              href="/inscription"
-              className="focus-ring inline-flex min-h-11 items-center justify-center rounded-full bg-loden-700 px-4 text-sm font-bold text-white shadow-soft"
-            >
-              S&apos;inscrire
-            </Link>
+            {ctaItems.map((cta) => (
+              <Link
+                key={cta.id}
+                href={cta.href}
+                className="focus-ring inline-flex min-h-11 items-center justify-center rounded-full bg-loden-700 px-4 text-sm font-bold text-white shadow-soft"
+              >
+                {cta.label}
+              </Link>
+            ))}
             <button
               type="button"
               onClick={() => setMenuOpen((value) => !value)}
@@ -285,26 +291,6 @@ export function HeaderMain({ nav, ctas }: { nav?: NavPrimary; ctas?: NavCtas }) 
             ))}
           </div>
 
-          <div className="flex shrink-0 items-center gap-2 xl:hidden">
-            <Link
-              href="/inscription"
-              className="focus-ring inline-flex h-11 w-11 items-center justify-center gap-2 rounded-full border border-loden-200 bg-loden-50 text-sm font-semibold text-loden-800 shadow-[0_8px_24px_rgba(20,33,38,0.08)] hover:bg-loden-100 sm:h-12 sm:w-auto sm:px-4 sm:py-2"
-              aria-label="Inscription"
-            >
-              <Sparkles className="h-4 w-4" aria-hidden="true" />
-              <span className="hidden whitespace-nowrap sm:inline">Inscription</span>
-            </Link>
-            <button
-              type="button"
-              onClick={() => setMenuOpen((value) => !value)}
-              className="focus-ring inline-flex h-11 w-11 items-center justify-center rounded-full border border-loden-200 bg-white text-loden-800 shadow-[0_8px_24px_rgba(20,33,38,0.08)] transition hover:bg-loden-50 sm:h-12 sm:w-12"
-              aria-label={menuOpen ? "Fermer le menu" : "Ouvrir le menu"}
-              aria-expanded={menuOpen}
-              aria-controls="mobile-nav-menu"
-            >
-              {menuOpen ? <X className="h-5 w-5" aria-hidden="true" /> : <Menu className="h-5 w-5" aria-hidden="true" />}
-            </button>
-          </div>
         </div>
 
         {menuOpen ? (
@@ -320,10 +306,10 @@ export function HeaderMain({ nav, ctas }: { nav?: NavPrimary; ctas?: NavCtas }) 
                 <p className="px-1 text-xs font-bold uppercase tracking-[0.12em] text-loden-700">Aller à l&apos;essentiel</p>
                 <div className="mt-2 grid min-w-0 gap-2">
                   {mobileMainLinks.map((item) => {
-                    const Icon = item.icon;
+                    const Icon = resolveSiteIcon(item.icon);
                     return (
                       <Link
-                        key={item.href}
+                        key={item.id}
                         href={item.href}
                         onClick={() => setMenuOpen(false)}
                         className={cn(
@@ -346,18 +332,20 @@ export function HeaderMain({ nav, ctas }: { nav?: NavPrimary; ctas?: NavCtas }) 
                 </div>
               </div>
 
-              {keyFormationLinks.length > 0 ? (
-                <div className="min-w-0 rounded-2xl bg-loden-fog p-3">
-                  <p className="text-xs font-bold uppercase tracking-[0.12em] text-loden-700">Choix rapides</p>
+              {/* Un bloc par entrée à sous-menu : le mobile expose exactement les mêmes
+                  sous-liens que les menus déroulants du desktop. */}
+              {mobileSubMenus.map((item) => (
+                <div key={item.id} className="min-w-0 rounded-2xl bg-loden-fog p-3">
+                  <p className="text-xs font-bold uppercase tracking-[0.12em] text-loden-700">{item.label}</p>
                   <div className="mt-2 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                    {keyFormationLinks.map((child) => {
+                    {(item.children ?? []).map((child) => {
                       const Icon = resolveSiteIcon(child.icon);
                       return (
                         <Link
                           key={child.id}
                           href={child.href}
                           onClick={() => setMenuOpen(false)}
-                          className="focus-ring inline-flex shrink-0 items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-loden-ink shadow-sm"
+                          className="focus-ring inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-full border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-loden-ink shadow-sm"
                         >
                           <Icon className="h-3.5 w-3.5 text-loden-700" aria-hidden="true" />
                           {child.label}
@@ -366,7 +354,7 @@ export function HeaderMain({ nav, ctas }: { nav?: NavPrimary; ctas?: NavCtas }) 
                     })}
                   </div>
                 </div>
-              ) : null}
+              ))}
             </nav>
           </div>
         ) : null}
