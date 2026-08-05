@@ -5,6 +5,7 @@ import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { PageHero } from "@/components/PageHero";
 import { SectionHeader } from "@/components/SectionHeader";
 import { companyInfo, contactInfo } from "@/data/site";
+import { PASSERELLE_PATH } from "@/lib/passerelle";
 import { buildMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = buildMetadata({
@@ -45,13 +46,22 @@ export default function PermisBConflansPage() {
             title="Un parcours pensé pour ta réussite"
             text="Priorités, intersections, stationnement et conduite en conditions réelles : le parcours LODENE prépare ces situations avec des moniteurs habitués au secteur de Conflans-Sainte-Honorine."
           />
-          <div className="grid gap-3 sm:grid-cols-2 md:gap-4">
-            {highlights.map((item) => (
-              <article key={item} className="rounded-xl border border-slate-200 bg-loden-pearl p-4 shadow-soft md:rounded-2xl md:p-5">
-                <BadgeCheck className="h-6 w-6 text-loden-700" aria-hidden="true" />
-                <p className="mt-4 font-semibold text-loden-ink">{item}</p>
-              </article>
-            ))}
+          <div>
+            <div className="grid gap-3 sm:grid-cols-2 md:gap-4">
+              {highlights.map((item) => (
+                <article key={item} className="rounded-xl border border-slate-200 bg-loden-pearl p-4 shadow-soft md:rounded-2xl md:p-5">
+                  <BadgeCheck className="h-6 w-6 text-loden-700" aria-hidden="true" />
+                  <p className="mt-4 font-semibold text-loden-ink">{item}</p>
+                </article>
+              ))}
+            </div>
+            <p className="mt-4 text-sm leading-6 text-loden-muted">
+              Déjà titulaire d&apos;un permis boîte automatique ?{" "}
+              <Link className="focus-ring font-bold text-loden-700 hover:text-loden-900" href={PASSERELLE_PATH}>
+                La formation passerelle vers la boîte manuelle
+              </Link>{" "}
+              vous permet de conduire tous les véhicules.
+            </p>
           </div>
         </div>
       </section>

@@ -26,7 +26,7 @@ type ApiPricingPlan = {
 };
 
 const modeLabels: Record<ApiFormation["mode"], Formation["mode"]> = {
-  MANUEL: "Manuel",
+  MANUEL: "Manuelle",
   AUTOMATIQUE: "Automatique",
   MIXTE: "Mixte",
   CODE: "Code"
@@ -46,7 +46,7 @@ export function mapApiFormation(formation: ApiFormation): Formation {
     title: formation.title,
     slug: formation.slug,
     subtitle: formation.subtitle ?? undefined,
-    mode: modeLabels[formation.mode] ?? "Manuel",
+    mode: modeLabels[formation.mode] ?? "Manuelle",
     productLine: formation.productLine ?? "AUTO_ECOLE",
     duration: formation.durationLabel,
     price: formation.priceCents / 100,

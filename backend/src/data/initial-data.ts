@@ -891,6 +891,7 @@ export const initialSiteSettings: SiteSettingRecord[] = [
           icon: "GraduationCap",
           children: [
             { id: "permis", label: "Permis B & conduite", href: "/formations", active: true, icon: "Car" },
+            { id: "passerelle", label: "Passerelle auto → manuelle", href: "/passerelle-boite-automatique-manuelle", active: true, icon: "Route" },
             { id: "vtc", label: "VTC & transport", href: "/vtc", active: true, icon: "CarTaxiFront" },
             { id: "securite", label: "Sécurité & secourisme (SST)", href: "/sst", active: true, icon: "ShieldCheck" },
             { id: "caces", label: "CACES & logistique", href: "/logistique-securite", active: true, icon: "HardHat" },
@@ -975,6 +976,22 @@ export const initialSiteSettings: SiteSettingRecord[] = [
       maxReviews: 6,
       fallbackRating: 0,
       fallbackCount: 0
+    }
+  },
+  {
+    // Page passerelle « boîte auto → boîte manuelle ». Illustration et documents
+    // téléchargeables se pilotent depuis le CRM (/admin/site/passerelle) via la
+    // médiathèque. Liste de documents vide par défaut : la section reste masquée
+    // tant qu'aucun fichier n'a été ajouté.
+    key: "page.passerelle",
+    updatedAt: SITE_SETTINGS_DEFAULT_DATE,
+    value: {
+      image: "/formations/photos/passerelle-bva-manuelle.webp",
+      imageAlt:
+        "Moniteur LODENE désignant le levier de vitesses à une élève au volant d'une voiture à boîte manuelle.",
+      documentsTitle: "Documents à télécharger",
+      documentsIntro: "Les pièces utiles avant de démarrer votre passerelle.",
+      documents: []
     }
   }
 ];

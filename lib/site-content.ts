@@ -24,6 +24,23 @@ export type NavPrimary = { items: NavItem[] };
 export type NavCta = NavChild & { variant?: "outline" | "solid" };
 export type NavCtas = { items: NavCta[] };
 
+/** Document téléchargeable rattaché à une page, choisi dans la médiathèque. */
+export type PageDocument = {
+  id: string;
+  label: string;
+  description: string;
+  url: string;
+};
+
+/** Contenu pilotable de la page passerelle « boîte auto → boîte manuelle ». */
+export type PasserellePage = {
+  image: string;
+  imageAlt: string;
+  documentsTitle: string;
+  documentsIntro: string;
+  documents: PageDocument[];
+};
+
 export type HeroCta = { label: string; href: string };
 export type HeroBadge = { icon: string; title: string; detail: string };
 export type HeroHome = {
@@ -51,6 +68,7 @@ export const defaultNavPrimary: NavPrimary = {
       icon: "GraduationCap",
       children: [
         { id: "permis", label: "Permis B & conduite", href: "/formations", active: true, icon: "Car" },
+        { id: "passerelle", label: "Passerelle auto → manuelle", href: "/passerelle-boite-automatique-manuelle", active: true, icon: "Route" },
         { id: "vtc", label: "VTC & transport", href: "/vtc", active: true, icon: "CarTaxiFront" },
         { id: "securite", label: "Sécurité & secourisme (SST)", href: "/sst", active: true, icon: "ShieldCheck" },
         { id: "caces", label: "CACES & logistique", href: "/logistique-securite", active: true, icon: "HardHat" },
@@ -87,6 +105,15 @@ export const defaultNavPrimary: NavPrimary = {
     { id: "avis", label: "Avis", href: "/avis", active: true, icon: "Star" },
     { id: "contact", label: "Contact", href: "/contact", active: true, icon: "MessageCircle" }
   ]
+};
+
+export const defaultPasserellePage: PasserellePage = {
+  image: "/formations/photos/passerelle-bva-manuelle.webp",
+  imageAlt:
+    "Moniteur LODENE désignant le levier de vitesses à une élève au volant d'une voiture à boîte manuelle.",
+  documentsTitle: "Documents à télécharger",
+  documentsIntro: "Les pièces utiles avant de démarrer votre passerelle.",
+  documents: []
 };
 
 export const defaultNavCtas: NavCtas = {

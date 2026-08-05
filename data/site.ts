@@ -224,7 +224,7 @@ export type Formation = {
   title: string;
   slug: string;
   subtitle?: string;
-  mode: "Manuel" | "Automatique" | "Mixte" | "Code";
+  mode: "Manuelle" | "Automatique" | "Mixte" | "Code";
   productLine?: ProductLine;
   duration: string;
   price: number;
@@ -277,7 +277,7 @@ export const formations: Formation[] = [
     title: "Permis B manuel",
     slug: "permis-b-manuel-essentiel",
     subtitle: "Formule Essentiel Manuelle — 20 leçons",
-    mode: "Manuel",
+    mode: "Manuelle",
     productLine: "AUTO_ECOLE",
     duration: "20 leçons",
     price: 1344,
@@ -289,7 +289,7 @@ export const formations: Formation[] = [
     title: "Permis B manuel",
     slug: "permis-b-manuel-confort",
     subtitle: "Formule Confort Manuelle — 30 leçons",
-    mode: "Manuel",
+    mode: "Manuelle",
     productLine: "AUTO_ECOLE",
     duration: "30 leçons",
     price: 1944,
@@ -314,7 +314,7 @@ export const formations: Formation[] = [
     title: "Passerelle BVA vers boîte manuelle",
     slug: "passerelle-bva-manuelle",
     subtitle: "Complément de formation",
-    mode: "Manuel",
+    mode: "Manuelle",
     productLine: "AUTO_ECOLE",
     duration: "Formation courte",
     price: 0,
@@ -327,7 +327,7 @@ export const formations: Formation[] = [
     title: "Conduite accompagnée",
     slug: "conduite-accompagnee",
     subtitle: "AAC dès 15 ans",
-    mode: "Manuel",
+    mode: "Manuelle",
     productLine: "AUTO_ECOLE",
     duration: "Dès 15 ans",
     price: 0,

@@ -45,7 +45,7 @@ const BY_SLUG: Record<string, Visual> = {
 };
 
 const BY_MODE: Record<Formation["mode"], Visual> = {
-  Manuel: { icon: Car, gradient: "linear-gradient(135deg,#0e7490,#08AEB8 55%,#22d3ee)" },
+  Manuelle: { icon: Car, gradient: "linear-gradient(135deg,#0e7490,#08AEB8 55%,#22d3ee)" },
   Automatique: { icon: Gauge, gradient: "linear-gradient(135deg,#0891a0,#22d3ee 55%,#38bdf8)" },
   Mixte: { icon: Sparkles, gradient: "linear-gradient(135deg,#155e75,#0e7490 55%,#14b8a6)" },
   Code: { icon: MonitorPlay, gradient: "linear-gradient(135deg,#3730a3,#4f46e5 55%,#6366f1)" }
@@ -63,13 +63,13 @@ export function FormationCard({ formation }: { formation: Formation }) {
     BY_SLUG[formation.slug] ??
     (formation.productLine ? BY_PRODUCT_LINE[formation.productLine] : undefined) ??
     BY_MODE[formation.mode] ??
-    BY_MODE.Manuel; // repli terminal : un mode DB inconnu ne doit jamais casser la carte (visual.icon)
+    BY_MODE.Manuelle; // repli terminal : un mode DB inconnu ne doit jamais casser la carte (visual.icon)
   const Icon = visual.icon;
   // Image choisie au CMS (médiathèque) si définie, sinon photo réaliste par slug/pôle.
   const headerImage = formation.imageUrl
     ? { src: formation.imageUrl, alt: formation.subtitle ?? formation.title, objectPosition: "50% 50%" }
     : formationImageMeta(formation.slug, formation.productLine);
-  // Badge = pôle métier pour VTC/CACES, sinon le mode (Manuel/Auto/…).
+  // Badge = pôle métier pour VTC/CACES, sinon le mode (Manuelle/Auto/…).
   const badgeLabel =
     formation.productLine && formation.productLine !== "AUTO_ECOLE"
       ? productLineLabels[formation.productLine]

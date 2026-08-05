@@ -7,7 +7,7 @@ import { formations, productLineLabels, type Formation, type ProductLine } from 
 import { FormationCard } from "@/components/FormationCard";
 import { mapApiFormation } from "@/lib/catalog-mappers";
 
-const filters = ["Manuel", "Automatique", "Accéléré", "CPF", "Débutant", "Remise à niveau"];
+const filters = ["Manuelle", "Automatique", "Accéléré", "CPF", "Débutant", "Remise à niveau"];
 
 const poles: { key: "ALL" | ProductLine; label: string }[] = [
   { key: "ALL", label: "Tous les pôles" },
