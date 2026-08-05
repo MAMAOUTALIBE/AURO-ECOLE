@@ -10,7 +10,7 @@ import { getFormationBySlug, getFormations } from "@/lib/catalog";
 import { formatCurrency } from "@/lib/utils";
 import { safeJsonLd } from "@/lib/json-ld";
 import { SITE_NAME, SITE_URL, absoluteUrl } from "@/lib/seo";
-import { PASSERELLE_ANCIENNETE, PASSERELLE_DUREE, PASSERELLE_PATH } from "@/lib/passerelle";
+import { PASSERELLE_DUREE, PASSERELLE_PATH, PASSERELLE_REFORME } from "@/lib/passerelle";
 
 type PageProps = {
   params: Promise<{ slug: string }>;
@@ -118,17 +118,17 @@ const CURATED_FORMATION_CONTENT: Record<string, CuratedFormationContent> = {
     priceLabel: "Sur devis",
     fundingLabel: "Financement accompagné",
     fundingIcon: "Building2",
-    description: `Votre permis B a été obtenu sur boîte automatique : la mention « 78 » vous limite à ce type de véhicule. La formation passerelle de ${PASSERELLE_DUREE} lève cette restriction, sans repasser le code ni l'examen de conduite.`,
+    description: `Votre permis B a été obtenu sur boîte automatique : la mention « 78 » vous limite à ce type de véhicule. La formation passerelle de ${PASSERELLE_DUREE} lève cette restriction, sans repasser le code ni l'examen de conduite. Depuis le ${PASSERELLE_REFORME}, elle s'enchaîne dès l'obtention du permis, sans délai d'attente.`,
     keyPoints: [
       `${PASSERELLE_DUREE} de formation, sans nouvel examen`,
-      `Accessible dès ${PASSERELLE_ANCIENNETE} de permis boîte automatique`,
+      "Aucun délai d'attente après l'obtention du permis",
       "Attestation remise en fin de formation",
       "Devis clair avant inscription"
     ],
     programSteps: [
       {
         title: "Vérification de votre éligibilité",
-        text: `Contrôle de la mention 78 sur votre titre et de votre ancienneté (${PASSERELLE_ANCIENNETE} minimum), puis remise du devis.`
+        text: `Permis B valide avec mention 78, hors restriction pour raison médicale. Depuis le ${PASSERELLE_REFORME}, aucun délai à respecter. Devis remis dans la foulée.`
       },
       {
         title: "Théorie : comprendre la boîte mécanique",

@@ -8,20 +8,21 @@ import { PageHero } from "@/components/PageHero";
 import { SectionHeader } from "@/components/SectionHeader";
 import type { FaqItem } from "@/lib/faq";
 import {
-  PASSERELLE_ANCIENNETE,
   PASSERELLE_DUREE,
   PASSERELLE_FORMATION_SLUG,
-  PASSERELLE_PATH
+  PASSERELLE_PATH,
+  PASSERELLE_REFORME
 } from "@/lib/passerelle";
 import { safeJsonLd } from "@/lib/json-ld";
 import { SITE_NAME, SITE_URL, absoluteUrl, buildMetadata } from "@/lib/seo";
 import { contactInfo } from "@/data/site";
 import { defaultPasserellePage, getSiteSetting, type PasserellePage } from "@/lib/site-content";
 
-// Durée et ancienneté proviennent de lib/passerelle.ts — voir l'avertissement de validation
-// réglementaire qui y figure. Elles sont partagées avec la fiche catalogue.
+// Durée et date de réforme proviennent de lib/passerelle.ts, partagées avec la fiche
+// catalogue. Depuis le 1er mars 2024 il n'y a PLUS de délai d'attente après l'obtention
+// du permis boîte automatique — ne pas réintroduire de mention d'ancienneté minimale.
 const DUREE_FORMATION = PASSERELLE_DUREE;
-const ANCIENNETE_MINIMALE = PASSERELLE_ANCIENNETE;
+const DATE_REFORME = PASSERELLE_REFORME;
 
 const PATH = PASSERELLE_PATH;
 const FORMATION_SLUG = PASSERELLE_FORMATION_SLUG;
@@ -46,8 +47,8 @@ const keyFacts = [
   },
   {
     icon: CalendarCheck,
-    label: `Dès ${ANCIENNETE_MINIMALE} de permis`,
-    text: "Vous devez justifier d'une ancienneté minimale avec votre permis boîte automatique."
+    label: "Aucun délai d'attente",
+    text: `Depuis le ${DATE_REFORME}, la formation s'enchaîne dès l'obtention du permis boîte automatique.`
   },
   {
     icon: FileText,
@@ -57,8 +58,9 @@ const keyFacts = [
 ];
 
 const eligibility = [
-  "Votre permis B porte la mention « 78 » — elle apparaît en colonne 12, au dos du titre.",
-  `Vous détenez ce permis depuis au moins ${ANCIENNETE_MINIMALE}.`,
+  "Vous êtes titulaire d'un permis B en cours de validité, obtenu sur boîte automatique — la mention « 78 » figure sur votre titre.",
+  `Aucune ancienneté n'est exigée : depuis le ${DATE_REFORME}, vous pouvez enchaîner dès l'obtention du permis, sans attendre.`,
+  "Votre permis n'a pas été restreint à la boîte automatique pour raison médicale — dans ce cas la passerelle n'est pas accessible.",
   "Vous voulez conduire une voiture à boîte mécanique : véhicule familial, location standard ou véhicule de fonction."
 ];
 
@@ -114,8 +116,17 @@ const faqItems: FaqItem[] = [
     answer: `La formation passerelle est fixée à ${DUREE_FORMATION}. Chez LODENE, elle s'organise en trois temps : la théorie propre à la boîte mécanique, la pratique hors circulation pour installer les automatismes, puis la conduite en circulation pour gagner en autonomie.`
   },
   {
-    question: "Quand puis-je suivre la formation passerelle ?",
-    answer: `Il faut détenir votre permis B boîte automatique depuis au moins ${ANCIENNETE_MINIMALE}. En deçà, la formation ne peut pas encore être validée. Contactez-nous : nous vérifions votre date d'obtention avec vous et nous positionnons la session dès que vous êtes éligible.`
+    question: "Dois-je attendre après l'obtention de mon permis boîte automatique ?",
+    answer: `Non, plus depuis le ${DATE_REFORME}. Le délai d'attente de trois mois qui existait auparavant a été supprimé : vous pouvez enchaîner la formation passerelle dès que vous avez votre permis boîte automatique. Si l'on vous a indiqué un délai de trois mois, l'information n'est plus à jour.`
+  },
+  {
+    question: "Quels sont les prérequis pour s'inscrire ?",
+    answer:
+      "Deux conditions. Être titulaire d'un permis B en cours de validité, obtenu sur boîte automatique. Et ne pas avoir été restreint à la boîte automatique pour raison médicale : dans ce cas, la restriction relève d'un avis médical et la passerelle ne s'applique pas."
+  },
+  {
+    question: "À quoi sert exactement cette formation ?",
+    answer: `La formation de ${DUREE_FORMATION} vous permet de conduire un véhicule à boîte mécanique. À son issue, la mention 78 est levée de votre permis : vous conduisez indifféremment une boîte automatique ou une boîte manuelle, sans restriction.`
   },
   {
     question: "Que dois-je faire une fois la formation terminée ?",
@@ -180,7 +191,7 @@ export default async function PasserelleBoiteManuellePage() {
       <PageHero
         eyebrow="Pôle Auto-école · Permis B"
         title="Passer de la boîte automatique à la boîte manuelle"
-        text={`Vous avez obtenu votre permis B sur une voiture automatique ? La mention « 78 » vous limite aujourd'hui à ce type de véhicule. La formation passerelle de ${DUREE_FORMATION} lève cette restriction — sans repasser le code ni l'examen de conduite.`}
+        text={`Vous avez obtenu votre permis B sur une voiture automatique ? La mention « 78 » vous limite aujourd'hui à ce type de véhicule. La formation passerelle de ${DUREE_FORMATION} lève cette restriction — sans repasser le code ni l'examen de conduite, et depuis le ${DATE_REFORME} sans aucun délai d'attente.`}
         cta="Demander un devis"
         ctaHref={DEVIS_HREF}
       />
