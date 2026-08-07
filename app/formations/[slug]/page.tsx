@@ -10,7 +10,9 @@ import { getFormationBySlug, getFormations } from "@/lib/catalog";
 import { formatCurrency } from "@/lib/utils";
 import { safeJsonLd } from "@/lib/json-ld";
 import { SITE_NAME, SITE_URL, absoluteUrl } from "@/lib/seo";
-import { PASSERELLE_DUREE, PASSERELLE_PATH, PASSERELLE_REFORME } from "@/lib/passerelle";
+import { DocumentDownloadList } from "@/components/DocumentDownloadList";
+import { PASSERELLE_DUREE, PASSERELLE_FORMATION_SLUG, PASSERELLE_PATH, PASSERELLE_REFORME } from "@/lib/passerelle";
+import { defaultPasserellePage, getSiteSetting, pageDocuments, type PasserellePage } from "@/lib/site-content";
 
 type PageProps = {
   params: Promise<{ slug: string }>;
@@ -632,6 +634,15 @@ export default async function FormationDetailPage({ params }: PageProps) {
 
   const relatedPage = curatedContent?.relatedPage ?? (isIaCrm ? { href: "/digital", label: "Voir le programme détaillé" } : undefined);
 
+  // Documents téléchargeables de la passerelle : même réglage CRM `page.passerelle` que
+  // la landing dédiée, pour qu'une seule saisie dans /admin/site/passerelle alimente les
+  // deux pages. Aucune requête pour les autres formations.
+  const passerelleCms =
+    formation.slug === PASSERELLE_FORMATION_SLUG
+      ? await getSiteSetting<PasserellePage>("page.passerelle", defaultPasserellePage)
+      : null;
+  const documents = pageDocuments(passerelleCms?.documents);
+
   const guarantees = [
     isIaCrm
       ? "Financement OPCO ou entreprise selon votre dossier"
@@ -753,6 +764,25 @@ export default async function FormationDetailPage({ params }: PageProps) {
           </div>
         </div>
       </section>
+
+      {documents.length > 0 ? (
+        <section className="bg-loden-pearl pt-6">
+          <div className="container-pad">
+            <p className="text-xs font-black uppercase tracking-[0.14em] text-loden-700">Documents</p>
+            <h2 className="mt-2 text-2xl font-black text-loden-ink sm:text-3xl">
+              {passerelleCms?.documentsTitle || defaultPasserellePage.documentsTitle}
+            </h2>
+            {passerelleCms?.documentsIntro ? (
+              <p className="mt-2 max-w-3xl text-sm leading-7 text-loden-muted md:text-base">
+                {passerelleCms.documentsIntro}
+              </p>
+            ) : null}
+            <div className="mt-4">
+              <DocumentDownloadList documents={documents} />
+            </div>
+          </div>
+        </section>
+      ) : null}
 
       <section className="bg-loden-pearl py-6">
         <div className="container-pad">

@@ -96,7 +96,9 @@ export function PasserelleEditor() {
       <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-soft">
         <h2 className="text-lg font-semibold text-loden-ink">Documents à télécharger</h2>
         <p className="mt-1 text-sm text-loden-muted">
-          Les fichiers proposés au visiteur en bas de page. La section reste masquée tant qu’aucun document n’est ajouté.
+          Les fichiers proposés au visiteur en bas de page. Une seule saisie ici alimente <strong>deux pages</strong> : la
+          page passerelle et la fiche formation « Passerelle BVA vers boîte manuelle ». La section reste masquée sur les
+          deux tant qu’aucun document n’est ajouté.
         </p>
 
         <div className="mt-4 grid gap-3 sm:grid-cols-2">

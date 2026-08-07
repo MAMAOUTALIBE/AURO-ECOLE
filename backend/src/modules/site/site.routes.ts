@@ -78,11 +78,24 @@ const googleReviewsSchema = z.object({
 
 // Page passerelle « boîte auto → boîte manuelle » : illustration et documents
 // téléchargeables, tous deux choisis dans la médiathèque depuis le CRM.
+// Le champ « Fichier » est une saisie libre côté CRM : on n'accepte qu'un chemin interne
+// (`/uploads/…`) ou une URL http(s). Un `javascript:` / `data:` atterrirait dans le `href`
+// des pages publiques = XSS stocké. `//hôte` est refusé (origine non maîtrisée).
+// Le rendu applique le même filtre via `isSafeDocumentUrl` (lib/site-content.ts).
+const documentUrlSchema = z
+  .string()
+  .trim()
+  .min(1)
+  .max(300)
+  .refine((url) => !url.startsWith("//") && (url.startsWith("/") || /^https?:\/\//i.test(url)), {
+    message: "L'URL doit être un chemin interne (/uploads/…) ou une adresse http(s)."
+  });
+
 const passerelleDocumentSchema = z.object({
   id: z.string().trim().min(1).max(60),
   label: z.string().trim().min(1).max(120),
   description: z.string().trim().max(200).optional().default(""),
-  url: z.string().trim().min(1).max(300)
+  url: documentUrlSchema
 });
 
 const passerellePageSchema = z.object({

@@ -139,6 +139,32 @@ export const defaultHeroHome: HeroHome = {
   ]
 };
 
+// ---- Documents téléchargeables ------------------------------------------------
+
+/**
+ * Le champ « Fichier » du CRM est une saisie libre (on peut coller une URL au lieu de
+ * piocher dans la médiathèque) : une valeur `javascript:` ou `data:` placée dans un
+ * `href` serait un XSS stocké. On n'accepte donc qu'un chemin interne (`/uploads/…`)
+ * ou une URL http(s). Garde-fou au rendu, doublé d'un `refine` côté API (site.routes.ts).
+ */
+export function isSafeDocumentUrl(url: string): boolean {
+  const value = url.trim();
+  // `//exemple.com` hérite du protocole de la page : origine non maîtrisée, on refuse.
+  if (value.startsWith("//")) return false;
+  if (value.startsWith("/")) return true;
+  return /^https?:\/\//i.test(value);
+}
+
+/**
+ * Documents réellement affichables d'une page CMS, dans l'ordre saisi : ceux dont le
+ * libellé et l'URL sont renseignés, et dont l'URL est sûre. Les entrées incomplètes
+ * (document ajouté mais pas encore rempli) sont ignorées silencieusement.
+ */
+export function pageDocuments(documents: PageDocument[] | undefined): PageDocument[] {
+  if (!Array.isArray(documents)) return [];
+  return documents.filter((doc) => doc.label && doc.url && isSafeDocumentUrl(doc.url));
+}
+
 // ---- Lecture côté serveur (composants serveur uniquement) ---------------------
 
 /**

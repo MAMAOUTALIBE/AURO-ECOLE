@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, BadgeCheck, CalendarCheck, Car, CheckCircle2, Clock3, Download, FileText, Gauge, IdCard, Phone, Route } from "lucide-react";
+import { ArrowRight, BadgeCheck, CalendarCheck, Car, CheckCircle2, Clock3, FileText, Gauge, IdCard, Phone, Route } from "lucide-react";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { FaqSection } from "@/components/FaqSection";
 import { PageHero } from "@/components/PageHero";
@@ -16,7 +16,8 @@ import {
 import { safeJsonLd } from "@/lib/json-ld";
 import { SITE_NAME, SITE_URL, absoluteUrl, buildMetadata } from "@/lib/seo";
 import { contactInfo } from "@/data/site";
-import { defaultPasserellePage, getSiteSetting, type PasserellePage } from "@/lib/site-content";
+import { DocumentDownloadList } from "@/components/DocumentDownloadList";
+import { defaultPasserellePage, getSiteSetting, pageDocuments, type PasserellePage } from "@/lib/site-content";
 
 // Durée et date de réforme proviennent de lib/passerelle.ts, partagées avec la fiche
 // catalogue. Depuis le 1er mars 2024 il n'y a PLUS de délai d'attente après l'obtention
@@ -169,7 +170,7 @@ export default async function PasserelleBoiteManuellePage() {
   const cms = await getSiteSetting<PasserellePage>("page.passerelle", defaultPasserellePage);
   const heroImage = cms.image || defaultPasserellePage.image;
   const heroImageAlt = cms.imageAlt || defaultPasserellePage.imageAlt;
-  const documents = Array.isArray(cms.documents) ? cms.documents.filter((doc) => doc.label && doc.url) : [];
+  const documents = pageDocuments(cms.documents);
 
   return (
     <main>
@@ -342,29 +343,9 @@ export default async function PasserelleBoiteManuellePage() {
               title={cms.documentsTitle || defaultPasserellePage.documentsTitle}
               text={cms.documentsIntro || undefined}
             />
-            <ul className="mt-5 grid gap-3 md:mt-7 md:grid-cols-2 md:gap-4">
-              {documents.map((doc) => (
-                <li key={doc.id || doc.url}>
-                  <a
-                    href={doc.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="focus-ring group flex items-start gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-soft transition hover:border-loden-300 hover:shadow-premium md:p-5"
-                  >
-                    <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-loden-50 text-loden-700">
-                      <FileText className="h-5 w-5" aria-hidden="true" />
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="block font-black text-loden-ink">{doc.label}</span>
-                      {doc.description ? (
-                        <span className="mt-1 block text-sm leading-6 text-loden-muted">{doc.description}</span>
-                      ) : null}
-                    </span>
-                    <Download className="mt-1 h-5 w-5 shrink-0 text-loden-muted transition group-hover:text-loden-700" aria-hidden="true" />
-                  </a>
-                </li>
-              ))}
-            </ul>
+            <div className="mt-5 md:mt-7">
+              <DocumentDownloadList documents={documents} />
+            </div>
           </div>
         </section>
       ) : null}
